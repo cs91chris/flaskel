@@ -1,0 +1,49 @@
+version: 1
+disable_existing_loggers: true
+
+formatters:
+    default:
+        format: "[%(asctime)s][%(levelname)s][%(module)s:%(lineno)d]: %(message)s"
+    syslog:
+        format: "%(ident)s[%(asctime)s][%(levelname)s]: %(message)s"
+
+handlers:
+    syslog:
+        class: flask_logify.FlaskSysLogHandler
+        address: [localhost, 514]
+        formatter: syslog
+        facility: daemon
+        level: INFO
+
+    console:
+        class: logging.StreamHandler
+        formatter: default
+        level: DEBUG
+
+    file:
+        class: logging.handlers.RotatingFileHandler
+        formatter: default
+        level: DEBUG
+        filename: log/flaskel.log
+        maxBytes: 10485760
+        backupCount: 20
+        encoding: utf8
+
+loggers:
+    development:
+        handlers: [console]
+        propogate: yes
+        level: DEBUG
+    testing:
+        handlers: [file]
+        propogate: yes
+        level: DEBUG
+    staging:
+        handlers: [file, syslog]
+        propogate: yes
+        level: DEBUG
+    production:
+        handlers: [syslog]
+        propogate: yes
+        level: INFO
+

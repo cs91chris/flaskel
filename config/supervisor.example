@@ -1,0 +1,10 @@
+[program:<NAME>]
+directory = <PATH>/bin
+command = bash run.sh
+process_name = %(program_name)s
+autostart = true
+autorestart = true
+autorestart = unexpected
+user = <USER>
+group = <GROUP>
+

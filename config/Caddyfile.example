@@ -1,0 +1,11 @@
+# you must use a wsgi http server like: uwsgi
+# with http socket
+#
+
+https://<SERVER_NAME> {
+    root <PATH>
+
+    proxy / <HOST>:<IP> {
+        transparent
+    }
+}

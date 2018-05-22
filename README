@@ -1,0 +1,24 @@
+0. first of all make sure you have installed:
+	- python3
+	- python3-dev
+	- virtualenv
+	- libpcre3 libpcre3-dev
+
+1. run bash bin/install.sh
+
+2. you can configuring variables in bin/conf and 
+   you can add your 'local_config.py' in APP_HOME
+
+3. run init.py for initializing DB
+   if DATABASE_URI are not set default is in memory sqlite
+
+4. Check if all works by running: pytest test.py
+
+5. Utilities in bin/utils:
+	- blueprint  (bash blueprint help)
+	- route      (bash route help)
+
+6. launch application: bash bin/run.sh
+
+7. ENJOY!
+

@@ -1,0 +1,9 @@
+uwsgi:
+  master: true
+  workers: %k
+  enable-threads: true
+  pcre-jit: true
+  thunder-lock: true
+  threads: %k * 2
+  disable-logging: true
+
