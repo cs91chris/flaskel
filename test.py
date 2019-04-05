@@ -35,19 +35,18 @@ def client(app):
     return _client
 
 
-def test_app_runs(client, app):
-    base_url = 'http://api.' + app.config['SERVER_NAME']
-    res = client.get('/', base_url=base_url)
+def test_app_runs(client):
+    res = client.get('/')
     assert res.status_code == 200
+
+
+def test_app_return_html(client):
+    res = client.get('/')
+    assert 'text/html' in res.headers['Content-Type']
 
 
 def test_app_returns_json(client, app):
     base_url = 'http://api.' + app.config['SERVER_NAME']
     res = client.get('/', base_url=base_url)
     assert res.headers['Content-Type'] == 'application/json'
-
-
-def test_app_return_html(client):
-    res = client.get('/')
-    assert res.status_code == 200 and 'text/html' in res.headers['Content-Type']
 
