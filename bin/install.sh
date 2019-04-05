@@ -19,11 +19,9 @@ fi
 
 mkdir -p log .pid
 
-cd config >/dev/null
-for f in $(ls "*.yaml.example"); do
+for f in $(ls config/*.yaml.example); do
     cp ${f} $(echo ${f} | sed "s/\.yaml\.example/\.yaml/g")
 done
-cd - >/dev/null
 
 cat /dev/urandom | tr -dc "a-zA-Z0-9\ @%=+&()" | head -c 128 > .secret.key
 
