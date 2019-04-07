@@ -25,7 +25,7 @@ def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
 
     logger.init_app(app)
     errors.init_app(app)
-    errors.api_register(app)
+    errors.web_register(app)
 
     for e in (ext or ()):
         ex = e[0]
@@ -41,4 +41,3 @@ def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
         app.logger.debug("Registered blueprint '%s' with options: %s", bp.name, str(opt))
 
     return app
-

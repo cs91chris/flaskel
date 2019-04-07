@@ -1,10 +1,6 @@
 # example web blueprint
 #
-
 from flask import Blueprint
-
-from flaskel.ext import errors
-
 
 web = Blueprint(
     'web', __name__,
@@ -12,6 +8,7 @@ web = Blueprint(
     static_folder="static"
 )
 
+from flaskel.ext import errors
 errors.web_register(web)
 
 
