@@ -6,21 +6,6 @@ from flaskel.ext import logger
 from flaskel.config import FLASK_APP
 
 
-def register_blueprint(app, blueprint, prefix=None):
-    """
-
-    :param app:
-    :param blueprint:
-    :param prefix:
-    """
-    if prefix is not None:
-        app.register_blueprint(blueprint, url_prefix=prefix)
-        app.logger.debug("Registered blueprint '%s' with prefix '%s'", blueprint.name, prefix)
-    else:
-        app.register_blueprint(blueprint)
-        app.logger.debug("Registered blueprint '%s' without prefix", blueprint.name)
-
-
 def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
     """
 
@@ -36,16 +21,24 @@ def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
     app.config.from_envvar('APP_CONFIG_FILE', silent=True)
     app.config.setdefault('LOG_LOGGER_NAME', app.config.get('FLASK_ENV'))
     app.config.setdefault('LOG_APP_NAME', app.config.get('APP_NAME'))
+    app.config.setdefault('ERROR_PAGE', 'core/error.html')
 
     logger.init_app(app)
     errors.init_app(app)
     errors.api_register(app)
 
-    for ext in (ext or ()):
-        ext.init_app(app)
+    for e in (ext or ()):
+        ex = e[0]
+        opt = e[1] if len(e) > 1 else {}
+        ext_name = ex.__class__.__name__
+        ex.init_app(app, **opt)
+        app.logger.debug("Registered extension '%s' with options: %s", ext_name, str(opt))
 
     for b in (bp or ()):
-        register_blueprint(app, *b)
+        bp = b[0]
+        opt = b[1] if len(b) > 1 else {}
+        app.register_blueprint(bp, **opt)
+        app.logger.debug("Registered blueprint '%s' with options: %s", bp.name, str(opt))
 
     return app
 

@@ -5,7 +5,11 @@ from blueprints.web import web
 
 
 BLUEPRINTS = (
-    # (blueprint_name, prefix)
-    (api, None),
-    (web, None),
+    # (blueprint_name, options)
+    (api, {
+        'subdomain': 'api'
+    }),
+    (web, {
+        'url_prefix': '/web'
+    }),
 )
