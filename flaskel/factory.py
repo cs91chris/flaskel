@@ -22,7 +22,6 @@ def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
 
     logger.init_app(app)
     errors.init_app(app)
-    errors.web_register(app)
 
     for e in (ext or ()):
         ex = e[0]
