@@ -1,17 +1,15 @@
 from flask import Flask
 
-from ext import errors
-from ext import logger
-
 from flaskel.config import FLASK_APP
 
+from ext import EXTENSIONS
+from blueprints import BLUEPRINTS
 
-def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
+
+def bootstrap(conf_module=None, **kwargs):
     """
 
     :param conf_module:
-    :param ext:
-    :param bp:
     :param kwargs:
     :return:
     """
@@ -20,17 +18,14 @@ def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
     app.config.from_object(conf_module or 'flaskel.config')
     app.config.from_envvar('APP_CONFIG_FILE', silent=True)
 
-    logger.init_app(app)
-    errors.init_app(app)
-
-    for e in (ext or ()):
+    for e in EXTENSIONS:
         ex = e[0]
         opt = e[1] if len(e) > 1 else {}
         ext_name = ex.__class__.__name__
         ex.init_app(app, **opt)
         app.logger.debug("Registered extension '%s' with options: %s", ext_name, str(opt))
 
-    for b in (bp or ()):
+    for b in BLUEPRINTS:
         bp = b[0]
         opt = b[1] if len(b) > 1 else {}
         app.register_blueprint(bp, **opt)

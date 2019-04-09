@@ -1,12 +1,15 @@
 from flaskel import bootstrap
-from blueprints import BLUEPRINTS
+from flaskel.patch import force_https
 from flaskel.patch import DispatchError
 from flaskel.patch import ReverseProxied
-from flaskel.patch import force_https
 
 
 def create_app():
-    _app = bootstrap(bp=BLUEPRINTS)
+    """
+
+    :return:
+    """
+    _app = bootstrap()
     DispatchError.by_subdomain(_app)
     _app.wsgi_app = ReverseProxied(_app.wsgi_app)
 
