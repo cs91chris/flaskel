@@ -19,9 +19,6 @@ def bootstrap(conf_module=None, ext=None, bp=None, **kwargs):
 
     app.config.from_object(conf_module or 'flaskel.config')
     app.config.from_envvar('APP_CONFIG_FILE', silent=True)
-    app.config.setdefault('LOG_LOGGER_NAME', app.config.get('FLASK_ENV'))
-    app.config.setdefault('LOG_APP_NAME', app.config.get('APP_NAME'))
-    app.config.setdefault('ERROR_PAGE', 'core/error.html')
 
     logger.init_app(app)
     errors.init_app(app)

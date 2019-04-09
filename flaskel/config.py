@@ -14,8 +14,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 CONF_DIR = os.path.join(BASE_DIR, 'config')
 LOG_FILE_CONF = os.path.join(CONF_DIR, 'log.yaml')
 
-JSON_ADD_STATUS = False
-
 REQUEST_METHODS = {
     'WITHOUT_BODY': [
         'GET', 'DELETE'
@@ -31,3 +29,7 @@ ALLOWED_CONTENT_TYPE = [
     "application/json"
 ]
 
+JSON_ADD_STATUS = False
+ERROR_PAGE = 'core/error.html'
+LOG_LOGGER_NAME = FLASK_ENV
+LOG_APP_NAME = APP_NAME

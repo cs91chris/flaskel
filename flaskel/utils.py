@@ -8,6 +8,10 @@ from flaskel import httpcode
 
 
 def get_json():
+    """
+
+    :return:
+    """
     req = request.get_json()
 
     if not req:
@@ -16,6 +20,13 @@ def get_json():
 
 
 def get_uuid(ver=4, ns=None, name=None):
+    """
+
+    :param ver:
+    :param ns:
+    :param name:
+    :return:
+    """
     if ver == 1:
         return uuid.uuid1().hex
     if ver == 3:
@@ -31,6 +42,13 @@ def get_uuid(ver=4, ns=None, name=None):
 
 
 def check_uuid(u: str, ver=4, exc=False):
+    """
+
+    :param u:
+    :param ver:
+    :param exc:
+    :return:
+    """
     try:
         return str(u) == str(uuid.UUID(str(u), version=ver))
     except (ValueError, TypeError, AttributeError):
