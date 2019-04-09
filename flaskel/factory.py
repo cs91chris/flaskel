@@ -1,7 +1,7 @@
 from flask import Flask
 
-from flaskel.ext import errors
-from flaskel.ext import logger
+from ext import errors
+from ext import logger
 
 from flaskel.config import FLASK_APP
 

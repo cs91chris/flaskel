@@ -8,7 +8,7 @@ web = Blueprint(
     static_folder="static"
 )
 
-from flaskel.ext import errors
+from ext import errors
 errors.web_register(web)
 
 

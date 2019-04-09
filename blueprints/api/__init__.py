@@ -8,7 +8,7 @@ api = Blueprint(
     subdomain='api'
 )
 
-from flaskel.ext import errors
+from ext import errors
 errors.api_register(api)
 
 
