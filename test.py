@@ -46,7 +46,10 @@ def test_app_return_html(client):
 
 
 def test_app_returns_json(client, app):
-    base_url = 'http://api.' + app.config['SERVER_NAME']
-    res = client.get('/', base_url=base_url)
+    res = client.get('/', 'http://api.' + app.config['SERVER_NAME'])
     assert res.headers['Content-Type'] == 'application/json'
 
+
+def test_api_cors(client, app):
+    res = client.get('/', base_url='http://api.' + app.config['SERVER_NAME'])
+    assert res.headers['Access-Control-Allow-Origin'] == '*'

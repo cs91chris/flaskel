@@ -8,8 +8,11 @@ api = Blueprint(
     subdomain='api'
 )
 
-from ext import errors
-errors.api_register(api)
-
-
 from . import index
+
+from ext import errors
+from ext import cors
+
+
+cors.init_app(api)
+errors.api_register(api)
