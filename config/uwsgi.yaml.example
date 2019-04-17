@@ -6,4 +6,3 @@ uwsgi:
   thunder-lock: true
   threads: %k * 2
   disable-logging: true
-

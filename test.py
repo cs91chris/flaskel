@@ -1,6 +1,9 @@
 import pytest
 
-from flask import json, Response as Resp
+from flask import json
+from flask import request
+from flask import Response as Resp
+
 from flask.testing import FlaskClient
 from werkzeug.utils import cached_property
 
@@ -47,7 +50,7 @@ def test_app_return_html(client):
 
 def test_app_returns_json(client, app):
     res = client.get('/', base_url='http://api.' + app.config['SERVER_NAME'])
-    assert res.headers['Content-Type'] == 'application/json'
+    assert 'application/json' in res.headers['Content-Type']
 
 
 def test_api_cors(client, app):
@@ -62,4 +65,19 @@ def test_dispatch_error_web(client):
 
 def test_dispatch_error_api(client, app):
     res = client.get('/api-not-found', base_url='http://api.' + app.config['SERVER_NAME'])
-    assert res.status_code == 404 and res.headers['Content-Type'] == 'application/json'
+    assert res.status_code == 404 and 'application/json' in res.headers['Content-Type']
+
+
+def test_method_override_header(client, app):
+    @app.route('/method_override', methods=['POST', 'PUT'])
+    def method_override_post():
+        return '', 200 if request.method == 'PUT' else 405
+
+    res_header = client.post(
+        '/method_override',
+        headers={'X-HTTP-Method-Override': 'PUT'}
+    )
+    res_query_string = client.post(
+        '/method_override?_method_override=PUT'
+    )
+    assert res_header.status_code == 200 and res_query_string.status_code == 200
