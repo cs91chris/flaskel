@@ -1,12 +1,15 @@
 # import flask extension here
 #
-from ext.default import errors
-from ext.default import logger
-from ext.default import cors
+from .default import errors
+from .default import logger
+from .default import cors
+
+from .crypto import argon2
 
 
 EXTENSIONS = (
     # (extension, parameters)
     (logger,),
     (errors,),
+    (argon2,),
 )
