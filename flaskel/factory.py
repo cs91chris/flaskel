@@ -1,6 +1,7 @@
 from flask import Flask
 
 from flaskel.config import FLASK_APP
+from flaskel.converters import CONVERTERS
 
 from ext import EXTENSIONS
 from blueprints import BLUEPRINTS
@@ -14,9 +15,10 @@ def bootstrap(conf_module=None, **kwargs):
     :return:
     """
     app = Flask(FLASK_APP, **kwargs)
-
     app.config.from_object(conf_module or 'flaskel.config')
-    app.config.from_envvar('APP_CONFIG_FILE', silent=True)
+    app.config.from_envvar('APP_CONFIG_FILE', silent=False)
+
+    app.url_map.converters.update(CONVERTERS)
 
     for e in EXTENSIONS:
         ex = e[0]
