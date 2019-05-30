@@ -25,8 +25,9 @@ REQUEST_METHODS = {
 
 AC_ALLOW_ORIGIN = []
 
-ALLOWED_CONTENT_TYPE = [
-    "application/json"
+RB_DEFAULT_ACCEPTABLE_MIMETYPES = [
+    "application/json",
+    "application/xml"
 ]
 
 JSON_ADD_STATUS = False

@@ -1,6 +1,7 @@
 Flask==1.0.2
 Flask-Cors==3.0.7
 Flask-ErrorsHandler==2.1.0
+Flask-ResponseBuilder==2.0.2
 Flask-Logify==1.0.1
 uWSGI==2.0.18
 gunicorn==19.9.0

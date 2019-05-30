@@ -25,20 +25,13 @@ class Argon2:
         app.config.setdefault("ARGON2_PARALLELISM", _argon2.DEFAULT_PARALLELISM)
         app.config.setdefault("ARGON2_RANDOM_SALT_LENGTH", _argon2.DEFAULT_RANDOM_SALT_LENGTH)
 
-        encoding = app.config['ARGON2_ENCODING']
-        time_cost = app.config['ARGON2_TIME_COST']
-        hash_len = app.config['ARGON2_HASH_LENGTH']
-        memory_cost = app.config['ARGON2_MEMORY_COST']
-        parallelism = app.config['ARGON2_PARALLELISM']
-        salt_len = app.config['ARGON2_RANDOM_SALT_LENGTH']
-
         self.ph = _argon2.PasswordHasher(
-            time_cost,
-            memory_cost,
-            parallelism,
-            hash_len,
-            salt_len,
-            encoding
+            encoding=app.config['ARGON2_ENCODING'],
+            time_cost=app.config['ARGON2_TIME_COST'],
+            hash_len=app.config['ARGON2_HASH_LENGTH'],
+            memory_cost=app.config['ARGON2_MEMORY_COST'],
+            parallelism=app.config['ARGON2_PARALLELISM'],
+            salt_len=app.config['ARGON2_RANDOM_SALT_LENGTH']
         )
 
         if not hasattr(app, 'extensions'):
