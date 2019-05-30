@@ -1,18 +1,15 @@
-from flask import request
-from flask import make_response
-
 from werkzeug.urls import url_decode
 
-from flaskel import httpcode
 
+class ForceHttps(object):
+    def __init__(self, app):
+        """
 
-def force_https(app):
-    """
+        :param app:
+        """
+        self._app = app
 
-    :param app:
-    :return:
-    """
-    def wrapper(environ, start_response):
+    def __call__(self, environ, start_response):
         """
 
         :param environ:
@@ -20,76 +17,7 @@ def force_https(app):
         :return:
         """
         environ['wsgi.url_scheme'] = 'https'
-        return app(environ, start_response)
-    return wrapper
-
-
-class DispatchError(object):
-    @staticmethod
-    def dispatch(app, dispatcher):
-        """
-
-        :param app:
-        :param dispatcher:
-        """
-        @app.errorhandler(httpcode.NOT_FOUND)
-        def handle_not_found(e):
-            return dispatcher(e, httpcode.NOT_FOUND, 'Not Found')
-
-        @app.errorhandler(httpcode.METHOD_NOT_ALLOWED)
-        def handle_method_not_allowed(e):
-            return dispatcher(e, httpcode.METHOD_NOT_ALLOWED, 'Method Not Allowed')
-
-    @staticmethod
-    def by_subdomain(app):
-        """
-
-        :param app:
-        :return:
-        """
-        def dispatcher(e, code, mess):
-            """
-
-            :param e:
-            :param code:
-            :param mess:
-            :return:
-            """
-            len_domain = len(app.config['SERVER_NAME'])
-            subdomain = request.host[:-len_domain].rstrip('.') or None
-
-            for bp_name, bp in app.blueprints.items():
-                if subdomain == bp.subdomain:
-                    handler = app.error_handler_spec.get(bp_name, {}).get(code)
-                    for k, v in (handler or {}).items():
-                        return v(e)
-
-            return make_response(mess, code)
-        DispatchError.dispatch(app, dispatcher)
-
-    @staticmethod
-    def by_url_prefix(app):
-        """
-
-        :param app:
-        :return:
-        """
-        def dispatcher(e, code, mess):
-            """
-
-            :param e:
-            :param code:
-            :param mess:
-            :return:
-            """
-            for bp_name, bp in app.blueprints.items():
-                if request.path.startswith(bp.url_prefix or '/'):
-                    handler = app.error_handler_spec.get(bp_name, {}).get(code)
-                    for k, v in (handler or {}).items():
-                        return v(e)
-
-            return make_response(mess, code)
-        DispatchError.dispatch(app, dispatcher)
+        return self._app(environ, start_response)
 
 
 class ReverseProxied(object):
@@ -114,7 +42,7 @@ class ReverseProxied(object):
 
         :param app:
         """
-        self.app = app
+        self._app = app
 
     def __call__(self, environ, start_response):
         """
@@ -134,7 +62,7 @@ class ReverseProxied(object):
         if scheme:
             environ['wsgi.url_scheme'] = scheme
 
-        return self.app(environ, start_response)
+        return self._app(environ, start_response)
 
 
 class HTTPMethodOverride(object):
