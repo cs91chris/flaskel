@@ -5,6 +5,8 @@ from flask import request
 
 from flask.testing import FlaskClient
 
+from flaskel import utils
+
 from app import create_app
 
 
@@ -69,7 +71,7 @@ def test_dispatch_error_web(client):
 def test_dispatch_error_api(client, app):
     res = client.get('/api-not-found', base_url='http://api.' + app.config['SERVER_NAME'])
     assert res.status_code == 404
-    assert 'application/problem+json' in res.headers['Content-Type']
+    assert 'application/json' in res.headers['Content-Type']
 
 
 def test_method_override_header(client, app):
@@ -90,10 +92,30 @@ def test_method_override_header(client, app):
 
 
 def test_converters(client, app):
-    @app.route('/list/<list:data>')
+    @app.route("/list/<list('-'):data>")
     def list_converter(data):
         return jsonify(data)
 
-    res = client.get('/list/a+b+c')
+    res = client.get('/list/a-b-c')
     assert res.status_code == 200
     assert len(res.get_json()) == 3
+
+
+def test_utils_get_json(client, app):
+    @app.route('/json', methods=['POST'])
+    def get_invalid_json():
+        utils.get_json()
+        return '', 200
+
+    res = client.post('/json')
+    assert res.status_code == 400
+
+
+def test_utils_uuid(client, app):
+    @app.route('/uuid')
+    def return_uuid():
+        return jsonify(dict(uuid=utils.get_uuid()))
+
+    res = client.get('/uuid')
+    data = res.get_json()
+    assert utils.check_uuid(data.get('uuid')) is True

@@ -19,26 +19,31 @@ def get_json():
     return req
 
 
-def get_uuid(ver=4, ns=None, name=None):
+def get_uuid(ver=4, hexify=True, ns=None, name=None):
     """
 
     :param ver:
+    :param hexify:
     :param ns:
     :param name:
     :return:
     """
+    _uuid = None
+
     if ver == 1:
-        return uuid.uuid1().hex
-    if ver == 3:
-        return uuid.uuid3(
+        _uuid = uuid.uuid1()
+    elif ver == 3:
+        _uuid = uuid.uuid3(
             ns or uuid.NAMESPACE_DNS, name or cap.config['SERVER_NAME']
-        ).hex
-    if ver == 4:
-        return uuid.uuid4().hex
-    if ver == 5:
-        return uuid.uuid5(
+        )
+    elif ver == 4:
+        _uuid = uuid.uuid4()
+    elif ver == 5:
+        _uuid = uuid.uuid5(
             ns or uuid.NAMESPACE_DNS, name or cap.config['SERVER_NAME']
-        ).hex
+        )
+
+    return _uuid.hex if hexify else _uuid
 
 
 def check_uuid(u: str, ver=4, exc=False):
@@ -50,7 +55,11 @@ def check_uuid(u: str, ver=4, exc=False):
     :return:
     """
     try:
-        return str(u) == str(uuid.UUID(str(u), version=ver))
+        if isinstance(u, uuid.UUID):
+            return True
+
+        _uuid = uuid.UUID(u, version=ver)
+        return u == (str(_uuid) if '-' in u else _uuid.hex)
     except (ValueError, TypeError, AttributeError):
         if exc:
             raise ValueError("'{}' is an invalid UUID{}".format(str(u), ver))
