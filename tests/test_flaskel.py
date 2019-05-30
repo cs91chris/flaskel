@@ -1,46 +1,48 @@
 import pytest
 
-from flask import json
+from flask import jsonify
 from flask import request
-from flask import Response as Resp
 
 from flask.testing import FlaskClient
-from werkzeug.utils import cached_property
 
 from app import create_app
 
 
 @pytest.fixture
 def app():
-    class Response(Resp):
-        @cached_property
-        def json(self):
-            return json.loads(self.data)
+    """
 
+    :return:
+    """
     class TestClient(FlaskClient):
-        def open(self, *args, **kwargs):
-            if 'json' in kwargs:
-                kwargs['data'] = json.dumps(kwargs.pop('json'))
-                kwargs['Content-Type'] = 'application/json'
-            return super(TestClient, self).open(*args, **kwargs)
+        """
+            Implement this to customize Flask client
+            Form example:
+                    def fetch(self, url, *args, **kwargs):
+                        return self.open(url, method='FETCH', *args, **kwargs)
+        """
+        pass
 
-    _app = create_app()
-    _app.response_class = Response
+    _app = create_app(template_folder='templates', static_folder='static')
     _app.test_client_class = TestClient
     _app.testing = True
-
     return _app
 
 
 @pytest.fixture
 def client(app):
+    """
+
+    :param app:
+    :return:
+    """
     _client = app.test_client()
     return _client
 
 
 def test_app_runs(client):
-    res = client.get('/web')
-    assert res.status_code == 200
+    res = client.get('/')
+    assert res.status_code == 404
 
 
 def test_app_return_html(client):
@@ -60,12 +62,14 @@ def test_api_cors(client, app):
 
 def test_dispatch_error_web(client):
     res = client.get('/web-page-not-found')
-    assert res.status_code == 404 and 'text/html' in res.headers['Content-Type']
+    assert res.status_code == 404
+    assert 'text/html' in res.headers['Content-Type']
 
 
 def test_dispatch_error_api(client, app):
     res = client.get('/api-not-found', base_url='http://api.' + app.config['SERVER_NAME'])
-    assert res.status_code == 404 and 'application/json' in res.headers['Content-Type']
+    assert res.status_code == 404
+    assert 'application/problem+json' in res.headers['Content-Type']
 
 
 def test_method_override_header(client, app):
@@ -77,7 +81,19 @@ def test_method_override_header(client, app):
         '/method_override',
         headers={'X-HTTP-Method-Override': 'PUT'}
     )
+    assert res_header.status_code == 200
+
     res_query_string = client.post(
         '/method_override?_method_override=PUT'
     )
-    assert res_header.status_code == 200 and res_query_string.status_code == 200
+    assert res_query_string.status_code == 200
+
+
+def test_converters(client, app):
+    @app.route('/list/<list:data>')
+    def list_converter(data):
+        return jsonify(data)
+
+    res = client.get('/list/a+b+c')
+    assert res.status_code == 200
+    assert len(res.get_json()) == 3
