@@ -2,6 +2,7 @@ from flaskel import bootstrap
 from flaskel.patch import ForceHttps
 from flaskel.patch import ReverseProxied
 from flaskel.patch import HTTPMethodOverride
+from flask_response_builder import encoders
 
 from flask_errors_handler import SubdomainDispatcher
 
@@ -19,6 +20,7 @@ def create_app(**kwargs):
     _app.wsgi_app = ReverseProxied(_app.wsgi_app)
     _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
 
+    _app.json_encoder = encoders.JsonEncoder
     error = _app.extensions['errors_handler']
     error.register_dispatcher(SubdomainDispatcher)
     return _app

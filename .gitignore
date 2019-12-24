@@ -111,3 +111,4 @@ bin/conf
 config/*.yaml
 .secret.key
 
+test.py
