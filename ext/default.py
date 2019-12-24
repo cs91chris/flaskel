@@ -8,5 +8,5 @@ from flask_response_builder import ResponseBuilder
 
 cors = CORS()
 logger = FlaskLogging()
-builder = ResponseBuilder()
 errors = ErrorHandler()
+builder = ResponseBuilder()

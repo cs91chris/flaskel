@@ -30,7 +30,6 @@ RB_DEFAULT_ACCEPTABLE_MIMETYPES = [
     "application/xml"
 ]
 
-JSON_ADD_STATUS = False
 ERROR_PAGE = 'core/error.html'
 LOG_LOGGER_NAME = FLASK_ENV
 LOG_APP_NAME = APP_NAME

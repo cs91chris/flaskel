@@ -55,6 +55,7 @@ class ReverseProxied(object):
         if script_name:
             environ['SCRIPT_NAME'] = script_name
             path_info = environ['PATH_INFO']
+
             if path_info.startswith(script_name):
                 environ['PATH_INFO'] = path_info[len(script_name):]
 
@@ -70,7 +71,8 @@ class HTTPMethodOverride(object):
     Implements the hidden HTTP method technique.
     Not all web browsers or reverse proxy supports every HTTP method.
     Client can use 'X-HTTP-Method-Override' header or '_method_override' in querystring.
-    Only POST method can be overridden because with GET requests could result unexpected behavior due to caching.
+    Only POST method can be overridden because with GET requests
+    could result unexpected behavior due to caching.
     """
     def __init__(self, app):
         """
