@@ -1,5 +1,6 @@
 import argon2 as _argon2
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import Argon2Error
+from argon2.exceptions import InvalidHash
 
 
 class Argon2:
@@ -59,7 +60,7 @@ class Argon2:
         if exc is False:
             try:
                 return self.ph.verify(pw_hash, password)
-            except VerifyMismatchError:
+            except (Argon2Error, InvalidHash):
                 return False
         else:
             return self.ph.verify(pw_hash, password)
