@@ -1,12 +1,8 @@
 import pytest
-
-from flask import jsonify
-from flask import request
-
+from flask import jsonify, request
 from flask.testing import FlaskClient
 
 from flaskel import utils
-
 from app import create_app
 
 
@@ -118,4 +114,5 @@ def test_utils_uuid(client, app):
 
     res = client.get('/uuid')
     data = res.get_json()
+    assert utils.check_uuid('fake uuid') is False
     assert utils.check_uuid(data.get('uuid')) is True
