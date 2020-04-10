@@ -1,14 +1,7 @@
 # import flask extension here
 #
-from .default import errors
-from .default import logger
-from .default import cors
-from .default import builder
-from .default import template
-from .default import cfremote
-
 from .crypto import argon2
-
+from .default import errors, logger, cors, builder, template, cfremote
 
 EXTENSIONS = (
     # (extension, parameters)

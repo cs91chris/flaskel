@@ -1,8 +1,6 @@
 import uuid
 
-from flask import abort
-from flask import request
-from flask import current_app as cap
+import flask
 
 from flaskel import httpcode
 
@@ -12,10 +10,10 @@ def get_json():
 
     :return:
     """
-    req = request.get_json()
+    req = flask.request.get_json()
 
     if not req:
-        abort(httpcode.BAD_REQUEST, 'No JSON given')
+        flask.abort(httpcode.BAD_REQUEST, 'No JSON given')
 
     return req
 
@@ -36,14 +34,14 @@ def get_uuid(ver=4, hexify=True, ns=None, name=None):
     elif ver == 3:
         _uuid = uuid.uuid3(
             ns or uuid.NAMESPACE_DNS,
-            name or cap.config['SERVER_NAME']
+            name or flask.current_app.config['SERVER_NAME']
         )
     elif ver == 4:
         _uuid = uuid.uuid4()
     elif ver == 5:
         _uuid = uuid.uuid5(
             ns or uuid.NAMESPACE_DNS,
-            name or cap.config['SERVER_NAME']
+            name or flask.current_app.config['SERVER_NAME']
         )
 
     return _uuid.hex if hexify else _uuid

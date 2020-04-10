@@ -1,3 +1,4 @@
+PyYAML
 Flask==1.1.*
 Flask-Cors==3.0.*
 Flask-ErrorsHandler==2.*
@@ -5,7 +6,7 @@ Flask-ResponseBuilder==2.*
 Flask-TemplateSupport==1.*
 Flask-CloudflareRemote==1.*
 Flask-Logify==1.*
-gunicorn==19.9.*
+gunicorn==20.*
 meinheld=0.6.*
 pytest==5.4.*
 pytest-cov==2.8.*

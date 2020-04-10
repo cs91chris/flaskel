@@ -1,6 +1,4 @@
-from werkzeug.routing import BaseConverter
-from werkzeug.routing import FloatConverter
-from werkzeug.routing import UnicodeConverter
+from werkzeug.routing import BaseConverter, FloatConverter, UnicodeConverter
 
 
 class ListConverter(BaseConverter):

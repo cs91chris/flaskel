@@ -1,6 +1,5 @@
 import argon2 as _argon2
-from argon2.exceptions import Argon2Error
-from argon2.exceptions import InvalidHash
+from argon2.exceptions import Argon2Error, InvalidHash
 
 
 class Argon2:

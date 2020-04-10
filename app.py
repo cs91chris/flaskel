@@ -1,10 +1,8 @@
-from flaskel import bootstrap
-from flaskel.patch import ForceHttps
-from flaskel.patch import ReverseProxied
-from flaskel.patch import HTTPMethodOverride
 from flask_response_builder import encoders
-
 from flask_errors_handler import SubdomainDispatcher
+
+from flaskel import bootstrap
+from flaskel.patch import ForceHttps, ReverseProxied, HTTPMethodOverride
 
 
 def create_app(**kwargs):

@@ -1,12 +1,11 @@
 import os
-import yaml
 import multiprocessing
+
+import yaml
 
 import flaskel.config as conf
 
-
 ENV = os.environ
-
 
 raw_env = [
 ]
@@ -42,6 +41,7 @@ def post_fork(server, worker):
     server.log.info("Worker spawned (pid: %s)", worker.pid)
 
 
+# noinspection PyUnusedLocal
 def pre_fork(server, worker):
     pass
 
@@ -67,9 +67,9 @@ def worker_int(worker):
             code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
                 code.append("  %s" % (line.strip()))
+
     worker.log.debug("\n".join(code))
 
 
 def worker_abort(worker):
     worker.log.info("worker received SIGABRT signal")
-
