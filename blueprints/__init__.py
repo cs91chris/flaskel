@@ -8,6 +8,6 @@ BLUEPRINTS = (
     # (blueprint, options)
     (api,),
     (web, {
-        'url_prefix': '/web'
+        'url_prefix': '/'
     }),
 )

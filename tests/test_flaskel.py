@@ -2,8 +2,8 @@ import pytest
 from flask import jsonify, request
 from flask.testing import FlaskClient
 
-from flaskel import utils
 from app import create_app
+from flaskel.utils import uuid, misc
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def client(app):
 
 def test_app_runs(client):
     res = client.get('/')
-    assert res.status_code == 404
+    assert res.status_code == 200
 
 
 def test_app_return_html(client):
@@ -100,7 +100,7 @@ def test_converters(client, app):
 def test_utils_get_json(client, app):
     @app.route('/json', methods=['POST'])
     def get_invalid_json():
-        utils.get_json()
+        misc.get_json()
         return '', 200
 
     res = client.post('/json')
@@ -110,9 +110,21 @@ def test_utils_get_json(client, app):
 def test_utils_uuid(client, app):
     @app.route('/uuid')
     def return_uuid():
-        return jsonify(dict(uuid=utils.get_uuid()))
+        return jsonify(dict(uuid=uuid.get_uuid()))
 
     res = client.get('/uuid')
     data = res.get_json()
-    assert utils.check_uuid('fake uuid') is False
-    assert utils.check_uuid(data.get('uuid')) is True
+    assert uuid.check_uuid('fake uuid') is False
+    assert uuid.check_uuid(data.get('uuid')) is True
+
+
+def test_crypto(client, app):
+    passwd = 'my-favourite-password'
+    crypto = app.extensions['argon2']
+
+    @app.route('/crypt')
+    def crypt():
+        return crypto.generate_hash(passwd)
+
+    res = client.get('/crypt')
+    assert crypto.verify_hash(res.data, passwd)

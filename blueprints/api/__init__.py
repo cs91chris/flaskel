@@ -10,8 +10,8 @@ api = Blueprint(
 
 from . import index
 
-from ext import errors
-from ext import cors
+from flaskel.ext import cors
+from flaskel.ext import errors
 
 
 cors.init_app(api)
