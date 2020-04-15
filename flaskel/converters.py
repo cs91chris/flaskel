@@ -2,13 +2,13 @@ from werkzeug.routing import BaseConverter, FloatConverter, UnicodeConverter
 
 
 class ListConverter(BaseConverter):
-    def __init__(self, map=None, sep=None):
+    def __init__(self, mapname=None, sep=None):
         """
 
-        :param map:
+        :param mapname:
         :param sep:
         """
-        super().__init__(map)
+        super().__init__(mapname)
         self._sep = sep or '+'
 
     def to_python(self, value):
@@ -25,7 +25,9 @@ class ListConverter(BaseConverter):
         :param values:
         :return:
         """
-        return self._sep.join(BaseConverter.to_url(self, v) for v in values)
+        return self._sep.join(
+            BaseConverter.to_url(self, v) for v in values
+        )
 
 
 CONVERTERS = {

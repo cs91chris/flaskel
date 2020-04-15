@@ -1,5 +1,3 @@
-# DO NOT TOUCH this file use file in ../config
-#
 import os
 
 

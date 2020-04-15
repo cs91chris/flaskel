@@ -1,7 +1,5 @@
-# import flask extension here
-#
-from .crypto import argon2
-from .default import errors, logger, cors, builder, template, cfremote
+from flaskel.ext.crypto import argon2
+from flaskel.ext.default import errors, logger, cors, builder, template, cfremote
 
 EXTENSIONS = (
     # (extension, parameters)

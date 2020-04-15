@@ -108,7 +108,5 @@ venv.bak/
 migrations
 dev.db
 bin/conf
-config/*.yaml
 .secret.key
-
 test.py

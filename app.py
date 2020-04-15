@@ -1,6 +1,9 @@
 from flask_response_builder import encoders
 from flask_errors_handler import SubdomainDispatcher
 
+from blueprints import BLUEPRINTS
+from flaskel.ext import EXTENSIONS
+
 from flaskel import bootstrap
 from flaskel.patch import ForceHttps, ReverseProxied, HTTPMethodOverride
 
@@ -10,7 +13,7 @@ def create_app(**kwargs):
 
     :return:
     """
-    _app = bootstrap(**kwargs)
+    _app = bootstrap(blueprints=BLUEPRINTS, extensions=EXTENSIONS, **kwargs)
 
     if not _app.config.get('DEBUG'):
         _app.wsgi_app = ForceHttps(_app.wsgi_app)
@@ -24,6 +27,7 @@ def create_app(**kwargs):
     return _app
 
 
+# created here so it could be used in any wsgi container
 app = create_app()
 
 

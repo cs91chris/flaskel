@@ -14,12 +14,10 @@ handlers:
         formatter: syslog
         facility: daemon
         level: INFO
-
     console:
         class: logging.StreamHandler
         formatter: default
         level: DEBUG
-
     file:
         class: logging.handlers.RotatingFileHandler
         formatter: default
@@ -46,4 +44,3 @@ loggers:
         handlers: [syslog]
         propogate: yes
         level: INFO
-
