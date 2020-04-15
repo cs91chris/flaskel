@@ -107,6 +107,6 @@ venv.bak/
 .idea
 migrations
 dev.db
-bin/conf
+skeleton/bin/conf
 .secret.key
 test.py

@@ -1,11 +1,12 @@
 import flask
+import jinja2
 
 from flaskel.config import FLASK_APP
 from flaskel.converters import CONVERTERS
 
 
 def bootstrap(conf_module=None, conf_map=None, converters=None,
-              extensions=None, blueprints=None, **kwargs):
+              extensions=None, blueprints=None, template_folders=None, **kwargs):
     """
 
     :param conf_module: python module file
@@ -13,18 +14,16 @@ def bootstrap(conf_module=None, conf_map=None, converters=None,
     :param converters: custom url converter mapping
     :param extensions: custom extension appended to defaults
     :param blueprints: list of application's blueprints
+    :param template_folders: list of custom jinja2's template folders
     :param kwargs: passed to Flask class
     :return:
     """
     app = flask.Flask(FLASK_APP, **kwargs)
 
-    # default configuration python module file
     app.config.from_object(conf_module or 'flaskel.config')
-
-    # mapping configuration given
     app.config.from_mapping(**(conf_map or {}))
 
-    # configuration from environ overrides configuration from files
+    # configuration from environ overrides overrides all others
     app.config.from_envvar('APP_CONFIG_FILE', silent=True)
 
     app.url_map.converters.update(CONVERTERS)
@@ -55,5 +54,12 @@ def bootstrap(conf_module=None, conf_map=None, converters=None,
         app.logger.debug("Registered blueprint '%s' with options: %s", bp.name, str(opt))
 
     app.logger.debug("Registered converters\n{}".format(app.url_map.converters))
+
+    if template_folders:
+        app.jinja_loader = jinja2.ChoiceLoader([
+            app.jinja_loader,
+            jinja2.FileSystemLoader(template_folders),
+        ])
+        app.logger.debug("Registered template folders\n{}".format(", ".join(template_folders)))
 
     return app

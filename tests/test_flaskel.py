@@ -1,9 +1,14 @@
 import pytest
 from flask import jsonify, request
 from flask.testing import FlaskClient
+from flask_response_builder import encoders
+from flask_errors_handler import SubdomainDispatcher
 
-from app import create_app
+from flaskel import bootstrap
 from flaskel.utils import uuid, misc
+from flaskel.ext import EXTENSIONS
+from skeleton.blueprints import BLUEPRINTS
+from flaskel.patch import ReverseProxied, HTTPMethodOverride
 
 
 @pytest.fixture
@@ -21,7 +26,19 @@ def app():
         """
         pass
 
-    _app = create_app(template_folder='templates', static_folder='static')
+    _app = bootstrap(
+        blueprints=BLUEPRINTS,
+        extensions=EXTENSIONS,
+        template_folder="skeleton/templates",
+        static_folder="skeleton/static"
+    )
+    _app.wsgi_app = ReverseProxied(_app.wsgi_app)
+    _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
+
+    _app.json_encoder = encoders.JsonEncoder
+    error = _app.extensions['errors_handler']
+    error.register_dispatcher(SubdomainDispatcher)
+
     _app.test_client_class = TestClient
     _app.testing = True
     return _app

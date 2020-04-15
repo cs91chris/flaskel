@@ -1,7 +1,7 @@
 # import your blueprint here
 #
-from blueprints.api import api
-from blueprints.web import web
+from .api import api
+from .web import web
 
 
 BLUEPRINTS = (

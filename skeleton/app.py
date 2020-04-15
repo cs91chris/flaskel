@@ -3,7 +3,6 @@ from flask_errors_handler import SubdomainDispatcher
 
 from blueprints import BLUEPRINTS
 from flaskel.ext import EXTENSIONS
-
 from flaskel import bootstrap
 from flaskel.patch import ForceHttps, ReverseProxied, HTTPMethodOverride
 

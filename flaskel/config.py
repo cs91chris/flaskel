@@ -9,7 +9,7 @@ FLASK_ENV = os.environ.get('FLASK_ENV') or "development"
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
-CONF_DIR = os.path.join(BASE_DIR, 'config')
+CONF_DIR = os.path.join(BASE_DIR, 'skeleton', 'config')
 LOG_FILE_CONF = os.path.join(CONF_DIR, 'log.yaml')
 
 REQUEST_METHODS = {
@@ -31,3 +31,5 @@ RB_DEFAULT_ACCEPTABLE_MIMETYPES = [
 ERROR_PAGE = 'core/error.html'
 LOG_LOGGER_NAME = FLASK_ENV
 LOG_APP_NAME = APP_NAME
+
+CF_STRICT_ACCESS = False

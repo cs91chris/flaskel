@@ -1,4 +1,4 @@
-from blueprints.api import api
+from . import api
 
 
 @api.route('/', methods=['GET'])
