@@ -67,6 +67,11 @@ try:
         package_data={
             package: package_files(skeleton)
         },
+        entry_points={
+            'console_scripts': [
+                'flaskel = flaskel.cli:cli',
+            ],
+        },
         install_requires=[
             "PyYAML==5.*",
             "Flask==1.1.*",

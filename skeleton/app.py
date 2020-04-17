@@ -26,11 +26,8 @@ def create_app(**kwargs):
     return _app
 
 
-# created here so it could be used in any wsgi container
-app = create_app()
-
-
 if __name__ == '__main__':
+    app = create_app()
     app.run(
         host=app.config['APP_HOST'],
         port=app.config['APP_PORT'],
