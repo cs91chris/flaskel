@@ -1,9 +1,9 @@
-from flaskel.ext.crypto import argon2
-from flaskel.ext.default import errors, logger, cors, builder, template, cfremote
+from .default import cors, errors, logger, cors, builder, template, cfremote, argon2
 
 EXTENSIONS = (
     # (extension, parameters)
     (logger,),
+    (cors,),
     (argon2,),
     (template,),
     (cfremote,),

@@ -63,6 +63,3 @@ class Argon2:
                 return False
         else:
             return self.ph.verify(pw_hash, password)
-
-
-argon2 = Argon2()
