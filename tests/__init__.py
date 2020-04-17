@@ -1,6 +1,5 @@
 import pytest
 from flask.testing import FlaskClient
-from flask_response_builder import encoders
 from flask_errors_handler import SubdomainDispatcher
 
 from flaskel import bootstrap
