@@ -12,6 +12,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 CONF_DIR = os.path.join(BASE_DIR, 'skeleton', 'config')
 LOG_FILE_CONF = os.path.join(CONF_DIR, 'log.yaml')
 
+SECRET_KEY_MIN_LENGTH = 256
+
 REQUEST_METHODS = {
     'WITHOUT_BODY': [
         'GET', 'DELETE'

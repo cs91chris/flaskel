@@ -1,8 +1,7 @@
+import os
+
 DEBUG = False
 TESTING = False
 
-# add your domain here
-SERVER_NAME = "flask.local:5000"
-
-with open('.secret.key', 'r', encoding='utf-8') as f:
-    SECRET_KEY = f.read()
+SERVER_NAME = os.environ.get('SERVER_NAME')
+SECRET_KEY = os.environ.get('SECRET_KEY_FILE') or '.secret.key'
