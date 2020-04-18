@@ -4,11 +4,7 @@ import pytest
 from setuptools.command.test import test
 from setuptools import setup, find_packages
 
-__version__ = ''
-__author_info__ = {
-    'name': '',
-    'email': ''
-}
+from .version import *
 
 with open("README.md") as fh:
     long_description = fh.read()
@@ -41,6 +37,11 @@ setup(
     zip_safe=False,
     packages=find_packages(),
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            '{} = cli:cli'.format(__cli_name__),
+        ],
+    },
     install_requires=[
         "PyYAML",
         "flaskel",

@@ -1,6 +1,6 @@
 from collections import namedtuple
-import click
 
+import click
 import yaml
 from yaml.error import YAMLError
 from six import iteritems
@@ -10,7 +10,7 @@ from app import create_app
 try:
     from gunicorn.app.base import BaseApplication
 except ModuleNotFoundError:
-    # only for windows
+    # only for windows or if you do not want gunicorn
     class BaseApplication:
         """
         on windows application must be in DEBUG

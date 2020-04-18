@@ -3,9 +3,8 @@
 from .api import api
 from .web import web
 
-
 BLUEPRINTS = (
-    # (blueprint, options)
+    # (<Blueprint>, <dict>)
     (api,),
     (web, {
         'url_prefix': '/'
