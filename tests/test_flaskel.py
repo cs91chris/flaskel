@@ -1,8 +1,8 @@
+import os
 import werkzeug.exceptions
-from flask import jsonify, request
 
+from flaskel import httpcode
 from flaskel.utils import uuid, http
-from flaskel import httpcode, patch
 # noinspection PyUnresolvedReferences
 from . import app, client
 
@@ -17,13 +17,13 @@ def test_app_return_html(client):
     assert 'text/html' in res.headers['Content-Type']
 
 
-def test_app_returns_json(client, app):
-    res = client.get('/', base_url='http://api.' + app.config['SERVER_NAME'])
+def test_app_returns_json(client):
+    res = client.get('/', base_url='http://api.' + client.application.config['SERVER_NAME'])
     assert 'application/json' in res.headers['Content-Type']
 
 
-def test_api_cors(client, app):
-    res = client.get('/', base_url='http://api.' + app.config['SERVER_NAME'])
+def test_api_cors(client):
+    res = client.get('/', base_url='http://api.' + client.application.config['SERVER_NAME'])
     assert res.headers['Access-Control-Allow-Origin'] == '*'
 
 
@@ -33,35 +33,24 @@ def test_dispatch_error_web(client):
     assert 'text/html' in res.headers['Content-Type']
 
 
-def test_dispatch_error_api(client, app):
-    res = client.get('/api-not-found', base_url='http://api.' + app.config['SERVER_NAME'])
+def test_dispatch_error_api(client):
+    res = client.get('/api-not-found', base_url='http://api.' + client.application.config['SERVER_NAME'])
     assert res.status_code == httpcode.NOT_FOUND
     assert 'application/json' in res.headers['Content-Type']
 
 
-def test_force_https(client, app):
-    app.wsgi_app = patch.ForceHttps(app.wsgi_app)
+def test_force_https(app):
+    _app = app('production')
 
-    @app.route('/test_https')
-    def test_https():
-        return request.scheme
-
-    res = client.get('/test_https')
+    res = _app.test_client().get('/test_https')
     assert res.status_code == httpcode.SUCCESS
     assert res.data == b'https'
 
 
-def test_reverse_proxy(client, app):
-    app.wsgi_app = patch.ReverseProxied(app.wsgi_app)
+def test_reverse_proxy(app):
+    _app = app('production')
 
-    @app.route('/proxy')
-    def test_proxy():
-        return {
-            'script_name': request.environ['SCRIPT_NAME'],
-            'path_info': request.environ['PATH_INFO']
-        }
-
-    res = client.get('/proxy', headers={
+    res = _app.test_client().get('/proxy', headers={
         'X-Script-Name': '/test'
     })
     data = res.get_json()
@@ -71,11 +60,18 @@ def test_reverse_proxy(client, app):
     assert data['path_info'] == '/proxy'
 
 
-def test_method_override(client, app):
-    @app.route('/method_override', methods=['POST', 'PUT'])
-    def method_override_post():
-        return '', httpcode.SUCCESS if request.method == 'PUT' else httpcode.METHOD_NOT_ALLOWED
+def test_secret_key_prod(app):
+    client.application = app('production')
+    assert client.application.config['FLASK_ENV'] == 'production'
+    assert os.path.isfile('.secret.key')
+    os.remove('.secret.key')
 
+
+def test_secret_key_dev(client):
+    assert client.application.config['SECRET_KEY'] == 'very_complex_string'
+
+
+def test_method_override(client):
     res_header = client.post(
         '/method_override',
         headers={'X-HTTP-Method-Override': 'PUT'}
@@ -88,31 +84,18 @@ def test_method_override(client, app):
     assert res_query_string.status_code == httpcode.SUCCESS
 
 
-def test_converters(client, app):
-    @app.route("/list/<list('-'):data>")
-    def list_converter(data):
-        return jsonify(data)
-
+def test_converters(client):
     res = client.get('/list/a-b-c')
     assert res.status_code == httpcode.SUCCESS
     assert len(res.get_json()) == 3
 
 
-def test_utils_get_json(client, app):
-    @app.route('/json', methods=['POST'])
-    def get_invalid_json():
-        http.get_json()
-        return '', httpcode.SUCCESS
-
-    res = client.post('/json')
+def test_utils_get_json(client):
+    res = client.post('/invalid-json')
     assert res.status_code == httpcode.BAD_REQUEST
 
 
-def test_utils_send_file(client, app):
-    @app.route('/download')
-    def download():
-        return http.send_file('./', request.args.get('filename'))
-
+def test_utils_send_file(client):
     res = client.get('/download?filename=MANIFEST.in')
 
     assert res.status_code == httpcode.SUCCESS
@@ -125,16 +108,7 @@ def test_utils_send_file(client, app):
     assert res.status_code == httpcode.NOT_FOUND
 
 
-def test_utils_uuid(client, app):
-    @app.route('/uuid')
-    def return_uuid():
-        return jsonify(dict(
-            uuid1=uuid.get_uuid(ver=1),
-            uuid3=uuid.get_uuid(ver=3),
-            uuid4=uuid.get_uuid(),
-            uuid5=uuid.get_uuid(ver=5),
-        ))
-
+def test_utils_uuid(client):
     res = client.get('/uuid')
     data = res.get_json()
     assert uuid.check_uuid('fake uuid') is False
@@ -144,31 +118,30 @@ def test_utils_uuid(client, app):
     assert uuid.check_uuid(data.get('uuid5'), ver=5) is True
 
 
-def test_crypto(client, app):
+def test_crypto(client):
     passwd = 'my-favourite-password'
-    crypto = app.extensions['argon2']
+    crypto = client.application.extensions['argon2']
 
-    @app.route('/crypt')
-    def crypt():
-        return crypto.generate_hash(passwd)
-
-    res = client.get('/crypt')
+    res = client.get('/crypt/{}'.format(passwd))
     assert crypto.verify_hash(res.data, passwd)
     assert crypto.verify_hash(res.data, "wrong-pass") is False
 
 
-def test_utils_http_client(app):
-    from flaskel.utils import http
-
+def test_utils_http_client_simple(client):
     api = http.HTTPClient("http://httpbin.org", token='pippo')
-    fake_api = http.HTTPClient('localhost', username='test', password='test')
 
-    with app.app_context():
+    with client.application.app_context():
         res = api.delete('/status/200')
         assert res['status'] == httpcode.SUCCESS
         res = api.patch('/status/400')
         assert res['status'] == httpcode.BAD_REQUEST
 
+
+def test_utils_http_client_exception(client):
+    api = http.HTTPClient("http://httpbin.org", token='pippo')
+    fake_api = http.HTTPClient('localhost', username='test', password='test')
+
+    with client.application.app_context():
         res = fake_api.put('/', timeout=0.1)
         assert res['status'] == httpcode.SERVICE_UNAVAILABLE
 
@@ -182,6 +155,11 @@ def test_utils_http_client(app):
         except werkzeug.exceptions.HTTPException as exc:
             assert exc.code == httpcode.INTERNAL_SERVER_ERROR
 
+
+def test_utils_http_client_filename(client):
+    api = http.HTTPClient("http://httpbin.org", token='pippo')
+
+    with client.application.app_context():
         filename = "pippo.txt"
         api.get('/response-headers', params={
             'Content-Disposition': "attachment; filename={}".format(filename)

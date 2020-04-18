@@ -1,12 +1,10 @@
-# import your blueprint here
-#
 from .api import api
 from .web import web
-
+from .test import test
 
 BLUEPRINTS = (
-    # (blueprint, options)
     (api,),
+    (test,),
     (web, {
         'url_prefix': '/'
     }),
