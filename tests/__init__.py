@@ -9,47 +9,59 @@ from flaskel.patch import ReverseProxied, HTTPMethodOverride, ForceHttps
 
 
 @pytest.fixture
-def app():
+def app_prod():
     """
 
-    :return:
     """
-    def _create_app(env=None):
-        class TestClient(FlaskClient):
-            """
-                Implement this to customize Flask client
-                Form example:
-                        def fetch(self, url, *args, **kwargs):
-                            return self.open(url, method='FETCH', *args, **kwargs)
-            """
-        _app = bootstrap(
-            conf_map=dict(FLASK_ENV=env, DEBUG=False) if env else None,
-            blueprints=BLUEPRINTS + (None,) + ((None,),),  # NB: needed to complete coverage
-            extensions=EXTENSIONS + (None,) + ((None,),),  # NB: needed to complete coverage
-            jinja_fs_loader=["skeleton/templates"],
-            static_folder="skeleton/static"
-        )
-        if env:
-            _app.wsgi_app = ForceHttps(_app.wsgi_app)
-            _app.wsgi_app = ReverseProxied(_app.wsgi_app)
+    class TestClient(FlaskClient):
+        """
+            Implement this to customize Flask client
+            Form example:
+                    def fetch(self, url, *args, **kwargs):
+                        return self.open(url, method='FETCH', *args, **kwargs)
+        """
 
-        _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
+    _app = bootstrap(
+        conf_map=dict(FLASK_ENV='production'),
+        blueprints=BLUEPRINTS + (None,) + ((None,),),  # NB: needed to complete coverage
+        extensions=EXTENSIONS + (None,) + ((None,),),  # NB: needed to complete coverage
+        jinja_fs_loader=["skeleton/templates"],
+        static_folder="skeleton/static"
+    )
 
-        error = _app.extensions['errors_handler']
-        error.register_dispatcher(SubdomainDispatcher)
+    _app.wsgi_app = ForceHttps(_app.wsgi_app)
+    _app.wsgi_app = ReverseProxied(_app.wsgi_app)
+    _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
 
-        _app.test_client_class = TestClient
-        _app.testing = True
+    error = _app.extensions['errors_handler']
+    error.register_dispatcher(SubdomainDispatcher)
 
-        return _app
-    return _create_app
+    _app.test_client_class = TestClient
+    _app.testing = True
+
+    return _app
 
 
 @pytest.fixture
-def client(app):
+def app_dev():
     """
 
-    :param app:
+    """
+    _app = bootstrap(
+        blueprints=BLUEPRINTS,
+        extensions=EXTENSIONS,
+        template_folder="skeleton/templates",
+        static_folder="skeleton/static"
+    )
+    _app.testing = True
+    return _app
+
+
+@pytest.fixture
+def testapp(app_prod):
+    """
+
+    :param app_prod:
     :return:
     """
-    return app().test_client()
+    return app_prod.test_client()

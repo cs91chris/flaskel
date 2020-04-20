@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app, url_for
 
 from . import test
 from flaskel import httpcode
@@ -12,7 +12,12 @@ def method_override_post():
 
 @test.route('/test_https')
 def test_https():
-    return request.scheme
+    remote = current_app.extensions['cloudflare']
+    return {
+        'address': remote.get_client_ip(),
+        'scheme': request.scheme,
+        'url_for': url_for('test.test_https', _external=True)
+    }
 
 
 @test.route('/proxy')
