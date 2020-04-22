@@ -7,6 +7,10 @@ import jinja2
 from flaskel.config import FLASK_APP
 from flaskel.converters import CONVERTERS
 
+from flask_response_builder import encoders
+from flask_errors_handler import SubdomainDispatcher
+from flaskel.patch import ReverseProxied, HTTPMethodOverride
+
 
 def set_secret_key(app):
     """
@@ -123,3 +127,21 @@ def bootstrap(conf_module=None, conf_map=None, converters=None,
 
     set_secret_key(app)
     return app
+
+
+def default_app_factory(**kwargs):
+    """
+
+    :param kwargs:
+    :return:
+    """
+    _app = bootstrap(**kwargs)
+
+    _app.wsgi_app = ReverseProxied(_app.wsgi_app)
+    _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
+
+    error = _app.extensions['errors_handler']
+    error.register_dispatcher(SubdomainDispatcher)
+
+    _app.json_encoder = encoders.JsonEncoder
+    return _app

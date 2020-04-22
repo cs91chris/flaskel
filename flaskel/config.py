@@ -7,7 +7,7 @@ APP_PORT = os.environ.get('APP_PORT') or 5000
 FLASK_APP = os.environ.get('FLASK_APP') or "app:app"
 FLASK_ENV = os.environ.get('FLASK_ENV') or "development"
 
-BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 CONF_DIR = os.path.join(BASE_DIR, 'skeleton', 'config')
 LOG_FILE_CONF = os.path.join(CONF_DIR, 'log.yaml')
