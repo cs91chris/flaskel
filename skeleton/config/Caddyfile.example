@@ -5,7 +5,9 @@
 https://<SERVER_NAME> {
     root <PATH>
 
-    proxy / <HOST>:<IP> {
+    proxy /prefix <HOST>:<IP> {
+        without /prefix
         transparent
+        header_upstream X-Forwarded-Prefix /prefix
     }
 }

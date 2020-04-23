@@ -1,10 +1,9 @@
 [program:<NAME>]
-directory = <PATH>/bin
-command = bash run.sh
+user = <USER>
+group = <GROUP>
+directory = <HOME>
+command = <APP_CLI>
 process_name = %(program_name)s
 autostart = true
 autorestart = true
 autorestart = unexpected
-user = <USER>
-group = <GROUP>
-

@@ -1,7 +1,12 @@
 from werkzeug.urls import url_decode
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 class ForceHttps(object):
+    """
+    NOTE: use this only if you can not touch reverse proxy configuration
+    use ReverseProxied instead
+    """
     def __init__(self, app):
         """
 
@@ -20,50 +25,45 @@ class ForceHttps(object):
         return self._app(environ, start_response)
 
 
-class ReverseProxied(object):
+class ReverseProxied(ProxyFix):
     """
-    Wrap the application in this middleware and configure the
-    front-end server to add these headers, to let you quietly bind
-    this to a URL other than / and to an HTTP scheme that is
-    different than what is used locally. In nginx:
+    adjust the WSGI environ based on X-Forwarded- that proxies in
+    front of the application may set:
 
-    location /prefix {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Scheme $scheme;
-        proxy_set_header X-Script-Name /prefix;
-    }
+    -   X-Forwarded-For    -> sets REMOTE_ADDR
+    -   X-Forwarded-Proto  -> sets wsgi.url_scheme
+    -   X-Forwarded-Host   -> sets HTTP_HOST, SERVER_NAME, and SERVER_PORT
+    -   X-Forwarded-Port   -> sets HTTP_HOST and SERVER_PORT
+    -   X-Forwarded-Prefix -> sets SCRIPT_NAME
 
-    :param app: the WSGI application
+    for example nginx:
+        location /prefix {
+            proxy_pass http://127.0.0.1:5000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarder-Proto $proto;
+            proxy_set_header X-Forwarder-Port 5000;
+            proxy_set_header X-Forwarder-Prefix /prefix;
+        }
+
+    You must tell the middleware how many proxies set each header so it
+    knows what values to trust. It is a security issue to trust values
+    that came from the client rather than a proxy.
+
+    The original values of the headers are stored in the WSGI
+    environ as werkzeug.proxy_fix.orig, a dict.
     """
-    def __init__(self, app):
+    def __init__(self, app, x_for=1, x_proto=1, x_host=1, x_port=0, x_prefix=1):
         """
 
         :param app:
+        :param x_for:
+        :param x_proto:
+        :param x_host:
+        :param x_port:
+        :param x_prefix:
         """
-        self._app = app
-
-    def __call__(self, environ, start_response):
-        """
-
-        :param environ:
-        :param start_response:
-        :return:
-        """
-        script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
-        if script_name:
-            environ['SCRIPT_NAME'] = script_name
-            path_info = environ['PATH_INFO']
-
-            if path_info.startswith(script_name):
-                environ['PATH_INFO'] = path_info[len(script_name):]
-
-        scheme = environ.get('HTTP_X_SCHEME', None)
-        if scheme:
-            environ['wsgi.url_scheme'] = scheme
-
-        return self._app(environ, start_response)
+        super().__init__(app, x_for, x_proto, x_host, x_port, x_prefix)
 
 
 class HTTPMethodOverride(object):

@@ -6,18 +6,12 @@ server {
 	listen 80;
 	server_name <SERVER_NAME>;
 
-	location / {
-		proxy_pass flaskel;
-		proxy_set_header Host $http_host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-	}
-
 	location /prefix {
         proxy_pass flaskel;
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Scheme $scheme;
-        proxy_set_header X-Script-Name /prefix;
+        proxy_set_header X-Forwarder-Proto $scheme;
+        proxy_set_header X-Forwarder-Prefix /prefix;
     }
 }
