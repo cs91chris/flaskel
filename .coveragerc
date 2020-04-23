@@ -1,2 +1,4 @@
 [run]
-omit = flaskel/cli.py
+omit =
+	flaskel/cli.py,
+	flaskel/standalone.py

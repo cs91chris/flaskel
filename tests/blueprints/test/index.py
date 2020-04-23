@@ -24,7 +24,7 @@ def test_https():
 def test_proxy():
     return {
         'script_name': request.environ['SCRIPT_NAME'],
-        'path_info':   request.environ['PATH_INFO']
+        'original': request.environ['werkzeug.proxy_fix.orig']
     }
 
 

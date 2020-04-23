@@ -67,13 +67,13 @@ def test_force_https(testapp):
 
 def test_reverse_proxy(testapp):
     res = testapp.get('/proxy', headers={
-        'X-Script-Name': '/test'
+        'X-Forwarded-Prefix': '/test'
     })
     data = res.get_json()
 
     assert res.status_code == httpcode.SUCCESS
     assert data['script_name'] == '/test'
-    assert data['path_info'] == '/proxy'
+    assert data['original']['SCRIPT_NAME'] == ''
 
 
 def test_secret_key_prod(testapp):
