@@ -28,6 +28,18 @@ def init(name):
 
     try:
         shutil.copytree(source, destination)
+        with open(os.path.join(destination, '__init__.py'), 'w') as f:
+            f.write('# generated via cli')
+
+        if not os.path.isfile('README.rst'):
+            with open('README.rst', 'w') as f:
+                f.write('# generated via cli')
+
+        if not os.path.isfile('setup.py'):
+            shutil.move(os.path.join(destination, 'setup.py'), '.')
+        else:
+            os.remove(os.path.join(destination, 'setup.py'))
+
     except OSError as e:
         print('Unable to create new app. Error: %s' % str(e), file=sys.stderr)
 

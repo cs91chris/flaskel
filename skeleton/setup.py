@@ -1,3 +1,4 @@
+# generated via cli
 import sys
 
 import pytest
@@ -6,7 +7,7 @@ from setuptools import setup, find_packages
 
 from .version import *
 
-with open("README.md") as fh:
+with open("README.rst") as fh:
     long_description = fh.read()
 
 
