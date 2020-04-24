@@ -6,13 +6,23 @@ from yaml.error import YAMLError
 from .factory import default_app_factory
 
 try:
-    from gunicorn.app.base import BaseApplication
+    from gevent.pywsgi import WSGIServer
+
+    class BaseApplication(WSGIServer):
+        def __init__(self):
+            try:
+                listener = self.options.get('bind').split(':')
+            except AttributeError:
+                listener = ('0.0.0.0', 5000)
+
+            super(BaseApplication, self).__init__(listener, self.app)
+
 except ModuleNotFoundError:
-    # only for windows or if you do not want gunicorn
-    class BaseApplication:
-        """
-        on windows application must be in DEBUG
-        """
+    try:
+        from gunicorn.app.base import BaseApplication
+    except ModuleNotFoundError:
+        class BaseApplication:
+            pass
 
 
 class StandaloneApplication(BaseApplication):
