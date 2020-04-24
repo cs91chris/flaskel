@@ -2,6 +2,7 @@ import flask
 from flask import current_app as cap
 from requests import request as send_request, auth, exceptions as http_exc
 
+from ..uuid import get_uuid
 from . import http_status as httpcode
 
 
@@ -228,3 +229,63 @@ class HTTPClient:
         :return:
         """
         return self.request(uri, 'DELETE', **kwargs)
+
+
+class JsonRPCClient(HTTPClient):
+    def __init__(self, endpoint, uri, version='2.0', **kwargs):
+        """
+
+        :param endpoint:
+        :param uri:
+        :param version:
+        """
+        super().__init__(endpoint, **kwargs)
+        self._uri = uri
+        self._version = version
+        self._request_id = None
+
+    def request_reply(self, method, request_id=None, **kwargs):
+        """
+
+        :param method:
+        :param request_id:
+        :param kwargs:
+        :return:
+        """
+        self._request_id = request_id or get_uuid()
+        return self._request_id(method, **kwargs)
+
+    def notification(self, method, **kwargs):
+        """
+
+        :param method:
+        :param kwargs:
+        :return:
+        """
+        self._request_id = None
+        return self._request(method, **kwargs)
+
+    def _request(self, method, params=None, **kwargs):
+        """
+
+        :param method:
+        :param params:
+        :param kwargs:
+        :return:
+        """
+        kwargs.setdefault('raise_on_exc', True)
+        if not method:
+            raise ValueError('method must be a valid string')
+
+        resp = super().post(
+            self._uri,
+            json=dict(
+                jsonrpc=self._version,
+                method=method,
+                params=params or {},
+                id=self._request_id
+            ),
+            **kwargs
+        )
+
+        return resp['body'] or {}
