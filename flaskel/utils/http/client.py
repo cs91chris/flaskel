@@ -244,7 +244,15 @@ class JsonRPCClient(HTTPClient):
         self._version = version
         self._request_id = None
 
-    def request_reply(self, method, request_id=None, **kwargs):
+    @property
+    def request_id(self):
+        """
+
+        :return:
+        """
+        return self._request_id
+
+    def request(self, method, request_id=None, **kwargs):
         """
 
         :param method:
@@ -253,7 +261,7 @@ class JsonRPCClient(HTTPClient):
         :return:
         """
         self._request_id = request_id or get_uuid()
-        return self._request_id(method, **kwargs)
+        return self._request(method, **kwargs)
 
     def notification(self, method, **kwargs):
         """
@@ -277,8 +285,9 @@ class JsonRPCClient(HTTPClient):
         if not method:
             raise ValueError('method must be a valid string')
 
-        resp = super().post(
+        resp = super().request(
             self._uri,
+            method='POST',
             json=dict(
                 jsonrpc=self._version,
                 method=method,

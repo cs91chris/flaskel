@@ -186,3 +186,18 @@ def test_utils_http_client_filename(testapp):
             'Content-Disposition': filename
         })
         assert api.get_response_filename() is None
+
+
+def test_utils_http_jsonrpc_client(testapp):
+    from flask import json
+
+    params = dict(a=1, b=2)
+
+    with testapp.application.app_context():
+        api = http.JsonRPCClient("http://httpbin.org", "/anything")
+        res = api.request('method.test', params=params)
+
+    data = json.loads(res['data'])
+    assert data['jsonrpc'] == '2.0'
+    assert data['id'] == api.request_id
+    assert data['params'] == params
