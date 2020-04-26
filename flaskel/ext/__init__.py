@@ -1,7 +1,7 @@
 from .default import cors, errors, logger, cors, builder, template, cfremote, argon2
 
 EXTENSIONS = (
-    # (extension, parameters)
+    # (extension, parameters: dict)
     (logger,),
     (cors,),
     (argon2,),

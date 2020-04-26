@@ -5,6 +5,7 @@ TESTING = True
 
 APP_HOST = "flask.local"
 APP_PORT = 5000
+FLASK_ENV = 'development'
 
 SERVER_NAME = "{}:{}".format(APP_HOST, APP_PORT)
 

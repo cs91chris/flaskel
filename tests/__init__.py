@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from flask.testing import FlaskClient
 
@@ -5,6 +7,8 @@ from .blueprints import BLUEPRINTS
 from flaskel.ext import EXTENSIONS
 from flaskel.patch import ForceHttps
 from flaskel import default_app_factory
+
+SKEL_DIR = os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), 'skeleton')
 
 
 class TestClient(FlaskClient):
@@ -21,8 +25,10 @@ def app_prod():
     """
 
     """
+    os.environ['APP_CONFIG_FILE'] = os.path.join(os.path.join(SKEL_DIR, 'config'), 'production.py')
+
     _app = default_app_factory(
-        conf_map=dict(FLASK_ENV='production'),
+        conf_map=dict(TESTING=True),
         blueprints=BLUEPRINTS + (None,) + ((None,),),  # NB: needed to complete coverage
         extensions=EXTENSIONS + (None,) + ((None,),),  # NB: needed to complete coverage
         jinja_fs_loader=["skeleton/templates"],
@@ -31,7 +37,6 @@ def app_prod():
 
     _app.wsgi_app = ForceHttps(_app.wsgi_app)
     _app.test_client_class = TestClient
-    _app.testing = True
     return _app
 
 
@@ -40,6 +45,8 @@ def app_dev():
     """
 
     """
+    os.environ['APP_CONFIG_FILE'] = os.path.join(os.path.join(SKEL_DIR, 'config'), 'development.py')
+
     _app = default_app_factory(
         blueprints=BLUEPRINTS,
         extensions=EXTENSIONS,
@@ -48,7 +55,6 @@ def app_dev():
     )
 
     _app.test_client_class = TestClient
-    _app.testing = True
     return _app
 
 

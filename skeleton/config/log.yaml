@@ -39,7 +39,7 @@ loggers:
     staging:
         handlers: [file, syslog]
         propogate: yes
-        level: DEBUG
+        level: INFO
     production:
         handlers: [syslog]
         propogate: yes
