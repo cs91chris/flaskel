@@ -3,13 +3,14 @@ import secrets
 
 import flask
 import jinja2
-
-from flaskel.config import FLASK_APP
-from flaskel.converters import CONVERTERS
-
 from flask_response_builder import encoders
 from flask_errors_handler import SubdomainDispatcher
-from flaskel.patch import ReverseProxied, HTTPMethodOverride
+from werkzeug.middleware.lint import LintMiddleware
+from werkzeug.middleware.profiler import ProfilerMiddleware
+
+from .config import FLASK_APP
+from .converters import CONVERTERS
+from .patch import ReverseProxied, HTTPMethodOverride
 
 
 def set_secret_key(app):
@@ -55,18 +56,18 @@ def register_extensions(app, extensions):
     :param app: Flask instance
     :param extensions: custom extension appended to defaults
     """
-    for e in (extensions or []):
-        try:
-            ex = e[0]
-            opt = e[1] if len(e) > 1 else {}
-            ext_name = ex.__class__.__name__
-            if not ex:
-                raise TypeError('extension could not be None')
-        except (TypeError, IndexError) as exc:
-            app.logger.debug("invalid extension configuration '{}':\n{}".format(e, exc))
-            continue
+    with app.app_context():
+        for e in (extensions or []):
+            try:
+                ex = e[0]
+                opt = e[1] if len(e) > 1 else {}
+                ext_name = ex.__class__.__name__
+                if not ex:
+                    raise TypeError('extension could not be None')
+            except (TypeError, IndexError) as exc:
+                app.logger.debug("invalid extension configuration '{}':\n{}".format(e, exc))
+                continue
 
-        with app.app_context():
             ex.init_app(app, **opt)
             app.logger.debug("Registered extension '%s' with options: %s", ext_name, str(opt))
 
@@ -108,13 +109,12 @@ def bootstrap(conf_module=None, conf_map=None, converters=None,
 
     app.config.from_object(conf_module or 'flaskel.config')
     app.config.from_mapping(**(conf_map or {}))
-
-    # configuration from environ overrides overrides all others
-    app.config.from_envvar('APP_CONFIG_FILE', silent=True)
+    app.config.from_envvar('APP_CONFIG_FILE')
 
     app.url_map.converters.update(CONVERTERS)
     app.url_map.converters.update(converters or {})
 
+    set_secret_key(app)
     register_extensions(app, extensions)
     register_blueprints(app, blueprints)
 
@@ -125,7 +125,6 @@ def bootstrap(conf_module=None, conf_map=None, converters=None,
         ])
         app.logger.debug("Registered template folders\n{}".format(", ".join(jinja_fs_loader)))
 
-    set_secret_key(app)
     return app
 
 
@@ -136,6 +135,10 @@ def default_app_factory(**kwargs):
     :return:
     """
     _app = bootstrap(**kwargs)
+
+    if _app.config.get('DEBUG'):
+        _app.wsgi_app = LintMiddleware(_app.wsgi_app)
+        _app.wsgi_app = ProfilerMiddleware(_app.wsgi_app)
 
     _app.wsgi_app = ReverseProxied(_app.wsgi_app)
     _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)

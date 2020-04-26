@@ -1,134 +1,60 @@
 import yaml
-import click
-from six import iteritems
 from yaml.error import YAMLError
 
 from .factory import default_app_factory
-
-try:
-    from gevent.pywsgi import WSGIServer
-
-    class BaseApplication(WSGIServer):
-        def __init__(self):
-            try:
-                listener = self.options.get('bind').split(':')
-            except AttributeError:
-                listener = ('0.0.0.0', 5000)
-
-            super(BaseApplication, self).__init__(listener, self.app)
-
-except ModuleNotFoundError:
-    try:
-        from gunicorn.app.base import BaseApplication
-    except ModuleNotFoundError:
-        class BaseApplication:
-            pass
+from .wsgi import BaseApplication, wsgi_factory
 
 
-class StandaloneApplication(BaseApplication):
-    def __init__(self, app, options=None):
-        """
-
-        :param app:
-        :param options:
-        """
-        self.application = app
-        self.options = options or {}
-        super(StandaloneApplication, self).__init__()
-
-    def init(self, parser, opts, args):
-        """
-
-        :param parser:
-        :param opts:
-        :param args:
-        """
-        pass
-
-    def load_config(self):
-        """
-
-        """
-        options = {}
-
-        for k, v in iteritems(self.options):
-            if k in self.cfg.settings and v is not None:
-                options.update({k: v})
-
-        for key, value in iteritems(options):
-            self.cfg.set(key.lower(), value)
-
-    def load(self):
-        """
-
-        :return:
-        """
-        return self.application
-
-
-def serve_forever(factory=default_app_factory, application_class=StandaloneApplication, **kwargs):
+def serve_forever(factory=default_app_factory, wsgi_class=None,
+                  config=None, log_config=None, bind=None, debug=None, wsgi_server=None, **kwargs):
     """
 
-    :param factory:
-    :param application_class:
-    :param kwargs:
-    :return:
+    :param factory: optional a custom flask app factory function
+    :param wsgi_class: optional a custom subclass of BaseApplication
+    :param config: app and wsgi configuration file
+    :param log_config: log configuration file
+    :param bind: address to bind
+    :param debug: enable debug mode
+    :param wsgi_server: wsgi server chose
+    :param kwargs: parameters passed to factory
+    :return: never returns
     """
-    @click.command()
-    @click.option('-w', '--workers', default=2, help='number of workers')
-    @click.option('-t', '--timeout', default=60, help='worker timeout')
-    @click.option('-c', '--config',  default=None, help='yaml app configuration file')
-    @click.option('-L', '--log-config', default=None, help='yaml log configuration file')
-    @click.option('-b', '--bind', default='127.0.0.1:5000', help='address to bind')
-    @click.option('-d', '--debug', default=False, help='enable debug mode')
-    @click.option('-W', '--worker-class', default="egg:meinheld#gunicorn_worker", help='gunicorn worker class')
-    def _serve_forever(workers, timeout, config, log_config, bind, debug, worker_class):
-        """
+    if config is not None:
+        try:
+            with open(config) as f:
+                config = yaml.safe_load(f)
+        except (OSError, YAMLError) as e:
+            import sys
+            print(e, file=sys.stderr)
+            sys.exit(1)
+    else:
+        config = dict(
+            app={
+                'DEBUG': debug,
+                'ENV': 'development' if debug else 'production'
+            },
+            wsgi={
+                'bind': bind,
+                'debug': debug,
+            }
+        )
 
-        :param workers:
-        :param timeout:
-        :param config:
-        :param log_config:
-        :param bind:
-        :param debug:
-        :param worker_class:
-        """
-        if config is not None:
-            try:
-                with open(config) as f:
-                    config = yaml.safe_load(f)
-            except (OSError, YAMLError) as e:
-                import sys
-                print(e, file=sys.stderr)
-                sys.exit(1)
+    if log_config is not None:
+        config['app']['LOG_FILE_CONF'] = log_config
+
+    kwargs['conf_map'] = config.get('app', {})
+    _app = factory(**kwargs)
+
+    if not wsgi_server:
+        if wsgi_class:
+            if not issubclass(wsgi_class, BaseApplication):
+                raise TypeError('{} must be subclass of {}'.format(
+                    wsgi_class.__name__,
+                    BaseApplication.__name__
+                ))
         else:
-            config = dict(
-                app={
-                    'DEBUG': debug,
-                    'ENV':   'development' if debug else 'production'
-                },
-                wsgi={
-                    'bind': bind,
-                    'workers': workers,
-                    'timeout': timeout,
-                    'debug': debug,
-                    'worker-class': worker_class
-                }
-            )
+            wsgi_class = wsgi_factory('builtin')
+    else:
+        wsgi_class = wsgi_factory(wsgi_server)
 
-        if log_config is not None:
-            config['app']['LOG_FILE_CONF'] = log_config
-
-        kwargs['conf_map'] = config.get('app', {})
-        _app = factory(**kwargs)
-
-        if debug:
-            _app.run(
-                host=_app.config['APP_HOST'],
-                port=_app.config['APP_PORT'],
-                debug=_app.config['DEBUG']
-            )
-        else:
-            application_class(_app, config.get('wsgi', {})).run()
-
-    _serve_forever()
+    wsgi_class(_app, options=config.get('wsgi', {})).run()

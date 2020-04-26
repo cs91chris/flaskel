@@ -2,3 +2,4 @@
 omit =
 	flaskel/cli.py,
 	flaskel/standalone.py
+	flaskel/wsgi/*
