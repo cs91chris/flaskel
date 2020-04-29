@@ -1,10 +1,10 @@
 import os
-import secrets
+import string
+from random import SystemRandom
 
 import flask
 import jinja2
 from flask_response_builder import encoders
-from flask_errors_handler import SubdomainDispatcher
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
@@ -24,7 +24,7 @@ def set_secret_key(app):
 
         if secret_file:
             if os.path.isfile(secret_file):
-                with open(secret_file) as f:
+                with open(secret_file, 'r') as f:
                     app.config['SECRET_KEY'] = f.read()
                     app.logger.info("load secret key from: {}".format(secret_file))
             else:
@@ -35,14 +35,19 @@ def set_secret_key(app):
                 app.logger.warning("secret key length is less than: {}".format(key_length))
         else:
             secret_file = '.secret.key'
-            secret_key = secrets.token_bytes(key_length)
+            if os.path.isfile(secret_file):
+                app.logger.info("found file '{}' it is used as secret key".format(secret_file))
+                with open(secret_file, 'r') as f:
+                    secret_key = f.read()
+            else:
+                alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits
+                secret_key = ''.join(SystemRandom().choice(alphabet) for _ in range(key_length))
+                with open(secret_file, 'w') as f:
+                    f.write(secret_key)
+                    app.logger.warning(
+                        "new secret key generated: take care of this file:{}".format(secret_file)
+                    )
             app.config['SECRET_KEY'] = secret_key
-
-            with open(secret_file, 'wb') as f:
-                f.write(secret_key)
-                app.logger.warning(
-                    "new secret key generated: take care of this file:{}".format(secret_file)
-                )
     elif not app.config.get('SECRET_KEY'):
         app.logger.debug('set secret key in development mode')
         app.config['SECRET_KEY'] = 'very_complex_string'
@@ -109,7 +114,7 @@ def bootstrap(conf_module=None, conf_map=None, converters=None,
 
     app.config.from_object(conf_module or 'flaskel.config')
     app.config.from_mapping(**(conf_map or {}))
-    app.config.from_envvar('APP_CONFIG_FILE')
+    app.config.from_envvar('APP_CONFIG_FILE', silent=True)
 
     app.url_map.converters.update(CONVERTERS)
     app.url_map.converters.update(converters or {})
@@ -142,9 +147,6 @@ def default_app_factory(**kwargs):
 
     _app.wsgi_app = ReverseProxied(_app.wsgi_app)
     _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
-
-    error = _app.extensions['errors_handler']
-    error.register_dispatcher(SubdomainDispatcher)
 
     _app.json_encoder = encoders.JsonEncoder
     return _app
