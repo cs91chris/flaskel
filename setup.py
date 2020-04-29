@@ -13,7 +13,8 @@ from flaskel import __author_info__, __version__
 
 package = 'flaskel'
 skeleton = 'skeleton'
-skeleton_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), skeleton)
+base_dir = os.path.abspath(os.path.dirname(__file__))
+skeleton_dir = os.path.join(base_dir, skeleton)
 
 
 with open("README.md") as fh:
@@ -76,7 +77,7 @@ try:
             "PyYAML==5.*",
             "Flask==1.1.*",
             "Flask-Cors==3.0.*",
-            "Flask-ErrorsHandler==2.*",
+            "Flask-ErrorsHandler==3.*",
             "Flask-ResponseBuilder==2.*",
             "Flask-TemplateSupport==1.*",
             "Flask-CloudflareRemote==1.*",

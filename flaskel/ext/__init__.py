@@ -1,4 +1,12 @@
-from .default import cors, errors, logger, cors, builder, template, cfremote, argon2
+from .default import (
+    cors,
+    errors,
+    logger,
+    builder,
+    template,
+    cfremote,
+    argon2,
+)
 
 EXTENSIONS = (
     # (extension, parameters: dict)
@@ -9,6 +17,7 @@ EXTENSIONS = (
     (cfremote,),
     (builder,),
     (errors, {
-        'response': builder.on_accept()
+        'dispatcher': 'subdomain',
+        'response': builder.on_accept(),
     }),
 )
