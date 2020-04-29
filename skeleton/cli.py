@@ -10,7 +10,7 @@ wsgi_types = click.Choice(DEFAULT_WSGI, case_sensitive=False)
 
 
 @click.command()
-@click.option('-d', '--debug', default=False, help='enable debug mode')
+@click.option('-d', '--debug', is_flag=True, flag_value=True, default=False, help='enable debug mode')
 @click.option('-c', '--config', default=None, help='app yaml configuration file')
 @click.option('-l', '--log-config', default=None, help='alternative log yaml configuration file')
 @click.option('-w', '--wsgi-server', default=None, type=wsgi_types, help='name of wsgi server to use')
