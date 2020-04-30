@@ -1,14 +1,22 @@
 # generated via cli
 import sys
 
-import pytest
 from setuptools.command.test import test
 from setuptools import setup, find_packages
 
-from .version import *
+from .version import __version__, __author_info__
 
-with open("README.rst") as fh:
-    long_description = fh.read()
+
+def get_long_description():
+    """
+
+    :return:
+    """
+    try:
+        with open("README.md") as fh:
+            return fh.read()
+    except OSError as exc:
+        print(str(exc), file=sys.stderr)
 
 
 class PyTest(test):
@@ -22,36 +30,34 @@ class PyTest(test):
         """
 
         """
+        import pytest
         sys.exit(pytest.main(['tests']))
 
 
 setup(
     name='',
-    version=__version__,
     url='',
     license='MIT',
+    version=__version__,
     author=__author_info__['name'],
     author_email=__author_info__['email'],
     description='Skeleton for flask applications',
-    long_description=long_description,
+    long_description=get_long_description(),
     platforms='any',
     zip_safe=False,
     packages=find_packages(),
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            '{} = cli:cli'.format(__cli_name__),
+            'flaskel-app = cli:cli',
         ],
     },
     install_requires=[
-        "PyYAML",
-        "flaskel",
-        "gunicorn",
-        "meinheld"
+        "flaskel"
     ],
     tests_require=[
-        'pytest==5.4.*',
-        'pytest-cov==2.8.*'
+        'pytest',
+        'pytest-cov'
     ],
     cmdclass={'test': PyTest},
     test_suite='tests',

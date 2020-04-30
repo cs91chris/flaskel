@@ -1,8 +1,14 @@
 import os
 import sys
 import shutil
+from pathlib import Path
 
 import click
+
+INIT_CONTENT = """
+# generated via cli
+from .version import *
+"""
 
 
 @click.group()
@@ -28,18 +34,25 @@ def init(name):
 
     try:
         shutil.copytree(source, destination)
-        with open(os.path.join(destination, '__init__.py'), 'w') as f:
-            f.write('# generated via cli')
 
-        if not os.path.isfile('README.rst'):
-            with open('README.rst', 'w') as f:
-                f.write('# generated via cli')
+        init_file = Path(os.path.join(destination, '__init__.py'))
+        init_file.write_text(INIT_CONTENT)
 
         if not os.path.isfile('setup.py'):
             shutil.move(os.path.join(destination, 'setup.py'), '.')
+
+            setup_file = Path('setup.py')
+            text = setup_file.read_text()
+            text = text.replace('.version', name)
+            setup_file.write_text(text)
         else:
             os.remove(os.path.join(destination, 'setup.py'))
 
+        cli_file = Path(os.path.join(destination, 'cli.py'))
+        text = cli_file.read_text()
+        text = text.replace('from .ext', 'from {}.ext'.format(name))
+        text = text.replace('from .blueprint', 'from {}.blueprint'.format(name))
+        cli_file.write_text(text)
     except OSError as e:
         print('Unable to create new app. Error: %s' % str(e), file=sys.stderr)
 

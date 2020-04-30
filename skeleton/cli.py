@@ -1,16 +1,16 @@
 import click
 
 from flaskel.wsgi import DEFAULT_WSGI
-from flaskel import serve_forever, default_app_factory
-from flaskel.ext import EXTENSIONS as DEFAULT_EXTENSION
-from ext import EXTENSIONS
-from blueprints import BLUEPRINTS
+from flaskel import serve_forever, DEFAULT_EXTENSIONS
+
+from .ext import EXTENSIONS
+from .blueprints import BLUEPRINTS
 
 wsgi_types = click.Choice(DEFAULT_WSGI, case_sensitive=False)
 
 
 @click.command()
-@click.option('-d', '--debug', is_flag=True, flag_value=True, default=False, help='enable debug mode')
+@click.option('-d', is_flag=True, flag_value=True, default=False, help='enable debug mode')
 @click.option('-c', '--config', default=None, help='app yaml configuration file')
 @click.option('-l', '--log-config', default=None, help='alternative log yaml configuration file')
 @click.option('-w', '--wsgi-server', default=None, type=wsgi_types, help='name of wsgi server to use')
@@ -26,9 +26,8 @@ def cli(config, log_config, bind, debug, wsgi_server):
     :return: never returns
     """
     serve_forever(
-        default_app_factory,
         blueprints=BLUEPRINTS,
-        extensions=DEFAULT_EXTENSION + EXTENSIONS,
+        extensions=DEFAULT_EXTENSIONS + EXTENSIONS,
         config=config,
         log_config=log_config,
         bind=bind,

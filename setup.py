@@ -5,7 +5,6 @@ Flaskel
 import os
 import sys
 
-import pytest
 from setuptools.command.test import test
 from setuptools import setup, find_packages
 
@@ -17,8 +16,16 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 skeleton_dir = os.path.join(base_dir, skeleton)
 
 
-with open("README.md") as fh:
-    long_description = fh.read()
+def get_long_description():
+    """
+
+    :return:
+    """
+    try:
+        with open("README.md") as fh:
+            return fh.read()
+    except OSError as exc:
+        print(str(exc), file=sys.stderr)
 
 
 class PyTest(test):
@@ -32,6 +39,7 @@ class PyTest(test):
         """
 
         """
+        import pytest
         sys.exit(pytest.main(['tests']))
 
 
@@ -60,7 +68,7 @@ try:
         author=__author_info__['name'],
         author_email=__author_info__['email'],
         description='Skeleton for flask applications',
-        long_description=long_description,
+        long_description=get_long_description(),
         platforms='any',
         zip_safe=False,
         packages=find_packages(),
@@ -74,19 +82,20 @@ try:
             ],
         },
         install_requires=[
-            "PyYAML==5.*",
-            "Flask==1.1.*",
-            "Flask-Cors==3.0.*",
-            "Flask-ErrorsHandler==3.*",
-            "Flask-ResponseBuilder==2.*",
-            "Flask-TemplateSupport==1.*",
-            "Flask-CloudflareRemote==1.*",
-            "Flask-Logify==1.*",
-            "argon2-cffi==19.*",
+            "PyYAML",
+            "Flask",
+            "Flask-Cors",
+            "Flask-ErrorsHandler",
+            "Flask-ResponseBuilder",
+            "Flask-TemplateSupport",
+            "Flask-CloudflareRemote",
+            "Flask-Logify",
+            "argon2-cffi",
+            "requests",
         ],
         tests_require=[
-            'pytest==5.4.*',
-            'pytest-cov==2.8.*'
+            'pytest',
+            'pytest-cov'
         ],
         cmdclass={'test': PyTest},
         test_suite='tests',

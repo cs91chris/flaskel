@@ -13,46 +13,66 @@ from .converters import CONVERTERS
 from .patch import ReverseProxied, HTTPMethodOverride
 
 
+def generate_secret_key(app, secret_file, key_length):
+    """
+
+    :param app:
+    :param secret_file:
+    :param key_length:
+    """
+    alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits
+    secret_key = ''.join(SystemRandom().choice(alphabet) for _ in range(key_length))
+
+    with open(secret_file, 'w') as f:
+        f.write(secret_key)
+        abs_file = os.path.abspath(secret_file)
+        app.logger.warning(
+            "new secret key generated: take care of this file:{}".format(abs_file)
+        )
+    return secret_key
+
+
+def load_secret_key(app, secret_file):
+    """
+
+    :param app:
+    :param secret_file:
+    :return:
+    """
+    with open(secret_file, 'r') as f:
+        secret_key = f.read()
+        app.logger.info("load secret key from: {}".format(secret_file))
+    return secret_key
+
+
 def set_secret_key(app):
     """
 
-    :param app: Flask instance
     """
+    secret_key = None
+    key_length = app.config['SECRET_KEY_MIN_LENGTH']
+
     if not app.config.get('FLASK_ENV', '').lower().startswith('dev'):
         secret_file = app.config.get('SECRET_KEY')
-        key_length = app.config['SECRET_KEY_MIN_LENGTH']
 
         if secret_file:
             if os.path.isfile(secret_file):
-                with open(secret_file, 'r') as f:
-                    app.config['SECRET_KEY'] = f.read()
-                    app.logger.info("load secret key from: {}".format(secret_file))
+                secret_key = load_secret_key(app, secret_file)
             else:
-                app.logger.warning("secret key length is less than: {}".format(key_length))
-                app.config['SECRET_KEY'] = secret_file
-
-            if len(app.config['SECRET_KEY']) > key_length:
-                app.logger.warning("secret key length is less than: {}".format(key_length))
+                secret_key = secret_file
         else:
             secret_file = '.secret.key'
             if os.path.isfile(secret_file):
-                app.logger.info("found file '{}' it is used as secret key".format(secret_file))
-                with open(secret_file, 'r') as f:
-                    secret_key = f.read()
+                secret_key = load_secret_key(app, secret_file)
             else:
-                alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits
-                secret_key = ''.join(SystemRandom().choice(alphabet) for _ in range(key_length))
-                with open(secret_file, 'w') as f:
-                    f.write(secret_key)
-                    app.logger.warning(
-                        "new secret key generated: take care of this file:{}".format(secret_file)
-                    )
-            app.config['SECRET_KEY'] = secret_key
+                secret_key = generate_secret_key(app, secret_file, key_length)
     elif not app.config.get('SECRET_KEY'):
         app.logger.debug('set secret key in development mode')
-        app.config['SECRET_KEY'] = 'very_complex_string'
-    else:
-        app.logger.debug('given secret key: "{}"'.format(app.config.get('SECRET_KEY')))
+        secret_key = 'very_complex_string'
+
+    app.config['SECRET_KEY'] = secret_key or app.config['SECRET_KEY']
+    if len(secret_key) > key_length:
+        app.logger.warning("secret key length is less than: {}".format(key_length))
 
 
 def register_extensions(app, extensions):

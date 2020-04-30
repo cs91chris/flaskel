@@ -2,5 +2,5 @@
 # then import your extensions here
 
 EXTENSIONS = (
-    # (extension, parameters: dict)
+    # (<extension>, parameters: dict)
 )
