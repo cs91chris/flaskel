@@ -35,7 +35,41 @@ def test_app_return_html(testapp):
 
 def test_app_returns_json(testapp):
     res = testapp.get('/', base_url='http://api.' + testapp.application.config['SERVER_NAME'])
+    assert res.status_code == httpcode.NOT_FOUND
+    assert 'application/problem+json' in res.headers['Content-Type']
+
+
+def test_api_resources(testapp):
+    base_url = 'http://api.' + testapp.application.config['SERVER_NAME']
+
+    res = testapp.get('/resources', base_url=base_url, headers={'Accept': 'application/xml'})
+    assert res.status_code == httpcode.SUCCESS
+    assert 'application/xml' in res.headers['Content-Type']
+
+    res = testapp.get('/resources/1', base_url=base_url)
+    assert res.status_code == httpcode.SUCCESS
     assert 'application/json' in res.headers['Content-Type']
+
+    res = testapp.get('/resources/1/items', base_url=base_url)
+    assert res.status_code == httpcode.SUCCESS
+    assert 'application/json' in res.headers['Content-Type']
+
+    res = testapp.get('/resources/1/not-found', base_url=base_url)
+    assert res.status_code == httpcode.NOT_FOUND
+    assert 'application/problem+json' in res.headers['Content-Type']
+
+    res = testapp.delete('/resources/1', base_url=base_url)
+    assert res.status_code == httpcode.NO_CONTENT
+
+    data = {'item': 'test'}
+    res = testapp.put('/resources/1', json=data, base_url=base_url)
+    assert res.status_code == httpcode.SUCCESS
+
+    res = testapp.post('/resources', json=data, base_url=base_url)
+    assert res.status_code == httpcode.CREATED
+
+    res = testapp.post('/resources/1/items', json=data, base_url=base_url)
+    assert res.status_code == httpcode.CREATED
 
 
 def test_api_cors(testapp):

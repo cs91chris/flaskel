@@ -1,4 +1,9 @@
+# example api blueprint
+#
 from flask import Blueprint
+
+from .index import APIResource
+from flaskel.ext import cors, errors
 
 api = Blueprint(
     'api',
@@ -6,11 +11,6 @@ api = Blueprint(
     subdomain='api'
 )
 
-from . import index
-
-from flaskel.ext import cors
-from flaskel.ext import errors
-
-
 cors.init_app(api)
 errors.api_register(api)
+APIResource.register(api, 'resource_api', '/resources')
