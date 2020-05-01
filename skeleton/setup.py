@@ -1,20 +1,45 @@
 # generated via cli
+import os
+import re
 import sys
 
 from setuptools.command.test import test
 from setuptools import setup, find_packages
 
-from .version import __version__, __author_info__
+BASE_PATH = os.path.dirname(__file__)
+VERSION_FILE = os.path.join('{skeleton}', 'version.py')
 
 
-def get_long_description():
+def read(file):
     """
 
+    :param file:
+    :return:
+    """
+    with open(os.path.join(BASE_PATH, file)) as f:
+        return f.read()
+
+
+def grep(file, name):
+    """
+
+    :param file:
+    :param name:
+    :return:
+    """
+    pattern = r"{attr}\W*=\W*'([^']+)'".format(attr=name)
+    value, = re.findall(pattern, read(file))
+    return value
+
+
+def readme(file):
+    """
+
+    :param file:
     :return:
     """
     try:
-        with open("README.md") as fh:
-            return fh.read()
+        return read(file)
     except OSError as exc:
         print(str(exc), file=sys.stderr)
 
@@ -38,11 +63,11 @@ setup(
     name='',
     url='',
     license='MIT',
-    version=__version__,
-    author=__author_info__['name'],
-    author_email=__author_info__['email'],
+    version=grep(VERSION_FILE, '__version__'),
+    author=grep(VERSION_FILE, '__author_name__'),
+    author_email=grep(VERSION_FILE, '__author_email__'),
     description='Skeleton for flask applications',
-    long_description=get_long_description(),
+    long_description=readme('README.rst'),
     platforms='any',
     zip_safe=False,
     packages=find_packages(),

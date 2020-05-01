@@ -3,27 +3,49 @@ Flaskel
 -------------
 """
 import os
+import re
 import sys
 
 from setuptools.command.test import test
 from setuptools import setup, find_packages
 
-from flaskel import __author_info__, __version__
-
 package = 'flaskel'
 skeleton = 'skeleton'
-base_dir = os.path.abspath(os.path.dirname(__file__))
-skeleton_dir = os.path.join(base_dir, skeleton)
+BASE_PATH = os.path.dirname(__file__)
+SKEL_DIR = os.path.join(BASE_PATH, skeleton)
+VERSION_FILE = os.path.join(package, 'version.py')
 
 
-def get_long_description():
+def read(file):
     """
 
+    :param file:
+    :return:
+    """
+    with open(os.path.join(BASE_PATH, file)) as f:
+        return f.read()
+
+
+def grep(file, name):
+    """
+
+    :param file:
+    :param name:
+    :return:
+    """
+    pattern = r"{attr}\W*=\W*'([^']+)'".format(attr=name)
+    value, = re.findall(pattern, read(file))
+    return value
+
+
+def readme(file):
+    """
+
+    :param file:
     :return:
     """
     try:
-        with open("README.md") as fh:
-            return fh.read()
+        return read(file)
     except OSError as exc:
         print(str(exc), file=sys.stderr)
 
@@ -58,17 +80,17 @@ def package_files(directory):
 
 
 try:
-    os.symlink(skeleton_dir, os.path.join(package, skeleton))
+    os.symlink(SKEL_DIR, os.path.join(package, skeleton))
 
     setup(
         name='Flaskel',
-        version=__version__,
+        version=grep(VERSION_FILE, '__version__'),
         url='https://github.com/cs91chris/flaskel',
         license='MIT',
-        author=__author_info__['name'],
-        author_email=__author_info__['email'],
+        author=grep(VERSION_FILE, '__author_name__'),
+        author_email=grep(VERSION_FILE, '__author_email__'),
         description='Skeleton for flask applications',
-        long_description=get_long_description(),
+        long_description=readme('README.rst'),
         platforms='any',
         zip_safe=False,
         packages=find_packages(),

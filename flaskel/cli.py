@@ -43,7 +43,7 @@ def init(name):
 
             setup_file = Path('setup.py')
             text = setup_file.read_text()
-            text = text.replace('.version', name)
+            text = text.replace('{skeleton}', name)
             setup_file.write_text(text)
         else:
             os.remove(os.path.join(destination, 'setup.py'))
