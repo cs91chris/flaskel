@@ -5,10 +5,11 @@ from .factory import default_app_factory
 from .wsgi import BaseApplication, wsgi_factory
 
 
-def serve_forever(factory=default_app_factory, wsgi_class=None,
+def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
                   config=None, log_config=None, bind=None, debug=None, wsgi_server=None, **kwargs):
     """
 
+    :param app: given app instance
     :param factory: optional a custom flask app factory function
     :param wsgi_class: optional a custom subclass of BaseApplication
     :param config: app and wsgi configuration file
@@ -43,7 +44,7 @@ def serve_forever(factory=default_app_factory, wsgi_class=None,
         config['app']['LOG_FILE_CONF'] = log_config
 
     kwargs['conf_map'] = config.get('app', {})
-    _app = factory(**kwargs)
+    _app = factory(**kwargs) if not app else app
 
     if not wsgi_server:
         if wsgi_class:

@@ -1,12 +1,23 @@
 import click
 
 from flaskel.wsgi import DEFAULT_WSGI
-from flaskel import serve_forever, DEFAULT_EXTENSIONS
+from flaskel import serve_forever, default_app_factory, DEFAULT_EXTENSIONS
 
 from .ext import EXTENSIONS
 from .blueprints import BLUEPRINTS
 
 wsgi_types = click.Choice(DEFAULT_WSGI, case_sensitive=False)
+
+
+def create_app():
+    """
+
+    :return: app instance
+    """
+    return default_app_factory(
+        blueprints=BLUEPRINTS,
+        extensions=DEFAULT_EXTENSIONS + EXTENSIONS
+    )
 
 
 @click.command()
@@ -26,8 +37,7 @@ def cli(config, log_config, bind, debug, wsgi_server):
     :return: never returns
     """
     serve_forever(
-        blueprints=BLUEPRINTS,
-        extensions=DEFAULT_EXTENSIONS + EXTENSIONS,
+        app=create_app(),
         config=config,
         log_config=log_config,
         bind=bind,
