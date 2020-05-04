@@ -1,4 +1,5 @@
 import os
+import sys
 import string
 from random import SystemRandom
 
@@ -162,11 +163,28 @@ def default_app_factory(**kwargs):
     _app = bootstrap(**kwargs)
 
     if _app.config.get('DEBUG'):
-        _app.wsgi_app = LintMiddleware(_app.wsgi_app)
-        _app.wsgi_app = ProfilerMiddleware(_app.wsgi_app)
+        if _app.config['WSGI_WERKZEUG_PROFILER_ENABLED']:
+            stream = _app.config['WSGI_WERKZEUG_PROFILER_FILE']
+            if stream:
+                stream = open(_app.config['WSGI_WERKZEUG_PROFILER_FILE'], 'w')
+            else:
+                stream = sys.stdout
+        else:
+            stream = None
 
-    _app.wsgi_app = ReverseProxied(_app.wsgi_app)
-    _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
+        _app.wsgi_app = ProfilerMiddleware(
+            _app.wsgi_app,
+            stream=stream,
+            restrictions=_app.config['WSGI_WERKZEUG_PROFILER_RESTRICTION']
+        )
+
+        if _app.config['WSGI_WERKZEUG_LINT_ENABLED']:
+            _app.wsgi_app = LintMiddleware(_app.wsgi_app)
+
+    if _app.config['WSGI_REVERSE_PROXY_ENABLED']:
+        _app.wsgi_app = ReverseProxied(_app.wsgi_app)
+    if _app.config['WSGI_METHOD_OVERRIDE_ENABLED']:
+        _app.wsgi_app = HTTPMethodOverride(_app.wsgi_app)
 
     _app.json_encoder = encoders.JsonEncoder
     return _app
