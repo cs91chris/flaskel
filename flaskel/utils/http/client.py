@@ -128,7 +128,7 @@ class HTTPClient(HTTPBase):
             body = response.json()
         except ValueError as exc:
             self._logger.debug(str(exc))
-            body = dict(content=response.text)
+            body = response.text
 
         return dict(
             body=body,
