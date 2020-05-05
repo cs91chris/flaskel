@@ -1,11 +1,11 @@
 import flask
 from flask.views import MethodView
+from sqlalchemy.exc import IntegrityError
 
 from flaskel import httpcode
 from flaskel.ext import builder
 
 
-# noinspection PyMethodMayBeStatic
 class Resource(MethodView):
     @builder.on_accept()
     def get(self, res_id=None, sub_resource=None):
@@ -101,7 +101,7 @@ class Resource(MethodView):
         """
 
         """
-        flask.abort(httpcode.NOT_IMPLEMENTED)
+        raise NotImplemented
 
     @classmethod
     def register(cls, app, name, url, pk_type='int', **kwargs):
@@ -113,7 +113,10 @@ class Resource(MethodView):
         :param pk_type: type of res_id
         """
         view_func = cls.as_view(name, **kwargs)
+
         url = url.rstrip('/')
+        if not url.startswith('/'):
+            url = '/{}'.format(url)
 
         app.add_url_rule(url, view_func=view_func, methods=['GET', 'POST'])
 
@@ -128,3 +131,72 @@ class Resource(MethodView):
             view_func=view_func,
             methods=['GET', 'POST']
         )
+
+
+class SQLAResource(Resource):
+    def __init__(self, db, model):
+        """
+
+        :param db:
+        :param model:
+        """
+        self._db = db
+        self._model = model
+
+    def on_get(self, res_id):
+        """
+
+        :param res_id:
+        """
+        res = self.query.get_or_404(res_id)
+        return res.to_dict()
+
+    def on_collection(self, **kwargs):
+        """
+
+        :return:
+        """
+        res_list = []
+        for r in self._model.query.filters(**kwargs).all():
+            res_list.append(r.to_dict(restricted=True))
+        return res_list
+
+    def on_post(self, payload=None):
+        """
+
+        :param payload:
+        :return:
+        """
+        res = self._model(**(payload or {}))
+        try:
+            self._db.session.add()
+            self._db.session.commit()
+        except IntegrityError:
+            self._db.session.rollback()
+            flask.abort(httpcode.CONFLICT)
+        finally:
+            self._db.session.close()
+
+        return res.to_dict(), httpcode.CREATED
+
+    def on_delete(self, res_id):
+        """
+
+        :param res_id:
+        """
+        res = self._model.query.get_or_404(res_id)
+        res.delete()
+        self._db.session.commit()
+
+    def on_put(self, res_id, payload=None):
+        """
+
+        :param res_id:
+        :param payload:
+        :return:
+        """
+        res = self._model.query.get_or_404(res_id)
+        res.update(**(payload or {}))
+        self._db.session.add(res)
+        self._db.session.commit()
+        return res.to_dict()
