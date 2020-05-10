@@ -1,5 +1,5 @@
 import flask
-from flask import current_app as cap
+from flaskel import cap
 
 from . import http_status as httpcode
 

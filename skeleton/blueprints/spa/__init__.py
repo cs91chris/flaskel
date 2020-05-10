@@ -2,8 +2,9 @@
 #
 import os
 
-from flask import Blueprint, current_app as cap
+from flask import Blueprint
 
+from flaskel import cap
 from flaskel.ext import errors
 
 static_folder = os.environ.get('SPA_STATIC_FOLDER') or 'webapp'

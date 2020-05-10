@@ -1,11 +1,11 @@
 from .default import (
+    argon2,
+    builder,
+    cfremote,
     cors,
     errors,
     logger,
-    builder,
-    template,
-    cfremote,
-    argon2,
+    template
 )
 
 EXTENSIONS = (

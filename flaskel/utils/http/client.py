@@ -1,8 +1,8 @@
-from requests import request as send_request, auth, exceptions as http_exc
+from requests import auth, exceptions as http_exc, request as send_request
 
-from ..uuid import get_uuid
-from ..faker import FakeLogger
 from . import http_status as httpcode, misc
+from ..faker import FakeLogger
+from ..uuid import get_uuid
 
 
 class HTTPTokenAuth(auth.AuthBase):
