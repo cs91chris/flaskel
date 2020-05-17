@@ -1,36 +1,36 @@
-from flask import request, jsonify, current_app, url_for
+import flask
 
 from . import test
-from flaskel import httpcode
+from flaskel import httpcode, cap
 from flaskel.utils import http, uuid
 
 
 @test.route('/method_override', methods=['POST', 'PUT'])
 def method_override_post():
-    return '', httpcode.SUCCESS if request.method == 'PUT' else httpcode.METHOD_NOT_ALLOWED
+    return '', httpcode.SUCCESS if flask.request.method == 'PUT' else httpcode.METHOD_NOT_ALLOWED
 
 
 @test.route('/test_https')
 def test_https():
-    remote = current_app.extensions['cloudflare']
+    remote = cap.extensions['cloudflare']
     return {
         'address': remote.get_client_ip(),
-        'scheme': request.scheme,
-        'url_for': url_for('test.test_https', _external=True)
+        'scheme': flask.request.scheme,
+        'url_for': flask.url_for('test.test_https', _external=True)
     }
 
 
 @test.route('/proxy')
 def test_proxy():
     return {
-        'script_name': request.environ['SCRIPT_NAME'],
-        'original': request.environ['werkzeug.proxy_fix.orig']
+        'script_name': flask.request.environ['SCRIPT_NAME'],
+        'original': flask.request.environ['werkzeug.proxy_fix.orig']
     }
 
 
 @test.route("/list/<list('-'):data>")
 def list_converter(data):
-    return jsonify(data)
+    return flask.jsonify(data)
 
 
 @test.route('/invalid-json', methods=['POST'])
@@ -41,12 +41,12 @@ def get_invalid_json():
 
 @test.route('/download')
 def download():
-    return http.send_file('./', request.args.get('filename'))
+    return http.send_file('./', flask.request.args.get('filename'))
 
 
 @test.route('/uuid')
 def return_uuid():
-    return jsonify(dict(
+    return flask.jsonify(dict(
         uuid1=uuid.get_uuid(ver=1),
         uuid3=uuid.get_uuid(ver=3),
         uuid4=uuid.get_uuid(),

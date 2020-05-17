@@ -173,7 +173,7 @@ def test_crypto(testapp):
 
 
 def test_utils_http_client_simple(testapp):
-    api = http.HTTPClient("http://httpbin.org", token='pippo')
+    api = http.HTTPClient("http://httpbin.org", token='pippo', logger=testapp.application.logger)
 
     with testapp.application.app_context():
         res = api.delete('/status/200')
@@ -183,7 +183,7 @@ def test_utils_http_client_simple(testapp):
 
 
 def test_utils_http_client_exception(testapp):
-    api = http.HTTPClient("http://httpbin.org", token='pippo')
+    api = http.HTTPClient("http://httpbin.org", token='pippo', raise_on_exc=True)
     fake_api = http.HTTPClient('localhost', username='test', password='test')
 
     with testapp.application.app_context():
@@ -191,35 +191,36 @@ def test_utils_http_client_exception(testapp):
         assert res['status'] == httpcode.SERVICE_UNAVAILABLE
 
         try:
-            api.request('/status/500', 'PUT', raise_on_exc=True)
+            api.request('/status/500', 'PUT')
         except http.client.http_exc.HTTPError as exc:
             assert exc.response.status_code == httpcode.INTERNAL_SERVER_ERROR
 
         try:
-            fake_api.request('/', raise_on_exc=True, timeout=0.1)
+            fake_api.request('/', timeout=0.1)
         except werkzeug.exceptions.HTTPException as exc:
             assert exc.code == httpcode.INTERNAL_SERVER_ERROR
 
 
 def test_utils_http_client_filename(testapp):
+    from flaskel.utils import http
     api = http.HTTPClient("http://httpbin.org", token='pippo')
 
     with testapp.application.app_context():
         filename = "pippo.txt"
-        api.get('/response-headers', params={
+        res = api.get('/response-headers', params={
             'Content-Disposition': "attachment; filename={}".format(filename)
         })
-        assert api.get_response_filename() == filename
+        assert http.misc.get_response_filename(res['headers']) == filename
 
-        api.post('/response-headers', params={
+        res = api.post('/response-headers', params={
             'Content-Disposition': "filename={}".format(filename)
         })
-        assert api.get_response_filename() == filename
+        assert http.misc.get_response_filename(res['headers']) == filename
 
-        api.post('/response-headers', params={
+        res = api.post('/response-headers', params={
             'Content-Disposition': filename
         })
-        assert api.get_response_filename() is None
+        assert http.misc.get_response_filename(res['headers']) is None
 
 
 def test_utils_http_jsonrpc_client(testapp):
@@ -235,3 +236,15 @@ def test_utils_http_jsonrpc_client(testapp):
     assert data['jsonrpc'] == '2.0'
     assert data['id'] == api.request_id
     assert data['params'] == params
+
+
+def test_healthcheck(testapp):
+    res = testapp.get('/healthcheck')
+    data = res.get_json()
+
+    assert res.status_code == httpcode.SERVICE_UNAVAILABLE
+    assert res.headers['Content-Type'] == 'application/health+json'
+    assert data['status'] == 'fail'
+    assert data['links'] == {'about': None}
+    assert data['checks']['health_true']['status'] == 'pass'
+    assert data['checks']['test_health_false']['status'] == 'fail'
