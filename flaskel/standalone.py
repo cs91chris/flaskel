@@ -1,3 +1,5 @@
+import os
+
 import yaml
 from yaml.error import YAMLError
 
@@ -29,10 +31,11 @@ def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
             print(e, file=sys.stderr)
             sys.exit(1)
     else:
+        env = os.environ.get('FLASK_ENV')
         config = dict(
             app={
                 'DEBUG': debug,
-                'ENV': 'development' if debug else 'production'
+                'ENV': env or ('development' if debug else 'production')
             },
             wsgi={
                 'bind': bind,
@@ -42,6 +45,10 @@ def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
 
     if log_config is not None:
         config['app']['LOG_FILE_CONF'] = log_config
+
+    # debug flag enabled overrides config file
+    if debug is True:
+        config['app']['DEBUG'] = True
 
     kwargs['conf_map'] = config.get('app', {})
     _app = factory(**kwargs) if not app else app
