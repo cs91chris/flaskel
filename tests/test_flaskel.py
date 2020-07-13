@@ -90,7 +90,6 @@ def test_dispatch_error_api(testapp):
 
 
 def test_force_https(testapp):
-
     res = testapp.get('/test_https', base_url='http://' + testapp.application.config['SERVER_NAME'])
     assert res.status_code == httpcode.SUCCESS
     data = res.get_json()

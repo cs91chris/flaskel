@@ -1,5 +1,4 @@
 from .default import (
-    argon2,
     builder,
     cfremote,
     cors,
@@ -12,7 +11,6 @@ EXTENSIONS = (
     # (extension, parameters: dict)
     (logger,),
     (cors,),
-    (argon2,),
     (template,),
     (cfremote,),
     (builder,),

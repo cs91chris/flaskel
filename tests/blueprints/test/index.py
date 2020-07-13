@@ -12,7 +12,7 @@ def method_override_post():
 
 @test.route('/test_https')
 def test_https():
-    remote = cap.extensions['cloudflare']
+    remote = cap.extensions['cloudflareRemote']
     return {
         'address': remote.get_client_ip(),
         'scheme': flask.request.scheme,
