@@ -1,6 +1,6 @@
 import os
-import sys
 import string
+import sys
 from random import SystemRandom
 
 import flask
@@ -11,7 +11,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from .config import FLASK_APP
 from .converters import CONVERTERS
-from .patch import ReverseProxied, HTTPMethodOverride
+from .patch import HTTPMethodOverride, ReverseProxied
 
 
 def generate_secret_key(app, secret_file, key_length):

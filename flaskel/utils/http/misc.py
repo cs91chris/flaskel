@@ -1,5 +1,4 @@
 import flask
-from flaskel import cap
 
 from . import http_status as httpcode
 
@@ -30,6 +29,7 @@ def send_file(directory, filename, **kwargs):
     """
     kwargs.setdefault('as_attachment', True)
     file_path = flask.safe_join(directory, filename)
+    cap = flask.current_app
 
     try:
         resp = flask.send_file(file_path, **kwargs)
