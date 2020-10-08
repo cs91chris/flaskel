@@ -1,7 +1,8 @@
 import flask
+
 from flaskel import httpcode
-from flaskel.views import Resource
 from flaskel.utils.http import get_json
+from flaskel.views import Resource
 
 resources = [
     {'item': 1},
@@ -17,7 +18,7 @@ sub_resources = [
 class APIResource(Resource):
     def on_get(self, res_id):
         try:
-            return resources[res_id-1]
+            return resources[res_id - 1]
         except IndexError:
             flask.abort(httpcode.NOT_FOUND)
 
@@ -32,15 +33,15 @@ class APIResource(Resource):
         resources.pop(res_id)
 
     def on_put(self, res_id):
-        resources[res_id-1] = get_json()
-        return resources[res_id-1]
+        resources[res_id - 1] = get_json()
+        return resources[res_id - 1]
 
     def sub_items(self, res_id):
         try:
-            return sub_resources[res_id-1]
+            return sub_resources[res_id - 1]
         except IndexError:
             return []
 
     def sub_items_post(self, res_id):
-        sub_resources[res_id-1] = get_json()
-        return sub_resources[res_id-1], httpcode.CREATED
+        sub_resources[res_id - 1] = get_json()
+        return sub_resources[res_id - 1], httpcode.CREATED

@@ -60,3 +60,8 @@ def crypt(passwd):
 
     crypto = cap.extensions['argon2']
     return crypto.generate_hash(passwd)
+
+
+@test.route('/useragent')
+def useragent():
+    return flask.g.user_agent.to_dict()

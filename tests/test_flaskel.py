@@ -1,16 +1,18 @@
 import os
+
 import werkzeug.exceptions
 
 from flaskel import httpcode
-from flaskel.utils import uuid, http
+from flaskel.utils import http, uuid
+from flaskel.utils.http.rpc import RPCInvalidRequest, RPCMethodNotFound, RPCParseError
 # noinspection PyUnresolvedReferences
-from . import app_prod, app_dev, testapp
+from tests import app_dev, app_prod, testapp
 
 
 def test_app_dev(app_dev):
     client = app_dev.test_client()
     assert app_dev.config['FLASK_ENV'] == 'development'
-    assert app_dev.config['SECRET_KEY'] == 'very_complex_string'
+    assert app_dev.config['SECRET_KEY'] == 'fake_very_complex_string'
 
     res = client.get('/')
     assert res.status_code == httpcode.SUCCESS
@@ -73,7 +75,7 @@ def test_api_resources(testapp):
 
 
 def test_api_cors(testapp):
-    res = testapp.get('/', base_url='http://api.' + testapp.application.config['SERVER_NAME'])
+    res = testapp.get('/resources', base_url='http://api.' + testapp.application.config['SERVER_NAME'])
     assert res.headers['Access-Control-Allow-Origin'] == '*'
 
 
@@ -247,3 +249,70 @@ def test_healthcheck(testapp):
     assert data['links'] == {'about': None}
     assert data['checks']['health_true']['status'] == 'pass'
     assert data['checks']['test_health_false']['status'] == 'fail'
+    assert data['checks']['sqlalchemy']['status'] == 'fail'
+    assert data['checks']['mongo']['status'] == 'fail'
+    assert data['checks']['redis']['status'] == 'fail'
+
+
+def test_api_jsonrpc_ok(testapp):
+    call_id = 1
+    base_url = 'http://api.' + testapp.application.config['SERVER_NAME']
+
+    res = testapp.post('/rpc', base_url=base_url, json={
+        "jsonrpc": "2.0",
+        "method":  "MyJsonRPC.testAction1",
+        "params":  None,
+        "id":      call_id
+    })
+
+    data = res.get_json()
+    assert res.status_code == 200
+    assert data['jsonrpc'] == "2.0"
+    assert data['id'] == call_id
+    assert data['result']['action1'] is True
+
+    res = testapp.post('/rpc', base_url=base_url, json={
+        "jsonrpc": "2.0",
+        "method":  "MyJsonRPC.testAction2"
+    })
+    assert res.status_code == 204
+
+
+def test_api_jsonrpc_error(testapp):
+    call_id = 1
+    base_url = 'http://api.' + testapp.application.config['SERVER_NAME']
+
+    res = testapp.post('/rpc', base_url=base_url, json={
+        "jsonrpc": "2.0",
+        "method":  "NotFoundMethod",
+        "id":      call_id
+    })
+
+    data = res.get_json()
+    assert res.status_code == 200
+    assert data['error']['code'] == RPCMethodNotFound().code
+    assert data['jsonrpc'] == "2.0"
+    assert data['id'] == call_id
+    assert len(data['error']['message']) > 0
+
+    res = testapp.post('/rpc', base_url=base_url, json={})
+    data = res.get_json()
+    assert res.status_code == 200
+    assert data['error']['code'] == RPCParseError().code
+
+    res = testapp.post('/rpc', base_url=base_url, json={
+        "jsonrpc": "2.0"
+    })
+    data = res.get_json()
+    assert res.status_code == 200
+    assert data['error']['code'] == RPCInvalidRequest().code
+
+
+def test_useragent(testapp):
+    res = testapp.get('/useragent')
+    data = res.get_json()
+
+    assert res.status_code == httpcode.SUCCESS
+    all(i in data.keys() for i in (
+        'browser', 'device', 'os', 'raw'
+    ))
