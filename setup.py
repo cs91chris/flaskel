@@ -6,8 +6,8 @@ import os
 import re
 import sys
 
+from setuptools import find_packages, setup
 from setuptools.command.test import test
-from setuptools import setup, find_packages
 
 package = 'flaskel'
 skeleton = 'skeleton'
@@ -112,9 +112,16 @@ try:
             "Flask-TemplateSupport",
             "Flask-CloudflareRemote",
             "Flask-Logify",
-            "argon2-cffi",
+            # TODO extras
             "requests",
+            "user-agents",
+            "argon2-cffi",
+            "Flask-SqlAlchemy",
+            "flask_jwt_extended",
         ],
+        extras_requires={
+            'full': []
+        },
         tests_require=[
             'pytest',
             'pytest-cov'

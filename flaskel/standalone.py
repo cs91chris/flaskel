@@ -65,4 +65,5 @@ def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
     else:
         wsgi_class = wsgi_factory(wsgi_server)
 
-    wsgi_class(_app, options=config.get('wsgi', {})).run()
+    wsgi = wsgi_class(_app, options=config.get('wsgi', {}))
+    wsgi.run()

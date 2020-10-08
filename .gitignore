@@ -109,3 +109,4 @@ migrations
 dev.db
 .secret.key
 test.py
+profiler.txt

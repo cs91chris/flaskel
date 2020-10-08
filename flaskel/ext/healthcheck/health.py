@@ -10,7 +10,6 @@ class HealthCheck:
         :param app:
         """
         self._health_checks = {}
-        self._default_extensions = {}
 
         if app:
             self.init_app(app, **kwargs)
@@ -25,6 +24,7 @@ class HealthCheck:
         app.config.setdefault('HEALTHCHECK_ABOUT_LINK', None)
         app.config.setdefault('HEALTHCHECK_PATH', '/healthcheck')
         app.config.setdefault('HEALTHCHECK_CONTENT_TYPE', 'application/health+json')
+
         blueprint = bp or app
         blueprint.add_url_rule(
             app.config['HEALTHCHECK_PATH'],
@@ -64,8 +64,8 @@ class HealthCheck:
         if not healthy:
             response['status'] = 'fail'
 
-        return response, \
-            httpcode.SUCCESS if healthy else httpcode.SERVICE_UNAVAILABLE, \
+        status = httpcode.SUCCESS if healthy else httpcode.SERVICE_UNAVAILABLE
+        return response, status, \
             {'Content-Type': cap.config['HEALTHCHECK_CONTENT_TYPE']}
 
     def register(self, name=None, **kwargs):
@@ -90,46 +90,3 @@ class HealthCheck:
 
             return wrapped()
         return _register
-
-
-def health_sqlalchemy(db):
-    """
-
-    :param db:
-    :return:
-    """
-    try:
-        with db.engine.connect() as connection:
-            connection.execute('SELECT 1')
-    except Exception as exc:
-        return False, str(exc)
-    return True, None
-
-
-def health_mongo(db):
-    """
-
-    :param db:
-    :return:
-    """
-    try:
-        db.db.command('ping')
-    except Exception as exc:
-        return False, str(exc)
-    return True, None
-
-
-def health_redis(db):
-    """
-
-    :param db:
-    :return:
-    """
-    try:
-        db.ping()
-    except Exception as exc:
-        return False, str(exc)
-    return True, None
-
-
-health_check = HealthCheck()

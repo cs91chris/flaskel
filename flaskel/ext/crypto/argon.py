@@ -8,7 +8,7 @@ class Argon2:
 
         :param app:
         """
-        self.ph = None
+        self._ph = None
 
         if app is not None:
             self.init_app(app)
@@ -25,7 +25,7 @@ class Argon2:
         app.config.setdefault("ARGON2_PARALLELISM", _argon2.DEFAULT_PARALLELISM)
         app.config.setdefault("ARGON2_RANDOM_SALT_LENGTH", _argon2.DEFAULT_RANDOM_SALT_LENGTH)
 
-        self.ph = _argon2.PasswordHasher(
+        self._ph = _argon2.PasswordHasher(
             encoding=app.config['ARGON2_ENCODING'],
             time_cost=app.config['ARGON2_TIME_COST'],
             hash_len=app.config['ARGON2_HASH_LENGTH'],
@@ -46,7 +46,7 @@ class Argon2:
         """
         if not password:
             raise ValueError('password must be not empty')
-        return self.ph.hash(password)
+        return self._ph.hash(password)
 
     def verify_hash(self, pw_hash, password, exc=False):
         """
@@ -58,11 +58,8 @@ class Argon2:
         """
         if exc is False:
             try:
-                return self.ph.verify(pw_hash, password)
+                return self._ph.verify(pw_hash, password)
             except (Argon2Error, InvalidHash):
                 return False
         else:
-            return self.ph.verify(pw_hash, password)
-
-
-argon2 = Argon2()
+            return self._ph.verify(pw_hash, password)

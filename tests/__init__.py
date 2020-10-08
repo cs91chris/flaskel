@@ -6,7 +6,7 @@ from flask.testing import FlaskClient
 from flaskel import default_app_factory
 from flaskel.ext import EXTENSIONS
 from flaskel.ext.crypto import Argon2
-from flaskel.ext.healthcheck import health_check
+from flaskel.ext.healthcheck import health_checks
 from flaskel.patch import ForceHttps
 from .blueprints import BLUEPRINTS
 
@@ -27,7 +27,8 @@ def app_prod():
     """
 
     """
-    os.environ['APP_CONFIG_FILE'] = os.path.join(os.path.join(SKEL_DIR, 'config'), 'production.py')
+    conf_dir = os.path.join(SKEL_DIR, 'config')
+    os.environ['APP_CONFIG_FILE'] = os.path.join(conf_dir, 'production.py')
 
     def test_health_true(**kwargs):
         return True, None
@@ -38,7 +39,7 @@ def app_prod():
     extra_ext = (
         None, (None,),  # NB: needed to complete coverage
         (Argon2(),),
-        (health_check, {'extensions': (
+        (health_checks, {'extensions': (
             {
                 'name': 'health_true',
                 'func': test_health_true,
