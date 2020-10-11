@@ -1,10 +1,9 @@
 import click
 
+from flaskel import BASE_EXTENSIONS, default_app_factory, serve_forever
 from flaskel.wsgi import DEFAULT_WSGI
-from flaskel import serve_forever, default_app_factory, DEFAULT_EXTENSIONS
-
-from .ext import EXTENSIONS
-from .blueprints import BLUEPRINTS
+from blueprints import BLUEPRINTS
+from ext import EXTENSIONS
 
 wsgi_types = click.Choice(DEFAULT_WSGI, case_sensitive=False)
 
@@ -16,12 +15,12 @@ def create_app():
     """
     return default_app_factory(
         blueprints=BLUEPRINTS,
-        extensions=DEFAULT_EXTENSIONS + EXTENSIONS
+        extensions={**BASE_EXTENSIONS, **EXTENSIONS}
     )
 
 
 @click.command()
-@click.option('-d', is_flag=True, flag_value=True, default=False, help='enable debug mode')
+@click.option('-d', '--debug', is_flag=True, flag_value=True, default=False, help='enable debug mode')
 @click.option('-c', '--config', default=None, help='app yaml configuration file')
 @click.option('-l', '--log-config', default=None, help='alternative log yaml configuration file')
 @click.option('-w', '--wsgi-server', default=None, type=wsgi_types, help='name of wsgi server to use')
@@ -33,7 +32,7 @@ def cli(config, log_config, bind, debug, wsgi_server):
     :param log_config: log configuration file
     :param bind: address to bind
     :param debug: enable debug mode
-    :param wsgi_server: wsgi server chose
+    :param wsgi_server: wsgi server chosen
     :return: never returns
     """
     serve_forever(

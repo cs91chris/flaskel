@@ -7,15 +7,14 @@ from .default import (
     template
 )
 
-EXTENSIONS = (
-    # (extension, parameters: dict)
-    (logger,),
-    (cors,),
-    (template,),
-    (cfremote,),
-    (builder,),
-    (errors, {
-        'dispatcher': 'subdomain',
-        'response': builder.on_accept(),
+# { "name": (extension, parameters: dict), }
+BASE_EXTENSIONS = {
+    "logger":   (logger,),
+    "template": (template,),
+    "cfremote": (cfremote,),
+    "builder":  (builder,),
+    "errors":   (errors, {
+        "dispatcher": 'subdomain',
+        "response":   builder.on_accept(),
     }),
-)
+}
