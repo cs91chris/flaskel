@@ -27,9 +27,8 @@ def generate_secret_key(app, secret_file, key_length):
     with open(secret_file, 'w') as f:
         f.write(secret_key)
         abs_file = os.path.abspath(secret_file)
-        app.logger.warning(
-            "new secret key generated: take care of this file:{}".format(abs_file)
-        )
+        mess = "new secret key generated: take care of this file:{}"
+        app.logger.warning(mess.format(abs_file))
     return secret_key
 
 
@@ -40,6 +39,9 @@ def load_secret_key(app, secret_file):
     :param secret_file:
     :return:
     """
+    if not os.path.isfile(secret_file):
+        return None
+
     with open(secret_file, 'r') as f:
         secret_key = f.read()
         app.logger.info("load secret key from: {}".format(secret_file))
@@ -57,19 +59,14 @@ def set_secret_key(app):
         secret_file = app.config.get('SECRET_KEY')
 
         if secret_file:
-            if os.path.isfile(secret_file):
-                secret_key = load_secret_key(app, secret_file)
-            else:
-                secret_key = secret_file
+            secret_key = load_secret_key(app, secret_file) or secret_file
         else:
             secret_file = '.secret.key'
-            if os.path.isfile(secret_file):
-                secret_key = load_secret_key(app, secret_file)
-            else:
-                secret_key = generate_secret_key(app, secret_file, key_length)
+            secret_key = load_secret_key(app, secret_file)
+            secret_key = secret_key or generate_secret_key(app, secret_file, key_length)
     elif not app.config.get('SECRET_KEY'):
         app.logger.debug('set secret key in development mode')
-        secret_key = 'very_complex_string'
+        secret_key = 'fake_very_complex_string'
 
     app.config['SECRET_KEY'] = secret_key or app.config['SECRET_KEY']
     if len(secret_key) > key_length:
@@ -83,19 +80,20 @@ def register_extensions(app, extensions):
     :param extensions: custom extension appended to defaults
     """
     with app.app_context():
-        for e in (extensions or []):
+        for name, e in (extensions or {}).items():
             try:
-                ex = e[0]
+                ext = e[0]
                 opt = e[1] if len(e) > 1 else {}
-                ext_name = ex.__class__.__name__
-                if not ex:
-                    raise TypeError('extension could not be None')
+                if not ext:
+                    raise TypeError("extension could not be None")
             except (TypeError, IndexError) as exc:
-                app.logger.debug("invalid extension configuration '{}':\n{}".format(e, exc))
+                mess = "Invalid extension '{}' configuration '{}':\n{}"
+                app.logger.debug(mess.format(name, e, exc))
                 continue
 
-            ex.init_app(app, **opt)
-            app.logger.debug("Registered extension '%s' with options: %s", ext_name, str(opt))
+            ext.init_app(app, **opt)
+            mess = "Registered extension '{}' with options: {}"
+            app.logger.debug(mess.format(name, str(opt)))
 
 
 def register_blueprints(app, blueprints):
