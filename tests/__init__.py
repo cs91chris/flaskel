@@ -3,7 +3,7 @@ import os
 import pytest
 from flask.testing import FlaskClient
 
-from flaskel import default_app_factory
+from flaskel import AppFactory
 from flaskel.ext import BASE_EXTENSIONS
 from flaskel.ext.crypto import Argon2
 from flaskel.ext.healthcheck import health_checks, health_mongo, health_redis, health_sqlalchemy
@@ -58,11 +58,11 @@ def app_prod():
     health_checks.register('redis', db=dbsqla)(health_redis)
     health_checks.register('sqlalchemy', db=dbsqla)(health_sqlalchemy)
 
-    _app = default_app_factory(
+    _app = AppFactory().getOrCreate(
         conf_map=dict(TESTING=True),
         blueprints=(*BLUEPRINTS, *(None,), *((None,),)),  # NB: needed to complete coverage
         extensions={**BASE_EXTENSIONS, **extra_ext},
-        jinja_fs_loader=["skeleton/templates"],
+        folders=["skeleton/templates"],
         static_folder="skeleton/static"
     )
 
@@ -79,7 +79,7 @@ def app_dev():
     """
     os.environ['APP_CONFIG_FILE'] = os.path.join(CONF_DIR, 'development.py')
 
-    _app = default_app_factory(
+    _app = AppFactory().getOrCreate(
         blueprints=BLUEPRINTS,
         extensions=BASE_EXTENSIONS,
         template_folder="skeleton/templates",

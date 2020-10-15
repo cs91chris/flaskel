@@ -1,9 +1,11 @@
 import click
 
-from flaskel import BASE_EXTENSIONS, default_app_factory, serve_forever
+from flaskel import AppFactory, BASE_EXTENSIONS, serve_forever
 from flaskel.wsgi import DEFAULT_WSGI
+
 from blueprints import BLUEPRINTS
 from ext import EXTENSIONS
+
 
 wsgi_types = click.Choice(DEFAULT_WSGI, case_sensitive=False)
 
@@ -13,7 +15,7 @@ def create_app():
 
     :return: app instance
     """
-    return default_app_factory(
+    return AppFactory().getOrCreate(
         blueprints=BLUEPRINTS,
         extensions={**BASE_EXTENSIONS, **EXTENSIONS}
     )

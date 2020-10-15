@@ -1,4 +1,5 @@
 import sys
+
 from .base import BaseApplication, WSGIBuiltin
 
 DEFAULT_WSGI = (

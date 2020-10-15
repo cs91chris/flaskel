@@ -1,14 +1,15 @@
 import os
+import sys
 
 import yaml
 from yaml.error import YAMLError
 
-from .factory import default_app_factory
+from .factory import AppFactory
 from .wsgi import BaseApplication, wsgi_factory
 
 
-def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
-                  config=None, log_config=None, bind=None, debug=None, wsgi_server=None, **kwargs):
+def serve_forever(app=None, config=None, log_config=None, bind=None, debug=None,
+                  factory=AppFactory, wsgi_class=None, wsgi_server=None, **kwargs):
     """
 
     :param app: given app instance
@@ -27,18 +28,17 @@ def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
             with open(config) as f:
                 config = yaml.safe_load(f)
         except (OSError, YAMLError) as e:
-            import sys
             print(e, file=sys.stderr)
-            sys.exit(1)
+            sys.exit(os.EX_OSFILE)
     else:
         env = os.environ.get('FLASK_ENV')
         config = dict(
             app={
                 'DEBUG': debug,
-                'ENV': env or ('development' if debug else 'production')
+                'ENV':   env or ('development' if debug else 'production')
             },
             wsgi={
-                'bind': bind,
+                'bind':  bind,
                 'debug': debug,
             }
         )
@@ -49,9 +49,6 @@ def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
     # debug flag enabled overrides config file
     if debug is True:
         config['app']['DEBUG'] = True
-
-    kwargs['conf_map'] = config.get('app', {})
-    _app = factory(**kwargs) if not app else app
 
     if not wsgi_server:
         if wsgi_class:
@@ -65,5 +62,8 @@ def serve_forever(app=None, factory=default_app_factory, wsgi_class=None,
     else:
         wsgi_class = wsgi_factory(wsgi_server)
 
+    kwargs['conf_map'] = config.get('app', {})
+    _app = factory.getOrCreate(**kwargs) if not app else app
     wsgi = wsgi_class(_app, options=config.get('wsgi', {}))
-    wsgi.run()
+
+    wsgi.run()  # run forever

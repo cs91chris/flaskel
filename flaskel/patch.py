@@ -79,7 +79,7 @@ class HTTPMethodOverride(object):
 
         :param app:
         """
-        self._app = app
+        self.app = app
 
     def __call__(self, environ, start_response):
         """
@@ -97,4 +97,4 @@ class HTTPMethodOverride(object):
         if environ['REQUEST_METHOD'] == 'POST' and method:
             environ['REQUEST_METHOD'] = method.upper()
 
-        return self._app(environ, start_response)
+        return self.app(environ, start_response)
