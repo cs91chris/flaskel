@@ -9,7 +9,7 @@ formatters:
 
 handlers:
     syslog:
-        class: flask_logify.FlaskSysLogHandler
+        class: flask_logify.handlers.syslog.FlaskSysLogHandler
         address: [localhost, 514]
         formatter: syslog
         facility: daemon

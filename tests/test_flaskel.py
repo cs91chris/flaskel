@@ -124,9 +124,7 @@ def test_method_override(testapp):
     )
     assert res_header.status_code == httpcode.SUCCESS
 
-    res_query_string = testapp.post(
-        '/method_override?_method_override=PUT'
-    )
+    res_query_string = testapp.post('/method_override?_method_override=PUT')
     assert res_query_string.status_code == httpcode.SUCCESS
 
 
