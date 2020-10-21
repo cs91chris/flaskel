@@ -33,3 +33,6 @@ class UserAgent:
             flask.g.user_agent = self._parser(flask.request.user_agent.string)
             if app.config['USER_AGENT_AUTO_PARSE']:
                 flask.g.user_agent.parse()
+
+
+useragent = UserAgent()

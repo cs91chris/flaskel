@@ -2,14 +2,16 @@ from werkzeug.routing import BaseConverter, FloatConverter, UnicodeConverter
 
 
 class ListConverter(BaseConverter):
-    def __init__(self, mapname=None, sep=None):
+    default_separator = '+'
+
+    def __init__(self, map_name=None, sep=None):
         """
 
-        :param mapname:
+        :param map_name:
         :param sep:
         """
-        super().__init__(mapname)
-        self._sep = sep or '+'
+        super().__init__(map_name)
+        self._sep = sep or self.default_separator
 
     def to_python(self, value):
         """

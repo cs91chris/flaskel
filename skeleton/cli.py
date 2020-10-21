@@ -1,50 +1,22 @@
-import click
+from blueprints import BLUEPRINTS
+from ext import EXTENSIONS
+from flaskel import AppFactory, BASE_EXTENSIONS, Server
 
-from flaskel.wsgi import DEFAULT_WSGI
-from flaskel import serve_forever, default_app_factory, DEFAULT_EXTENSIONS
-
-from .ext import EXTENSIONS
-from .blueprints import BLUEPRINTS
-
-wsgi_types = click.Choice(DEFAULT_WSGI, case_sensitive=False)
+factory = AppFactory(
+    blueprints=BLUEPRINTS,
+    extensions={**BASE_EXTENSIONS, **EXTENSIONS}
+)
 
 
-def create_app():
+def create_app(conf=None):
     """
+    useful for external wsgi server
 
-    :return: app instance
+    :param conf:
+    :return:
     """
-    return default_app_factory(
-        blueprints=BLUEPRINTS,
-        extensions=DEFAULT_EXTENSIONS + EXTENSIONS
-    )
-
-
-@click.command()
-@click.option('-d', is_flag=True, flag_value=True, default=False, help='enable debug mode')
-@click.option('-c', '--config', default=None, help='app yaml configuration file')
-@click.option('-l', '--log-config', default=None, help='alternative log yaml configuration file')
-@click.option('-w', '--wsgi-server', default=None, type=wsgi_types, help='name of wsgi server to use')
-@click.option('-b', '--bind', default='127.0.0.1:5000', help='address to bind', show_default=True)
-def cli(config, log_config, bind, debug, wsgi_server):
-    """
-
-    :param config: app and wsgi configuration file
-    :param log_config: log configuration file
-    :param bind: address to bind
-    :param debug: enable debug mode
-    :param wsgi_server: wsgi server chose
-    :return: never returns
-    """
-    serve_forever(
-        app=create_app(),
-        config=config,
-        log_config=log_config,
-        bind=bind,
-        debug=debug,
-        wsgi_server=wsgi_server
-    )
+    return factory.get_or_create(conf)
 
 
 if __name__ == '__main__':
-    cli()
+    Server(factory).run_from_cli()

@@ -41,9 +41,9 @@ class ReverseProxied(ProxyFix):
             proxy_pass http://127.0.0.1:5000;
             proxy_set_header Host $host;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarder-Proto $proto;
-            proxy_set_header X-Forwarder-Port 5000;
-            proxy_set_header X-Forwarder-Prefix /prefix;
+            proxy_set_header X-Forwarded-Proto $proto;
+            proxy_set_header X-Forwarded-Port 5000;
+            proxy_set_header X-Forwarded-Prefix /prefix;
         }
 
     You must tell the middleware how many proxies set each header so it
@@ -79,7 +79,7 @@ class HTTPMethodOverride(object):
 
         :param app:
         """
-        self._app = app
+        self.app = app
 
     def __call__(self, environ, start_response):
         """
@@ -97,4 +97,4 @@ class HTTPMethodOverride(object):
         if environ['REQUEST_METHOD'] == 'POST' and method:
             environ['REQUEST_METHOD'] = method.upper()
 
-        return self._app(environ, start_response)
+        return self.app(environ, start_response)
