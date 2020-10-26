@@ -1,17 +1,16 @@
 import os
 
-DEBUG = False
+DEBUG = True
 TESTING = False
 APP_NAME = os.environ.get('APP_NAME') or "flaskel"
 APP_HOST = os.environ.get('APP_HOST') or '127.0.0.1'
 APP_PORT = os.environ.get('APP_PORT') or 5000
 FLASK_APP = os.environ.get('FLASK_APP') or "app:app"
 FLASK_ENV = os.environ.get('FLASK_ENV') or "production"
+SERVER_NAME = os.environ.get('SERVER_NAME') or "{}:{}".format(APP_HOST, APP_PORT)
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-
-CONF_DIR = os.path.join(BASE_DIR, 'skeleton', 'config')
-LOG_FILE_CONF = os.path.join(CONF_DIR, 'log.yaml')
+LOG_FILE_CONF = os.path.join('config', 'log.yaml')
 
 SECRET_KEY_MIN_LENGTH = 256
 
