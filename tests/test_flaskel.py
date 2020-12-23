@@ -183,7 +183,7 @@ def test_utils_http_client_simple(testapp):
 
 def test_utils_http_client_exception(testapp):
     api = http.HTTPClient("http://httpbin.org", token='pippo', raise_on_exc=True)
-    fake_api = http.HTTPClient('localhost', username='test', password='test')
+    fake_api = http.HTTPClient('http://localhost', username='test', password='test')
 
     with testapp.application.app_context():
         res = fake_api.put('/', timeout=0.1)

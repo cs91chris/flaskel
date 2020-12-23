@@ -112,6 +112,7 @@ try:
             "Flask-TemplateSupport",
             "Flask-CloudflareRemote",
             "Flask-Logify",
+            'python-decouple',
             # TODO extras
             "requests",
             "user-agents",

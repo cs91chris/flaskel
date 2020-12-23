@@ -76,13 +76,13 @@ def app_dev():
     """
 
     """
-    os.environ['APP_CONFIG_FILE'] = os.path.join(CONF_DIR, 'development.py')
-
     _app = AppFactory(
         blueprints=BLUEPRINTS,
         extensions=BASE_EXTENSIONS,
         template_folder="skeleton/templates",
-        static_folder="skeleton/static").get_or_create(
+        static_folder="skeleton/static"
+    ).get_or_create(
+        dict(DEBUG=True, FLASK_ENV='development')
     )
 
     _app.test_client_class = TestClient

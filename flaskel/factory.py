@@ -9,7 +9,7 @@ from flask_response_builder import encoders
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from .config import FLASK_APP
+from . import config
 from .converters import CONVERTERS
 
 
@@ -20,7 +20,7 @@ class AppFactory:
 
     default app name
     """
-    app_name = FLASK_APP
+    app_name = config.FLASK_APP
 
     """
     default secret key file name
@@ -35,7 +35,7 @@ class AppFactory:
     """
     custom app config module
     """
-    conf_module = 'flaskel.config'
+    conf_module = config
 
     """
     additional options

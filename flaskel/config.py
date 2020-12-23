@@ -1,20 +1,22 @@
 import os
 
-DEBUG = bool(os.environ.get('DEBUG') or False)
-TESTING = bool(os.environ.get('TESTING') or DEBUG)
-APP_NAME = os.environ.get('APP_NAME') or "flaskel"
-APP_HOST = os.environ.get('APP_HOST') or '127.0.0.1'
-APP_PORT = int(os.environ.get('APP_PORT') or 5000)
-FLASK_APP = os.environ.get('FLASK_APP') or "app:app"
-FLASK_ENV = os.environ.get('FLASK_ENV') or "production"
-SERVER_NAME = os.environ.get('SERVER_NAME') or "{}:{}".format(APP_HOST, APP_PORT)
+from decouple import config
 
-LOCALE = 'en_EN.utf8'
-TEMPLATES_AUTO_RELOAD = DEBUG
-EXPLAIN_TEMPLATE_LOADING = DEBUG
+DEBUG = config('DEBUG', default=False)
+TESTING = config('TESTING', default=DEBUG)
+APP_NAME = config('APP_NAME', default="flaskel")
+APP_HOST = config('APP_HOST', default='127.0.0.1')
+APP_PORT = config('APP_PORT', default=5000)
+FLASK_APP = config('FLASK_APP', default="app:app")
+FLASK_ENV = config('FLASK_ENV', default="production")
+SERVER_NAME = config('SERVER_NAME', default="{}:{}".format(APP_HOST, APP_PORT))
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-LOG_FILE_CONF = os.path.join('config', 'log.yaml')
+LOCALE = config('LOCALE', default="en_EN.utf8")
+TEMPLATES_AUTO_RELOAD = config("TEMPLATES_AUTO_RELOAD", default=DEBUG)
+EXPLAIN_TEMPLATE_LOADING = config("EXPLAIN_TEMPLATE_LOADING", default=DEBUG)
+
+BASE_DIR = config("BASE_DIR", default=os.path.abspath(os.path.dirname(__file__)))
+LOG_FILE_CONF = config("LOG_FILE_CONF", default=os.path.join('config', 'log.yaml'))
 
 SECRET_KEY_MIN_LENGTH = 256
 
