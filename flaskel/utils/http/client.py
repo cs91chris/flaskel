@@ -80,23 +80,32 @@ class HTTPClient(HTTPBase):
         self._password = password
         self._token = token
 
-        if not self._endpoint.startswith('http'):
-            self._endpoint = "http://{}".format(self._endpoint)
+    def get_auth(self):
+        """
 
-    def request(self, uri, method='GET', dump_body=None, **kwargs):
+        :return:
+        """
+        if self._username and self._password:
+            return auth.HTTPBasicAuth(self._username, self._password)
+
+        if self._token:
+            return HTTPTokenAuth(self._token)
+
+    def request(self, uri, method='GET',
+                dump_body=None, chunk_size=None, decode_unicode=False, **kwargs):
         """
 
         :param method:
         :param uri:
         :param dump_body:
+        :param chunk_size:
+        :param decode_unicode:
         :param kwargs:
         :return:
         """
-        if self._username and self._password:
-            kwargs['auth'] = auth.HTTPBasicAuth(self._username, self._password)
-
-        if self._token:
-            kwargs['auth'] = HTTPTokenAuth(self._token)
+        kwargs['auth'] = self.get_auth()
+        if kwargs.get('stream') is True:
+            dump_body = False
 
         try:
             url = "{}{}".format(self._endpoint, uri)
@@ -118,16 +127,17 @@ class HTTPClient(HTTPBase):
             response.raise_for_status()
         except http_exc.HTTPError as exc:
             self._logger.warning(misc.dump_response(response, dump_body))
-            resp = exc.response
+            response = exc.response
             if self._raise_on_exc:
                 raise
         else:
             self._logger.info(misc.dump_response(response, dump_body))
 
-        try:
+        if kwargs.get('stream') is True:
+            body = response.iter_content(chunk_size, decode_unicode)
+        elif 'json' in (response.headers.get('Content-Type') or ''):
             body = response.json()
-        except ValueError as exc:
-            self._logger.debug(str(exc))
+        else:
             body = response.text
 
         return dict(
@@ -143,7 +153,7 @@ class HTTPClient(HTTPBase):
         :param kwargs:
         :return:
         """
-        return self.request(uri, 'GET', **kwargs)
+        return self.request(uri, **kwargs)
 
     def post(self, uri, **kwargs):
         """
