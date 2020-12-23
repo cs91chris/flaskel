@@ -1,9 +1,9 @@
 from requests import auth, exceptions as http_exc, request as send_request
 
 from . import http_status as httpcode, misc
-from ..faker import FakeLogger
-from ..uuid import get_uuid
-
+from flaskel.utils.faker import FakeLogger
+from flaskel.utils.uuid import get_uuid
+from flaskel.utils.datastuct import ObjectDict
 
 class HTTPTokenAuth(auth.AuthBase):
     def __init__(self, token):
@@ -116,12 +116,12 @@ class HTTPClient(HTTPBase):
             if self._raise_on_exc:
                 raise
 
-            return dict(
+            return ObjectDict(dict(
                 body={},
                 status=httpcode.SERVICE_UNAVAILABLE,
                 headers={},
                 exception=exc
-            )
+            ))
 
         try:
             response.raise_for_status()
@@ -140,11 +140,11 @@ class HTTPClient(HTTPBase):
         else:
             body = response.text
 
-        return dict(
+        return ObjectDict(dict(
             body=body,
             status=response.status_code,
             headers=dict(response.headers)
-        )
+        ))
 
     def get(self, uri, **kwargs):
         """

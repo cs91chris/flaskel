@@ -11,6 +11,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from . import config
 from .converters import CONVERTERS
+from .utils.datastuct import ObjectDict
 
 
 class AppFactory:
@@ -167,6 +168,7 @@ class AppFactory:
         self._app.config.from_object(self._conf_module)
         self._app.config.from_mapping(**(conf or {}))
         self._app.config.from_envvar('APP_CONFIG_FILE', silent=True)
+        self._app.config = ObjectDict(self._app.config)
 
     def _register_converters(self):
         """
