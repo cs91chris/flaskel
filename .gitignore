@@ -106,7 +106,8 @@ venv.bak/
 # flaskel
 .idea
 migrations
-dev.db
+*.db
+*.sqlite
 .secret.key
 test.py
 profiler.txt
