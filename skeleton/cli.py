@@ -18,5 +18,9 @@ def create_app(conf=None):
     return factory.get_or_create(conf)
 
 
-if __name__ == '__main__':
+def cli():
     Server(factory).run_from_cli()
+
+
+if __name__ == '__main__':
+    cli()
