@@ -151,9 +151,9 @@ class Server:
         wsgi_config = {**(wsgi_config or {}), **(config.get('wsgi') or {})}
 
         if wsgi_server:
-            wsgi_class = self._wsgi_factory.getClass(wsgi_server)
+            wsgi_class = self._wsgi_factory.get_class(wsgi_server)
         elif wsgi_class is None:
-            wsgi_class = self._wsgi_factory.getClass('builtin')
+            wsgi_class = self._wsgi_factory.get_class('builtin')
 
         assert issubclass(wsgi_class, BaseApplication)
 

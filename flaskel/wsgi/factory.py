@@ -1,15 +1,13 @@
-import sys
-
 from .base import WSGIBuiltin
 
-try:
-    from .gunicorn import WSGIGunicorn
-except ImportError:
-    WSGIGunicorn = None
 try:
     from .gevent import WSGIGevent
 except ImportError:
     WSGIGevent = None
+try:
+    from .gunicorn import WSGIGunicorn
+except ImportError:
+    WSGIGunicorn = None
 try:
     from .tornado import WSGITornado
 except ImportError:
@@ -35,18 +33,18 @@ class WSGIFactory:
     }
 
     @classmethod
-    def getInstance(cls, name, **kwargs):
+    def get_instance(cls, name, **kwargs):
         """
 
         :param name:
         :param kwargs:
         :return:
         """
-        wsgi_class = cls.getClass(name)
+        wsgi_class = cls.get_class(name)
         return wsgi_class(**kwargs)
 
     @classmethod
-    def getClass(cls, name):
+    def get_class(cls, name):
         """
 
         :param name:

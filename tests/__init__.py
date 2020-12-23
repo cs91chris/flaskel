@@ -31,8 +31,6 @@ def app_prod():
     """
 
     """
-    os.environ['APP_CONFIG_FILE'] = os.path.join(CONF_DIR, 'production.py')
-
     def test_health_true(**kwargs):
         return True, None
 
@@ -62,8 +60,8 @@ def app_prod():
         blueprints=(*BLUEPRINTS, *(None,), *((None,),)),  # NB: needed to complete coverage
         extensions={**BASE_EXTENSIONS, **extra_ext},
         middlewares=(ForceHttps, HTTPMethodOverride, ReverseProxied),
-        folders=["skeleton/templates"],
-        static_folder="skeleton/static"
+        folders=["skeleton/blueprints/web/templates"],
+        static_folder="skeleton/blueprints/web/static"
     ).get_or_create(dict(TESTING=True))
 
     _app.test_client_class = TestClient
@@ -79,8 +77,8 @@ def app_dev():
     _app = AppFactory(
         blueprints=BLUEPRINTS,
         extensions=BASE_EXTENSIONS,
-        template_folder="skeleton/templates",
-        static_folder="skeleton/static"
+        template_folder="skeleton/blueprints/web/templates",
+        static_folder="skeleton/blueprints/web/static"
     ).get_or_create(
         dict(DEBUG=True, FLASK_ENV='development')
     )
