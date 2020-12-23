@@ -2,32 +2,48 @@ from flask_sqlalchemy import Model, SQLAlchemy
 
 
 class SQLAModel(Model):
-    def get_one(self, **kwargs):
+    @classmethod
+    def get_one(cls, raise_not_found=True, to_dict=True, **kwargs):
         """
 
+        :param raise_not_found:
+        :param to_dict:
         :param kwargs:
         :return:
         """
-        res = self.query.filters(**kwargs).get_or_404()
-        return res.to_dict()
+        res = cls.query.filter_by(**kwargs)
+        if raise_not_found:
+            res = res.first_or_404()
+        else:
+            res = res.first()
+            if res is None:
+                return
 
-    def get_list(self, **kwargs):
+        if to_dict is True:
+            return res.to_dict()
+        else:
+            return res
+
+    @classmethod
+    def get_list(cls, to_dict=True, **kwargs):
         """
 
+        :param to_dict:
         :param kwargs:
         :return:
         """
-        res_list = []
-        for r in self.query.filters(**kwargs).all():
-            res_list.append(r.to_dict())
-        return res_list
+        res = cls.query.filter_by(**kwargs).all()
+        if to_dict is not True:
+            return res
+
+        return [r.to_dict() for r in res]
 
     def to_dict(self, restricted=False):
         """
 
         :param restricted:
         """
-        raise NotImplemented
+        return self.__dict__
 
 
 db = SQLAlchemy(model_class=SQLAModel)
