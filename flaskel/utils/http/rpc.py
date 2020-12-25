@@ -1,3 +1,6 @@
+from flaskel.utils.datastuct import ObjectDict
+
+
 class RPCError(Exception):
     def __init__(self, code, message, data=None):
         """
@@ -15,11 +18,11 @@ class RPCError(Exception):
 
         :return:
         """
-        return dict(
+        return ObjectDict(dict(
             code=self.code,
             message=self.message,
             data=self.data
-        )
+        ))
 
 
 class RPCParseError(RPCError):

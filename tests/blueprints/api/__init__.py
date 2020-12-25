@@ -1,5 +1,3 @@
-# example api blueprint
-#
 from flask import Blueprint
 
 from flaskel.ext import cors, errors

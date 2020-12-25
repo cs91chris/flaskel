@@ -55,7 +55,7 @@ class SQLAModel(Model):
 db = SQLAlchemy(model_class=SQLAModel)
 
 
-def from_model_to_uml(module):
+def model_to_uml(module):  # pragma: no cover
     """
 
     :param module:
@@ -79,7 +79,7 @@ def from_model_to_uml(module):
     )
 
 
-def from_db_to_schema(url):
+def db_to_schema(url):  # pragma: no cover
     """
 
     :param url:

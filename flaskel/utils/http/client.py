@@ -259,4 +259,4 @@ class JsonRPCClient(HTTPClient):
             **kwargs
         )
 
-        return resp['body'] or {}
+        return ObjectDict(resp['body'] or {})

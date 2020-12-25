@@ -5,7 +5,8 @@ from pathlib import Path
 
 import click
 
-from flaskel.ext.sqlalchemy import from_db_to_schema, from_model_to_uml
+from flaskel.ext.sqlalchemy import db_to_schema, model_to_uml
+from flaskel.tester import cli as cli_tester
 
 INIT_CONTENT = """
 # generated via cli
@@ -24,10 +25,7 @@ def cli():
 @cli.command(name='init')
 @click.argument('name')
 def init(name):
-    """
-
-    :param name: application name
-    """
+    """Create skeleton for new application"""
     import flaskel
 
     package_path = flaskel.__path__[0]
@@ -59,21 +57,22 @@ def init(name):
         print('Unable to create new app. Error: %s' % str(e), file=sys.stderr)
 
 
+@cli.command(name='tests')
+def run_tests():
+    """Run test suite from package tests in current directory"""
+    cli_tester.main()
+
+
 @cli.command(name='schema')
 @click.option('-m', '--from-models', help='module of sqlalchemy models')
 @click.option('-d', '--from-database', help='database url connection')
 @click.option('-f', '--file', required=True, help='output png filename')
 def dump_schema(from_models, from_database, file):
-    """
-
-    :param from_models:
-    :param from_database:
-    :param file:
-    """
+    """Create png schema of database"""
     if from_models:
-        graph = from_model_to_uml(from_models)
+        graph = model_to_uml(from_models)
     elif from_database:
-        graph = from_db_to_schema(from_database)
+        graph = db_to_schema(from_database)
     else:
         raise click.UsageError("One of -m or -d are required")
 

@@ -74,6 +74,11 @@ class HTTPDumper:
 
         status_code = resp.status_code if hasattr(resp, 'status_code') else resp.status
 
-        return 'time : {} - status code: {}\nheaders:\n{}\nbody:\n{}'.format(
-            resp.elapsed.total_seconds(), status_code, cls.dump_headers(hdr), resp_body
-        )
+        try:
+            return 'time : {} - status code: {}\nheaders:\n{}\nbody:\n{}'.format(
+                resp.elapsed.total_seconds(), status_code, cls.dump_headers(hdr), resp_body
+            )
+        except AttributeError:  # because aiohttp.ClientResponse has not elapsed attribute
+            return 'status code: {}\nheaders:\n{}\nbody:\n{}'.format(
+                status_code, cls.dump_headers(hdr), resp_body
+            )

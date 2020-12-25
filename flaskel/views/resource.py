@@ -65,14 +65,14 @@ class Resource(MethodView):
         :param res_id:
         :return:
         """
-        self._not_implemented()
+        self._not_implemented()  # pragma: no cover
 
     def on_post(self):
         """
 
         :return:
         """
-        self._not_implemented()
+        self._not_implemented()  # pragma: no cover
 
     def on_put(self, res_id):
         """
@@ -80,7 +80,7 @@ class Resource(MethodView):
         :param res_id:
         :return:
         """
-        self._not_implemented()
+        self._not_implemented()  # pragma: no cover
 
     def on_delete(self, res_id):
         """
@@ -88,20 +88,20 @@ class Resource(MethodView):
         :param res_id:
         :return:
         """
-        self._not_implemented()
+        self._not_implemented()  # pragma: no cover
 
     def on_collection(self):
         """
 
         :return:
         """
-        self._not_implemented()
+        self._not_implemented()  # pragma: no cover
 
     def _not_implemented(self):
         """
 
         """
-        raise NotImplemented
+        raise NotImplemented  # pragma: no cover
 
     @classmethod
     def register(cls, app, name, url, pk_type='int', **kwargs):

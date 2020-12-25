@@ -1,12 +1,13 @@
 import functools
 import inspect
 
+from flask import request
 from flask.views import View
 
 import flaskel.utils.http.rpc as rpc
-from flaskel import httpcode, cap
+from flaskel.utils.datastuct import ObjectDict
+from flaskel import cap, httpcode
 from flaskel.ext import builder
-from flaskel.utils.http import get_json
 
 
 class JSONRPCView(View):
@@ -40,7 +41,7 @@ class JSONRPCView(View):
 
         :return:
         """
-        payload = get_json(True)
+        payload = request.get_json(True)
         if not payload:
             raise rpc.RPCParseError() from None
 
@@ -69,6 +70,7 @@ class JSONRPCView(View):
         try:
             return self.operations[op][action]
         except (IndexError, TypeError, KeyError) as exc:
+            cap.logger.debug(exc)
             raise rpc.RPCMethodNotFound()
 
     def dispatch_request(self):
@@ -76,24 +78,24 @@ class JSONRPCView(View):
 
         :return:
         """
-        response = dict(jsonrpc=self.version, id=None)
+        response = ObjectDict(dict(jsonrpc=self.version, id=None))
 
         try:
             payload = self._validate_payload()
-            response['id'] = payload.get('id')
+            response.id = payload.get('id')
 
             action = self._get_action(payload['method'])
-            response['result'] = action(**(payload.get('params') or {}))
+            response.result = action(**(payload.get('params') or {}))
 
             if 'id' not in payload:
                 return None, httpcode.NO_CONTENT
 
         except rpc.RPCError as ex:
-            response['error'] = ex.as_dict()
+            response.error = ex.as_dict()
         except Exception as ex:
             cap.logger.exception(ex)
             mess = str(ex) if cap.config['DEBUG'] is True else None
-            response['error'] = rpc.RPCInternalError(message=mess).as_dict()
+            response.error = rpc.RPCInternalError(message=mess).as_dict()
 
         return response
 

@@ -1,7 +1,6 @@
 import flask
 
 from flaskel import httpcode
-from flaskel.utils.http import get_json
 from flaskel.views import Resource
 
 resources = [
@@ -26,14 +25,14 @@ class APIResource(Resource):
         return resources
 
     def on_post(self):
-        resources.append(get_json())
-        return get_json(), httpcode.CREATED
+        resources.append(flask.request.get_json())
+        return flask.request.get_json(), httpcode.CREATED
 
     def on_delete(self, res_id):
         resources.pop(res_id)
 
     def on_put(self, res_id):
-        resources[res_id - 1] = get_json()
+        resources[res_id - 1] = flask.request.get_json()
         return resources[res_id - 1]
 
     def sub_items(self, res_id):
@@ -43,5 +42,5 @@ class APIResource(Resource):
             return []
 
     def sub_items_post(self, res_id):
-        sub_resources[res_id - 1] = get_json()
+        sub_resources[res_id - 1] = flask.request.get_json()
         return sub_resources[res_id - 1], httpcode.CREATED

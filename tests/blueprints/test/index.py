@@ -1,8 +1,8 @@
 import flask
 
+from flaskel import cap, httpcode
+from flaskel.utils import uuid
 from . import test
-from flaskel import httpcode, cap
-from flaskel.utils import http, uuid
 
 
 @test.route('/method_override', methods=['POST', 'PUT'])
@@ -15,7 +15,7 @@ def test_https():
     remote = cap.extensions['cloudflareRemote']
     return {
         'address': remote.get_client_ip(),
-        'scheme': flask.request.scheme,
+        'scheme':  flask.request.scheme,
         'url_for': flask.url_for('test.test_https', _external=True)
     }
 
@@ -24,7 +24,7 @@ def test_https():
 def test_proxy():
     return {
         'script_name': flask.request.environ['SCRIPT_NAME'],
-        'original': flask.request.environ['werkzeug.proxy_fix.orig']
+        'original':    flask.request.environ['werkzeug.proxy_fix.orig']
     }
 
 
@@ -35,13 +35,14 @@ def list_converter(data):
 
 @test.route('/invalid-json', methods=['POST'])
 def get_invalid_json():
-    http.get_json()
+    flask.request.get_json()
     return '', httpcode.SUCCESS
 
 
 @test.route('/download')
 def download():
-    return http.send_file('./', flask.request.args.get('filename'))
+    response = cap.response_class
+    return response.send_file('./', flask.request.args.get('filename'))
 
 
 @test.route('/uuid')
@@ -56,8 +57,6 @@ def return_uuid():
 
 @test.route('/crypt/<passwd>')
 def crypt(passwd):
-    from flask import current_app as cap
-
     crypto = cap.extensions['argon2']
     return crypto.generate_hash(passwd)
 

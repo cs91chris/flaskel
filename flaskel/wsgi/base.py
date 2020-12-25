@@ -22,7 +22,7 @@ class BaseApplication:
 
         :return:
         """
-        raise NotImplemented
+        raise NotImplemented  # pragma: no cover
 
 
 class WSGIBuiltin(BaseApplication):

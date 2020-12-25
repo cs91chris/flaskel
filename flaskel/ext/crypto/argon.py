@@ -35,7 +35,7 @@ class Argon2:
         )
 
         if not hasattr(app, 'extensions'):
-            app.extensions = dict()
+            app.extensions = dict()  # pragma: no cover
         app.extensions['argon2'] = self
 
     def generate_hash(self, password):

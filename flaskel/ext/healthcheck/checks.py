@@ -9,7 +9,7 @@ def health_sqlalchemy(db):
             connection.execute('SELECT 1')
     except Exception as exc:
         return False, str(exc)
-    return True, None
+    return True, None  # pragma: no cover
 
 
 def health_mongo(db):
@@ -22,7 +22,7 @@ def health_mongo(db):
         db.db.command('ping')
     except Exception as exc:
         return False, str(exc)
-    return True, None
+    return True, None  # pragma: no cover
 
 
 def health_redis(db):
@@ -35,4 +35,4 @@ def health_redis(db):
         db.ping()
     except Exception as exc:
         return False, str(exc)
-    return True, None
+    return True, None  # pragma: no cover

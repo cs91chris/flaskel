@@ -28,9 +28,6 @@ class TestClient(FlaskClient):
 
 @pytest.fixture
 def app_prod():
-    """
-
-    """
     def test_health_true(**kwargs):
         return True, None
 
@@ -65,15 +62,12 @@ def app_prod():
     ).get_or_create(dict(TESTING=True))
 
     _app.test_client_class = TestClient
-    _app.config['USER_AGENT_AUTO_PARSE'] = True
+    _app.config.USER_AGENT_AUTO_PARSE = True
     return _app
 
 
 @pytest.fixture
 def app_dev():
-    """
-
-    """
     _app = AppFactory(
         blueprints=BLUEPRINTS,
         extensions=BASE_EXTENSIONS,
@@ -89,9 +83,4 @@ def app_dev():
 
 @pytest.fixture
 def testapp(app_prod):
-    """
-
-    :param app_prod:
-    :return:
-    """
     return app_prod.test_client()

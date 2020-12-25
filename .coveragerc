@@ -1,5 +1,8 @@
 [run]
 omit =
-	flaskel/cli.py,
+	flaskel/cli.py
 	flaskel/standalone.py
+	flaskel/utils/misc.py
+	flaskel/utils/faker/logger.py
 	flaskel/wsgi/*
+	flaskel/tester/*

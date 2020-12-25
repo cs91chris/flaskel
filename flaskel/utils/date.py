@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flaskel.config import DATE_ISO_FORMAT
+from flaskel import cap
 
 
 def from_iso_format(str_date, fmt, exc=True):
@@ -15,8 +15,8 @@ def from_iso_format(str_date, fmt, exc=True):
         return None
 
     try:
-        date = datetime.strptime(str_date, DATE_ISO_FORMAT)
-        return date.strftime(fmt)
+        date_time = datetime.strptime(str_date, cap.config.DATE_ISO_FORMAT)
+        return date_time.strftime(fmt)
     except (ValueError, TypeError):
         if exc is True:
             raise
@@ -34,9 +34,8 @@ def to_iso_format(str_date, fmt, exc=True):
         return None
 
     try:
-        return datetime.strptime(
-            str_date, fmt
-        ).strftime(DATE_ISO_FORMAT)
+        date_time = datetime.strptime(str_date, fmt)
+        return date_time.strftime(cap.config.DATE_ISO_FORMAT)
     except (ValueError, TypeError):
         if exc is True:
             raise

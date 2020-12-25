@@ -1,13 +1,15 @@
 import asyncio
 
 from .client import HTTPBase, httpcode
+from flaskel.utils.datastuct import ObjectDict
 
 try:
     import aiohttp
-except ImportError as err:
+except ImportError as err:  # pragma: no cover
     import warnings
 
     warnings.warn(str(err))
+    aiohttp = None
 
 
 class HTTPBatchRequests(HTTPBase):
@@ -29,6 +31,8 @@ class HTTPBatchRequests(HTTPBase):
         :param kwargs:
         :return:
         """
+        if not aiohttp:
+            raise ImportError("You must install 'aiohttp'")  # pragma: no cover
         try:
             async with session.request(**kwargs) as resp:
                 # noinspection PyProtectedMember
@@ -43,32 +47,32 @@ class HTTPBatchRequests(HTTPBase):
                 except aiohttp.ClientResponseError as exc:
                     self._logger.warning(self.dump_response(resp, self._dump_body))
                     if self._raise_on_exc is True:
-                        raise
+                        raise  # pragma: no cover
 
-                    return dict(
+                    return ObjectDict(dict(
                         body=body,
                         status=resp.status,
                         headers={k: v for k, v in resp.headers.items()},
                         exception=exc
-                    )
+                    ))
 
                 self._logger.info(self.dump_response(resp, self._dump_body))
-                return dict(
+                return ObjectDict(dict(
                     body=body,
                     status=resp.status,
                     headers={k: v for k, v in resp.headers.items()}
-                )
+                ))
         except aiohttp.ClientOSError as exc:
             self._logger.exception(exc)
             if self._raise_on_exc is True:
-                raise
+                raise  # pragma: no cover
 
-            return dict(
+            return ObjectDict(dict(
                 body={},
                 status=httpcode.SERVICE_UNAVAILABLE,
                 headers={},
                 exception=exc
-            )
+            ))
 
     async def _batch(self, requests):
         """
