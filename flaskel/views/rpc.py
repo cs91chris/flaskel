@@ -4,10 +4,10 @@ import inspect
 from flask import request
 from flask.views import View
 
-import flaskel.utils.http.rpc as rpc
-from flaskel.utils.datastuct import ObjectDict
+import flaskel.http.rpc as rpc
 from flaskel import cap, httpcode
 from flaskel.ext import builder
+from flaskel.utils.datastuct import ObjectDict
 
 
 class JSONRPCView(View):

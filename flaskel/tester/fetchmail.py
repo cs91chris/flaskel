@@ -1,6 +1,6 @@
 import time
 
-from flaskel.utils.http import HTTPClient
+from flaskel.http import HTTPClient
 
 
 class FetchMail(HTTPClient):

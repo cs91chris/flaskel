@@ -1,7 +1,7 @@
 import flask
 from flask_response_builder import encoders
 
-import flaskel.utils.http.http_status as httpcode
+import flaskel.http.http_status as httpcode
 from flaskel.utils.datastuct import ObjectDict
 
 

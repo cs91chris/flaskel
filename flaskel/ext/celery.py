@@ -20,7 +20,7 @@ class FlaskCelery:
         :return:
         """
         if not hasattr(app, 'extensions'):
-            app.extensions = {}
+            app.extensions = {}  # pragma: no cover
         app.extensions['celery'] = self
 
         self.session.conf.update(app.config.get('CELERY') or {})
