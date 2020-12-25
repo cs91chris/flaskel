@@ -3,13 +3,11 @@ import string
 import sys
 from random import SystemRandom
 
-import flask
 import jinja2
-from flask_response_builder import encoders
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from . import config
+from . import config, flaskel
 from .converters import CONVERTERS
 from .utils.datastuct import ObjectDict
 
@@ -37,13 +35,6 @@ class AppFactory:
     custom app config module
     """
     conf_module = config
-
-    """
-    additional options
-    """
-    options = {
-        "json_encoder": encoders.JsonEncoder
-    }
 
     def __init__(self, conf_module=None, extensions=None,
                  converters=(), blueprints=(), folders=(), middlewares=(), **options):
@@ -206,10 +197,6 @@ class AppFactory:
 
         :return:
         """
-        encoder = self.options.get('json_encoders')
-        if encoder:
-            self._app.json_encoder = encoder
-
         if self._app.config.get('DEBUG'):
             if self._app.config['WSGI_WERKZEUG_LINT_ENABLED']:
                 self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
@@ -231,9 +218,9 @@ class AppFactory:
 
         @self._app.before_first_request
         def create_database():
-            sqla = self._app.extensions.get('sqlalchemy')
-            if sqla is not None:
-                sqla.db.create_all()
+            sqlalchemy = self._app.extensions.get('sqlalchemy')
+            if sqlalchemy is not None:
+                sqlalchemy.db.create_all()
 
         error = self._app.extensions.get('errors_handler')
         if error:
@@ -245,7 +232,7 @@ class AppFactory:
         :param conf:
         :return:
         """
-        self._app = flask.Flask(self.app_name, **self._options)
+        self._app = flaskel.Flaskel(self.app_name, **self._options)
 
         self._set_config(conf)
         self._set_secret_key()
