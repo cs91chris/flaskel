@@ -1,6 +1,6 @@
 """
 Flaskel
--------------
+-------
 """
 import os
 import re
@@ -92,6 +92,7 @@ try:
         description='Skeleton for flask applications',
         long_description=readme('README.rst'),
         platforms='any',
+        python_requires='>3.6',
         zip_safe=False,
         packages=find_packages(),
         include_package_data=True,
@@ -104,7 +105,6 @@ try:
             ],
         },
         install_requires=[
-            "PyYAML",
             "Flask",
             "Flask-Cors",
             "Flask-ErrorsHandler",
@@ -112,17 +112,14 @@ try:
             "Flask-TemplateSupport",
             "Flask-CloudflareRemote",
             "Flask-Logify",
-            'python-decouple',
-            # TODO extras
+            "Flask-SqlAlchemy",
+            "PyYAML",
+            "python-decouple",
             "requests",
             "user-agents",
             "argon2-cffi",
-            "Flask-SqlAlchemy",
-            "flask_jwt_extended",
         ],
-        extras_requires={
-            'full': []
-        },
+        extras_requires={},
         tests_require=[
             'pytest',
             'pytest-cov'

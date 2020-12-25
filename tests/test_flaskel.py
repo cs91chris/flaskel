@@ -3,11 +3,11 @@ import os
 import flask
 import werkzeug.exceptions
 
-from flaskel import httpcode
+from flaskel import http, httpcode
+from flaskel.http.batch import HTTPBatchRequests
+from flaskel.http.rpc import RPCInvalidRequest, RPCMethodNotFound, RPCParseError
 from flaskel.tester.mixins import Asserter
-from flaskel.utils import datastuct, http, uuid
-from flaskel.utils.http.batch import HTTPBatchRequests
-from flaskel.utils.http.rpc import RPCInvalidRequest, RPCMethodNotFound, RPCParseError
+from flaskel.utils import datastuct, uuid
 # noinspection PyUnresolvedReferences
 from tests import app_dev, app_prod, testapp
 
@@ -22,10 +22,9 @@ def test_app_dev(app_dev):
 
     res = client.get('/test_https', base_url='http://' + app_dev.config.SERVER_NAME)
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    data = res.get_json()
-
-    Asserter.assert_equals(data['scheme'], 'http')
-    assert data['url_for'].startswith('http')
+    data = datastuct.ObjectDict(res.get_json())
+    Asserter.assert_equals(data.scheme, 'http')
+    Asserter.assert_true(data.url_for.startswith('http'))
 
 
 def test_app_runs(testapp):
@@ -97,24 +96,24 @@ def test_dispatch_error_api(testapp):
 def test_force_https(testapp):
     res = testapp.get('/test_https', base_url='http://' + testapp.application.config.SERVER_NAME)
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    data = res.get_json()
-    Asserter.assert_equals(data['scheme'], 'https')
-    assert data['url_for'].startswith('https')
+    data = datastuct.ObjectDict(res.get_json())
+    Asserter.assert_equals(data.scheme, 'https')
+    Asserter.assert_true(data.url_for.startswith('https'))
 
 
 def test_reverse_proxy(testapp):
     res = testapp.get('/proxy', headers={
         'X-Forwarded-Prefix': '/test'
     })
-    data = res.get_json()
+    data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_equals(data['script_name'], '/test')
-    Asserter.assert_equals(data['original']['SCRIPT_NAME'], '')
+    Asserter.assert_equals(data.script_name, '/test')
+    Asserter.assert_equals(data.original.SCRIPT_NAME, '')
 
 
 def test_secret_key_prod(testapp):
     Asserter.assert_equals(testapp.application.config.FLASK_ENV, 'production')
-    assert os.path.isfile('.secret.key')
+    Asserter.assert_true(os.path.isfile('.secret.key'))
     os.remove('.secret.key')
 
 
@@ -141,12 +140,12 @@ def test_utils_get_json(testapp):
 
 
 def test_utils_send_file(testapp):
-    res = testapp.get('/download?filename=MANIFEST.in')
+    filename = 'MANIFEST.in'
+    res = testapp.get(f'/download?filename={filename}')
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-
-    assert res.headers.get('X-Sendfile').endswith('./MANIFEST.in')
-    Asserter.assert_equals(res.headers.get('Content-Disposition'), 'attachment; filename=MANIFEST.in')
-    Asserter.assert_equals(res.headers.get('X-Accel-Redirect'), './MANIFEST.in')
+    Asserter.assert_true(res.headers.get('X-Sendfile').endswith(f'./{filename}'))
+    Asserter.assert_equals(res.headers.get('Content-Disposition'), f'attachment; filename={filename}')
+    Asserter.assert_equals(res.headers.get('X-Accel-Redirect'), f'./{filename}')
     Asserter.assert_equals(res.data, b'')
 
     res = testapp.get('/download?filename=nofile.txt')
@@ -166,7 +165,7 @@ def test_utils_uuid(testapp):
 def test_crypto(testapp):
     passwd = 'my-favourite-password'
     crypto = testapp.application.extensions['argon2']
-    res = testapp.get('/crypt/{}'.format(passwd))
+    res = testapp.get(f'/crypt/{passwd}')
     Asserter.assert_true(crypto.verify_hash(res.data, passwd))
     Asserter.assert_false(crypto.verify_hash(res.data, "wrong-pass"))
 
@@ -204,12 +203,12 @@ def test_utils_http_client_filename(testapp):
     with testapp.application.app_context():
         filename = "pippo.txt"
         res = api.get('/response-headers', params={
-            'Content-Disposition': "attachment; filename={}".format(filename)
+            'Content-Disposition': f"attachment; filename={filename}"
         })
         Asserter.assert_equals(api.response_filename(res.headers), filename)
 
         res = api.post('/response-headers', params={
-            'Content-Disposition': "filename={}".format(filename)
+            'Content-Disposition': f"filename={filename}"
         })
         Asserter.assert_equals(api.response_filename(res.headers), filename)
 
@@ -246,7 +245,6 @@ def test_utils_http_jsonrpc_client(testapp):
 def test_healthcheck(testapp):
     res = testapp.get('/healthcheck')
     data = datastuct.ObjectDict(res.get_json())
-
     Asserter.assert_equals(res.status_code, httpcode.SERVICE_UNAVAILABLE)
     Asserter.assert_equals(res.headers['Content-Type'], 'application/health+json')
     Asserter.assert_equals(data.status, 'fail')
@@ -268,7 +266,6 @@ def test_api_jsonrpc_success(testapp):
         "params":  None,
         "id":      call_id
     })
-
     data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
     Asserter.assert_equals(data.jsonrpc, "2.0")
@@ -291,7 +288,6 @@ def test_api_jsonrpc_error(testapp):
         "method":  "NotFoundMethod",
         "id":      call_id
     })
-
     data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
     Asserter.assert_equals(data.error.code, RPCMethodNotFound().code)
@@ -315,7 +311,6 @@ def test_api_jsonrpc_error(testapp):
 def test_useragent(testapp):
     res = testapp.get('/useragent')
     data = datastuct.ObjectDict(res.get_json())
-
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
     Asserter.assert_allin(data.keys(), (
         'browser', 'device', 'os', 'raw'

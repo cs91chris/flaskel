@@ -1,5 +1,3 @@
-# example web blueprint
-#
 from flask import Blueprint
 
 from flaskel.ext import errors
