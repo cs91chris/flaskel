@@ -1,9 +1,13 @@
 import asyncio
 
-import aiohttp
-
-from . import misc
 from .client import HTTPBase, httpcode
+
+try:
+    import aiohttp
+except ImportError as err:
+    import warnings
+
+    warnings.warn(str(err))
 
 
 class HTTPBatchRequests(HTTPBase):
@@ -28,7 +32,7 @@ class HTTPBatchRequests(HTTPBase):
         try:
             async with session.request(**kwargs) as resp:
                 # noinspection PyProtectedMember
-                self._logger.info(misc.dump_request(resp._request_info))
+                self._logger.info(self.dump_request(resp._request_info))
                 try:
                     body = await resp.json()
                 except (aiohttp.ContentTypeError, ValueError, TypeError):
@@ -37,17 +41,18 @@ class HTTPBatchRequests(HTTPBase):
                 try:
                     resp.raise_for_status()
                 except aiohttp.ClientResponseError as exc:
-                    self._logger.warning(misc.dump_response(resp, self._dump_body))
+                    self._logger.warning(self.dump_response(resp, self._dump_body))
                     if self._raise_on_exc is True:
                         raise
 
                     return dict(
                         body=body,
                         status=resp.status,
-                        headers={k: v for k, v in resp.headers.items()}
+                        headers={k: v for k, v in resp.headers.items()},
+                        exception=exc
                     )
 
-                self._logger.info(misc.dump_response(resp, self._dump_body))
+                self._logger.info(self.dump_response(resp, self._dump_body))
                 return dict(
                     body=body,
                     status=resp.status,

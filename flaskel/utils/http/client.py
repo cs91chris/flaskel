@@ -1,9 +1,11 @@
 from requests import auth, exceptions as http_exc, request as send_request
 
-from . import http_status as httpcode, misc
+from flaskel.utils.datastuct import ObjectDict
 from flaskel.utils.faker import FakeLogger
 from flaskel.utils.uuid import get_uuid
-from flaskel.utils.datastuct import ObjectDict
+from . import http_status as httpcode
+from .httpdumper import HTTPDumper
+
 
 class HTTPTokenAuth(auth.AuthBase):
     def __init__(self, token):
@@ -39,7 +41,7 @@ class HTTPTokenAuth(auth.AuthBase):
         return r
 
 
-class HTTPBase:
+class HTTPBase(HTTPDumper):
     def __init__(self, dump_body=False, raise_on_exc=False, logger=None):
         """
 
@@ -58,7 +60,7 @@ class HTTPBase:
         :param dump_body:
         :param kwargs:
         """
-        raise NotImplemented
+        raise NotImplemented  # pragma: no cover
 
 
 class HTTPClient(HTTPBase):
@@ -110,7 +112,7 @@ class HTTPClient(HTTPBase):
         try:
             url = "{}{}".format(self._endpoint, uri)
             response = send_request(method, url, **kwargs)
-            self._logger.info(misc.dump_request(response.request))
+            self._logger.info(self.dump_request(response.request))
         except (http_exc.ConnectionError, http_exc.Timeout) as exc:
             self._logger.exception(exc)
             if self._raise_on_exc:
@@ -126,12 +128,12 @@ class HTTPClient(HTTPBase):
         try:
             response.raise_for_status()
         except http_exc.HTTPError as exc:
-            self._logger.warning(misc.dump_response(response, dump_body))
+            self._logger.warning(self.dump_response(response, dump_body))
             response = exc.response
             if self._raise_on_exc:
                 raise
         else:
-            self._logger.info(misc.dump_response(response, dump_body))
+            self._logger.info(self.dump_response(response, dump_body))
 
         if kwargs.get('stream') is True:
             body = response.iter_content(chunk_size, decode_unicode)
