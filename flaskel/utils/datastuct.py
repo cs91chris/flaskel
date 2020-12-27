@@ -50,3 +50,6 @@ class ObjectDict(dict):
         """
         if name in self:
             del self[name]
+
+
+emptydict = ObjectDict({})

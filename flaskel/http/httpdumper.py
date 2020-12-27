@@ -43,15 +43,14 @@ class HTTPDumper:
         :return: prettified representation of input as string
         """
         if dump_body is True:
-            req_body = req.body or "empty body"
-            if type(req_body) is not str:
-                req_body = req_body.decode()
+            body = req.body or "empty body"
+            if type(body) is not str:
+                body = body.decode()
         else:
-            req_body = "request body not dumped"
+            body = "request body not dumped"
 
-        return '{} {}\nheaders:\n{}\nbody:\n{}'.format(
-            req.method, req.url, cls.dump_headers(req.headers), req_body
-        )
+        headers = cls.dump_headers(req.headers)
+        return f"{req.method} {req.url}\nheaders:\n{headers}\nbody:\n{body}"
 
     @classmethod
     def dump_response(cls, response, dump_body=None):
@@ -66,19 +65,17 @@ class HTTPDumper:
         hdr = resp.headers
 
         if dump_body is True:
-            resp_body = cls.response_filename(resp.headers) or resp.text
-            if type(resp_body) is not str:
-                resp_body = resp_body.decode()
+            body = cls.response_filename(resp.headers) or resp.text
+            if type(body) is not str:
+                body = body.decode()
         else:
-            resp_body = "response body not dumped"
-
-        status_code = resp.status_code if hasattr(resp, 'status_code') else resp.status
+            body = "response body not dumped"
 
         try:
-            return 'time : {} - status code: {}\nheaders:\n{}\nbody:\n{}'.format(
-                resp.elapsed.total_seconds(), status_code, cls.dump_headers(hdr), resp_body
-            )
+            seconds = resp.elapsed.total_seconds()
         except AttributeError:  # because aiohttp.ClientResponse has not elapsed attribute
-            return 'status code: {}\nheaders:\n{}\nbody:\n{}'.format(
-                status_code, cls.dump_headers(hdr), resp_body
-            )
+            seconds = 'N/A'
+
+        headers = cls.dump_headers(hdr)
+        status = resp.status_code if hasattr(resp, 'status_code') else resp.status
+        return f"time : {seconds} - status code: {status}\nheaders:\n{headers}\nbody:\n{body}"

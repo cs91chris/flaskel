@@ -60,7 +60,7 @@ class PyTest(test):
 
 
 setup(
-    name='',
+    name='{skeleton}',
     url='',
     license='MIT',
     version=grep(VERSION_FILE, '__version__'),
@@ -74,7 +74,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'flaskel-app = cli:cli',
+            'flaskel-app = {skeleton}.cli:cli',
         ],
     },
     install_requires=[

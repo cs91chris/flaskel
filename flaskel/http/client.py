@@ -106,6 +106,8 @@ class HTTPClient(HTTPBase):
         :return:
         """
         kwargs['auth'] = self.get_auth()
+        if dump_body is None:
+            dump_body = self._dump_body
         if kwargs.get('stream') is True:
             dump_body = False
 

@@ -50,8 +50,8 @@ def init(name):
 
         cli_file = Path(os.path.join(destination, 'cli.py'))
         text = cli_file.read_text()
-        text = text.replace('from .ext', 'from {}.ext'.format(name))
-        text = text.replace('from .blueprint', 'from {}.blueprint'.format(name))
+        text = text.replace('from ext', f"from {name}.ext")
+        text = text.replace('from blueprint', f"from {name}.blueprint")
         cli_file.write_text(text)
     except OSError as e:
         print('Unable to create new app. Error: %s' % str(e), file=sys.stderr)

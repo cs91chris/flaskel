@@ -113,17 +113,17 @@ try:
             "Flask-CloudflareRemote",
             "Flask-Logify",
             "Flask-SqlAlchemy",
+            "sqlalchemy_schemadisplay",
             "PyYAML",
             "python-decouple",
             "requests",
             "user-agents",
             "argon2-cffi",
+            "jsonschema",
+            "pytest==5.4.1",
+            "pytest-cov==2.8.1",
         ],
         extras_requires={},
-        tests_require=[
-            'pytest',
-            'pytest-cov'
-        ],
         cmdclass={'test': PyTest},
         test_suite='tests',
         classifiers=[

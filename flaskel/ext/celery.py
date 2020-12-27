@@ -24,7 +24,7 @@ class FlaskCelery:
         app.extensions['celery'] = self
 
         self.session.conf.update(app.config.get('CELERY') or {})
-        app.logger.debug("Celery configuration\n:{}".format(dict(self.session.conf)))
+        app.logger.debug(f"Celery configuration\n:{dict(self.session.conf)}")
 
         class ContextTask(self.session.Task):
             abstract = True

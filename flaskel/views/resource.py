@@ -8,7 +8,7 @@ from flaskel.ext import builder
 
 class Resource(MethodView):
     @builder.on_accept()
-    def get(self, res_id=None, sub_resource=None):
+    def get(self, *args, res_id=None, sub_resource=None, **kwargs):
         """
 
         :param res_id:
@@ -16,65 +16,50 @@ class Resource(MethodView):
         :return:
         """
         if res_id is None:
-            return self.on_collection()
+            return self.on_collection(*args, **kwargs)
 
         if sub_resource is None:
-            return self.on_get(res_id)
+            return self.on_get(res_id, *args, **kwargs)
 
         try:
             _sub_resource = getattr(self, "sub_{}".format(sub_resource))
-            return _sub_resource(res_id)
+            return _sub_resource(res_id, *args, **kwargs)
         except AttributeError:
             flask.abort(httpcode.NOT_FOUND)
 
     @builder.on_accept()
-    def post(self, res_id=None, sub_resource=None):
+    def post(self, *args, res_id=None, sub_resource=None, **kwargs):
         """
 
         :return:
         """
         if res_id is None:
-            return self.on_post()
+            return self.on_post(*args, **kwargs)
         try:
             _sub_resource_post = getattr(self, "sub_{}_post".format(sub_resource))
-            return _sub_resource_post(res_id)
+            return _sub_resource_post(res_id, *args, **kwargs)
         except AttributeError:
             flask.abort(httpcode.NOT_FOUND)
 
     @builder.no_content
-    def delete(self, res_id):
+    def delete(self, res_id, *args, **kwargs):
         """
 
         :param res_id:
         :return:
         """
-        return self.on_delete(res_id)
+        return self.on_delete(res_id, *args, **kwargs)
 
     @builder.on_accept()
-    def put(self, res_id):
+    def put(self, res_id, *args, **kwargs):
         """
 
         :param res_id:
         :return:
         """
-        return self.on_put(res_id)
+        return self.on_put(res_id, *args, **kwargs)
 
-    def on_get(self, res_id):
-        """
-
-        :param res_id:
-        :return:
-        """
-        self._not_implemented()  # pragma: no cover
-
-    def on_post(self):
-        """
-
-        :return:
-        """
-        self._not_implemented()  # pragma: no cover
-
-    def on_put(self, res_id):
+    def on_get(self, res_id, *args, **kwargs):
         """
 
         :param res_id:
@@ -82,7 +67,14 @@ class Resource(MethodView):
         """
         self._not_implemented()  # pragma: no cover
 
-    def on_delete(self, res_id):
+    def on_post(self, *args, **kwargs):
+        """
+
+        :return:
+        """
+        self._not_implemented()  # pragma: no cover
+
+    def on_put(self, res_id, *args, **kwargs):
         """
 
         :param res_id:
@@ -90,7 +82,15 @@ class Resource(MethodView):
         """
         self._not_implemented()  # pragma: no cover
 
-    def on_collection(self):
+    def on_delete(self, res_id, *args, **kwargs):
+        """
+
+        :param res_id:
+        :return:
+        """
+        self._not_implemented()  # pragma: no cover
+
+    def on_collection(self, *args, **kwargs):
         """
 
         :return:
@@ -143,7 +143,7 @@ class SQLAResource(Resource):
         self._db = db
         self._model = model
 
-    def on_get(self, res_id):
+    def on_get(self, res_id, *args, **kwargs):
         """
 
         :param res_id:
@@ -151,7 +151,7 @@ class SQLAResource(Resource):
         res = self.query.get_or_404(res_id)
         return res.to_dict()
 
-    def on_collection(self, **kwargs):
+    def on_collection(self, *args, **kwargs):
         """
 
         :return:
@@ -161,7 +161,7 @@ class SQLAResource(Resource):
             res_list.append(r.to_dict(restricted=True))
         return res_list
 
-    def on_post(self, payload=None):
+    def on_post(self, payload=None, *args, **kwargs):
         """
 
         :param payload:
@@ -179,7 +179,7 @@ class SQLAResource(Resource):
 
         return res.to_dict(), httpcode.CREATED
 
-    def on_delete(self, res_id):
+    def on_delete(self, res_id, *args, **kwargs):
         """
 
         :param res_id:
@@ -188,7 +188,7 @@ class SQLAResource(Resource):
         res.delete()
         self._db.session.commit()
 
-    def on_put(self, res_id, payload=None):
+    def on_put(self, res_id, payload=None, *args, **kwargs):
         """
 
         :param res_id:

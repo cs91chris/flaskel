@@ -1,5 +1,6 @@
 import functools
-from flaskel import httpcode, cap
+
+from flaskel import cap, httpcode
 from flaskel.ext import builder
 
 
@@ -32,8 +33,7 @@ class HealthCheck:
         )
 
         for ex in extensions:
-            f = ex.pop('func')
-            self.register(**ex)(f)
+            self.register(**ex)(ex.pop('func'))
 
     @builder.response('json')
     def do_health_check(self):
@@ -65,8 +65,7 @@ class HealthCheck:
             response['status'] = 'fail'
 
         status = httpcode.SUCCESS if healthy else httpcode.SERVICE_UNAVAILABLE
-        return response, status, \
-            {'Content-Type': cap.config['HEALTHCHECK_CONTENT_TYPE']}
+        return response, status, {'Content-Type': cap.config['HEALTHCHECK_CONTENT_TYPE']}
 
     def register(self, name=None, **kwargs):
         """
@@ -75,6 +74,7 @@ class HealthCheck:
         :param kwargs:
         :return:
         """
+
         def _register(func):
             """
 
@@ -89,4 +89,5 @@ class HealthCheck:
                 self._health_checks[name] = functools.partial(func, **kwargs)
 
             return wrapped()
+
         return _register

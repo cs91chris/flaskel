@@ -125,13 +125,15 @@ class AppFactory:
                     if not ext:
                         raise TypeError("extension could not be None")
                 except (TypeError, IndexError) as exc:
-                    mess = "Invalid extension '{}' configuration '{}':\n{}"
-                    self._app.logger.debug(mess.format(name, e, exc))
+                    self._app.logger.debug(
+                        f"Invalid extension '{name}' configuration '{e}': {exc}"
+                    )
                     continue
 
                 ext.init_app(self._app, **opt)
-                mess = "Registered extension '{}' with options: {}"
-                self._app.logger.debug(mess.format(name, str(opt)))
+                self._app.logger.debug(
+                    f"Registered extension '{name}' with options: {str(opt)}"
+                )
 
     def _register_blueprints(self):
         """
@@ -144,11 +146,11 @@ class AppFactory:
                 if not bp:
                     raise TypeError('blueprint could not be None')
             except (TypeError, IndexError) as exc:
-                self._app.logger.debug("invalid blueprint configuration '{}':\n{}".format(b, exc))
+                self._app.logger.debug(f"invalid blueprint configuration '{b}': {exc}")
                 continue
 
             self._app.register_blueprint(bp, **opt)
-            self._app.logger.debug("Registered blueprint '%s' with options: %s", bp.name, str(opt))
+            self._app.logger.debug(f"Registered blueprint '{bp.name}' with options: {str(opt)}")
 
     def _set_config(self, conf):
         """

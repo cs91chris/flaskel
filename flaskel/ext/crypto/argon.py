@@ -45,7 +45,7 @@ class Argon2:
         :return:
         """
         if not password:
-            raise ValueError('password must be not empty')
+            raise ValueError('password must not be empty')
         return self._ph.hash(password)
 
     def verify_hash(self, pw_hash, password, exc=False):
