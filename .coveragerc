@@ -4,5 +4,6 @@ omit =
 	flaskel/standalone.py
 	flaskel/utils/misc.py
 	flaskel/utils/faker/logger.py
+	flaskel/ext/sqlalchemy/schema.py
 	flaskel/wsgi/*
 	flaskel/tester/*

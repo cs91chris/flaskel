@@ -7,7 +7,7 @@ from flaskel import http, httpcode
 from flaskel.http.batch import HTTPBatchRequests
 from flaskel.http.rpc import RPCInvalidRequest, RPCMethodNotFound, RPCParseError
 from flaskel.tester.mixins import Asserter
-from flaskel.utils import datastuct, uuid
+from flaskel.utils import datastuct, date, uuid
 # noinspection PyUnresolvedReferences
 from tests import app_dev, app_prod, testapp
 
@@ -315,3 +315,23 @@ def test_useragent(testapp):
     Asserter.assert_allin(data.keys(), (
         'browser', 'device', 'os', 'raw'
     ))
+
+
+def test_utils_date_conversion(testapp):
+    exc = False
+    fmt = "%d %B %Y %I:%M %p"
+    iso_date = '2020-12-28T19:53:00'
+    not_iso_date = '28 December 2020 07:53 PM'
+    invalid_date = 'invalid_date'
+
+    with testapp.application.app_context():
+        res = date.from_iso_format(iso_date, fmt, exc=exc)
+        Asserter.assert_true(res)
+        Asserter.assert_equals(not_iso_date, res)
+        res = date.to_iso_format(not_iso_date, fmt, exc=exc)
+        Asserter.assert_true(res)
+        Asserter.assert_equals(iso_date, res)
+        res = date.from_iso_format(invalid_date, fmt, exc=exc)
+        Asserter.assert_none(res)
+        res = date.to_iso_format(invalid_date, fmt, exc=exc)
+        Asserter.assert_none(res)
