@@ -50,8 +50,7 @@ class JSONRPCView(View):
             raise rpc.RPCInvalidRequest() from None
 
         if payload['jsonrpc'] != self.version:
-            mess = "jsonrpc version is {}".format(self.version)
-            raise rpc.RPCInvalidRequest(message=mess) from None
+            raise rpc.RPCInvalidRequest(f"jsonrpc version is {self.version}") from None
 
         return payload
 
@@ -148,6 +147,6 @@ class JSONRPCView(View):
 
         url = url.rstrip('/')
         if not url.startswith('/'):
-            url = '/{}'.format(url)
+            url = f"/{url}"
 
         app.add_url_rule(url, view_func=view_func, methods=self.methods)

@@ -9,7 +9,7 @@ APP_HOST = config('APP_HOST', default='127.0.0.1')
 APP_PORT = config('APP_PORT', default=5000)
 FLASK_APP = config('FLASK_APP', default="app:app")
 FLASK_ENV = config('FLASK_ENV', default="production")
-SERVER_NAME = config('SERVER_NAME', default="{}:{}".format(APP_HOST, APP_PORT))
+SERVER_NAME = config('SERVER_NAME', default=f"{APP_HOST}:{APP_PORT}")
 
 LOCALE = config('LOCALE', default="en_EN.utf8")
 TEMPLATES_AUTO_RELOAD = config("TEMPLATES_AUTO_RELOAD", default=DEBUG)

@@ -18,78 +18,54 @@ class RPCError(Exception):
 
         :return:
         """
-        return ObjectDict(dict(
-            code=self.code,
-            message=self.message,
-            data=self.data
-        ))
+        return ObjectDict(dict(code=self.code, message=self.message, data=self.data))
 
 
 class RPCParseError(RPCError):
-    def __init__(self, message=None, data=None):
+    def __init__(self, message='Invalid JSON was received by the server', data=None):
         """
 
         :param message:
         :param data:
         """
-        super().__init__(
-            -32700,
-            message or 'Invalid JSON was received by the server',
-            data
-        )
+        super().__init__(-32700, message, data)
 
 
 class RPCInvalidRequest(RPCError):
-    def __init__(self, message=None, data=None):
+    def __init__(self, message='The JSON sent is not a valid Request object', data=None):
         """
 
         :param message:
         :param data:
         """
-        super().__init__(
-            -32600,
-            message or 'The JSON sent is not a valid Request object',
-            data
-        )
+        super().__init__(-32600, message, data)
 
 
 class RPCMethodNotFound(RPCError):
-    def __init__(self, message=None, data=None):
+    def __init__(self, message='The method does not exist or is not available', data=None):
         """
 
         :param message:
         :param data:
         """
-        super().__init__(
-            -32601,
-            message or 'The method does not exist or is not available',
-            data
-        )
+        super().__init__(-32601, message, data)
 
 
 class RPCInvalidParams(RPCError):
-    def __init__(self, message=None, data=None):
+    def __init__(self, message='Invalid method parameter(s)', data=None):
         """
 
         :param message:
         :param data:
         """
-        super().__init__(
-            -32602,
-            message or 'Invalid method parameter(s)',
-            data
-        )
+        super().__init__(-32602, message, data)
 
 
 class RPCInternalError(RPCError):
-    def __init__(self, message=None, data=None):
+    def __init__(self, message='Internal JSON-RPC error', data=None):
         """
 
         :param message:
         :param data:
         """
-        super().__init__(
-            -32603,
-            message or 'Internal JSON-RPC error',
-            data
-        )
+        super().__init__(-32603, message, data)

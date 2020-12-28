@@ -37,7 +37,7 @@ class HTTPTokenAuth(auth.AuthBase):
         :param r:
         :return:
         """
-        r.headers['Authorization'] = "Bearer {}".format(self.token)
+        r.headers['Authorization'] = f"Bearer {self.token}"
         return r
 
 
@@ -112,8 +112,7 @@ class HTTPClient(HTTPBase):
             dump_body = False
 
         try:
-            url = "{}{}".format(self._endpoint, uri)
-            response = send_request(method, url, **kwargs)
+            response = send_request(method, f"{self._endpoint}{uri}", **kwargs)
             self._logger.info(self.dump_request(response.request))
         except (http_exc.ConnectionError, http_exc.Timeout) as exc:
             self._logger.exception(exc)

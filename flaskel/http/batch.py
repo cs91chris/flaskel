@@ -1,7 +1,7 @@
 import asyncio
 
-from .client import HTTPBase, httpcode
 from flaskel.utils.datastuct import ObjectDict
+from .client import HTTPBase, httpcode
 
 try:
     import aiohttp

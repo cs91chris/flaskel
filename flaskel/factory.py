@@ -71,8 +71,7 @@ class AppFactory:
         with open(secret_file, 'w') as f:
             f.write(secret_key)
             abs_file = os.path.abspath(secret_file)
-            mess = "new secret key generated: take care of this file:{}"
-            self._app.logger.warning(mess.format(abs_file))
+            self._app.logger.warning(f"new secret key generated: take care of this file:{abs_file}")
         return secret_key
 
     def _load_secret_key(self, secret_file):
@@ -86,7 +85,7 @@ class AppFactory:
 
         with open(secret_file, 'r') as f:
             secret_key = f.read()
-            self._app.logger.info("load secret key from: {}".format(secret_file))
+            self._app.logger.info(f"load secret key from: {secret_key}")
         return secret_key
 
     def _set_secret_key(self):
@@ -111,7 +110,7 @@ class AppFactory:
 
         self._app.config['SECRET_KEY'] = secret_key or self._app.config['SECRET_KEY']
         if len(secret_key) < key_length:
-            self._app.logger.warning("secret key length is less than: {}".format(key_length))
+            self._app.logger.warning(f"secret key length is less than: {key_length}")
 
     def _register_extensions(self):
         """
@@ -171,7 +170,7 @@ class AppFactory:
         self._app.url_map.converters.update(conv)
 
         for k in conv.keys():
-            self._app.logger.debug("Registered converter: '{}'".format(k))
+            self._app.logger.debug(f"Registered converter: '{k}'")
 
     def _register_template_folders(self):
         """
@@ -183,8 +182,9 @@ class AppFactory:
             loaders.append(jinja2.FileSystemLoader(fsl))
 
         if self._folders:
+            folders = ", ".join(self._folders)
             self._app.jinja_loader = jinja2.ChoiceLoader(loaders)
-            self._app.logger.debug("Registered template folders: '{}'".format(", ".join(self._folders)))
+            self._app.logger.debug(f"Registered template folders: '{folders}'")
 
     def _register_middlewares(self):
         """
@@ -192,7 +192,7 @@ class AppFactory:
         """
         for middleware in (self._middlewares or []):
             self._app.wsgi_app = middleware(self._app.wsgi_app)
-            self._app.logger.debug("Registered middleware: '{}'".format(middleware))
+            self._app.logger.debug(f"Registered middleware: '{middleware}'")
 
     def _patch_app(self):
         """

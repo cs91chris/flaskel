@@ -375,7 +375,7 @@ class RegexMixin(BaseAssert):
 
 class Asserter(
     AssertMixin,
+    RegexMixin,
     JSONValidatorMixin,
-    RegexMixin
 ):
     """single interface that inherits all Asserter mixins"""
