@@ -133,7 +133,9 @@ class Resource(MethodView):
         )
 
 
-class SQLAResource(Resource):
+class Restful(Resource):  # pragma: no cover
+    """TODO Not tested yet"""
+
     def __init__(self, db, model):
         """
 
@@ -148,7 +150,7 @@ class SQLAResource(Resource):
 
         :param res_id:
         """
-        res = self.query.get_or_404(res_id)
+        res = self._model.query.get_or_404(res_id)
         return res.to_dict()
 
     def on_collection(self, *args, **kwargs):
