@@ -120,6 +120,7 @@ try:
             "user-agents",
             "argon2-cffi",
             "jsonschema",
+            "webargs",
             "pytest==5.4.1",
             "pytest-cov==2.8.1",
         ],
