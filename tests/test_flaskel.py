@@ -8,8 +8,11 @@ from flaskel.http.batch import HTTPBatchRequests
 from flaskel.http.rpc import RPCInvalidRequest, RPCMethodNotFound, RPCParseError
 from flaskel.tester.mixins import Asserter
 from flaskel.utils import datastuct, date, uuid
+from flaskel.utils.yaml import setup_yaml_parser
 # noinspection PyUnresolvedReferences
 from tests import app_dev, app_prod, testapp
+
+setup_yaml_parser()
 
 
 def test_app_dev(app_dev):

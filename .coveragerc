@@ -7,3 +7,4 @@ omit =
 	flaskel/ext/sqlalchemy/schema.py
 	flaskel/wsgi/*
 	flaskel/tester/*
+	flaskel/ext/celery.py

@@ -48,13 +48,23 @@ def init(name):
         else:
             os.remove(os.path.join(destination, 'setup.py'))
 
+        if not os.path.isdir('config'):
+            shutil.move(os.path.join(destination, 'config'), '.')
+        else:
+            os.remove(os.path.join(destination, 'config'))
+
+        if not os.path.isfile('Dockerfile'):
+            shutil.move(os.path.join(destination, 'Dockerfile'), '.')
+        else:
+            os.remove(os.path.join(destination, 'Dockerfile'))
+
         cli_file = Path(os.path.join(destination, 'cli.py'))
         text = cli_file.read_text()
         text = text.replace('from ext', f"from {name}.ext")
         text = text.replace('from blueprint', f"from {name}.blueprint")
         cli_file.write_text(text)
     except OSError as e:
-        print('Unable to create new app. Error: %s' % str(e), file=sys.stderr)
+        print(f"Unable to create new app. Error: {e}", file=sys.stderr)
 
 
 @cli.command(name='tests')

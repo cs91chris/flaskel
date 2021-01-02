@@ -3,13 +3,8 @@ import os
 import pytest
 from flask.testing import FlaskClient
 
-from flaskel import AppFactory
-from flaskel.ext import BASE_EXTENSIONS
-from flaskel.ext.crypto import Argon2
-from flaskel.ext.healthcheck import health_checks, health_mongo, health_redis, health_sqlalchemy
-from flaskel.ext.sqlalchemy import db as dbsqla
-from flaskel.ext.useragent import UserAgent
-from flaskel.patch import ForceHttps, HTTPMethodOverride, ReverseProxied
+from flaskel import AppFactory, middlewares
+from flaskel.ext import BASE_EXTENSIONS, crypto, healthcheck, sqlalchemy, useragent
 from tests.blueprints import BLUEPRINTS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -36,9 +31,9 @@ def app_prod():
 
     extra_ext = {
         "empty":         (None, (None,)),  # NB: needed to complete coverage
-        "useragent":     (UserAgent(),),
-        "argon2":        (Argon2(),),
-        "health_checks": (health_checks, {'extensions': (
+        "useragent":     (useragent.UserAgent(),),
+        "argon2":        (crypto.Argon2(),),
+        "health_checks": (healthcheck.health_checks, {'extensions': (
             {
                 'name': 'health_true',
                 'func': test_health_true,
@@ -49,14 +44,14 @@ def app_prod():
         )},),
     }
 
-    health_checks.register('mongo', db=dbsqla)(health_mongo)
-    health_checks.register('redis', db=dbsqla)(health_redis)
-    health_checks.register('sqlalchemy', db=dbsqla)(health_sqlalchemy)
+    healthcheck.health_checks.register('mongo', db=sqlalchemy.db)(healthcheck.health_mongo)
+    healthcheck.health_checks.register('redis', db=sqlalchemy.db)(healthcheck.health_redis)
+    healthcheck.health_checks.register('sqlalchemy', db=sqlalchemy.db)(healthcheck.health_sqlalchemy)
 
     _app = AppFactory(
         blueprints=(*BLUEPRINTS, *(None,), *((None,),)),  # NB: needed to complete coverage
         extensions={**BASE_EXTENSIONS, **extra_ext},
-        middlewares=(ForceHttps, HTTPMethodOverride, ReverseProxied),
+        middlewares=(middlewares.ForceHttps, middlewares.HTTPMethodOverride, middlewares.ReverseProxied),
         folders=["skeleton/blueprints/web/templates"],
         static_folder="skeleton/blueprints/web/static"
     ).get_or_create(dict(TESTING=True))

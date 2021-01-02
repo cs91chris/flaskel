@@ -224,10 +224,6 @@ class AppFactory:
             if sqlalchemy is not None:
                 sqlalchemy.db.create_all()
 
-        error = self._app.extensions.get('errors_handler')
-        if error:
-            error.failure_register(self._app)
-
     def create(self, conf=None):
         """
 
