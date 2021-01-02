@@ -5,14 +5,11 @@ import yaml
 
 from flaskel import AppFactory
 from flaskel.utils.misc import parse_value
+from flaskel.utils.yaml import setup_yaml_parser
 from flaskel.wsgi import BaseApplication, WSGIFactory
 
-wsgi_types = click.Choice(
-    WSGIFactory.WSGI_SERVERS.keys(),
-    case_sensitive=False
-)
 
-
+# noinspection PyUnusedLocal
 def option_as_dict(ctx, param, value):
     """
 
@@ -50,7 +47,10 @@ class Server:
     )
     opt_wsgi_server_attr = dict(
         default=None,
-        type=wsgi_types,
+        type=click.Choice(
+            WSGIFactory.WSGI_SERVERS.keys(),
+            case_sensitive=False
+        ),
         help='name of wsgi server to use'
     )
     option_wsgi_config_attr = dict(
@@ -114,9 +114,11 @@ class Server:
         :param filename:
         :return: config
         """
+        setup_yaml_parser()
+
         if filename is not None:
             with open(filename) as f:
-                config = yaml.safe_load(f)
+                config = yaml.load(f, Loader=yaml.Loader)
         else:
             env = os.environ.get('FLASK_ENV')
             env = env or ('development' if kwargs['debug'] else 'production')
