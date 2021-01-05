@@ -65,7 +65,8 @@ class AppFactory:
         :param key_length:
         """
         secret_key = ''.join(
-            SystemRandom().choice(string.printable) for _ in range(key_length)
+            SystemRandom().choice(string.printable)
+            for _ in range(key_length)
         )
 
         with open(secret_file, 'w') as f:
@@ -93,10 +94,10 @@ class AppFactory:
 
         """
         secret_key = None
-        key_length = self._app.config['SECRET_KEY_MIN_LENGTH']
+        key_length = self._app.config.SECRET_KEY_MIN_LENGTH
 
         if not self._app.config.get('FLASK_ENV', '').lower().startswith('dev'):
-            secret_file = self._app.config.get('SECRET_KEY')
+            secret_file = self._app.config.SECRET_KEY
 
             if secret_file:
                 secret_key = self._load_secret_key(secret_file) or secret_file
@@ -108,7 +109,7 @@ class AppFactory:
             self._app.logger.debug('set secret key in development mode')
             secret_key = 'fake_very_complex_string'
 
-        self._app.config['SECRET_KEY'] = secret_key or self._app.config['SECRET_KEY']
+        self._app.config['SECRET_KEY'] = secret_key or self._app.config.SECRET_KEY
         if len(secret_key) < key_length:
             self._app.logger.warning(f"secret key length is less than: {key_length}")
 
@@ -203,14 +204,14 @@ class AppFactory:
 
         :return:
         """
-        if self._app.config.get('DEBUG'):
-            if self._app.config['WSGI_WERKZEUG_LINT_ENABLED']:
+        if self._app.config.DEBUG:
+            if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
                 self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
 
-            if self._app.config['WSGI_WERKZEUG_PROFILER_ENABLED']:
-                stream = self._app.config['WSGI_WERKZEUG_PROFILER_FILE']
+            if self._app.config.WSGI_WERKZEUG_PROFILER_ENABLED:
+                stream = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
                 if stream:
-                    stream = open(self._app.config['WSGI_WERKZEUG_PROFILER_FILE'], 'w')
+                    stream = open(self._app.config.WSGI_WERKZEUG_PROFILER_FILE, 'w')
                 else:
                     stream = sys.stdout
             else:
@@ -219,7 +220,7 @@ class AppFactory:
             self._app.wsgi_app = ProfilerMiddleware(
                 self._app.wsgi_app,
                 stream=stream,
-                restrictions=self._app.config['WSGI_WERKZEUG_PROFILER_RESTRICTION']
+                restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION
             )
 
         @self._app.before_first_request

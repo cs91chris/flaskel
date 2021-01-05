@@ -1,11 +1,10 @@
 import os
-
 import click
-import yaml
+import decouple
 
 from flaskel import AppFactory
 from flaskel.utils.misc import parse_value
-from flaskel.utils.yaml import setup_yaml_parser
+from flaskel.utils.yaml import load_yaml_file, setup_yaml_parser
 from flaskel.wsgi import BaseApplication, WSGIFactory
 
 
@@ -28,11 +27,11 @@ def option_as_dict(ctx, param, value):
 class Server:
     opt_config_attr = dict(
         default=None,
-        help='app yaml configuration file'
+        help='app yaml/json configuration file'
     )
     opt_log_config_attr = dict(
         default=None,
-        help='alternative log yaml configuration file'
+        help='alternative log yaml/json configuration file'
     )
     opt_bing_attr = dict(
         default='127.0.0.1:5000',
@@ -108,30 +107,33 @@ class Server:
         return _forever()
 
     @staticmethod
-    def _prepare_config(filename, **kwargs):
+    def _prepare_config(filename, debug=None, bind=None, log_config=None):
         """
 
         :param filename:
         :return: config
         """
-        setup_yaml_parser()
+        default_env = 'development' if debug else 'production'
+        env = decouple.config('FLASK_ENV', default=default_env)
 
         if filename is not None:
-            with open(filename) as f:
-                config = yaml.load(f, Loader=yaml.Loader)
+            setup_yaml_parser()
+            config = load_yaml_file(filename)
+            if not config['app']['FLASK_ENV']:
+                config['app']['FLASK_ENV'] = env
         else:
-            env = os.environ.get('FLASK_ENV')
-            env = env or ('development' if kwargs['debug'] else 'production')
             config = dict(
-                app={'DEBUG': kwargs['debug'], 'ENV': env},
-                wsgi={'bind': kwargs['bind'], 'debug': kwargs['debug']}
+                app={'DEBUG': debug, 'FLASK_ENV': env},
+                wsgi={'bind': bind, 'debug': debug}
             )
 
-        if kwargs['log_config'] is not None:
-            config['app']['LOG_FILE_CONF'] = kwargs['log_config']
+        os.environ['FLASK_ENV'] = config['app']['FLASK_ENV']
+
+        if log_config is not None:
+            config['app']['LOG_FILE_CONF'] = log_config
 
         # debug flag enabled overrides config file
-        if kwargs['debug'] is True:
+        if debug is True:
             config['app']['DEBUG'] = True
 
         return config
