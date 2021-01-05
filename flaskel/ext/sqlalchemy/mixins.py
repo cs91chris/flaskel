@@ -1,5 +1,6 @@
 from flask_sqlalchemy import event
-
+from sqlalchemy.ext.declarative import declared_attr
+from flaskel.utils.datastuct import ObjectDict
 from . import db
 
 
@@ -10,10 +11,12 @@ class StandardMixin:
 
 
 class CatalogMixin:
-    __table_args__ = (db.UniqueConstraint('label', 'type_id'),)
+    @declared_attr
+    def __table_args__(self):
+        return db.UniqueConstraint('label', 'type_id'),
 
     id = db.Column(db.Integer, primary_key=True)
-    label = db.Column(db.String(100), unique=True)
+    label = db.Column(db.String(100))
     type_id = db.Column(db.Integer)
     description = db.Column(db.String(250))
 
@@ -21,7 +24,7 @@ class CatalogMixin:
         return self.label
 
     def to_dict(self):
-        return dict(
+        return ObjectDict(
             id=self.id,
             label=self.label,
             description=self.description,
@@ -30,7 +33,6 @@ class CatalogMixin:
 
 
 class LoaderMixin:
-    instance = db
     values = ()
 
     # noinspection PyUnusedLocal
@@ -38,8 +40,8 @@ class LoaderMixin:
     def load_values(cls, *args, **kwargs):
         for d in cls.values:
             # noinspection PyArgumentList
-            cls.instance.session.add(cls(**d))
-        cls.instance.session.commit()
+            db.session.add(cls(**d))
+        db.session.commit()
 
     @classmethod
     def register_loader(cls):
