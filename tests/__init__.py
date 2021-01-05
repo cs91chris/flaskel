@@ -58,6 +58,7 @@ def app_prod():
 
     _app.test_client_class = TestClient
     _app.config.USER_AGENT_AUTO_PARSE = True
+    _app.config.PREFERRED_URL_SCHEME = 'https'
     return _app
 
 

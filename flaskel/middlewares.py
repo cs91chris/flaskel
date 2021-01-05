@@ -1,18 +1,19 @@
-from werkzeug.urls import url_decode
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.urls import url_decode
 
 
-class ForceHttps(object):
+class ForceHttps:
     """
     NOTE: use this only if you can not touch reverse proxy configuration
     use ReverseProxied instead
     """
+
     def __init__(self, app):
         """
 
         :param app:
         """
-        self._app = app
+        self.app = app
 
     def __call__(self, environ, start_response):
         """
@@ -21,8 +22,15 @@ class ForceHttps(object):
         :param start_response:
         :return:
         """
-        environ['wsgi.url_scheme'] = 'https'
-        return self._app(environ, start_response)
+        try:
+            # noinspection PyUnresolvedReferences
+            # flask_app is added by flaskel factory as a workaround
+            url_scheme = self.flask_app.config.get('PREFERRED_URL_SCHEME') or 'https'
+        except AttributeError:
+            url_scheme = 'https'
+
+        environ['wsgi.url_scheme'] = url_scheme
+        return self.app(environ, start_response)
 
 
 class ReverseProxied(ProxyFix):
@@ -53,6 +61,7 @@ class ReverseProxied(ProxyFix):
     The original values of the headers are stored in the WSGI
     environ as werkzeug.proxy_fix.orig, a dict.
     """
+
     def __init__(self, app, x_for=1, x_proto=1, x_host=1, x_port=0, x_prefix=1):
         """
 
@@ -66,7 +75,7 @@ class ReverseProxied(ProxyFix):
         super().__init__(app, x_for, x_proto, x_host, x_port, x_prefix)
 
 
-class HTTPMethodOverride(object):
+class HTTPMethodOverride:
     """
     Implements the hidden HTTP method technique.
     Not all web browsers or reverse proxy supports every HTTP method.
@@ -74,6 +83,7 @@ class HTTPMethodOverride(object):
     Only POST method can be overridden because with GET requests
     could result unexpected behavior due to caching.
     """
+
     def __init__(self, app):
         """
 

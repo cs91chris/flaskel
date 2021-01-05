@@ -191,6 +191,10 @@ class AppFactory:
 
         """
         for middleware in (self._middlewares or []):
+            # WorkAround: in order to pass flask app to middleware without breaking chain
+            if not (hasattr(middleware, 'flask_app') and middleware.flask_app):
+                setattr(middleware, 'flask_app', self._app)
+
             self._app.wsgi_app = middleware(self._app.wsgi_app)
             self._app.logger.debug(f"Registered middleware: '{middleware}'")
 
