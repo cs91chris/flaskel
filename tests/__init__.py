@@ -51,7 +51,12 @@ def app_prod():
     _app = AppFactory(
         blueprints=(*BLUEPRINTS, *(None,), *((None,),)),  # NB: needed to complete coverage
         extensions={**BASE_EXTENSIONS, **extra_ext},
-        middlewares=(middlewares.ForceHttps, middlewares.HTTPMethodOverride, middlewares.ReverseProxied),
+        middlewares=(
+            middlewares.ForceHttps,
+            middlewares.HTTPMethodOverride,
+            middlewares.ReverseProxied,
+            middlewares.RequestID,
+        ),
         folders=["skeleton/blueprints/web/templates"],
         static_folder="skeleton/blueprints/web/static"
     ).get_or_create(dict(TESTING=True))

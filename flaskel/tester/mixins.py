@@ -97,6 +97,28 @@ class AssertMixin(BaseAssert):
         )
 
     @classmethod
+    def assert_different(cls, actual, expected, error=None):
+        """
+
+        :param actual:
+        :param expected:
+        :param error:
+        """
+
+        def _different(a, e):
+            if type(a) in (list, tuple):
+                a = len(a)
+            return a != e
+
+        cls.assert_that(
+            lambda a, e: _different(a, e),
+            error=error,
+            that=f"{actual} = {expected}",
+            actual=actual,
+            expected=expected
+        )
+
+    @classmethod
     def assert_in(cls, actual, expected, error=None):
         """
 
@@ -186,6 +208,16 @@ class AssertMixin(BaseAssert):
 
         cls.assert_that(
             lambda a, e: _allin(a, e),
+            error=error,
+            that=f"{actual} are all in {expected}",
+            actual=actual,
+            expected=expected
+        )
+
+    @classmethod
+    def assert_type(cls, actual, expected, error=None):
+        cls.assert_that(
+            lambda a, e: type(a) is e,
             error=error,
             that=f"{actual} are all in {expected}",
             actual=actual,

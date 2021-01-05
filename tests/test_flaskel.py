@@ -338,3 +338,18 @@ def test_utils_date_conversion(testapp):
         Asserter.assert_none(res)
         res = date.to_iso_format(invalid_date, fmt, exc=exc)
         Asserter.assert_none(res)
+
+
+def test_correlation_id(testapp):
+    request_id_header = 'X-Request-ID'
+    res = testapp.get('/')
+    Asserter.assert_in(request_id_header, res.headers)
+    Asserter.assert_type(res.headers[request_id_header], str)
+
+    req_id = uuid.get_uuid()
+    res = testapp.get('/', headers={request_id_header: req_id})
+    Asserter.assert_equals(res.headers[request_id_header], req_id)
+
+    req_id = 'invalid_req_id'
+    res = testapp.get('/', headers={request_id_header: req_id})
+    Asserter.assert_different(res.headers[request_id_header], req_id)
