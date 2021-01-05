@@ -2,7 +2,7 @@ import flask
 from flask_response_builder import encoders
 
 import flaskel.http.http_status as httpcode
-from flaskel.utils.datastuct import emptydict, ObjectDict
+from flaskel.utils.datastuct import ObjectDict
 
 
 class Request(flask.Request):
@@ -16,7 +16,7 @@ class Request(flask.Request):
 
         if not payload:
             if allow_empty:
-                payload = emptydict
+                payload = ObjectDict()
             else:
                 flask.abort(httpcode.BAD_REQUEST, 'No JSON given')
 
