@@ -21,8 +21,10 @@ class HTTPBatchRequests(HTTPBase):
         :param kwargs:
         """
         super().__init__(**kwargs)
-        self._conn_timeout = conn_timeout
-        self._read_timeout = read_timeout
+        self._timeout = aiohttp.ClientTimeout(
+            sock_read=read_timeout,
+            sock_connect=conn_timeout
+        )
 
     async def http_request(self, session, **kwargs):
         """
@@ -81,10 +83,7 @@ class HTTPBatchRequests(HTTPBase):
         :return:
         """
         tasks = []
-        async with aiohttp.ClientSession(
-                conn_timeout=self._conn_timeout,
-                read_timeout=self._read_timeout
-        ) as session:
+        async with aiohttp.ClientSession(timeout=self._timeout) as session:
             for params in requests:
                 tasks.append(self.http_request(session, **params))
 
@@ -96,5 +95,8 @@ class HTTPBatchRequests(HTTPBase):
         :param requests:
         :return:
         """
+        if not aiohttp:
+            raise ImportError("You must install 'aiohttp'")  # pragma: no cover
+
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(self._batch(requests))
