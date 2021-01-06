@@ -1,5 +1,7 @@
 from user_agents import parsers
 
+from flaskel.utils.datastruct import ObjectDict
+
 
 class UserAgent(parsers.UserAgent):
     def __init__(self, ua_string=None):
@@ -31,15 +33,17 @@ class UserAgent(parsers.UserAgent):
             self.browser = parsers.parse_browser(**parsed['user_agent'])
             self.device = parsers.parse_device(**parsed['device'])
 
+        return self.to_dict()
+
     def to_dict(self):
         """
 
         :return:
         """
         if self._cached:
-            return self._cached
+            return self._cached  # pragma: no cover
 
-        self._cached = dict(
+        self._cached = ObjectDict(
             raw=self.ua_string,
             browser=dict(
                 family=self.browser.family,

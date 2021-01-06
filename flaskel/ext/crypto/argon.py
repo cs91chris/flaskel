@@ -11,7 +11,7 @@ class Argon2:
         self._ph = None
 
         if app is not None:
-            self.init_app(app)
+            self.init_app(app)  # pragma: no cover
 
     def init_app(self, app):
         """
@@ -44,8 +44,6 @@ class Argon2:
         :param password:
         :return:
         """
-        if not password:
-            raise ValueError('password must not be empty')
         return self._ph.hash(password)
 
     def verify_hash(self, pw_hash, password, exc=False):
@@ -56,10 +54,9 @@ class Argon2:
         :param exc:
         :return:
         """
-        if exc is False:
-            try:
-                return self._ph.verify(pw_hash, password)
-            except (Argon2Error, InvalidHash):
-                return False
-        else:
+        try:
             return self._ph.verify(pw_hash, password)
+        except (Argon2Error, InvalidHash):
+            if exc is True:
+                raise  # pragma: no cover
+            return False

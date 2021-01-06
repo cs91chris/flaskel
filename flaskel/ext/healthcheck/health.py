@@ -13,7 +13,7 @@ class HealthCheck:
         self._health_checks = {}
 
         if app:
-            self.init_app(app, **kwargs)
+            self.init_app(app, **kwargs)  # pragma: no cover
 
     def init_app(self, app, bp=None, extensions=()):
         """
@@ -25,6 +25,10 @@ class HealthCheck:
         app.config.setdefault('HEALTHCHECK_ABOUT_LINK', None)
         app.config.setdefault('HEALTHCHECK_PATH', '/healthcheck')
         app.config.setdefault('HEALTHCHECK_CONTENT_TYPE', 'application/health+json')
+
+        if not hasattr(app, 'extensions'):
+            app.extensions = dict()  # pragma: no cover
+        app.extensions['healthcheck'] = self
 
         blueprint = bp or app
         blueprint.add_url_rule(
@@ -51,7 +55,7 @@ class HealthCheck:
         for name, check_func in self._health_checks.items():
             try:
                 state, message = check_func()
-            except Exception as exc:
+            except Exception as exc:  # pragma: no cover
                 state = False
                 message = str(exc)
 

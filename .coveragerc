@@ -2,9 +2,10 @@
 omit =
 	flaskel/cli.py
 	flaskel/standalone.py
+	flaskel/ext/celery.py
 	flaskel/utils/misc.py
 	flaskel/utils/faker/logger.py
 	flaskel/ext/sqlalchemy/schema.py
 	flaskel/wsgi/*
 	flaskel/tester/*
-	flaskel/ext/celery.py
+	flaskel/tasks/*

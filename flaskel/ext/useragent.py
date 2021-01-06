@@ -13,7 +13,7 @@ class UserAgent:
         self._parser = None
 
         if app is not None:
-            self.init_app(app, **kwargs)
+            self.init_app(app, **kwargs)  # pragma: no cover
 
     def init_app(self, app, parser_class=UserAgentParser):
         """
@@ -25,7 +25,7 @@ class UserAgent:
         app.config.setdefault('USER_AGENT_AUTO_PARSE', False)
 
         if not hasattr(app, 'extensions'):
-            app.extensions = {}
+            app.extensions = {}  # pragma: no cover
         app.extensions['useragent'] = self
 
         @app.before_request
