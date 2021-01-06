@@ -1,6 +1,6 @@
 import asyncio
 
-from flaskel.utils.datastuct import ObjectDict
+from flaskel.utils.datastruct import ObjectDict
 from .client import HTTPBase, httpcode
 
 try:

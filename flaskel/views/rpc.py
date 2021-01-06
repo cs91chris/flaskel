@@ -7,7 +7,7 @@ from flask.views import View
 import flaskel.http.rpc as rpc
 from flaskel import cap, httpcode
 from flaskel.ext import builder
-from flaskel.utils.datastuct import ObjectDict
+from flaskel.utils.datastruct import ObjectDict
 
 
 class JSONRPCView(View):

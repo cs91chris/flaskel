@@ -6,7 +6,7 @@ import werkzeug.exceptions
 from flaskel import http, httpcode
 from flaskel.http import batch, rpc
 from flaskel.tester import Asserter, HttpAsserter
-from flaskel.utils import datastuct, date, uuid
+from flaskel.utils import datastruct, date, uuid
 from flaskel.utils.yaml import setup_yaml_parser
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, testapp
@@ -22,7 +22,7 @@ def test_app_dev(app_dev):
 
     res = client.get('/test_https', base_url='http://' + app_dev.config.SERVER_NAME)
     HttpAsserter.assert_status_code(res)
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     Asserter.assert_equals(data.scheme, 'http')
     Asserter.assert_true(data.url_for.startswith('http'))
 
@@ -96,7 +96,7 @@ def test_dispatch_error_api(testapp):
 def test_force_https(testapp):
     res = testapp.get('/test_https', base_url='http://' + testapp.application.config.SERVER_NAME)
     HttpAsserter.assert_status_code(res)
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     Asserter.assert_equals(data.scheme, 'https')
     Asserter.assert_true(data.url_for.startswith('https'))
 
@@ -105,7 +105,7 @@ def test_reverse_proxy(testapp):
     res = testapp.get('/proxy', headers={
         'X-Forwarded-Prefix': '/test'
     })
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.script_name, '/test')
     Asserter.assert_equals(data.original.SCRIPT_NAME, '')
@@ -236,7 +236,7 @@ def test_utils_http_jsonrpc_client(testapp):
         api = http.JsonRPCClient("http://httpbin.org", "/anything")
         res = api.request('method.test', params=params)
 
-    data = datastuct.ObjectDict(flask.json.loads(res.data))
+    data = datastruct.ObjectDict(flask.json.loads(res.data))
     Asserter.assert_equals(data.jsonrpc, '2.0')
     Asserter.assert_equals(data.id, api.request_id)
     Asserter.assert_equals(data.params, params)
@@ -244,7 +244,7 @@ def test_utils_http_jsonrpc_client(testapp):
 
 def test_healthcheck(testapp):
     res = testapp.get('/healthcheck')
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     HttpAsserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
     HttpAsserter.assert_header(res, 'Content-Type', 'application/health+json', is_in=True)
     Asserter.assert_equals(data.status, 'fail')
@@ -266,7 +266,7 @@ def test_api_jsonrpc_success(testapp):
         "params":  None,
         "id":      call_id
     })
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.jsonrpc, "2.0")
     Asserter.assert_equals(data.id, call_id)
@@ -288,7 +288,7 @@ def test_api_jsonrpc_error(testapp):
         "method":  "NotFoundMethod",
         "id":      call_id
     })
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
     Asserter.assert_equals(data.error.code, rpc.RPCMethodNotFound().code)
     Asserter.assert_equals(data.jsonrpc, "2.0")
@@ -296,14 +296,14 @@ def test_api_jsonrpc_error(testapp):
     Asserter.assert_true(data.error.message)
 
     res = testapp.post('/rpc', base_url=base_url, json={})
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
     Asserter.assert_equals(data.error.code, rpc.RPCParseError().code)
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": "2.0"
     })
-    data = datastuct.ObjectDict(res.get_json())
+    data = datastruct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
     Asserter.assert_equals(data.error.code, rpc.RPCInvalidRequest().code)
 

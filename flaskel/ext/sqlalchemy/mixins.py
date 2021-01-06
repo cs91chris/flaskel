@@ -1,6 +1,6 @@
 from flask_sqlalchemy import event
 from sqlalchemy.ext.declarative import declared_attr
-from flaskel.utils.datastuct import ObjectDict
+from flaskel.utils.datastruct import ObjectDict
 from . import db
 
 

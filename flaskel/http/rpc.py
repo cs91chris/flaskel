@@ -1,4 +1,4 @@
-from flaskel.utils.datastuct import ObjectDict
+from flaskel.utils.datastruct import ObjectDict
 
 
 class RPCError(Exception):

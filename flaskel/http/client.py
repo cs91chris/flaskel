@@ -1,6 +1,6 @@
 from requests import auth, exceptions as http_exc, request as send_request
 
-from flaskel.utils.datastuct import ObjectDict
+from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker import FakeLogger
 from flaskel.utils.uuid import get_uuid
 from . import http_status as httpcode
