@@ -4,27 +4,24 @@ import flask
 import werkzeug.exceptions
 
 from flaskel import http, httpcode
-from flaskel.http.batch import HTTPBatchRequests
-from flaskel.http.rpc import RPCInvalidRequest, RPCMethodNotFound, RPCParseError
-from flaskel.tester.mixins import Asserter
+from flaskel.http import batch, rpc
+from flaskel.tester import Asserter, HttpAsserter
 from flaskel.utils import datastuct, date, uuid
 from flaskel.utils.yaml import setup_yaml_parser
 # noinspection PyUnresolvedReferences
-from tests import app_dev, app_prod, testapp
+from . import app_dev, app_prod, testapp
 
 setup_yaml_parser()
 
 
 def test_app_dev(app_dev):
     client = app_dev.test_client()
+    HttpAsserter.assert_status_code(client.get('/'))
     Asserter.assert_equals(app_dev.config.FLASK_ENV, 'development')
     Asserter.assert_equals(app_dev.config.SECRET_KEY, 'fake_very_complex_string')
 
-    res = client.get('/')
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-
     res = client.get('/test_https', base_url='http://' + app_dev.config.SERVER_NAME)
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
     data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(data.scheme, 'http')
     Asserter.assert_true(data.url_for.startswith('http'))
@@ -32,73 +29,73 @@ def test_app_dev(app_dev):
 
 def test_app_runs(testapp):
     res = testapp.get('/')
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
 
 
 def test_app_return_html(testapp):
     res = testapp.get('/web')
-    Asserter.assert_in('text/html', res.headers['Content-Type'])
+    HttpAsserter.assert_header(res, 'Content-Type', 'text/html', is_in=True)
 
 
 def test_app_returns_json(testapp):
     res = testapp.get('/', base_url='http://api.' + testapp.application.config.SERVER_NAME)
-    Asserter.assert_equals(res.status_code, httpcode.NOT_FOUND)
-    Asserter.assert_in('application/problem+json', res.headers['Content-Type'])
+    HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
+    HttpAsserter.assert_header(res, 'Content-Type', 'application/problem+json', is_in=True)
 
 
 def test_api_resources(testapp):
     base_url = 'http://api.' + testapp.application.config.SERVER_NAME
 
     res = testapp.get('/resources', base_url=base_url, headers={'Accept': 'application/xml'})
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_in('application/xml', res.headers['Content-Type'])
+    HttpAsserter.assert_status_code(res)
+    HttpAsserter.assert_header(res, 'Content-Type', 'application/xml', is_in=True)
 
     res = testapp.get('/resources/1', base_url=base_url)
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_in('application/json', res.headers['Content-Type'])
+    HttpAsserter.assert_status_code(res)
+    HttpAsserter.assert_header(res, 'Content-Type', 'application/json', is_in=True)
 
     res = testapp.get('/resources/1/items', base_url=base_url)
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_in('application/json', res.headers['Content-Type'])
+    HttpAsserter.assert_status_code(res)
+    HttpAsserter.assert_header(res, 'Content-Type', 'application/json', is_in=True)
 
     res = testapp.get('/resources/1/not-found', base_url=base_url)
-    Asserter.assert_equals(res.status_code, httpcode.NOT_FOUND)
-    Asserter.assert_in('application/problem+json', res.headers['Content-Type'])
+    HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
+    HttpAsserter.assert_header(res, 'Content-Type', 'application/problem+json', is_in=True)
 
     res = testapp.delete('/resources/1', base_url=base_url)
-    Asserter.assert_equals(res.status_code, httpcode.NO_CONTENT)
+    HttpAsserter.assert_status_code(res, httpcode.NO_CONTENT)
 
     data = {'item': 'test'}
     res = testapp.put('/resources/1', json=data, base_url=base_url)
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
 
     res = testapp.post('/resources', json=data, base_url=base_url)
-    Asserter.assert_equals(res.status_code, httpcode.CREATED)
+    HttpAsserter.assert_status_code(res, httpcode.CREATED)
 
     res = testapp.post('/resources/1/items', json=data, base_url=base_url)
-    Asserter.assert_equals(res.status_code, httpcode.CREATED)
+    HttpAsserter.assert_status_code(res, httpcode.CREATED)
 
 
 def test_api_cors(testapp):
     res = testapp.get('/resources', base_url='http://api.' + testapp.application.config.SERVER_NAME)
-    Asserter.assert_equals(res.headers['Access-Control-Allow-Origin'], '*')
+    HttpAsserter.assert_header(res, 'Access-Control-Allow-Origin', '*')
 
 
 def test_dispatch_error_web(testapp):
     res = testapp.get('/web-page-not-found')
-    Asserter.assert_equals(res.status_code, httpcode.NOT_FOUND)
-    Asserter.assert_in('text/html', res.headers['Content-Type'])
+    HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
+    HttpAsserter.assert_header(res, 'Content-Type', 'text/html', is_in=True)
 
 
 def test_dispatch_error_api(testapp):
     res = testapp.get('/api-not-found', base_url='http://api.' + testapp.application.config.SERVER_NAME)
-    Asserter.assert_equals(res.status_code, httpcode.NOT_FOUND)
-    Asserter.assert_in('application/problem+json', res.headers['Content-Type'])
+    HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
+    HttpAsserter.assert_header(res, 'Content-Type', 'application/problem+json', is_in=True)
 
 
 def test_force_https(testapp):
     res = testapp.get('/test_https', base_url='http://' + testapp.application.config.SERVER_NAME)
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
     data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(data.scheme, 'https')
     Asserter.assert_true(data.url_for.startswith('https'))
@@ -109,7 +106,7 @@ def test_reverse_proxy(testapp):
         'X-Forwarded-Prefix': '/test'
     })
     data = datastuct.ObjectDict(res.get_json())
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.script_name, '/test')
     Asserter.assert_equals(data.original.SCRIPT_NAME, '')
 
@@ -125,34 +122,34 @@ def test_method_override(testapp):
         '/method_override',
         headers={'X-HTTP-Method-Override': 'PUT'}
     )
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
 
     res = testapp.post('/method_override?_method_override=PUT')
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
 
 
 def test_converters(testapp):
     res = testapp.get('/list/a-b-c')
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_equals(len(res.get_json()), 3)
+    HttpAsserter.assert_status_code(res)
+    Asserter.assert_equals(res.get_json(), 3)
 
 
 def test_utils_get_json(testapp):
     res = testapp.post('/invalid-json')
-    Asserter.assert_equals(res.status_code, httpcode.BAD_REQUEST)
+    HttpAsserter.assert_status_code(res, httpcode.BAD_REQUEST)
 
 
 def test_utils_send_file(testapp):
     filename = 'MANIFEST.in'
     res = testapp.get(f'/download?filename={filename}')
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
+    HttpAsserter.assert_header(res, 'Content-Disposition', f'attachment; filename={filename}')
+    HttpAsserter.assert_header(res, 'X-Accel-Redirect', f'./{filename}')
     Asserter.assert_true(res.headers.get('X-Sendfile').endswith(f'./{filename}'))
-    Asserter.assert_equals(res.headers.get('Content-Disposition'), f'attachment; filename={filename}')
-    Asserter.assert_equals(res.headers.get('X-Accel-Redirect'), f'./{filename}')
     Asserter.assert_equals(res.data, b'')
 
     res = testapp.get('/download?filename=nofile.txt')
-    Asserter.assert_equals(res.status_code, httpcode.NOT_FOUND)
+    HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
 
 
 def test_utils_uuid(testapp):
@@ -222,7 +219,7 @@ def test_utils_http_client_filename(testapp):
 
 
 def test_http_client_batch():
-    responses = HTTPBatchRequests().request([
+    responses = batch.HTTPBatchRequests().request([
         dict(url="http://httpbin.org/anything", method="GET", headers={"HDR1": "HDR1"}),
         dict(url=f"http://httpbin.org/status/{httpcode.NOT_FOUND}", method="GET"),
         dict(url="http://not_exists_domain.com", method='GET'),
@@ -248,8 +245,8 @@ def test_utils_http_jsonrpc_client(testapp):
 def test_healthcheck(testapp):
     res = testapp.get('/healthcheck')
     data = datastuct.ObjectDict(res.get_json())
-    Asserter.assert_equals(res.status_code, httpcode.SERVICE_UNAVAILABLE)
-    Asserter.assert_equals(res.headers['Content-Type'], 'application/health+json')
+    HttpAsserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
+    HttpAsserter.assert_header(res, 'Content-Type', 'application/health+json', is_in=True)
     Asserter.assert_equals(data.status, 'fail')
     Asserter.assert_equals(data.links, {'about': None})
     Asserter.assert_equals(data.checks.health_true.status, 'pass')
@@ -270,7 +267,7 @@ def test_api_jsonrpc_success(testapp):
         "id":      call_id
     })
     data = datastuct.ObjectDict(res.get_json())
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
+    HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.jsonrpc, "2.0")
     Asserter.assert_equals(data.id, call_id)
     Asserter.assert_true(data.result.action1)
@@ -279,7 +276,7 @@ def test_api_jsonrpc_success(testapp):
         "jsonrpc": "2.0",
         "method":  "MyJsonRPC.testAction2"
     })
-    Asserter.assert_equals(res.status_code, httpcode.NO_CONTENT)
+    HttpAsserter.assert_status_code(res, httpcode.NO_CONTENT)
 
 
 def test_api_jsonrpc_error(testapp):
@@ -293,29 +290,28 @@ def test_api_jsonrpc_error(testapp):
     })
     data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_equals(data.error.code, RPCMethodNotFound().code)
+    Asserter.assert_equals(data.error.code, rpc.RPCMethodNotFound().code)
     Asserter.assert_equals(data.jsonrpc, "2.0")
     Asserter.assert_equals(data.id, call_id)
-    Asserter.assert_greater(len(data.error.message), 0)
+    Asserter.assert_true(data.error.message)
 
     res = testapp.post('/rpc', base_url=base_url, json={})
     data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_equals(data.error.code, RPCParseError().code)
+    Asserter.assert_equals(data.error.code, rpc.RPCParseError().code)
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": "2.0"
     })
     data = datastuct.ObjectDict(res.get_json())
     Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_equals(data.error.code, RPCInvalidRequest().code)
+    Asserter.assert_equals(data.error.code, rpc.RPCInvalidRequest().code)
 
 
 def test_useragent(testapp):
     res = testapp.get('/useragent')
-    data = datastuct.ObjectDict(res.get_json())
-    Asserter.assert_equals(res.status_code, httpcode.SUCCESS)
-    Asserter.assert_allin(data.keys(), (
+    HttpAsserter.assert_status_code(res)
+    Asserter.assert_allin(res.get_json().keys(), (
         'browser', 'device', 'os', 'raw'
     ))
 
@@ -331,24 +327,24 @@ def test_utils_date_conversion(testapp):
         res = date.from_iso_format(iso_date, fmt, exc=exc)
         Asserter.assert_true(res)
         Asserter.assert_equals(not_iso_date, res)
+
         res = date.to_iso_format(not_iso_date, fmt, exc=exc)
         Asserter.assert_true(res)
         Asserter.assert_equals(iso_date, res)
-        res = date.from_iso_format(invalid_date, fmt, exc=exc)
-        Asserter.assert_none(res)
-        res = date.to_iso_format(invalid_date, fmt, exc=exc)
-        Asserter.assert_none(res)
+
+        Asserter.assert_none(date.from_iso_format(invalid_date, fmt, exc=exc))
+        Asserter.assert_none(date.to_iso_format(invalid_date, fmt, exc=exc))
 
 
 def test_correlation_id(testapp):
     request_id_header = 'X-Request-ID'
     res = testapp.get('/')
-    Asserter.assert_in(request_id_header, res.headers)
+    HttpAsserter.assert_header(res, request_id_header, is_in=True)
     Asserter.assert_type(res.headers[request_id_header], str)
 
     req_id = uuid.get_uuid()
     res = testapp.get('/', headers={request_id_header: req_id})
-    Asserter.assert_equals(res.headers[request_id_header], req_id)
+    HttpAsserter.assert_header(res, request_id_header, req_id)
 
     req_id = 'invalid_req_id'
     res = testapp.get('/', headers={request_id_header: req_id})
