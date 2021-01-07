@@ -20,7 +20,7 @@ class Request(flask.Request):
             else:
                 flask.abort(httpcode.BAD_REQUEST, 'No JSON given')
 
-        return ObjectDict(payload)
+        return ObjectDict.normalize(payload)
 
 
 class Response(flask.Response):
@@ -52,6 +52,9 @@ class Response(flask.Response):
             resp.headers['X-Accel-Buffering'] = 'yes' if cap.config['ACCEL_BUFFERING'] else 'no'
 
         return resp
+
+    def get_json(self):
+        return ObjectDict.normalize(super().get_json())
 
 
 class Flaskel(flask.Flask):

@@ -45,6 +45,15 @@ class ObjectDict(dict):
         if name in self:
             del self[name]
 
+    @staticmethod
+    def normalize(data):
+        try:
+            if isinstance(data, (list, tuple, set)):
+                return [ObjectDict(**r) for r in data]
+            return ObjectDict(**data)
+        except (TypeError, AttributeError):
+            return data
+
 
 class IntEnum(enum.IntEnum):
     @classmethod
