@@ -17,7 +17,7 @@ class ObjectDict(dict):
         :param d: input dictionary
         """
         super().__init__()
-        data = d or kwargs
+        data = d or kwargs or {}
 
         for k, v in data.items():
             if isinstance(v, dict):

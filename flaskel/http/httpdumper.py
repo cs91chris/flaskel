@@ -22,7 +22,7 @@ class HTTPDumper:
         """
         hdr = headers.get('Content-Disposition')
         if not hdr:
-            return None
+            return None  # pragma: no cover
 
         tmp = hdr.split(';')
         hdr = tmp[1] if len(tmp) > 1 else tmp[0]

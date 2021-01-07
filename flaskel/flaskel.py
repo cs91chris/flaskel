@@ -1,8 +1,8 @@
 import flask
 from flask_response_builder import encoders
 
-import flaskel.http.http_status as httpcode
 from flaskel.utils.datastruct import ObjectDict
+from . import cap, httpcode
 
 
 class Request(flask.Request):
@@ -13,12 +13,10 @@ class Request(flask.Request):
         :return:
         """
         payload = super().get_json()
-
-        if not payload:
-            if allow_empty:
-                payload = ObjectDict()
-            else:
-                flask.abort(httpcode.BAD_REQUEST, 'No JSON given')
+        if payload is None:
+            if not allow_empty:
+                flask.abort(httpcode.BAD_REQUEST, 'No JSON in request')
+            payload = ObjectDict()
 
         return ObjectDict.normalize(payload)
 
@@ -34,7 +32,6 @@ class Response(flask.Response):
         """
         kwargs.setdefault('as_attachment', True)
         file_path = flask.safe_join(directory, filename)
-        cap = flask.current_app
 
         try:
             resp = flask.send_file(file_path, **kwargs)

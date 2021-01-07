@@ -144,9 +144,4 @@ class JSONRPCView(View):
         :param url:
         """
         view_func = self.__class__.as_view(name, self.operations, **kwargs)
-
-        url = url.rstrip('/')
-        if not url.startswith('/'):
-            url = f"/{url}"
-
-        app.add_url_rule(url, view_func=view_func, methods=self.methods)
+        app.add_url_rule(f"/{url.rstrip('/')}", view_func=view_func, methods=self.methods)

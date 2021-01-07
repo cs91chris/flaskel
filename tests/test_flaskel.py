@@ -36,7 +36,7 @@ def test_app_dev(app_dev):
 
     res = client.get('/test_https', base_url='http://' + app_dev.config.SERVER_NAME)
     HttpAsserter.assert_status_code(res)
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     Asserter.assert_equals(data.scheme, 'http')
     Asserter.assert_true(data.url_for.startswith('http'))
 
@@ -110,7 +110,7 @@ def test_dispatch_error_api(testapp):
 def test_force_https(testapp):
     res = testapp.get('/test_https', base_url='http://' + testapp.application.config.SERVER_NAME)
     HttpAsserter.assert_status_code(res)
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     Asserter.assert_equals(data.scheme, 'https')
     Asserter.assert_true(data.url_for.startswith('https'))
 
@@ -119,7 +119,7 @@ def test_reverse_proxy(testapp):
     res = testapp.get('/proxy', headers={
         'X-Forwarded-Prefix': '/test'
     })
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.script_name, '/test')
     Asserter.assert_equals(data.original.SCRIPT_NAME, '')
@@ -261,7 +261,7 @@ def test_utils_http_jsonrpc_client(testapp):
 
 def test_healthcheck(testapp):
     res = testapp.get(testapp.application.config.HEALTHCHECK_PATH)
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     HttpAsserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
     HttpAsserter.assert_header(res, 'Content-Type', CTS.json_health, is_in=True)
     Asserter.assert_equals(data.status, 'fail')
@@ -284,7 +284,7 @@ def test_api_jsonrpc_success(testapp):
         "params":  None,
         "id":      call_id
     })
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.jsonrpc, jsonrpc_version)
     Asserter.assert_equals(data.id, call_id)
@@ -307,7 +307,7 @@ def test_api_jsonrpc_error(testapp):
         "method":  "NotFoundMethod",
         "id":      call_id
     })
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.error.code, rpc.RPCMethodNotFound().code)
     Asserter.assert_equals(data.jsonrpc, jsonrpc_version)
@@ -315,12 +315,20 @@ def test_api_jsonrpc_error(testapp):
     Asserter.assert_true(data.error.message)
 
     res = testapp.post('/rpc', base_url=base_url, json={})
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.error.code, rpc.RPCParseError().code)
 
-    res = testapp.post('/rpc', base_url=base_url, json={"jsonrpc": jsonrpc_version})
-    data = datastruct.ObjectDict(res.get_json())
+    res = testapp.post('/rpc', base_url=base_url, json={"params": None})
+    data = res.get_json()
+    HttpAsserter.assert_status_code(res)
+    Asserter.assert_equals(data.error.code, rpc.RPCInvalidRequest().code)
+
+    res = testapp.post('/rpc', base_url=base_url, json={
+        "jsonrpc": 1,
+        'method':  "MyJsonRPC.testAction1"
+    })
+    data = res.get_json()
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.error.code, rpc.RPCInvalidRequest().code)
 
@@ -329,7 +337,7 @@ def test_api_jsonrpc_error(testapp):
         "method":  "MyJsonRPC.testInternalError",
         "id":      call_id
     })
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.error.code, rpc.RPCInternalError().code)
 
@@ -352,7 +360,7 @@ def test_api_jsonrpc_params(testapp):
         "params":  {"params": None},
         "id":      call_id
     })
-    data = datastruct.ObjectDict(res.get_json())
+    data = res.get_json()
     HttpAsserter.assert_status_code(res)
     Asserter.assert_equals(data.error.code, rpc.RPCInvalidParams().code)
 

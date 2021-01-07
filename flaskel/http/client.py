@@ -117,7 +117,7 @@ class HTTPClient(HTTPBase):
         except (http_exc.ConnectionError, http_exc.Timeout) as exc:
             self._logger.exception(exc)
             if self._raise_on_exc:
-                raise
+                raise  # pragma: no cover
 
             return ObjectDict(dict(
                 body={},

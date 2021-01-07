@@ -113,21 +113,20 @@ class Resource(MethodView):
         :param pk_type: type of res_id
         """
         view_func = cls.as_view(name, **kwargs)
-
-        url = url.rstrip('/')
-        if not url.startswith('/'):
-            url = '/{}'.format(url)
-
-        app.add_url_rule(url, view_func=view_func, methods=['GET', 'POST'])
+        url = f"/{url.rstrip('/')}"
 
         app.add_url_rule(
-            '{url}/<{type}:res_id>'.format(url=url, type=pk_type),
+            url,
+            view_func=view_func,
+            methods=['GET', 'POST']
+        )
+        app.add_url_rule(
+            f"{url}/<{pk_type}:res_id>",
             view_func=view_func,
             methods=['GET', 'PUT', 'DELETE']
         )
-
         app.add_url_rule(
-            '{url}/<{type}:res_id>/<sub_resource>'.format(url=url, type=pk_type),
+            f"{url}/<{pk_type}:res_id>/<sub_resource>",
             view_func=view_func,
             methods=['GET', 'POST']
         )
