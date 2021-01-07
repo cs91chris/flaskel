@@ -5,8 +5,8 @@ from pathlib import Path
 
 import click
 
-from flaskel.ext.sqlalchemy import db_to_schema, model_to_uml
-from flaskel.tester import cli as cli_tester
+from .ext.sqlalchemy import db_to_schema, model_to_uml
+from .tester import cli as cli_tester
 
 INIT_CONTENT = """
 # generated via cli

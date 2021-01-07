@@ -1,4 +1,6 @@
 import importlib
+import string
+from random import SystemRandom
 
 
 def import_from_module(name):
@@ -65,3 +67,16 @@ def to_float(n):
         return float(n)
     except (TypeError, ValueError):
         return None
+
+
+def random_string(length, alphabet=string.printable):
+    """
+
+    :param length:
+    :param alphabet:
+    :return:
+    """
+    return ''.join(
+        SystemRandom().choice(alphabet)
+        for _ in range(length)
+    )

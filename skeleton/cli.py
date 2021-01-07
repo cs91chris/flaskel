@@ -1,8 +1,8 @@
 from blueprints import BLUEPRINTS
 from ext import EXTENSIONS
-from flaskel import AppFactory, BASE_EXTENSIONS, Server
+from flaskel import AppBuilder, BASE_EXTENSIONS, Server
 
-factory = AppFactory(
+factory = AppBuilder(
     blueprints=BLUEPRINTS,
     extensions={**BASE_EXTENSIONS, **EXTENSIONS}
 )

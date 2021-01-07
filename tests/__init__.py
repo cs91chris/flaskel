@@ -3,7 +3,7 @@ import os
 import pytest
 from flask.testing import FlaskClient
 
-from flaskel import AppFactory, middlewares
+from flaskel import AppBuilder, middlewares
 from flaskel.ext import BASE_EXTENSIONS, crypto, healthcheck, sqlalchemy, useragent
 from tests.blueprints import BLUEPRINTS
 
@@ -48,7 +48,7 @@ def app_prod():
     healthcheck.health_checks.register('redis', db=sqlalchemy.db)(healthcheck.health_redis)
     healthcheck.health_checks.register('sqlalchemy', db=sqlalchemy.db)(healthcheck.health_sqlalchemy)
 
-    _app = AppFactory(
+    _app = AppBuilder(
         blueprints=(*BLUEPRINTS, *(None,), *((None,),)),  # NB: needed to complete coverage
         extensions={**BASE_EXTENSIONS, **extra_ext},
         middlewares=(
@@ -69,7 +69,7 @@ def app_prod():
 
 @pytest.fixture
 def app_dev():
-    _app = AppFactory(
+    _app = AppBuilder(
         blueprints=BLUEPRINTS,
         extensions=BASE_EXTENSIONS,
         template_folder="skeleton/blueprints/web/templates",

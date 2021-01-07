@@ -1,7 +1,5 @@
 import os
-import string
 import sys
-from random import SystemRandom
 
 import jinja2
 from werkzeug.middleware.lint import LintMiddleware
@@ -9,11 +7,12 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from . import config, flaskel
 from .converters import CONVERTERS
-from .utils.datastuct import ObjectDict
+from .utils import misc
+from .utils.datastruct import ObjectDict
 
 
-class AppFactory:
-    """Flask app factory"""
+class AppBuilder:
+    """Flask app builder"""
 
     """
 
@@ -64,10 +63,7 @@ class AppFactory:
         :param secret_file:
         :param key_length:
         """
-        secret_key = ''.join(
-            SystemRandom().choice(string.printable)
-            for _ in range(key_length)
-        )
+        secret_key = misc.random_string(key_length)
 
         with open(secret_file, 'w') as f:
             f.write(secret_key)
@@ -199,29 +195,34 @@ class AppFactory:
             self._app.wsgi_app = middleware(self._app.wsgi_app)
             self._app.logger.debug(f"Registered middleware: '{middleware}'")
 
+    def _set_linter_and_profiler(self):
+        if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
+            self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
+
+        if self._app.config.WSGI_WERKZEUG_PROFILER_ENABLED:
+            stream = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
+            stream = open(stream, 'w') if stream else sys.stdout
+        else:
+            stream = None  # pragma: no cover
+
+        self._app.wsgi_app = ProfilerMiddleware(
+            self._app.wsgi_app, stream=stream,
+            restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION
+        )
+
+    def _dump_urls(self):
+        output = []
+        for rule in self._app.url_map.iter_rules():
+            methods = ','.join(rule.methods)
+            output.append("{:30s} {:40s} {}".format(rule.endpoint, methods, rule))
+
+        lines = "\n".join(sorted(output))
+        self._app.logger.debug(f"Registered routes:\n{lines}")
+
     def _patch_app(self):
-        """
-
-        :return:
-        """
         if self._app.config.DEBUG:
-            if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
-                self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
-
-            if self._app.config.WSGI_WERKZEUG_PROFILER_ENABLED:
-                stream = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
-                if stream:
-                    stream = open(self._app.config.WSGI_WERKZEUG_PROFILER_FILE, 'w')
-                else:
-                    stream = sys.stdout
-            else:
-                stream = None
-
-            self._app.wsgi_app = ProfilerMiddleware(
-                self._app.wsgi_app,
-                stream=stream,
-                restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION
-            )
+            self._set_linter_and_profiler()
+            self._dump_urls()
 
         @self._app.before_first_request
         def create_database():

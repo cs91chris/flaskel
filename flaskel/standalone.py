@@ -1,11 +1,12 @@
 import os
+
 import click
 import decouple
 
-from flaskel import AppFactory
-from flaskel.utils.misc import parse_value
-from flaskel.utils.yaml import load_yaml_file, setup_yaml_parser
-from flaskel.wsgi import BaseApplication, WSGIFactory
+from . import AppBuilder
+from .utils.misc import parse_value
+from .utils.yaml import load_yaml_file, setup_yaml_parser
+from .wsgi import BaseApplication, WSGIFactory
 
 
 # noinspection PyUnusedLocal
@@ -60,7 +61,7 @@ class Server:
         help='wsgi configuration'
     )
 
-    def __init__(self, app_factory=AppFactory(), wsgi_factory=WSGIFactory()):
+    def __init__(self, app_factory=AppBuilder(), wsgi_factory=WSGIFactory()):
         """
 
         :param app_factory:
@@ -69,7 +70,7 @@ class Server:
         self._app_factory = app_factory
         self._wsgi_factory = wsgi_factory
 
-        assert isinstance(self._app_factory, AppFactory)
+        assert isinstance(self._app_factory, AppBuilder)
         assert isinstance(self._wsgi_factory, WSGIFactory)
 
     def _register_options(self, func):

@@ -1,7 +1,7 @@
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.urls import url_decode
 
-from flaskel.utils import uuid
+from .utils import uuid
 
 
 class ForceHttps:

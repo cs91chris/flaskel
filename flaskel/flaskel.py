@@ -1,8 +1,8 @@
 import flask
 from flask_response_builder import encoders
 
-from flaskel.utils.datastruct import ObjectDict
 from . import cap, httpcode
+from .utils.datastruct import ObjectDict
 
 
 class Request(flask.Request):
