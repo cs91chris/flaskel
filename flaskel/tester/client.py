@@ -5,7 +5,7 @@ from flaskel.builder import AppBuilder
 
 
 class TestClient(FlaskClient):
-    def fetch(self, url, *args, **kwargs):
+    def fetch(self, url, *args, **kwargs):  # pragma: no cover
         return self.open(url, method='FETCH', *args, **kwargs)
 
     @classmethod
@@ -24,3 +24,25 @@ class TestClient(FlaskClient):
             app.app_context().push()
 
         return app
+
+    def jsonrpc(self, url, method=None, call_id=None, params=None, version="2.0", **kwargs):
+        """
+
+        :param url:
+        :param method:
+        :param call_id:
+        :param params:
+        :param version:
+        :param kwargs:
+        :return:
+        """
+        payload = {
+            "jsonrpc": version,
+            "method":  method,
+            "params":  params
+        }
+        if call_id:
+            payload['id'] = call_id
+
+        kwargs.setdefault('json', payload)
+        return self.post(url, **kwargs)
