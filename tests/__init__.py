@@ -12,7 +12,7 @@ SKEL_DIR = os.path.join(BASE_DIR, 'skeleton')
 CONF_DIR = os.path.join(SKEL_DIR, 'config')
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def app_prod():
     # noinspection PyUnusedLocal
     def test_health_true(**kwargs):
@@ -28,7 +28,6 @@ def app_prod():
 
     return TestClient.get_app(
         conf=dict(
-            TESTING=True,
             USER_AGENT_AUTO_PARSE=True,
             PREFERRED_URL_SCHEME='https'
         ),
@@ -67,7 +66,7 @@ def app_prod():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def app_dev():
     return TestClient.get_app(
         conf=dict(
@@ -81,6 +80,6 @@ def app_dev():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testapp(app_prod):
     return app_prod.test_client()

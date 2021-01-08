@@ -17,7 +17,7 @@ EXTRAS = dict(
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def testapp():
     return TestClient.get_app(
         conf=yaml.load_yaml_file(CONF_FILE),
