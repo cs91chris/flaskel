@@ -6,6 +6,8 @@ omit =
 	flaskel/utils/misc.py
 	flaskel/utils/faker/logger.py
 	flaskel/ext/sqlalchemy/schema.py
+	flaskel/tester/cli.py
+	flaskel/tester/fetchmail.py
 	flaskel/wsgi/*
-	flaskel/tester/*
 	flaskel/tasks/*
+	flaskel/tester/plugins/*

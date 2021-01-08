@@ -132,7 +132,7 @@ class Resource(MethodView):
         )
 
 
-class Restful(Resource):  # pragma: no cover
+class Restful(Resource):
     """TODO Not tested yet"""
 
     def __init__(self, db, model):
