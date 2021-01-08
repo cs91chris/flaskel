@@ -378,6 +378,13 @@ class HttpAsserter(AssertMixin, RegexMixin):
         for k, v in headers.items():
             self.assert_header(response, name=k, **v)
 
+    @classmethod
+    def assert_content_type(cls, response, value=None, is_in=True, regex=None):
+        cls.assert_header(
+            response, name='Content-Type',
+            value=value, is_in=is_in, regex=regex
+        )
+
 
 class Asserter(
     AssertMixin,

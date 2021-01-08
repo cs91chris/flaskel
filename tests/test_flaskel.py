@@ -1,6 +1,5 @@
 import os
 
-import flask
 import werkzeug.exceptions
 
 from flaskel import http, httpcode
@@ -34,11 +33,10 @@ def test_app_dev(app_dev):
     Asserter.assert_equals(app_dev.config.FLASK_ENV, 'development')
     Asserter.assert_equals(app_dev.config.SECRET_KEY, 'fake_very_complex_string')
 
-    res = client.get('/test_https', base_url='http://' + app_dev.config.SERVER_NAME)
+    res = client.get('/test_https', base_url=f"http://{app_dev.config.SERVER_NAME}")
     HttpAsserter.assert_status_code(res)
-    data = res.get_json()
-    Asserter.assert_equals(data.scheme, 'http')
-    Asserter.assert_true(data.url_for.startswith('http'))
+    Asserter.assert_equals(res.json.scheme, 'http')
+    Asserter.assert_true(res.json.url_for.startswith('http'))
 
 
 def test_app_runs(testapp):
@@ -48,33 +46,33 @@ def test_app_runs(testapp):
 
 def test_app_return_html(testapp):
     res = testapp.get('/web')
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.html, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.html)
 
 
 def test_app_returns_json(testapp):
-    res = testapp.get('/', base_url='http://api.' + testapp.application.config.SERVER_NAME)
+    res = testapp.get('/', base_url=f"http://api.{testapp.application.config.SERVER_NAME}")
     HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.json_problem, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.json_problem)
 
 
 def test_api_resources(testapp):
-    base_url = 'http://api.' + testapp.application.config.SERVER_NAME
+    base_url = f"http://api.{testapp.application.config.SERVER_NAME}"
 
     res = testapp.get('/resources', base_url=base_url, headers={'Accept': CTS.xml})
     HttpAsserter.assert_status_code(res)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.xml, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.xml)
 
     res = testapp.get('/resources/1', base_url=base_url)
     HttpAsserter.assert_status_code(res)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.json, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.json)
 
     res = testapp.get('/resources/1/items', base_url=base_url)
     HttpAsserter.assert_status_code(res)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.json, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.json)
 
     res = testapp.get('/resources/1/not-found', base_url=base_url)
     HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.json_problem, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.json_problem)
 
     res = testapp.delete('/resources/1', base_url=base_url)
     HttpAsserter.assert_status_code(res, httpcode.NO_CONTENT)
@@ -91,38 +89,36 @@ def test_api_resources(testapp):
 
 
 def test_api_cors(testapp):
-    res = testapp.get('/resources', base_url='http://api.' + testapp.application.config.SERVER_NAME)
+    res = testapp.get('/resources', base_url=f"http://api.{testapp.application.config.SERVER_NAME}")
     HttpAsserter.assert_header(res, 'Access-Control-Allow-Origin', '*')
 
 
 def test_dispatch_error_web(testapp):
     res = testapp.get('/web-page-not-found')
     HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.html, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.html)
 
 
 def test_dispatch_error_api(testapp):
-    res = testapp.get('/api-not-found', base_url='http://api.' + testapp.application.config.SERVER_NAME)
+    res = testapp.get('/api-not-found', base_url=f"http://api.{testapp.application.config.SERVER_NAME}")
     HttpAsserter.assert_status_code(res, httpcode.NOT_FOUND)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.json_problem, is_in=True)
+    HttpAsserter.assert_content_type(res, CTS.json_problem)
 
 
 def test_force_https(testapp):
-    res = testapp.get('/test_https', base_url='http://' + testapp.application.config.SERVER_NAME)
+    res = testapp.get('/test_https', base_url=f"http://{testapp.application.config.SERVER_NAME}")
     HttpAsserter.assert_status_code(res)
-    data = res.get_json()
-    Asserter.assert_equals(data.scheme, 'https')
-    Asserter.assert_true(data.url_for.startswith('https'))
+    Asserter.assert_equals(res.json.scheme, 'https')
+    Asserter.assert_true(res.json.url_for.startswith('https'))
 
 
 def test_reverse_proxy(testapp):
     res = testapp.get('/proxy', headers={
         'X-Forwarded-Prefix': '/test'
     })
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.script_name, '/test')
-    Asserter.assert_equals(data.original.SCRIPT_NAME, '')
+    Asserter.assert_equals(res.json.script_name, '/test')
+    Asserter.assert_equals(res.json.original.SCRIPT_NAME, '')
 
 
 def test_secret_key_prod(testapp):
@@ -145,7 +141,7 @@ def test_method_override(testapp):
 def test_converters(testapp):
     res = testapp.get('/list/a-b-c')
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(res.get_json(), 3)
+    Asserter.assert_equals(res.json, 3)
 
 
 def test_utils_get_json(testapp):
@@ -168,13 +164,12 @@ def test_utils_send_file(testapp):
 
 def test_utils_uuid(testapp):
     res = testapp.get('/uuid')
-    data = res.get_json()
     Asserter.assert_false(uuid.check_uuid('fake uuid'))
     Asserter.assert_true(uuid.check_uuid(uuid.get_uuid(hexify=False)))
-    Asserter.assert_true(uuid.check_uuid(data.get('uuid1'), ver=1))
-    Asserter.assert_true(uuid.check_uuid(data.get('uuid3'), ver=3))
-    Asserter.assert_true(uuid.check_uuid(data.get('uuid4')))
-    Asserter.assert_true(uuid.check_uuid(data.get('uuid5'), ver=5))
+    Asserter.assert_true(uuid.check_uuid(res.json.get('uuid1'), ver=1))
+    Asserter.assert_true(uuid.check_uuid(res.json.get('uuid3'), ver=3))
+    Asserter.assert_true(uuid.check_uuid(res.json.get('uuid4')))
+    Asserter.assert_true(uuid.check_uuid(res.json.get('uuid5'), ver=5))
 
 
 def test_crypto(testapp):
@@ -253,30 +248,28 @@ def test_utils_http_jsonrpc_client(testapp):
         api = http.JsonRPCClient(HOSTS.apitester, "/anything", logger=testapp.application.logger)
         res = api.request('method.test', params=params)
 
-    data = datastruct.ObjectDict(flask.json.loads(res.data))
-    Asserter.assert_equals(data.jsonrpc, '2.0')
-    Asserter.assert_equals(data.id, api.request_id)
-    Asserter.assert_equals(data.params, params)
+    Asserter.assert_equals(res.json.jsonrpc, '2.0')
+    Asserter.assert_equals(res.json.id, api.request_id)
+    Asserter.assert_equals(res.json.params, params)
 
 
 def test_healthcheck(testapp):
     res = testapp.get(testapp.application.config.HEALTHCHECK_PATH)
-    data = res.get_json()
     HttpAsserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
-    HttpAsserter.assert_header(res, 'Content-Type', CTS.json_health, is_in=True)
-    Asserter.assert_equals(data.status, 'fail')
-    Asserter.assert_equals(data.links, {'about': None})
-    Asserter.assert_equals(data.checks.health_true.status, 'pass')
-    Asserter.assert_equals(data.checks.test_health_false.status, 'fail')
-    Asserter.assert_equals(data.checks.sqlalchemy.status, 'fail')
-    Asserter.assert_equals(data.checks.mongo.status, 'fail')
-    Asserter.assert_equals(data.checks.redis.status, 'fail')
+    HttpAsserter.assert_content_type(res, CTS.json_health)
+    Asserter.assert_equals(res.json.status, 'fail')
+    Asserter.assert_equals(res.json.links, {'about': None})
+    Asserter.assert_equals(res.json.checks.health_true.status, 'pass')
+    Asserter.assert_equals(res.json.checks.test_health_false.status, 'fail')
+    Asserter.assert_equals(res.json.checks.sqlalchemy.status, 'fail')
+    Asserter.assert_equals(res.json.checks.mongo.status, 'fail')
+    Asserter.assert_equals(res.json.checks.redis.status, 'fail')
 
 
 def test_api_jsonrpc_success(testapp):
     call_id = 1
     jsonrpc_version = '2.0'
-    base_url = 'http://api.' + testapp.application.config.SERVER_NAME
+    base_url = f"http://api.{testapp.application.config.SERVER_NAME}"
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": jsonrpc_version,
@@ -284,11 +277,10 @@ def test_api_jsonrpc_success(testapp):
         "params":  None,
         "id":      call_id
     })
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.jsonrpc, jsonrpc_version)
-    Asserter.assert_equals(data.id, call_id)
-    Asserter.assert_true(data.result.action1)
+    Asserter.assert_equals(res.json.jsonrpc, jsonrpc_version)
+    Asserter.assert_equals(res.json.id, call_id)
+    Asserter.assert_true(res.json.result.action1)
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": jsonrpc_version,
@@ -300,59 +292,54 @@ def test_api_jsonrpc_success(testapp):
 def test_api_jsonrpc_error(testapp):
     call_id = 1
     jsonrpc_version = '2.0'
-    base_url = 'http://api.' + testapp.application.config.SERVER_NAME
+    base_url = f"http://api.{testapp.application.config.SERVER_NAME}"
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": jsonrpc_version,
         "method":  "NotFoundMethod",
         "id":      call_id
     })
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.error.code, rpc.RPCMethodNotFound().code)
-    Asserter.assert_equals(data.jsonrpc, jsonrpc_version)
-    Asserter.assert_equals(data.id, call_id)
-    Asserter.assert_true(data.error.message)
+    Asserter.assert_equals(res.json.error.code, rpc.RPCMethodNotFound().code)
+    Asserter.assert_equals(res.json.jsonrpc, jsonrpc_version)
+    Asserter.assert_equals(res.json.id, call_id)
+    Asserter.assert_true(res.json.error.message)
 
     res = testapp.post('/rpc', base_url=base_url, json={})
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.error.code, rpc.RPCParseError().code)
+    Asserter.assert_equals(res.json.error.code, rpc.RPCParseError().code)
 
     res = testapp.post('/rpc', base_url=base_url, json={"params": None})
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.error.code, rpc.RPCInvalidRequest().code)
+    Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": 1,
         'method':  "MyJsonRPC.testAction1"
     })
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.error.code, rpc.RPCInvalidRequest().code)
+    Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": jsonrpc_version,
         "method":  "MyJsonRPC.testInternalError",
         "id":      call_id
     })
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.error.code, rpc.RPCInternalError().code)
+    Asserter.assert_equals(res.json.error.code, rpc.RPCInternalError().code)
 
 
 def test_api_jsonrpc_params(testapp):
     call_id = 1
     jsonrpc_version = '2.0'
-    base_url = 'http://api.' + testapp.application.config.SERVER_NAME
+    base_url = f"http://api.{testapp.application.config.SERVER_NAME}"
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": jsonrpc_version,
         "method":  "MyJsonRPC.testInvalidParams",
         "params":  {"param": "testparam"},
         "id":      call_id
     })
-    Asserter.assert_not_in('error', res.get_json())
+    Asserter.assert_not_in('error', res.json)
 
     res = testapp.post('/rpc', base_url=base_url, json={
         "jsonrpc": jsonrpc_version,
@@ -360,15 +347,14 @@ def test_api_jsonrpc_params(testapp):
         "params":  {"params": None},
         "id":      call_id
     })
-    data = res.get_json()
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_equals(data.error.code, rpc.RPCInvalidParams().code)
+    Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidParams().code)
 
 
 def test_useragent(testapp):
     res = testapp.get('/useragent')
     HttpAsserter.assert_status_code(res)
-    Asserter.assert_allin(res.get_json().keys(), ('browser', 'device', 'os', 'raw'))
+    Asserter.assert_allin(res.json.keys(), ('browser', 'device', 'os', 'raw'))
     ua_string = """
         Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) 
         Chrome/70.0.3538.77 Safari/537.36
