@@ -25,8 +25,6 @@ class BaseAssert:
                 that=that, actual=actual, expected=expected
             )
 
-
-class AssertMixin(BaseAssert):
     @classmethod
     def assert_true(cls, actual, error=None):
         cls.assert_that(
@@ -317,7 +315,7 @@ class RegexMixin(BaseAssert):
         )
 
 
-class HttpAsserter(AssertMixin, RegexMixin):
+class HttpAsserter(RegexMixin):
     @classmethod
     def assert_status_code(cls, response, code=200,
                            in_range=False, is_in=False, greater=False, less=False):
@@ -387,8 +385,7 @@ class HttpAsserter(AssertMixin, RegexMixin):
 
 
 class Asserter(
-    AssertMixin,
-    RegexMixin,
+    HttpAsserter,
     JSONValidatorMixin,
 ):
     """single interface that inherits all Asserter mixins"""
