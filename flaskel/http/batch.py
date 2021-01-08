@@ -64,7 +64,7 @@ class HTTPBatchRequests(HTTPBase):
                     status=resp.status,
                     headers={k: v for k, v in resp.headers.items()}
                 ))
-        except aiohttp.ClientOSError as exc:
+        except (aiohttp.ClientError, aiohttp.ServerTimeoutError, asyncio.TimeoutError) as exc:
             self._logger.exception(exc)
             if self._raise_on_exc is True:
                 raise  # pragma: no cover
