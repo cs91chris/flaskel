@@ -1,7 +1,6 @@
-# create and configure your extensions in this package
-# then import your extensions here
-from flaskel.ext.celery import celery
+# Define your extensions in this package and import them here
 
+from flaskel.ext.celery import celery
 
 EXTENSIONS = {
     # "name": (<extension>, parameters: dict)

@@ -40,7 +40,6 @@ def init(name):
 
         if not os.path.isfile('setup.py'):
             shutil.move(os.path.join(destination, 'setup.py'), '.')
-
             setup_file = Path('setup.py')
             text = setup_file.read_text()
             text = text.replace('{skeleton}', name)
@@ -57,6 +56,16 @@ def init(name):
             shutil.move(os.path.join(destination, 'Dockerfile'), '.')
         else:
             os.remove(os.path.join(destination, 'Dockerfile'))
+
+        if not os.path.isdir('tests'):
+            shutil.move(os.path.join(destination, 'tests'), '.')
+            cli_file = Path(os.path.join('tests', '__init__.py'))
+            text = cli_file.read_text()
+            text = text.replace('from ext', f"from {name}.ext")
+            text = text.replace('from blueprint', f"from {name}.blueprint")
+            cli_file.write_text(text)
+        else:
+            os.remove(os.path.join(destination, 'tests'))
 
         cli_file = Path(os.path.join(destination, 'cli.py'))
         text = cli_file.read_text()
