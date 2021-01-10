@@ -6,6 +6,17 @@ from .utils.datastruct import ObjectDict
 
 
 class Request(flask.Request):
+    @property
+    def id(self):
+        hdr = cap.config.REQUEST_ID_HEADER
+        if hasattr(flask.g, 'request_id'):
+            return flask.g.request_id
+        elif hdr in flask.request.headers:
+            return flask.request.headers[hdr]
+
+        flask_header_name = f"HTTP_{hdr.upper().replace('-', '_')}"
+        return flask.request.environ.get(flask_header_name)
+
     def get_json(self, allow_empty=False):
         """
 

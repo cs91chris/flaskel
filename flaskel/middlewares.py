@@ -132,7 +132,7 @@ class RequestID:
     2. or, the value is known to be from a component that assigns unique IDs, identified by a common prefix
        set in the 'REQUEST_ID_PREFIX' Flask config value or `request_id_prefix` class member value.
 
-    To use the Request ID in the current application: `print(request.environ.get("HTTP_X_REQUEST_ID"))`
+    To use the Request ID in the current application: `request.environ.get("HTTP_X_REQUEST_ID")`
     For use elsewhere, the Request ID header is included in the response back to the client.
     [1] http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
     """

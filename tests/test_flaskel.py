@@ -338,7 +338,9 @@ def test_utils_date_conversion():
 
 
 def test_correlation_id(testapp):
-    request_id_header = 'X-Request-ID'
+    cap = testapp.application
+    request_id_header = cap.config.REQUEST_ID_HEADER
+
     res = testapp.get('/')
     Asserter.assert_header(res, request_id_header, is_in=True)
     Asserter.assert_type(res.headers[request_id_header], str)

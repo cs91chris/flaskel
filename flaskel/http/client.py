@@ -1,5 +1,7 @@
+import flask
 from requests import auth, exceptions as http_exc, request as send_request
 
+from flaskel import cap
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker import FakeLogger
 from flaskel.utils.uuid import get_uuid
@@ -64,19 +66,15 @@ class HTTPBase(HTTPDumper):
 
 
 class HTTPClient(HTTPBase):
-    def __init__(self, endpoint, token=None, username=None, password=None,
-                 raise_on_exc=False, dump_body=False, logger=None):
+    def __init__(self, endpoint, token=None, username=None, password=None, **kwargs):
         """
 
         :param endpoint:
         :param token:
         :param username:
         :param password:
-        :param dump_body:
-        :param raise_on_exc:
-        :param logger:
         """
-        super().__init__(dump_body, raise_on_exc, logger)
+        super().__init__(**kwargs)
         self._endpoint = endpoint
         self._username = username
         self._password = password
@@ -261,3 +259,12 @@ class JsonRPCClient(HTTPClient):
         )
 
         return ObjectDict(resp['body'] or {})
+
+
+class FlaskelHttp(HTTPClient):
+    def request(self, uri, **kwargs):
+        if flask.request.id:
+            kwargs.setdefault('headers', {})
+            kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
+
+        return super().request(uri, **kwargs)
