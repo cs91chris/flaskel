@@ -9,9 +9,9 @@ from .default import (
 
 # { "name": (extension, parameters: dict), }
 BASE_EXTENSIONS = {
-    "logger":   (logger,),
+    "cfremote": (cfremote,),  # MUST be the first
+    "logger":   (logger,),  # MUST be the second
     "template": (template,),
-    "cfremote": (cfremote,),
     "builder":  (builder,),
     "errors":   (errors, {
         "dispatcher": 'subdomain',

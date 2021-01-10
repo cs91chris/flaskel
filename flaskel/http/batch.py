@@ -11,6 +11,14 @@ except ImportError as err:  # pragma: no cover
     warnings.warn(str(err))
     aiohttp = None
 
+try:
+    import nest_asyncio
+except ImportError as err:  # pragma: no cover
+    import warnings
+
+    warnings.warn(str(err))
+    nest_asyncio = None
+
 
 class HTTPBatchRequests(HTTPBase):
     def __init__(self, conn_timeout=60, read_timeout=60, **kwargs):
@@ -76,7 +84,7 @@ class HTTPBatchRequests(HTTPBase):
                 exception=exc
             ))
 
-    async def _batch(self, requests):
+    async def batch(self, requests):
         """
 
         :param requests:
@@ -98,5 +106,14 @@ class HTTPBatchRequests(HTTPBase):
         if not aiohttp:
             raise ImportError("You must install 'aiohttp'")  # pragma: no cover
 
+        try:
+            asyncio.get_running_loop()
+            if not nest_asyncio:
+                raise ImportError("You must install 'nest-asyncio'")  # pragma: no cover
+            # noinspection PyUnresolvedReferences
+            nest_asyncio.apply()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
+
         loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self._batch(requests))
+        return loop.run_until_complete(self.batch(requests))
