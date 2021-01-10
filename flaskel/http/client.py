@@ -6,7 +6,7 @@ from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker import FakeLogger
 from flaskel.utils.uuid import get_uuid
 from . import http_status as httpcode
-from .httpdumper import HTTPDumper
+from .httpdumper import FlaskelHTTPDumper, HTTPDumper
 
 
 class HTTPTokenAuth(auth.AuthBase):
@@ -148,49 +148,19 @@ class HTTPClient(HTTPBase):
         ))
 
     def get(self, uri, **kwargs):
-        """
-
-        :param uri:
-        :param kwargs:
-        :return:
-        """
         return self.request(uri, **kwargs)
 
     def post(self, uri, **kwargs):
-        """
-
-        :param uri:
-        :param kwargs:
-        :return:
-        """
-        return self.request(uri, 'POST', **kwargs)
+        return self.request(uri, method='POST', **kwargs)
 
     def put(self, uri, **kwargs):
-        """
-
-        :param uri:
-        :param kwargs:
-        :return:
-        """
-        return self.request(uri, 'PUT', **kwargs)
+        return self.request(uri, method='PUT', **kwargs)
 
     def patch(self, uri, **kwargs):
-        """
-
-        :param uri:
-        :param kwargs:
-        :return:
-        """
-        return self.request(uri, 'PATCH', **kwargs)
+        return self.request(uri, method='PATCH', **kwargs)
 
     def delete(self, uri, **kwargs):
-        """
-
-        :param uri:
-        :param kwargs:
-        :return:
-        """
-        return self.request(uri, 'DELETE', **kwargs)
+        return self.request(uri, method='DELETE', **kwargs)
 
 
 class JsonRPCClient(HTTPClient):
@@ -261,7 +231,7 @@ class JsonRPCClient(HTTPClient):
         return ObjectDict(resp['body'] or {})
 
 
-class FlaskelHttp(HTTPClient):
+class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):
     def request(self, uri, **kwargs):
         if flask.request.id:
             kwargs.setdefault('headers', {})

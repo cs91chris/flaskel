@@ -174,11 +174,12 @@ def test_crypto(testapp):
 
 
 def test_utils_http_client_simple(testapp):
-    api = http.HTTPClient(HOSTS.apitester, token='pippo', logger=testapp.application.logger)
-    res = api.delete('/status/202')
-    Asserter.assert_equals(res.status, httpcode.ACCEPTED)
-    res = api.patch('/status/400')
-    Asserter.assert_equals(res.status, httpcode.BAD_REQUEST)
+    with testapp.application.test_request_context():
+        api = http.FlaskelHttp(HOSTS.apitester, token='pippo', logger=testapp.application.logger)
+        res = api.delete('/status/202')
+        Asserter.assert_equals(res.status, httpcode.ACCEPTED)
+        res = api.patch('/status/400')
+        Asserter.assert_equals(res.status, httpcode.BAD_REQUEST)
 
 
 def test_utils_http_client_exception(testapp):
