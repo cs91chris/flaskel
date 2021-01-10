@@ -1,4 +1,4 @@
-__version__ = '1.2.5'
+__version__ = '1.2.6'
 
 __author_name__ = 'cs91chris'
 __author_email__ = 'cs91chris@voidbrain.me'
