@@ -132,7 +132,20 @@ class Resource(MethodView):
         )
 
 
-class Restful(Resource):
+class CatalogResource(Resource):
+    def __init__(self, model):
+        self._model = model
+
+    def on_get(self, res_id, *args, **kwargs):
+        return self._model.get_one(id=res_id)
+
+    def on_collection(self, *args, **kwargs):
+        res = self._model.get_list(to_dict=False)
+        restricted = True if flask.request.args.get('restricted') else False
+        return [r.to_dict(restricted=restricted) for r in res]
+
+
+class Restful(CatalogResource):
     """TODO Not tested yet"""
 
     def __init__(self, db, model):
@@ -141,26 +154,8 @@ class Restful(Resource):
         :param db:
         :param model:
         """
+        super().__init__(model)
         self._db = db
-        self._model = model
-
-    def on_get(self, res_id, *args, **kwargs):
-        """
-
-        :param res_id:
-        """
-        res = self._model.query.get_or_404(res_id)
-        return res.to_dict()
-
-    def on_collection(self, *args, **kwargs):
-        """
-
-        :return:
-        """
-        res_list = []
-        for r in self._model.query.filters(**kwargs).all():
-            res_list.append(r.to_dict(restricted=True))
-        return res_list
 
     def on_post(self, payload=None, *args, **kwargs):
         """
