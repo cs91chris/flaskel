@@ -175,7 +175,7 @@ def test_crypto(testapp):
 
 def test_utils_http_client_simple(testapp):
     with testapp.application.test_request_context():
-        api = http.FlaskelHttp(HOSTS.apitester, token='pippo', logger=testapp.application.logger)
+        api = http.FlaskelHttp(HOSTS.apitester, token='pippo')
         res = api.delete('/status/202')
         Asserter.assert_equals(res.status, httpcode.ACCEPTED)
         res = api.patch('/status/400')
@@ -220,11 +220,12 @@ def test_utils_http_client_filename(testapp):
 
 
 def test_http_client_batch(testapp):
-    responses = batch.HTTPBatchRequests(logger=testapp.application.logger).request([
-        dict(url=f"{HOSTS.apitester}/anything", method="GET", headers={"HDR1": "HDR1"}),
-        dict(url=f"{HOSTS.apitester}/status/{httpcode.NOT_FOUND}", method="GET"),
-        dict(url=HOSTS.fake, method='GET', timeout=0.1),
-    ])
+    with testapp.application.test_request_context():
+        responses = batch.FlaskelHTTPBatch().request([
+            dict(url=f"{HOSTS.apitester}/anything", method="GET", headers={"HDR1": "HDR1"}),
+            dict(url=f"{HOSTS.apitester}/status/{httpcode.NOT_FOUND}", method="GET"),
+            dict(url=HOSTS.fake, method='GET', timeout=0.1),
+        ])
     Asserter.assert_equals(responses[0].body.headers.Hdr1, 'HDR1')
     Asserter.assert_equals(responses[1].status, httpcode.NOT_FOUND)
     Asserter.assert_equals(responses[2].status, httpcode.SERVICE_UNAVAILABLE)

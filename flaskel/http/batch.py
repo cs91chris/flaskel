@@ -6,6 +6,7 @@ from flaskel import cap
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.uuid import get_uuid
 from .client import HTTPBase, httpcode
+from .httpdumper import FlaskelHTTPDumper
 
 try:
     import aiohttp
@@ -123,7 +124,7 @@ class HTTPBatch(HTTPBase):
         return loop.run_until_complete(self.batch(requests))
 
 
-class FlaskelHTTPBatch(HTTPBatch):
+class FlaskelHTTPBatch(HTTPBatch, FlaskelHTTPDumper):
     def __init__(self, **kwargs):
         kwargs.setdefault('logger', cap.logger)
         super().__init__(**kwargs)
@@ -135,4 +136,4 @@ class FlaskelHTTPBatch(HTTPBatch):
                 req_id = f"{flask.request.id},{get_uuid()}"
                 r['headers'][cap.config.REQUEST_ID_HEADER] = req_id
 
-        super().request(requests, **kwargs)
+        return super().request(requests, **kwargs)

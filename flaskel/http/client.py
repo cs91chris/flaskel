@@ -91,12 +91,13 @@ class HTTPClient(HTTPBase):
         if self._token:
             return HTTPTokenAuth(self._token)
 
-    def request(self, uri, method='GET',
+    def request(self, uri, method='GET', raise_on_exc=False,
                 dump_body=None, chunk_size=None, decode_unicode=False, **kwargs):
         """
 
-        :param method:
         :param uri:
+        :param method:
+        :param raise_on_exc:
         :param dump_body:
         :param chunk_size:
         :param decode_unicode:
@@ -114,7 +115,7 @@ class HTTPClient(HTTPBase):
             self._logger.info(self.dump_request(response.request))
         except (http_exc.ConnectionError, http_exc.Timeout) as exc:
             self._logger.exception(exc)
-            if self._raise_on_exc:
+            if raise_on_exc or self._raise_on_exc:
                 raise  # pragma: no cover
 
             return ObjectDict(dict(
@@ -129,7 +130,7 @@ class HTTPClient(HTTPBase):
         except http_exc.HTTPError as exc:
             self._logger.warning(self.dump_response(response, dump_body))
             response = exc.response
-            if self._raise_on_exc:
+            if raise_on_exc or self._raise_on_exc:
                 raise
         else:
             self._logger.info(self.dump_response(response, dump_body))
@@ -232,6 +233,10 @@ class JsonRPCClient(HTTPClient):
 
 
 class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):
+    def __init__(self, endpoint, **kwargs):
+        kwargs.setdefault('logger', cap.logger)
+        super().__init__(endpoint, **kwargs)
+
     def request(self, uri, **kwargs):
         if flask.request.id:
             kwargs.setdefault('headers', {})
