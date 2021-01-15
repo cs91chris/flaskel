@@ -1,6 +1,10 @@
 import asyncio
 
+import flask
+
+from flaskel import cap
 from flaskel.utils.datastruct import ObjectDict
+from flaskel.utils.uuid import get_uuid
 from .client import HTTPBase, httpcode
 
 try:
@@ -20,7 +24,7 @@ except ImportError as err:  # pragma: no cover
     nest_asyncio = None
 
 
-class HTTPBatchRequests(HTTPBase):
+class HTTPBatch(HTTPBase):
     def __init__(self, conn_timeout=60, read_timeout=60, **kwargs):
         """
 
@@ -117,3 +121,18 @@ class HTTPBatchRequests(HTTPBase):
 
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(self.batch(requests))
+
+
+class FlaskelHTTPBatch(HTTPBatch):
+    def __init__(self, **kwargs):
+        kwargs.setdefault('logger', cap.logger)
+        super().__init__(**kwargs)
+
+    def request(self, requests, **kwargs):
+        if flask.request.id:
+            for r in requests:
+                r.setdefault('headers', {})
+                req_id = f"{flask.request.id},{get_uuid()}"
+                r['headers'][cap.config.REQUEST_ID_HEADER] = req_id
+
+        super().request(requests, **kwargs)
