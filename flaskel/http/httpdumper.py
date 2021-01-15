@@ -131,7 +131,6 @@ class FlaskelHTTPDumper(HTTPDumper):
         :return: prettified representation of input as string
         """
         resp = response
-        hdr = cap.config.LOG_RESP_HEADERS or resp.headers
 
         if dump_body is True:
             body = cls.response_filename(resp.headers) or resp.text
@@ -145,6 +144,6 @@ class FlaskelHTTPDumper(HTTPDumper):
         except AttributeError:  # because aiohttp.ClientResponse has not elapsed attribute
             seconds = 'N/A'
 
-        headers = cls.dump_headers(hdr)
+        headers = cls.dump_headers(resp.headers, cap.config.LOG_RESP_HEADERS)
         status = resp.status_code if hasattr(resp, 'status_code') else resp.status
         return f"time : {seconds} - status code: {status}\nheaders:\n{headers}\nbody:\n{body}"
