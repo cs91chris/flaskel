@@ -1,3 +1,5 @@
+import enum
+
 SUCCESS = 200
 CREATED = 201
 ACCEPTED = 202
@@ -44,3 +46,47 @@ SERVICE_UNAVAILABLE = 503
 GATEWAY_TIMEOUT = 504
 HTTP_VERSION_NOT_SUPPORTED = 505
 NETWORK_AUTHENTICATION_REQUIRED = 511
+
+
+class StatusType(enum.IntEnum):
+    INFORMATIONAL = 1
+    SUCCESS = 2
+    REDIRECTION = 3
+    CLIENT_ERROR = 4
+    SERVER_ERROR = 5
+
+
+def status_type(s):
+    return int(s / 100)
+
+
+def is_informational(s):
+    return status_type(s) == StatusType.INFORMATIONAL
+
+
+def is_success(s):
+    return status_type(s) == StatusType.SUCCESS
+
+
+def is_redirection(s):
+    return status_type(s) == StatusType.REDIRECTION
+
+
+def is_client_error(s):
+    return status_type(s) == StatusType.CLIENT_ERROR
+
+
+def is_server_error(s):
+    return status_type(s) == StatusType.SERVER_ERROR
+
+
+def is_ok(s):
+    return status_type(s) in (
+        StatusType.INFORMATIONAL,
+        StatusType.SUCCESS,
+        StatusType.REDIRECTION
+    )
+
+
+def is_ko(s):
+    return not is_ok(s)

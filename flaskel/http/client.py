@@ -5,7 +5,7 @@ from flaskel import cap
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker import FakeLogger
 from flaskel.utils.uuid import get_uuid
-from . import http_status as httpcode
+from . import httpcode
 from .httpdumper import FlaskelHTTPDumper, HTTPDumper
 
 
@@ -91,6 +91,12 @@ class HTTPClient(HTTPBase):
         if self._token:
             return HTTPTokenAuth(self._token)
 
+    def normalize_url(self, url):
+        if url.startswith('http'):
+            return url
+
+        return f"{self._endpoint}/{url.rstrip('/')}"
+
     def request(self, uri, method='GET', raise_on_exc=False,
                 dump_body=None, chunk_size=None, decode_unicode=False, **kwargs):
         """
@@ -111,7 +117,7 @@ class HTTPClient(HTTPBase):
             dump_body = False
 
         try:
-            response = send_request(method, f"{self._endpoint}{uri}", **kwargs)
+            response = send_request(method, self.normalize_url(uri), **kwargs)
             self._logger.info(self.dump_request(response.request))
         except (http_exc.ConnectionError, http_exc.Timeout) as exc:
             self._logger.exception(exc)
@@ -162,6 +168,12 @@ class HTTPClient(HTTPBase):
 
     def delete(self, uri, **kwargs):
         return self.request(uri, method='DELETE', **kwargs)
+
+    def options(self, uri, **kwargs):
+        return self.request(uri, method='OPTIONS', **kwargs)
+
+    def head(self, uri, **kwargs):
+        return self.request(uri, method='HEAD', **kwargs)
 
 
 class JsonRPCClient(HTTPClient):
@@ -214,9 +226,6 @@ class JsonRPCClient(HTTPClient):
         :param kwargs:
         :return:
         """
-        if not method:
-            raise ValueError('method must be a valid string')
-
         resp = super().request(
             self._uri,
             method='POST',

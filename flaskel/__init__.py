@@ -1,7 +1,7 @@
 # noinspection PyUnresolvedReferences
 from flask import current_app as cap
 
-from flaskel.http import http_status as httpcode
+from flaskel.http import httpcode
 from flaskel.tester import TestClient
 from flaskel.utils import datastruct
 from .builder import AppBuilder
