@@ -141,7 +141,7 @@ class CatalogResource(Resource):
 
     def on_collection(self, *args, **kwargs):
         res = self._model.get_list(to_dict=False)
-        restricted = True if flask.request.args.get('restricted') else False
+        restricted = False if flask.request.args.get('_related') else True
         return [r.to_dict(restricted=restricted) for r in res]
 
 

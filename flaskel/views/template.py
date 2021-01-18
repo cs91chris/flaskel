@@ -9,20 +9,21 @@ class BaseView(View):
         """
         Must be implemented in every subclass
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @classmethod
-    def register(cls, app, name=None, url=None, **kwargs):
+    def register(cls, app, name=None, urls=None, **kwargs):
         """
 
         :param app: Flask app or blueprint
         :param name: optional view name
-        :param url: optional url or view name
+        :param urls: optional urls or view name
         :param kwargs: argument passed to cls constructor
         """
         name = name or cls.__name__
         view_func = cls.as_view(name, **kwargs)
-        app.add_url_rule(url or f"/{name}", view_func=view_func)
+        for u in urls or (f"/{name}",):
+            app.add_url_rule(u, view_func=view_func, methods=cls.methods)
 
 
 class RenderTemplate(BaseView):
