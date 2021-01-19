@@ -12,7 +12,7 @@ class BaseView(View):
         raise NotImplementedError  # pragma: no cover
 
     @classmethod
-    def register(cls, app, name=None, urls=None, **kwargs):
+    def register(cls, app, name=None, *urls, **kwargs):
         """
 
         :param app: Flask app or blueprint

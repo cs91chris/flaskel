@@ -136,12 +136,14 @@ class JSONRPCView(View):
 
         return _method
 
-    def register(self, app, name, url, **kwargs):
+    def register(self, app, name=None, url=None, **kwargs):
         """
 
         :param app: Flask or Blueprint instance
-        :param name:
-        :param url:
+        :param name: view name
+        :param url: url to bind
         """
+        name = name or self.__class__.__name__
+        url = url or f"/{name}"
         view_func = self.__class__.as_view(name, self.operations, **kwargs)
         app.add_url_rule(f"/{url.rstrip('/')}", view_func=view_func, methods=self.methods)

@@ -104,14 +104,16 @@ class Resource(MethodView):
         raise NotImplemented  # pragma: no cover
 
     @classmethod
-    def register(cls, app, name, url, pk_type='int', **kwargs):
+    def register(cls, app, name=None, url=None, pk_type='int', **kwargs):
         """
 
         :param app: Flask or Blueprint instance
-        :param name:
-        :param url:
+        :param name: view name
+        :param url: url to bind
         :param pk_type: type of res_id
         """
+        name = name or cls.__name__
+        url = url or f"/{name}"
         view_func = cls.as_view(name, **kwargs)
         url = f"/{url.rstrip('/')}"
 
