@@ -1,13 +1,13 @@
 import os
 from functools import partial
-
+from base64 import b64encode
 import flask
 import werkzeug.exceptions
 
 from flaskel import http, httpcode
 from flaskel.http import batch, rpc, useragent
 from flaskel.tester import Asserter
-from flaskel.utils import datastruct, date, uuid, SCHEMAS
+from flaskel.utils import datastruct, date, SCHEMAS, uuid
 from flaskel.utils.yaml import setup_yaml_parser
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, testapp
@@ -124,7 +124,7 @@ def test_method_override(testapp):
     )
     Asserter.assert_status_code(res)
 
-    res = testapp.post(url_for('test.method_override_post') + '?_method_override=PUT')
+    res = testapp.post(f"{url_for('test.method_override_post')}?_method_override=PUT")
     Asserter.assert_status_code(res)
 
 
@@ -175,7 +175,7 @@ def test_crypto(testapp):
 
 def test_utils_http_client_simple(testapp):
     with testapp.application.test_request_context():
-        api = http.FlaskelHttp(HOSTS.apitester, token='pippo')
+        api = http.FlaskelHttp(HOSTS.apitester, token='pippo', dump_body=True)
         res = api.delete('/status/202')
         Asserter.assert_equals(res.status, httpcode.ACCEPTED)
         res = api.patch('/status/400')
@@ -354,3 +354,28 @@ def test_correlation_id(testapp):
     req_id = 'invalid_req_id'
     res = testapp.get('/', headers={request_id_header: req_id})
     Asserter.assert_different(res.headers[request_id_header], req_id)
+
+
+def test_jwt(testapp):
+    user = testapp.application.config.BASIC_AUTH_USERNAME
+    passwd = testapp.application.config.BASIC_AUTH_PASSWORD
+    credential = b64encode(f"{user}:{passwd}".encode()).decode()
+
+    res = testapp.post(
+        url_for('auth.access_token'),
+        json=dict(email='email', password='password'),
+        headers={"Authorization": f"Basic {credential}"}
+    )
+    Asserter.assert_status_code(res)
+    Asserter.assert_allin(res.json.keys(), (
+        'access_token', 'refresh_token', 'expires_in', 'issued_at', 'token_type', 'scope'
+    ))
+
+    res = testapp.post(
+        url_for('auth.refresh_token'),
+        headers={'Authorization': f"Bearer {res.json.refresh_token}"}
+    )
+    Asserter.assert_status_code(res)
+    Asserter.assert_allin(res.json.keys(), (
+        'access_token', 'expires_in', 'issued_at', 'token_type', 'scope'
+    ))

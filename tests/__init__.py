@@ -4,6 +4,7 @@ import pytest
 
 from flaskel import middlewares
 from flaskel.ext import BASE_EXTENSIONS, crypto, healthcheck, sqlalchemy, useragent
+from flaskel.ext.auth import jwtm
 from flaskel.tester import TestClient
 from tests.blueprints import BLUEPRINTS
 
@@ -28,6 +29,9 @@ def app_prod():
 
     return TestClient.get_app(
         conf=dict(
+            DEBUG=True,
+            BASIC_AUTH_USERNAME='username',
+            BASIC_AUTH_PASSWORD='password',
             USER_AGENT_AUTO_PARSE=True,
             PREFERRED_URL_SCHEME='https'
         ),
@@ -42,6 +46,7 @@ def app_prod():
                 "empty":         (None, (None,)),  # NB: needed to complete coverage
                 "useragent":     (useragent.UserAgent(),),
                 "argon2":        (crypto.Argon2(),),
+                "jwt":           (jwtm,),
                 "health_checks": (
                     healthcheck.health_checks, {'extensions': (
                         {
