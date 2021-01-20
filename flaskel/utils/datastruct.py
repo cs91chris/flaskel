@@ -31,6 +31,9 @@ class ObjectDict(dict):
 
             self[k] = v
 
+    def __dict__(self):
+        return {**self}
+
     def __getattr__(self, name):
         if name in self:
             return self[name]
