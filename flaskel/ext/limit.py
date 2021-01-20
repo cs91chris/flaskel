@@ -1,8 +1,8 @@
 import flask
 from flask_limiter import Limiter
-from flaskel import cap
+
+from flaskel import cap, httpcode
 from flaskel.ext import cfremote
-from flaskel import httpcode
 
 
 def response_ok(r):
@@ -10,7 +10,8 @@ def response_ok(r):
 
 
 def response_ko(r):
-    return httpcode.is_ko(r.status_code)
+    return r.status_code != httpcode.TOO_MANY_REQUESTS \
+           and httpcode.is_ko(r.status_code)
 
 
 limiter = Limiter(
@@ -31,7 +32,39 @@ def _header_whitelist():
     return header_whitelist()
 
 
-limit_slow = limiter.limit(lambda: cap.config.LIMITER.SLOW, deduct_when=response_ok)
-limit_medium = limiter.limit(lambda: cap.config.LIMITER.MEDIUM, deduct_when=response_ok)
-limit_fast = limiter.limit(lambda: cap.config.LIMITER.FAST, deduct_when=response_ok)
-limit_fail = limiter.limit(lambda: cap.config.LIMITER.FAIL, deduct_when=response_ko)
+class RateLimit:
+    limiter = limiter
+
+    @classmethod
+    def slow(cls):
+        return cls.limiter.limit(
+            lambda: cap.config.LIMITER.SLOW,
+            deduct_when=response_ok
+        )
+
+    @classmethod
+    def medium(cls):
+        return cls.limiter.limit(
+            lambda: cap.config.LIMITER.MEDIUM,
+            deduct_when=response_ok
+        )
+
+    @classmethod
+    def fast(cls):
+        return cls.limiter.limit(
+            lambda: cap.config.LIMITER.FAST,
+            deduct_when=response_ok
+        )
+
+    @classmethod
+    def fail(cls):
+        return cls.limiter.limit(
+            lambda: cap.config.LIMITER.FAIL,
+            deduct_when=response_ko
+        )
+
+
+limit_slow = RateLimit.slow()
+limit_medium = RateLimit.medium()
+limit_fast = RateLimit.fast()
+limit_fail = RateLimit.fail()
