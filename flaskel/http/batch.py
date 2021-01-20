@@ -132,7 +132,8 @@ class FlaskelHTTPBatch(HTTPBatch, FlaskelHTTPDumper):
     def request(self, requests, **kwargs):
         if flask.request.id:
             for r in requests:
-                r.setdefault('headers', {})
+                if not r.get('headers'):
+                    r['headers'] = {}
                 req_id = f"{flask.request.id},{get_uuid()}"
                 r['headers'][cap.config.REQUEST_ID_HEADER] = req_id
 

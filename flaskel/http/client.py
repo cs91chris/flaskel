@@ -248,7 +248,8 @@ class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):
 
     def request(self, uri, **kwargs):
         if flask.request.id:
-            kwargs.setdefault('headers', {})
+            if not kwargs.get('headers'):
+                kwargs['headers'] = {}
             kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
 
         return super().request(uri, **kwargs)
