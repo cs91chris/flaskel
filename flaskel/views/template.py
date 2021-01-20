@@ -1,29 +1,6 @@
 import flask
-from flask.views import View
 
-
-class BaseView(View):
-    methods = ['GET']
-
-    def dispatch_request(self):
-        """
-        Must be implemented in every subclass
-        """
-        raise NotImplementedError  # pragma: no cover
-
-    @classmethod
-    def register(cls, app, name=None, *urls, **kwargs):
-        """
-
-        :param app: Flask app or blueprint
-        :param name: optional view name
-        :param urls: optional urls or view name
-        :param kwargs: argument passed to cls constructor
-        """
-        name = name or cls.__name__
-        view_func = cls.as_view(name, **kwargs)
-        for u in urls or (f"/{name}",):
-            app.add_url_rule(u, view_func=view_func, methods=cls.methods)
+from .base import BaseView
 
 
 class RenderTemplate(BaseView):
