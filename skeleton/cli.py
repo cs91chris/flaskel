@@ -1,10 +1,15 @@
 from blueprints import BLUEPRINTS
 from ext import EXTENSIONS
-from flaskel import AppBuilder, BASE_EXTENSIONS, Server
+from flaskel import AppBuilder, BASE_EXTENSIONS, middlewares as middle, Server
 
 factory = AppBuilder(
     blueprints=BLUEPRINTS,
-    extensions={**BASE_EXTENSIONS, **EXTENSIONS}
+    extensions={**BASE_EXTENSIONS, **EXTENSIONS},
+    middlewares=(
+        middle.RequestID,
+        middle.HTTPMethodOverride,
+        middle.ReverseProxied,
+    )
 )
 
 
