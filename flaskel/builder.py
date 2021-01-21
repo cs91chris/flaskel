@@ -82,7 +82,7 @@ class AppBuilder:
 
         with open(secret_file, 'r') as f:
             secret_key = f.read()
-            self._app.logger.info(f"load secret key from: {secret_key}")
+            self._app.logger.info(f"load secret key from: {secret_file}")
         return secret_key
 
     def _set_secret_key(self):
@@ -105,7 +105,7 @@ class AppBuilder:
             self._app.logger.debug('set secret key in development mode')
             secret_key = 'fake_very_complex_string'
 
-        self._app.config['SECRET_KEY'] = secret_key or self._app.config.SECRET_KEY
+        self._app.config.SECRET_KEY = secret_key or self._app.config.SECRET_KEY
         if len(secret_key) < key_length:
             self._app.logger.warning(f"secret key length is less than: {key_length}")
 
@@ -220,7 +220,7 @@ class AppBuilder:
         self._app.logger.debug(f"Registered routes:\n{lines}")
 
     def _patch_app(self):
-        if self._app.config.DEBUG:
+        if self._app.debug:
             self._set_linter_and_profiler()
             self._dump_urls()
 

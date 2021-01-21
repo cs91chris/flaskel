@@ -93,7 +93,7 @@ class JSONRPCView(View):
             response.error = ex.as_dict()
         except Exception as ex:
             cap.logger.exception(ex)
-            mess = str(ex) if cap.config['DEBUG'] is True else None
+            mess = str(ex) if cap.debug is True else None
             response.error = rpc.RPCInternalError(message=mess).as_dict()
 
         return response

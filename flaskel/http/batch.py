@@ -1,4 +1,5 @@
 import asyncio
+import warnings
 
 import flask
 
@@ -11,16 +12,12 @@ from .httpdumper import FlaskelHTTPDumper
 try:
     import aiohttp
 except ImportError as err:  # pragma: no cover
-    import warnings
-
     warnings.warn(str(err))
     aiohttp = None
 
 try:
     import nest_asyncio
 except ImportError as err:  # pragma: no cover
-    import warnings
-
     warnings.warn(str(err))
     nest_asyncio = None
 
@@ -51,7 +48,7 @@ class HTTPBatch(HTTPBase):
         try:
             async with session.request(**kwargs) as resp:
                 # noinspection PyProtectedMember
-                self._logger.info(self.dump_request(resp._request_info))
+                self._logger.info(self.dump_request(resp._request_info, self._dump_body))
                 try:
                     body = await resp.json()
                 except (aiohttp.ContentTypeError, ValueError, TypeError):
@@ -113,10 +110,10 @@ class HTTPBatch(HTTPBase):
 
         try:
             asyncio.get_running_loop()
-            if not nest_asyncio:
-                raise ImportError("You must install 'nest-asyncio'")  # pragma: no cover
+            if not nest_asyncio:  # pragma: no cover
+                raise ImportError("You must install 'nest-asyncio'")
             # noinspection PyUnresolvedReferences
-            nest_asyncio.apply()
+            nest_asyncio.apply()  # pragma: no cover
         except RuntimeError:
             asyncio.set_event_loop(asyncio.new_event_loop())
 

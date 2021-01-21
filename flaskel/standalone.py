@@ -112,7 +112,10 @@ class Server:
         """
 
         :param filename:
-        :return: config
+        :param debug:
+        :param bind:
+        :param log_config:
+        :return:
         """
         default_env = 'development' if debug else 'production'
         env = decouple.config('FLASK_ENV', default=default_env)
@@ -120,22 +123,22 @@ class Server:
         if filename is not None:
             setup_yaml_parser()
             config = load_yaml_file(filename)
-            if not config['app']['FLASK_ENV']:
-                config['app']['FLASK_ENV'] = env
+            if not config.app.FLASK_ENV:
+                config.app.FLASK_ENV = env
         else:
             config = dict(
                 app={'DEBUG': debug, 'FLASK_ENV': env},
                 wsgi={'bind': bind, 'debug': debug}
             )
 
-        os.environ['FLASK_ENV'] = config['app']['FLASK_ENV']
+        os.environ['FLASK_ENV'] = config.app.FLASK_ENV
 
         if log_config is not None:
-            config['app']['LOG_FILE_CONF'] = log_config
+            config.app.LOG_FILE_CONF = log_config
 
         # debug flag enabled overrides config file
         if debug is True:
-            config['app']['DEBUG'] = True
+            config.app.DEBUG = True
 
         return config
 

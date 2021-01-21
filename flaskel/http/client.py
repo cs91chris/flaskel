@@ -118,7 +118,7 @@ class HTTPClient(HTTPBase):
 
         try:
             response = send_request(method, self.normalize_url(uri), **kwargs)
-            self._logger.info(self.dump_request(response.request))
+            self._logger.info(self.dump_request(response.request, dump_body))
         except (http_exc.ConnectionError, http_exc.Timeout) as exc:
             self._logger.exception(exc)
             if raise_on_exc or self._raise_on_exc:

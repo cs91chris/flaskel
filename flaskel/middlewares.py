@@ -160,7 +160,7 @@ class RequestID:
         try:
             # noinspection PyUnresolvedReferences
             # flask_app is added by flaskel factory as a workaround
-            header_name = self.flask_app.config.get('REQUEST_ID_HEADER') or self.header_name
+            header_name = self.flask_app.config.REQUEST_ID_HEADER or self.header_name
         except AttributeError:  # pragma: no cover
             header_name = self.header_name
 
@@ -168,9 +168,9 @@ class RequestID:
         request_id_header = self._compute_request_id_header(environ.get(flask_header_name))
         environ[flask_header_name] = request_id_header
 
-        def new_start_response(status, response_headers, exc_info=None):
-            response_headers.append((header_name, request_id_header))
-            return start_response(status, response_headers, exc_info)
+        def new_start_response(status, headers, exc_info=None):
+            headers.append((header_name, request_id_header))
+            return start_response(status, headers, exc_info)
 
         return self.app(environ, new_start_response)
 
@@ -201,7 +201,7 @@ class RequestID:
         try:
             # noinspection PyUnresolvedReferences
             # flask_app is added by flaskel factory as a workaround
-            request_id_prefix = self.flask_app.config.get('REQUEST_ID_PREFIX')
+            request_id_prefix = self.flask_app.config.REQUEST_ID_PREFIX
         except AttributeError:  # pragma: no cover
             request_id_prefix = self.request_id_prefix
 

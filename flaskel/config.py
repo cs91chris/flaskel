@@ -61,10 +61,10 @@ DATE_ISO_FORMAT = "%Y-%m-%dT%H:%M:%S"
 REQUEST_ID_HEADER = 'X-Request-ID'
 RATELIMIT_HEADERS_ENABLED = True
 LIMITER = {
-    'FAIL':   '1/second',
-    'FAST':   '30/minute',
-    'MEDIUM': '20/minute',
-    'SLOW':   '10/minute',
-    'BYPASS_KEY': 'X-Limiter-Bypass',
+    'FAIL':         '1/second',
+    'FAST':         '30/minute',
+    'MEDIUM':       '20/minute',
+    'SLOW':         '10/minute',
+    'BYPASS_KEY':   'X-Limiter-Bypass',
     'BYPASS_VALUE': 'bypass-rate-limit',
 }

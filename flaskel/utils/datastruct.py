@@ -18,31 +18,34 @@ class ObjectDict(dict):
         """
         super().__init__()
         data = d or kwargs or {}
-
         for k, v in data.items():
-            if isinstance(v, dict):
-                v = ObjectDict(v)
-            elif isinstance(v, list):
-                v = [
-                    ObjectDict(i)
-                    if type(i) is dict else i
-                    for i in v
-                ]
-
-            self[k] = v
+            self[k] = self.normalize(v)
 
     def __dict__(self):
-        return {**self}
+        data = {}
+        for k, v in self.items():
+            if isinstance(v, ObjectDict):
+                data[k] = v.__dict__()
+            elif isinstance(v, list):
+                data[k] = [i.__dict__() for i in v]
+            else:
+                data[k] = v
+
+        return data
+
+    def __getstate__(self):
+        return self.__dict__()
+
+    def __setstate__(self, state):
+        for k, v in state.items():
+            self.__setattr__(k, v)
 
     def __getattr__(self, name):
         if name in self:
             return self[name]
 
     def __setattr__(self, name, value):
-        if type(value) is dict:
-            self[name] = ObjectDict(value)
-        else:
-            self[name] = value
+        self[name] = self.normalize(value)
 
     def __delattr__(self, name):
         if name in self:
@@ -52,7 +55,10 @@ class ObjectDict(dict):
     def normalize(data):
         try:
             if isinstance(data, (list, tuple, set)):
-                return [ObjectDict(**r) for r in data]
+                return [
+                    ObjectDict(**r) if type(r) is dict else r
+                    for r in data
+                ]
             return ObjectDict(**data)
         except (TypeError, AttributeError):
             return data

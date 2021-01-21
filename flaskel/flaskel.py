@@ -52,12 +52,14 @@ class Response(flask.Response):
             return  # only to prevent warning # pragma: no cover
 
         # following headers works with nginx compatible proxy
-        if cap.use_x_sendfile is True and cap.config.get('ENABLE_ACCEL') is True:
+        if cap.use_x_sendfile is True and cap.config.ENABLE_ACCEL is True:
             resp.headers['X-Accel-Redirect'] = file_path
-            resp.headers['X-Accel-Charset'] = cap.config['ACCEL_CHARSET']
-            resp.headers['X-Accel-Limit-Rate'] = cap.config['ACCEL_LIMIT_RATE']
-            resp.headers['X-Accel-Expires'] = cap.config['SEND_FILE_MAX_AGE_DEFAULT']
-            resp.headers['X-Accel-Buffering'] = 'yes' if cap.config['ACCEL_BUFFERING'] else 'no'
+            resp.headers['X-Accel-Charset'] = cap.config.ACCEL_CHARSET or 'utf-8'
+            resp.headers['X-Accel-Buffering'] = 'yes' if cap.config.ACCEL_BUFFERING else 'no'
+            if cap.config.ACCEL_LIMIT_RATE:
+                resp.headers['X-Accel-Limit-Rate'] = cap.config.ACCEL_LIMIT_RATE
+            if cap.config.SEND_FILE_MAX_AGE_DEFAULT:
+                resp.headers['X-Accel-Expires'] = cap.config.SEND_FILE_MAX_AGE_DEFAULT
 
         return resp
 

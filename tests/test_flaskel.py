@@ -1,18 +1,18 @@
 import os
-from functools import partial
 from base64 import b64encode
+from functools import partial
+
 import flask
 import werkzeug.exceptions
 
 from flaskel import http, httpcode
 from flaskel.http import batch, rpc, useragent
 from flaskel.tester import Asserter
-from flaskel.utils import datastruct, date, SCHEMAS, uuid
-from flaskel.utils.yaml import setup_yaml_parser
+from flaskel.utils import datastruct, date, SCHEMAS, uuid, yaml
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, testapp
 
-setup_yaml_parser()
+yaml.setup_yaml_parser()
 
 url_for = partial(flask.url_for, _external=True)
 

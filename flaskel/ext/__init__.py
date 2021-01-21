@@ -6,6 +6,7 @@ from .default import (
     logger,
     template
 )
+from .limit import FlaskIPBan, ip_ban, limiter, RateLimit
 
 # { "name": (extension, parameters: dict), }
 BASE_EXTENSIONS = {
@@ -15,6 +16,6 @@ BASE_EXTENSIONS = {
     "builder":  (builder,),
     "errors":   (errors, {
         "dispatcher": 'subdomain',
-        "response":   builder.on_accept(),
+        "response":   builder.on_accept(strict=False),
     }),
 }

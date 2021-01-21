@@ -7,6 +7,8 @@ from functools import partial
 
 import yaml
 
+from .datastruct import ObjectDict
+
 ENV_VAR_MATCHER = re.compile(
     r"""
         \${        # match characters `${` literally
@@ -63,4 +65,4 @@ def setup_yaml_parser():
 
 def load_yaml_file(filename):
     with open(filename) as f:
-        return yaml.load(f, Loader=yaml.Loader)
+        return ObjectDict(yaml.load(f, Loader=yaml.Loader))
