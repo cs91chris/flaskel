@@ -84,9 +84,9 @@ try:
 
     setup(
         name='Flaskel',
+        license='MIT',
         version=grep(VERSION_FILE, '__version__'),
         url='https://github.com/cs91chris/flaskel',
-        license='MIT',
         author=grep(VERSION_FILE, '__author_name__'),
         author_email=grep(VERSION_FILE, '__author_email__'),
         description='Skeleton for flask applications',
@@ -115,6 +115,7 @@ try:
             "Flask-SqlAlchemy",
             "Flask-JWT-Extended",
             "Flask-Limiter",
+            "Flask-IPBan",
             "Flask-HTTPAuth",
             "sqlalchemy_schemadisplay",
             "PyYAML",

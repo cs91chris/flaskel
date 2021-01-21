@@ -1,4 +1,5 @@
 import flask
+from flask_ipban import IpBan
 from flask_limiter import Limiter
 
 from flaskel import cap, httpcode
@@ -64,7 +65,23 @@ class RateLimit:
         )
 
 
-limit_slow = RateLimit.slow()
-limit_medium = RateLimit.medium()
-limit_fast = RateLimit.fast()
-limit_fail = RateLimit.fail()
+class FlaskIPBan:
+    def __init__(self, app=None, ban=None):
+        """
+
+        :param app:
+        :param ban: optional IpBan instance
+        """
+        self.ip_ban = ban
+
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
+        count = app.config.IPBAN.count or 20
+        seconds = app.config.IPBAN.seconds or 3600 * 24
+        self.ip_ban = self.ip_ban or IpBan(ban_count=count, ban_seconds=seconds)
+        self.ip_ban.init_app(app)
+
+
+ip_ban = FlaskIPBan()
