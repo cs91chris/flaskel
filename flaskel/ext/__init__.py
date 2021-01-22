@@ -6,7 +6,7 @@ from .default import (
     logger,
     template
 )
-from .limit import FlaskIPBan, ip_ban, limiter, RateLimit
+from .limit import FlaskIPBan, ip_ban, IPBan, limiter, RateLimit
 
 # { "name": (extension, parameters: dict), }
 BASE_EXTENSIONS = {
