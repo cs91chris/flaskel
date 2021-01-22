@@ -17,7 +17,8 @@ class ObjectDict(dict):
         :param d: input dictionary
         """
         super().__init__()
-        data = d or kwargs or {}
+        data = {**(d or {}), **kwargs}
+
         for k, v in data.items():
             self[k] = self.normalize(v)
 
