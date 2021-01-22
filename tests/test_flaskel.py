@@ -5,10 +5,9 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import http, httpcode
+from flaskel import datastruct, datetime, http, httpcode, SCHEMAS, uuid, yaml
 from flaskel.http import batch, rpc, useragent
 from flaskel.tester import Asserter
-from flaskel.utils import datastruct, date, SCHEMAS, uuid, yaml
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, testapp
 
@@ -327,16 +326,16 @@ def test_utils_date_conversion():
     not_iso_date = '28 December 2020 07:53 PM'
     invalid_date = 'invalid_date'
 
-    res = date.from_iso_format(iso_date, fmt, exc=exc)
+    res = datetime.from_iso_format(iso_date, fmt, exc=exc)
     Asserter.assert_true(res)
     Asserter.assert_equals(not_iso_date, res)
 
-    res = date.to_iso_format(not_iso_date, fmt, exc=exc)
+    res = datetime.to_iso_format(not_iso_date, fmt, exc=exc)
     Asserter.assert_true(res)
     Asserter.assert_equals(iso_date, res)
 
-    Asserter.assert_none(date.from_iso_format(invalid_date, fmt, exc=exc))
-    Asserter.assert_none(date.to_iso_format(invalid_date, fmt, exc=exc))
+    Asserter.assert_none(datetime.from_iso_format(invalid_date, fmt, exc=exc))
+    Asserter.assert_none(datetime.to_iso_format(invalid_date, fmt, exc=exc))
 
 
 def test_correlation_id(testapp):
