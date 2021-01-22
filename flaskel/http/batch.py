@@ -61,30 +61,30 @@ class HTTPBatch(HTTPBase):
                     if self._raise_on_exc is True:
                         raise  # pragma: no cover
 
-                    return ObjectDict(dict(
+                    return ObjectDict(
                         body=body,
                         status=resp.status,
                         headers={k: v for k, v in resp.headers.items()},
                         exception=exc
-                    ))
+                    )
 
                 self._logger.info(self.dump_response(resp, self._dump_body))
-                return ObjectDict(dict(
+                return ObjectDict(
                     body=body,
                     status=resp.status,
                     headers={k: v for k, v in resp.headers.items()}
-                ))
+                )
         except (aiohttp.ClientError, aiohttp.ServerTimeoutError, asyncio.TimeoutError) as exc:
             self._logger.exception(exc)
             if self._raise_on_exc is True:
                 raise  # pragma: no cover
 
-            return ObjectDict(dict(
+            return ObjectDict(
                 body={},
                 status=httpcode.SERVICE_UNAVAILABLE,
                 headers={},
                 exception=exc
-            ))
+            )
 
     async def batch(self, requests):
         """

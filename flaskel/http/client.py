@@ -124,12 +124,12 @@ class HTTPClient(HTTPBase):
             if raise_on_exc or self._raise_on_exc:
                 raise  # pragma: no cover
 
-            return ObjectDict(dict(
+            return ObjectDict(
                 body={},
                 status=httpcode.SERVICE_UNAVAILABLE,
                 headers={},
                 exception=exc
-            ))
+            )
 
         try:
             response.raise_for_status()
@@ -148,11 +148,11 @@ class HTTPClient(HTTPBase):
         else:
             body = response.text
 
-        return ObjectDict(dict(
+        return ObjectDict(
             body=body,
             status=response.status_code,
             headers=dict(response.headers)
-        ))
+        )
 
     def get(self, uri, **kwargs):
         return self.request(uri, **kwargs)
@@ -238,7 +238,7 @@ class JsonRPCClient(HTTPClient):
             **kwargs
         )
 
-        return ObjectDict(resp['body'] or {})
+        return resp.body or ObjectDict()
 
 
 class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):

@@ -157,7 +157,7 @@ class AppBuilder:
         self._app.config.from_object(self._conf_module)
         self._app.config.from_mapping(**(conf or {}))
         self._app.config.from_envvar('APP_CONFIG_FILE', silent=True)
-        self._app.config = ObjectDict(self._app.config)
+        self._app.config = ObjectDict(**self._app.config)
 
     def _register_converters(self):
         """

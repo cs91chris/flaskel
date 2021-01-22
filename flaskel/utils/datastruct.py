@@ -11,15 +11,9 @@ class HashableDict(dict):
 
 
 class ObjectDict(dict):
-    def __init__(self, d=None, **kwargs):
-        """
-
-        :param d: input dictionary
-        """
+    def __init__(self, **kwargs):
         super().__init__()
-        data = {**(d or {}), **kwargs}
-
-        for k, v in data.items():
+        for k, v in kwargs.items():
             self[k] = self.normalize(v)
 
     def __dict__(self):

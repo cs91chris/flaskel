@@ -18,7 +18,7 @@ class RPCError(Exception):
 
         :return:
         """
-        return ObjectDict(dict(code=self.code, message=self.message, data=self.data))
+        return ObjectDict(code=self.code, message=self.message, data=self.data)
 
 
 class RPCParseError(RPCError):

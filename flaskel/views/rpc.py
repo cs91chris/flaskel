@@ -77,7 +77,7 @@ class JSONRPCView(View):
 
         :return:
         """
-        response = ObjectDict(dict(jsonrpc=self.version, id=None))
+        response = ObjectDict(jsonrpc=self.version, id=None)
 
         try:
             payload = self._validate_payload()
