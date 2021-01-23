@@ -65,4 +65,8 @@ def setup_yaml_parser():
 
 def load_yaml_file(filename):
     with open(filename) as f:
-        return ObjectDict(yaml.load(f, Loader=yaml.Loader))
+        return ObjectDict.normalize(yaml.load(f, Loader=yaml.Loader))
+
+
+def loads(data):
+    return ObjectDict.normalize(yaml.load(data, Loader=yaml.Loader))

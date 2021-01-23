@@ -51,7 +51,7 @@ class ObjectDict(dict):
         try:
             if isinstance(data, (list, tuple, set)):
                 return [
-                    ObjectDict(**r) if type(r) is dict else r
+                    ObjectDict(**r) if isinstance(r, dict) else r
                     for r in data
                 ]
             return ObjectDict(**data)

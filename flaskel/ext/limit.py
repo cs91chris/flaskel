@@ -153,6 +153,6 @@ class FlaskIPBan:
         self.ip_ban.ban_count = app.config.IPBAN_COUNT
         self.ip_ban.ban_seconds = app.config.IPBAN_SECONDS
 
+        self.ip_ban.init_app(app)
         self.ip_ban.ip_whitelist_add(white_list or [])
         self.ip_ban.load_nuisances(conf=cap.config.IPBAN_NUISANCES or nuisances or {})
-        self.ip_ban.init_app(app)
