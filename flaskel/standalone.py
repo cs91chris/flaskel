@@ -4,8 +4,7 @@ import click
 import decouple
 
 from . import AppBuilder
-from .utils.misc import parse_value
-from .utils.yaml import load_yaml_file, setup_yaml_parser
+from .utils import misc, yaml
 from .wsgi import BaseApplication, WSGIFactory
 
 
@@ -21,7 +20,7 @@ def option_as_dict(ctx, param, value):
     ret = {}
     for opt in value:
         k, v = opt.split("=", 2)
-        ret.update({k: parse_value(v)})
+        ret.update({k: misc.parse_value(v)})
     return ret
 
 
@@ -121,8 +120,8 @@ class Server:
         env = decouple.config('FLASK_ENV', default=default_env)
 
         if filename is not None:
-            setup_yaml_parser()
-            config = load_yaml_file(filename)
+            yaml.setup_yaml_parser()
+            config = yaml.load_yaml_file(filename)
             if not config.app.FLASK_ENV:
                 config.app.FLASK_ENV = env
         else:

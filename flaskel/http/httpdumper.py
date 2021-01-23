@@ -9,7 +9,7 @@ class HTTPDumper:
         :param text:
         :return:
         """
-        return "\n{}".format(text)
+        return f"\n{text}"
 
     @classmethod
     def dump_headers(cls, hdr, only=()):
@@ -25,7 +25,7 @@ class HTTPDumper:
         if only:
             hdr = {k: hdr[k] for k in only if k in hdr}
 
-        return cls.padding('\n'.join('{}: {}'.format(k, v) for k, v in hdr.items()))
+        return cls.padding('\n'.join(f"{k}: {v}" for k, v in hdr.items()))
 
     @classmethod
     def response_filename(cls, headers):
@@ -59,7 +59,7 @@ class HTTPDumper:
         :param only_hdr: dump only a subset of headers
         :return: prettified representation of input as string
         """
-        body = None
+        body = ''
         if dump_body is True:
             try:
                 body = req.body or "empty body"
@@ -67,14 +67,11 @@ class HTTPDumper:
                     body = body.decode()
             except AttributeError as exc:
                 body = str(exc)
-        if body:
-            body = f"body:\n{body}"
+            body = f"\nbody:\n{body}"
 
         headers = cls.dump_headers(req.headers, only=only_hdr)
-        if headers:
-            headers = f"headers:\n{headers}\n"
-
-        return f"{req.method} {req.url}\n{headers}{body}"
+        headers = f"\nheaders:\n{headers}" if headers else ''
+        return f"{req.method} {req.url}{headers}{body}"
 
     @classmethod
     def dump_response(cls, resp, dump_body=None, only_hdr=()):
@@ -86,7 +83,7 @@ class HTTPDumper:
         :param only_hdr: dump only a subset of headers
         :return: prettified representation of input as string
         """
-        body = None
+        body = ''
         if dump_body is True:
             body = cls.response_filename(resp.headers) or resp.text
             try:
@@ -94,20 +91,17 @@ class HTTPDumper:
                     body = body.decode()
             except AttributeError as exc:
                 body = str(exc)
+            body = f"\nbody:\n{body}"
 
         try:
             seconds = resp.elapsed.total_seconds()
         except AttributeError:  # because aiohttp.ClientResponse has not elapsed attribute
             seconds = 'N/A'
 
-        if body:
-            body = f"body:\n{body}"
-
         headers = cls.dump_headers(resp.headers, only=only_hdr)
-        if headers:
-            headers = f"headers:\n{headers}\n"
+        headers = f"\nheaders:\n{headers}" if headers else ''
         status = resp.status_code if hasattr(resp, 'status_code') else resp.status
-        return f"time : {seconds} - status code: {status}\n{headers}{body}"
+        return f"time: {seconds} - status code: {status}{headers}{body}"
 
 
 class FlaskelHTTPDumper:

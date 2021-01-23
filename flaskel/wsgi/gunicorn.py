@@ -1,5 +1,4 @@
 from gunicorn.app.base import BaseApplication as WSGIServer
-from six import iteritems
 
 from .base import BaseApplication
 
@@ -20,11 +19,11 @@ class WSGIGunicorn(BaseApplication, WSGIServer):
         """
         options = {}
 
-        for k, v in iteritems(self.options):
+        for k, v in self.options.items():
             if k in self.cfg.settings and v is not None:
                 options.update({k: v})
 
-        for key, value in iteritems(options):
+        for key, value in options.items():
             self.cfg.set(key.lower(), value)
 
     def load(self):

@@ -83,13 +83,12 @@ class IPBan(_IPBan):
         return response
 
     def _before_request_check(self):
-        self.ip_record.update_from_other_instances()
         if self._is_excluded():
             return
 
         ip = self.get_ip()
         entry = self._ip_ban_list.get(ip)
-        url = flask.request.environ.full_path
+        url = flask.request.full_path
 
         if entry and entry.get('count', 0) > self.ban_count:
             if entry.get('permanent', False):
@@ -101,7 +100,6 @@ class IPBan(_IPBan):
                 self._logger.info(f"IP: {ip} updated in ban list, at url: {url}")
                 entry['count'] += 1
                 entry['timestamp'] = now
-                self.ip_record.write(ip, count=entry['count'])
                 flask.abort(httpcode.GONE)
 
             entry['count'] = 0
