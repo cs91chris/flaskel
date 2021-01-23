@@ -50,100 +50,75 @@ class HTTPDumper:
             return None
 
     @classmethod
-    def dump_request(cls, req, dump_body=None):
+    def dump_request(cls, req, dump_body=None, only_hdr=()):
         """
         dump http request: useful for logging
 
         :param req: Request instance
         :param dump_body: flag to enable or disable dump of request's body (overrides default)
+        :param only_hdr: dump only a subset of headers
         :return: prettified representation of input as string
         """
+        body = None
         if dump_body is True:
-            body = req.body or "empty body"
-            if type(body) is not str:
-                body = body.decode()
-        else:
-            body = "request body not dumped"
+            try:
+                body = req.body or "empty body"
+                if type(body) is not str:
+                    body = body.decode()
+            except AttributeError as exc:
+                body = str(exc)
+        if body:
+            body = f"body:\n{body}"
 
-        headers = cls.dump_headers(req.headers)
-        return f"{req.method} {req.url}\nheaders:\n{headers}\nbody:\n{body}"
+        headers = cls.dump_headers(req.headers, only=only_hdr)
+        if headers:
+            headers = f"headers:\n{headers}\n"
+
+        return f"{req.method} {req.url}\n{headers}{body}"
 
     @classmethod
-    def dump_response(cls, response, dump_body=None):
+    def dump_response(cls, resp, dump_body=None, only_hdr=()):
         """
         dump http response: useful for logging
 
-        :param response: Response instance
+        :param resp: Response instance
         :param dump_body: flag to enable or disable dump of response's body (overrides default)
+        :param only_hdr: dump only a subset of headers
         :return: prettified representation of input as string
         """
-        resp = response
-        hdr = resp.headers
-
+        body = None
         if dump_body is True:
             body = cls.response_filename(resp.headers) or resp.text
-            if type(body) is not str:
-                body = body.decode()
-        else:
-            body = "response body not dumped"
+            try:
+                if type(body) is not str:
+                    body = body.decode()
+            except AttributeError as exc:
+                body = str(exc)
 
         try:
             seconds = resp.elapsed.total_seconds()
         except AttributeError:  # because aiohttp.ClientResponse has not elapsed attribute
             seconds = 'N/A'
 
-        headers = cls.dump_headers(hdr)
+        if body:
+            body = f"body:\n{body}"
+
+        headers = cls.dump_headers(resp.headers, only=only_hdr)
+        if headers:
+            headers = f"headers:\n{headers}\n"
         status = resp.status_code if hasattr(resp, 'status_code') else resp.status
-        return f"time : {seconds} - status code: {status}\nheaders:\n{headers}\nbody:\n{body}"
+        return f"time : {seconds} - status code: {status}\n{headers}{body}"
 
 
-class FlaskelHTTPDumper(HTTPDumper):
+class FlaskelHTTPDumper:
     @classmethod
     def dump_request(cls, req, dump_body=None):
-        """
-        dump http request: useful for logging
-
-        :param req: Request instance
-        :param dump_body: flag to enable or disable dump of request's body (overrides default)
-        :return: prettified representation of input as string
-        """
-        headers = ''
-        body = "request body not dumped"
-        hdr = cap.config.LOG_REQ_HEADERS
-
-        if hdr or dump_body:
-            headers = cls.dump_headers(req.headers, hdr)
-
-        if dump_body is True:
-            body = "empty body"
-            if type(req.body) is str:
-                body = req.body
-
-        return f"{req.method} {req.url}\nheaders:\n{headers}\nbody:\n{body}"
+        return HTTPDumper.dump_request(
+            req, dump_body, only_hdr=cap.config.LOG_REQ_HEADERS
+        )
 
     @classmethod
-    def dump_response(cls, response, dump_body=None):
-        """
-        dump http response: useful for logging
-
-        :param response: Response instance
-        :param dump_body: flag to enable or disable dump of response's body (overrides default)
-        :return: prettified representation of input as string
-        """
-        resp = response
-
-        if dump_body is True:
-            body = cls.response_filename(resp.headers) or resp.text
-            if type(body) is not str:
-                body = body.decode()
-        else:
-            body = "response body not dumped"
-
-        try:
-            seconds = resp.elapsed.total_seconds()
-        except AttributeError:  # because aiohttp.ClientResponse has not elapsed attribute
-            seconds = 'N/A'
-
-        headers = cls.dump_headers(resp.headers, cap.config.LOG_RESP_HEADERS)
-        status = resp.status_code if hasattr(resp, 'status_code') else resp.status
-        return f"time : {seconds} - status code: {status}\nheaders:\n{headers}\nbody:\n{body}"
+    def dump_response(cls, resp, dump_body=None):
+        return HTTPDumper.dump_response(
+            resp, dump_body, only_hdr=cap.config.LOG_RESP_HEADERS
+        )

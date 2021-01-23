@@ -203,7 +203,7 @@ def test_utils_http_client_filename(testapp):
     hdr = 'Content-Disposition'
     param = {hdr: None}
 
-    api = http.HTTPClient(HOSTS.apitester, logger=testapp.application.logger)
+    api = http.HTTPClient(HOSTS.apitester, dump_body=True, logger=testapp.application.logger)
 
     param[hdr] = f"attachment; filename={filename}"
     res = api.get('/response-headers', params=param)
@@ -220,7 +220,7 @@ def test_utils_http_client_filename(testapp):
 
 def test_http_client_batch(testapp):
     with testapp.application.test_request_context():
-        responses = batch.FlaskelHTTPBatch().request([
+        responses = batch.FlaskelHTTPBatch(dump_body=True).request([
             dict(url=f"{HOSTS.apitester}/anything", method="GET", headers={"HDR1": "HDR1"}),
             dict(url=f"{HOSTS.apitester}/status/{httpcode.NOT_FOUND}", method="GET"),
             dict(url=HOSTS.fake, method='GET', timeout=0.1),
