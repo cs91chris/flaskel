@@ -92,7 +92,7 @@ class ProxyView(BaseView):
 
     def request_params(self):
         if self._proxy_params:
-            return flask.request.params
+            return flask.request.args
 
 
 class ConfProxyView(ProxyView):

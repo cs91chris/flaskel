@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from flaskel import middlewares
+from flaskel import middlewares, datastruct
 from flaskel.ext import BASE_EXTENSIONS, crypto, healthcheck, sqlalchemy, useragent
 from flaskel.ext.auth import jwtm
 from flaskel.tester import TestClient
@@ -11,6 +11,20 @@ from tests.blueprints import BLUEPRINTS
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 SKEL_DIR = os.path.join(BASE_DIR, 'skeleton')
 CONF_DIR = os.path.join(SKEL_DIR, 'config')
+
+CTS = datastruct.ObjectDict(
+    json='application/json',
+    xml='application/xml',
+    html='text/html',
+    json_problem='application/problem+json',
+    xml_problem='application/problem+xml',
+    json_health='application/health+json',
+)
+
+HOSTS = datastruct.ObjectDict(
+    apitester="http://httpbin.org",
+    fake="http://localhost"
+)
 
 
 @pytest.fixture(scope='session')
@@ -33,7 +47,15 @@ def app_prod():
             BASIC_AUTH_USERNAME='username',
             BASIC_AUTH_PASSWORD='password',
             USER_AGENT_AUTO_PARSE=True,
-            PREFERRED_URL_SCHEME='https'
+            PREFERRED_URL_SCHEME='https',
+            PROXIES=dict(
+                CONF=dict(
+                    host=HOSTS.apitester,
+                    url='/anything',
+                    headers={'k': 'v'},
+                    params={'k': 'v'}
+                )
+            )
         ),
         blueprints=(
             *BLUEPRINTS,

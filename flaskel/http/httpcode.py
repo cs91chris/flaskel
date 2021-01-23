@@ -1,5 +1,6 @@
 import enum
 
+PROCESSING = 102  # WebDAV
 SUCCESS = 200
 CREATED = 201
 ACCEPTED = 202

@@ -5,29 +5,15 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import datastruct, datetime, http, httpcode, SCHEMAS, uuid, yaml
+from flaskel import datetime, http, httpcode, SCHEMAS, uuid, yaml
 from flaskel.http import batch, rpc, useragent
 from flaskel.tester import Asserter
 # noinspection PyUnresolvedReferences
-from . import app_dev, app_prod, testapp
+from . import app_dev, app_prod, testapp, CTS, HOSTS
 
 yaml.setup_yaml_parser()
 
 url_for = partial(flask.url_for, _external=True)
-
-CTS = datastruct.ObjectDict(
-    json='application/json',
-    xml='application/xml',
-    html='text/html',
-    json_problem='application/problem+json',
-    xml_problem='application/problem+xml',
-    json_health='application/health+json',
-)
-
-HOSTS = datastruct.ObjectDict(
-    apitester="http://httpbin.org",
-    fake="http://localhost"
-)
 
 
 def test_app_dev(app_dev):
@@ -378,3 +364,30 @@ def test_jwt(testapp):
     Asserter.assert_allin(res.json.keys(), (
         'access_token', 'expires_in', 'issued_at', 'token_type', 'scope'
     ))
+
+
+def test_http_status():
+    Asserter.assert_true(httpcode.is_informational(httpcode.PROCESSING))
+    Asserter.assert_true(httpcode.is_success(httpcode.CREATED))
+    Asserter.assert_false(httpcode.is_success(httpcode.MULTIPLE_CHOICES))
+    Asserter.assert_true(httpcode.is_redirection(httpcode.SEE_OTHER))
+    Asserter.assert_false(httpcode.is_redirection(httpcode.BAD_REQUEST))
+    Asserter.assert_true(httpcode.is_client_error(httpcode.UNAUTHORIZED))
+    Asserter.assert_false(httpcode.is_client_error(httpcode.INTERNAL_SERVER_ERROR))
+    Asserter.assert_true(httpcode.is_server_error(httpcode.NOT_IMPLEMENTED))
+    Asserter.assert_false(httpcode.is_server_error(httpcode.NOT_MODIFIED))
+    Asserter.assert_true(httpcode.is_ok(httpcode.FOUND))
+    Asserter.assert_false(httpcode.is_ko(httpcode.SUCCESS))
+
+
+def test_proxyview(testapp):
+    res = testapp.post(f"{url_for('api.proxyview')}?p=v1", json={'test': 'test'})
+    Asserter.assert_status_code(res)
+    Asserter.assert_equals(res.json.json.test, 'test')
+    Asserter.assert_equals(res.json.args.p, 'v1')
+
+    res = testapp.get(f"{url_for('api.confproxy')}")
+    print(res.json)
+    Asserter.assert_status_code(res)
+    Asserter.assert_equals(res.json.headers.K, 'v')
+    Asserter.assert_equals(res.json.args.k, 'v')

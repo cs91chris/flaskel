@@ -23,7 +23,7 @@ class HTTPTokenAuth(auth.AuthBase):
         :param other:
         :return:
         """
-        return self.token == getattr(other, 'token', None)
+        return self.token == getattr(other, 'token', None)  # pragma: no cover
 
     def __ne__(self, other):
         """
@@ -31,7 +31,7 @@ class HTTPTokenAuth(auth.AuthBase):
         :param other:
         :return:
         """
-        return not self == other
+        return not self == other  # pragma: no cover
 
     def __call__(self, r):
         """
