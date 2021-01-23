@@ -8,7 +8,8 @@ from .base import BaseView
 
 class ProxyView(BaseView):
     def __init__(self, host=None, url=None, method=None,
-                 proxy_body=False, proxy_headers=False, proxy_params=False):
+                 proxy_body=False, proxy_headers=False, proxy_params=False,
+                 options=None, **kwargs):
         """
 
         :param host:
@@ -17,6 +18,8 @@ class ProxyView(BaseView):
         :param proxy_body:
         :param proxy_headers:
         :param proxy_params:
+        :param options: callable that returns dict to pass to http client instance
+                        It overrides kwargs
         """
         self._host = host
         self._method = method
@@ -24,6 +27,10 @@ class ProxyView(BaseView):
         self._proxy_body = proxy_body
         self._proxy_headers = proxy_headers
         self._proxy_params = proxy_params
+        self._options = kwargs
+
+        if callable(options):
+            self._options = {**kwargs, **options()}
 
     def dispatch_request(self, *args, **kwargs):
         """
@@ -32,15 +39,18 @@ class ProxyView(BaseView):
         :param kwargs:
         :return:
         """
-        response = self.proxy(self.service())
+        opts = {**self._options, **kwargs}
+        response = self.proxy(self.service(), **opts)
+
         return flask.Response(
             flask.stream_with_context(response.body),
             headers=response.headers,
             status=response.status
         )
 
-    def proxy(self, data):
-        return FlaskelHttp(data.host or self.upstream_host()).request(
+    def proxy(self, data, **kwargs):
+        client = FlaskelHttp(data.host or self.upstream_host(), **kwargs)
+        return client.request(
             data.url or self.request_url(),
             method=data.method or self.request_method(),
             headers=data.headers or self.request_headers(),
