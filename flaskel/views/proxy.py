@@ -32,6 +32,10 @@ class ProxyView(BaseView):
         if callable(options):
             self._options = {**kwargs, **options()}
 
+    # noinspection PyMethodMayBeStatic
+    def _filter_kwargs(self, data):
+        return data or {}
+
     def dispatch_request(self, *args, **kwargs):
         """
 
@@ -39,7 +43,7 @@ class ProxyView(BaseView):
         :param kwargs:
         :return:
         """
-        opts = {**self._options, **kwargs}
+        opts = {**self._options, **self._filter_kwargs(kwargs)}
         response = self.proxy(self.service(), **opts)
 
         return flask.Response(
