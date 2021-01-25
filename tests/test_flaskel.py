@@ -387,7 +387,6 @@ def test_proxyview(testapp):
     Asserter.assert_equals(res.json.args.p, 'v1')
 
     res = testapp.get(f"{url_for('api.confproxy')}")
-    print(res.json)
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.headers.K, 'v')
     Asserter.assert_equals(res.json.args.k, 'v')

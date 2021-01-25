@@ -22,6 +22,7 @@ class HTTPDumper:
                 k1: v1
                 k2: v2
         """
+        hdr = hdr or {}
         if only:
             hdr = {k: hdr[k] for k in only if k in hdr}
 
@@ -36,6 +37,7 @@ class HTTPDumper:
         :param headers: http headers dict
         :return: only the file name
         """
+        headers = headers or {}
         hdr = headers.get('Content-Disposition')
         if not hdr:
             return None  # pragma: no cover

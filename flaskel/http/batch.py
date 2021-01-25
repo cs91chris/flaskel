@@ -48,32 +48,29 @@ class HTTPBatch(HTTPBase):
         try:
             async with session.request(**kwargs) as resp:
                 # noinspection PyProtectedMember
-                self._logger.info(self.dump_request(resp._request_info, self._dump_body))
+                self._logger.info(self.dump_request(ObjectDict(**kwargs), self._dump_body))
                 try:
                     body = await resp.json()
                 except (aiohttp.ContentTypeError, ValueError, TypeError):
                     body = await resp.text()
 
                 try:
+                    response = ObjectDict(
+                        body=body,
+                        status=resp.status,
+                        headers={k: v for k, v in resp.headers.items()}
+                    )
                     resp.raise_for_status()
                 except aiohttp.ClientResponseError as exc:
-                    self._logger.warning(self.dump_response(resp, self._dump_body))
+                    self._logger.warning(self.dump_response(response, self._dump_body))
                     if self._raise_on_exc is True:
                         raise  # pragma: no cover
 
-                    return ObjectDict(
-                        body=body,
-                        status=resp.status,
-                        headers={k: v for k, v in resp.headers.items()},
-                        exception=exc
-                    )
+                    response.exception = exc
+                    return response
 
-                self._logger.info(self.dump_response(resp, self._dump_body))
-                return ObjectDict(
-                    body=body,
-                    status=resp.status,
-                    headers={k: v for k, v in resp.headers.items()}
-                )
+                self._logger.info(self.dump_response(response, self._dump_body))
+                return response
         except (aiohttp.ClientError, aiohttp.ServerTimeoutError, asyncio.TimeoutError) as exc:
             self._logger.exception(exc)
             if self._raise_on_exc is True:
