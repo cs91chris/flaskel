@@ -44,14 +44,16 @@ class HTTPTokenAuth(auth.AuthBase):
 
 
 class HTTPBase(HTTPDumper):
-    def __init__(self, dump_body=False, raise_on_exc=False, logger=None):
+    def __init__(self, dump_body=False, timeout=10, raise_on_exc=False, logger=None):
         """
 
         :param dump_body:
+        :param timeout:
         :param raise_on_exc:
         :param logger:
         """
         self._dump_body = dump_body
+        self._timeout = timeout
         self._raise_on_exc = raise_on_exc
         self._logger = logger or FakeLogger()
 
@@ -117,6 +119,7 @@ class HTTPClient(HTTPBase):
             dump_body = False
 
         try:
+            kwargs.setdefault('timeout', self._timeout)
             response = send_request(method, self.normalize_url(uri), **kwargs)
             self._logger.info(self.dump_request(response.request, dump_body))
         except (http_exc.ConnectionError, http_exc.Timeout) as exc:
@@ -245,6 +248,7 @@ class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):
     def __init__(self, endpoint, **kwargs):
         kwargs.setdefault('logger', cap.logger)
         super().__init__(endpoint, **kwargs)
+        self._timeout = cap.config.HTTP_TIMEOUT or self._timeout
 
     def request(self, uri, **kwargs):
         if flask.request.id:

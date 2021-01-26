@@ -1,52 +1,41 @@
 import asyncio
-import warnings
 
 import flask
 
 from flaskel import cap
+from flaskel.utils.batch import aiohttp, AsyncBatchExecutor
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.uuid import get_uuid
 from .client import HTTPBase, httpcode
 from .httpdumper import FlaskelHTTPDumper
 
-try:
-    import aiohttp
-except ImportError as err:  # pragma: no cover
-    warnings.warn(str(err))
-    aiohttp = None
 
-try:
-    import nest_asyncio
-except ImportError as err:  # pragma: no cover
-    warnings.warn(str(err))
-    nest_asyncio = None
-
-
-class HTTPBatch(HTTPBase):
-    def __init__(self, conn_timeout=60, read_timeout=60, **kwargs):
+class HTTPBatch(HTTPBase, AsyncBatchExecutor):
+    def __init__(self, conn_timeout=10, read_timeout=10, **kwargs):
         """
 
         :param conn_timeout:
         :param read_timeout:
         :param kwargs:
         """
-        super().__init__(**kwargs)
+        HTTPBase.__init__(self, **kwargs)
+        AsyncBatchExecutor.__init__(self, return_exceptions=not self._raise_on_exc)
         self._timeout = aiohttp.ClientTimeout(
             sock_read=read_timeout,
             sock_connect=conn_timeout
         )
 
-    async def http_request(self, session, **kwargs):
+    async def http_request(self, **kwargs):
         """
 
-        :param session:
         :param kwargs:
         :return:
         """
         if not aiohttp:
             raise ImportError("You must install 'aiohttp'")  # pragma: no cover
         try:
-            async with session.request(**kwargs) as resp:
+            async with aiohttp.ClientSession(timeout=self._timeout) as session, \
+                    session.request(**kwargs) as resp:
                 # noinspection PyProtectedMember
                 self._logger.info(self.dump_request(ObjectDict(**kwargs), self._dump_body))
                 try:
@@ -83,44 +72,25 @@ class HTTPBatch(HTTPBase):
                 exception=exc
             )
 
-    async def batch(self, requests):
-        """
-
-        :param requests:
-        :return:
-        """
-        tasks = []
-        async with aiohttp.ClientSession(timeout=self._timeout) as session:
-            for params in requests:
-                tasks.append(self.http_request(session, **params))
-
-            return await asyncio.gather(*tasks, return_exceptions=not self._raise_on_exc)
-
     def request(self, requests, **kwargs):
         """
 
         :param requests:
         :return:
         """
-        if not aiohttp:
-            raise ImportError("You must install 'aiohttp'")  # pragma: no cover
+        _requests = []
+        for r in requests:
+            r.setdefault('method', 'GET')
+            _requests.append((self.http_request, r))
 
-        try:
-            asyncio.get_running_loop()
-            if not nest_asyncio:  # pragma: no cover
-                raise ImportError("You must install 'nest-asyncio'")
-            # noinspection PyUnresolvedReferences
-            nest_asyncio.apply()  # pragma: no cover
-        except RuntimeError:
-            asyncio.set_event_loop(asyncio.new_event_loop())
-
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self.batch(requests))
+        return self.run(_requests)
 
 
 class FlaskelHTTPBatch(HTTPBatch, FlaskelHTTPDumper):
     def __init__(self, **kwargs):
         kwargs.setdefault('logger', cap.logger)
+        kwargs.setdefault('conn_timeout', cap.config.HTTP_TIMEOUT or 10)
+        kwargs.setdefault('read_timeout', cap.config.HTTP_TIMEOUT or 10)
         super().__init__(**kwargs)
 
     def request(self, requests, **kwargs):
