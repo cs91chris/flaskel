@@ -1,3 +1,4 @@
+from .caching import Cache, caching
 from .default import (
     builder,
     cfremote,
@@ -6,7 +7,6 @@ from .default import (
     logger,
     template
 )
-
 from .limit import FlaskIPBan, limiter, RateLimit
 
 ip_ban = FlaskIPBan()
