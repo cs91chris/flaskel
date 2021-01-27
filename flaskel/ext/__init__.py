@@ -6,7 +6,8 @@ from .default import (
     logger,
     template
 )
-from .limit import FlaskIPBan, IPBan, limiter, RateLimit
+
+from .limit import FlaskIPBan, limiter, RateLimit
 
 ip_ban = FlaskIPBan()
 

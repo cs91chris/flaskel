@@ -1,11 +1,12 @@
+import re
 from datetime import datetime
 
 import flask
-from flask_ipban import IpBan as _IPBan
 from flask_limiter import Limiter
 
 from flaskel import cap, httpcode
 from flaskel.ext import cfremote
+from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.datetime import Day
 
 
@@ -68,7 +69,95 @@ class RateLimit:
         )
 
 
-class IPBan(_IPBan):
+class FlaskIPBan:
+    def __init__(self, app=None, **kwargs):
+        self._ip_banned = {}
+        self._url_blocked = {}
+
+        self._ip_whitelist = {
+            '127.0.0.1': True
+        }
+
+        self._url_whitelist = {
+            '^/.well-known/': ObjectDict(pattern=re.compile(r'^/.well-known'), match_type='regex'),
+            '/favicon.ico':   ObjectDict(pattern=re.compile(''), match_type='string'),
+            '/robots.txt':    ObjectDict(pattern=re.compile(''), match_type='string'),
+            '/ads.txt':       ObjectDict(pattern=re.compile(''), match_type='string'),
+        }
+
+        if app:
+            self.init_app(app, **kwargs)
+
+    def init_app(self, app, whitelist=(), nuisances=None):
+        """
+
+        :param app: flask app
+        :param whitelist:
+        :param nuisances:
+        :return:
+        """
+        app.config.setdefault('IPBAN_COUNT', 20)
+        app.config.setdefault('IPBAN_SECONDS', Day.seconds)
+        app.config.setdefault('IPBAN_NUISANCES', {})
+        app.config.setdefault('IPBAN_STATUS_CODE', httpcode.FORBIDDEN)
+        app.config.setdefault('IPBAN_CHECK_CODES', (
+            httpcode.NOT_FOUND, httpcode.METHOD_NOT_ALLOWED, httpcode.NOT_IMPLEMENTED
+        ))
+
+        app.after_request(self._after_request)
+        app.before_request(self._before_request)
+
+        self.add_whitelist(whitelist or [])
+        self.load_nuisances(conf=cap.config.IPBAN_NUISANCES or nuisances)
+
+    @staticmethod
+    def get_ip():
+        return flask.request.remote_addr
+
+    @staticmethod
+    def get_url():
+        return flask.request.path
+
+    def _is_excluded(self, ip=None, url=None):
+        """
+
+        :return: true if this ip or url should not be checked
+        """
+        ip = ip or self.get_ip()
+        url = url or self.get_url()
+
+        for key, item in self._url_whitelist.items():
+            if (item.match_type == 'regex' and item.pattern.match(url)) \
+                    or (item.match_type == 'string' and key == url):
+                return True
+
+        if ip in self._ip_whitelist:
+            return True
+
+        return False
+
+    def _test_blocked(self, url='', ip=None):
+        """
+        return true if the url or ip pattern matches an existing block
+
+        :param url: (optional) the url to check
+        :param ip: (optional) an ip to check
+        :return:
+        """
+        query_path = url.split('?')[0]
+        for pattern, item in self._url_blocked.items():
+            if item.match_type == 'regex' and item.pattern.match(query_path):
+                cap.logger.warning(f'Url {url} matches block pattern {pattern}')
+                return True
+            elif item.match_type == 'string' and pattern == query_path:
+                cap.logger.warning(f'Url {url} matches block string {pattern}')
+                return True
+            elif ip and item.match_type == 'ip' and pattern == ip:
+                cap.logger.warning(f'ip block match {ip}')
+                return True
+
+        return False
+
     def _after_request(self, response):
         """
         method to call after a request to allow recording all unwanted status codes
@@ -76,34 +165,122 @@ class IPBan(_IPBan):
         :param response:
         :return:
         """
-        statuses = (httpcode.NOT_FOUND, httpcode.METHOD_NOT_ALLOWED, httpcode.NOT_IMPLEMENTED)
-        if response.status_code in statuses:
+        if response.status_code in cap.config.IPBAN_CHECK_CODES:
             self.add()
 
         return response
 
-    def _before_request_check(self):
+    def _before_request(self):
         if self._is_excluded():
             return
 
         ip = self.get_ip()
-        entry = self._ip_ban_list.get(ip)
-        url = flask.request.full_path
+        url = self.get_url()
+        entry = self._ip_banned.get(ip)
 
-        if entry and entry.get('count', 0) > self.ban_count:
-            if entry.get('permanent', False):
-                flask.abort(httpcode.GONE)
+        if entry and (entry.count or 0) > cap.config.IPBAN_COUNT:
+            if entry.permanent:
+                flask.abort(cap.config.IPBAN_STATUS_CODE)
 
             now = datetime.now()
-            delta = now - entry.get('timestamp', now)
-            if delta.seconds < self.ban_seconds or self.ban_seconds == 0:
-                self._logger.info(f"IP: {ip} updated in ban list, at url: {url}")
-                entry['count'] += 1
-                entry['timestamp'] = now
-                flask.abort(httpcode.GONE)
+            delta = now - (entry.timestamp or now)
+            if delta.seconds < cap.config.IPBAN_SECONDS or cap.config.IPBAN_SECONDS == 0:
+                cap.logger.info(f"IP: {ip} updated in ban list, at url: {url}")
+                entry.count += 1
+                entry.timestamp = now
+                flask.abort(cap.config.IPBAN_STATUS_CODE)
 
-            entry['count'] = 0
-            self._logger.debug(f"IP: {ip} expired from ban list, at url: {url}")
+            entry.count = 0
+            cap.logger.debug(f"IP: {ip} expired from ban list, at url: {url}")
+
+    def add_url_block(self, url, match_type='regex'):
+        """
+        add or replace the pattern to the list of url patterns to block
+
+        :param match_type: regex or string - determines the match strategy to use
+        :param url: regex pattern to match with requested url
+        :return: length of the blocked list
+        """
+        self._url_blocked[url] = ObjectDict(pattern=re.compile(url), match_type=match_type)
+        return len(self._url_blocked)
+
+    def block(self, ips, permanent=False, timestamp=None, url='block'):
+        """
+        add a list of ip addresses to the block list
+
+        :param ips: list of ip addresses to block
+        :param permanent: (optional) True=do not allow entries to expire
+        :param timestamp: use this timestamp instead of now()
+        :param url: url or reason to block
+        :returns number of entries in the block list
+        """
+        timestamp = timestamp or datetime.now()
+
+        for ip in ips:
+            entry = self._ip_banned.get(ip)
+            if entry:
+                entry.timestamp = timestamp
+                entry.count = cap.config.IPBAN_COUNT * 2
+                # retain permanent on extra blocks
+                entry.permanent = entry.permanent or permanent
+                cap.logger.warning(f'{ip} added to ban list')
+            else:
+                self._ip_banned[ip] = ObjectDict(
+                    timestamp=timestamp, count=cap.config.IPBAN_COUNT * 2,
+                    permanent=permanent, url=url
+                )
+                cap.logger.info(f'{ip} updated in ban list')
+
+        return len(self._ip_banned)
+
+    def add(self, ip=None, url=None, timestamp=None):
+        """
+        increment ban count ip of the current request in the banned list
+
+        :return:
+        :param ip: optional ip to add (ip ban will by default use current ip)
+        :param url: optional url to display/store
+        :param timestamp: entry time to set
+        :return True if entry added/updated
+        """
+        ip = ip or self.get_ip()
+        url = url or self.get_url()
+
+        if self._is_excluded(ip=ip, url=url):
+            return False
+
+        entry = self._ip_banned.get(ip)
+        # check url block list if no existing entry or existing entry has expired
+        if not entry or (entry and (entry.count or 0) < cap.config.IPBAN_COUNT):
+            if self._test_blocked(url, ip=ip):
+                self.block([ip], url=url)
+                return True
+
+        if not timestamp or (timestamp and timestamp > datetime.now()):
+            timestamp = datetime.now()
+
+        if entry:
+            entry.timestamp = timestamp
+            count = entry.count = entry.count + 1
+        else:
+            count = 1
+            self._ip_banned[ip] = ObjectDict(timestamp=timestamp, count=count, url=url)
+
+        cap.logger.info(f"{ip} {url} added/updated ban list. Count: {count}")
+        return True
+
+    def remove(self, ip):
+        """
+        remove from the ban list
+
+        :param ip: ip to remove
+        :return True if entry removed
+        """
+        if not self._ip_banned.get(ip):
+            return False
+
+        del self._ip_banned[ip]
+        return True
 
     def load_nuisances(self, conf=None):
         """
@@ -119,38 +296,23 @@ class IPBan(_IPBan):
             values = conf.get(match_type) or ()
             for v in values:
                 try:
-                    self.url_block_pattern_add(v, match_type)
+                    self.add_url_block(v, match_type)
                     count += 1
                 except Exception as e:
-                    self._logger.exception(f"Exception {e} adding pattern {v}")
+                    cap.logger.exception(f"Exception {e} adding pattern {v}")
 
         return count
 
-
-class FlaskIPBan:
-    def __init__(self, app=None, ban=None, **kwargs):
+    def add_whitelist(self, ips):
         """
 
-        :param app:
-        :param ban: optional IpBan instance
+        :param ips: list of ip addresses to add
+        :return: number of entries in the ip whitelist
         """
-        self.ip_ban = ban or IPBan()
+        if not isinstance(ips, (list, tuple)):
+            ips = (ips,)
 
-        if app:
-            self.init_app(app, **kwargs)
+        for ip in ips:
+            self._ip_whitelist[ip] = True
 
-    def init_app(self, app, white_list=None, nuisances=None):
-        """
-
-        :param app:
-        :param white_list:
-        :param nuisances:
-        """
-        app.config.setdefault('IPBAN_COUNT', 20)
-        app.config.setdefault('IPBAN_SECONDS', Day.seconds)
-        self.ip_ban.ban_count = app.config.IPBAN_COUNT
-        self.ip_ban.ban_seconds = app.config.IPBAN_SECONDS
-
-        self.ip_ban.init_app(app)
-        self.ip_ban.ip_whitelist_add(white_list or [])
-        self.ip_ban.load_nuisances(conf=cap.config.IPBAN_NUISANCES or nuisances or {})
+        return len(self._ip_whitelist)
