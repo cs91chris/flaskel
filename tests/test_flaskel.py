@@ -230,6 +230,7 @@ def test_healthcheck(testapp):
     Asserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
     Asserter.assert_content_type(res, CTS.json_health)
     Asserter.assert_schema(res.json, SCHEMAS.HEALTHCHECK)
+    Asserter.assert_allin(res.json.checks.keys(), ('mongo', 'redis', 'sqlalchemy', 'system'))
 
 
 def test_api_jsonrpc_success(testapp):

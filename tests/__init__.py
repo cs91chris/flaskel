@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from flaskel import middlewares, datastruct
+from flaskel import datastruct, middlewares
 from flaskel.ext import BASE_EXTENSIONS, crypto, healthcheck, sqlalchemy, useragent
 from flaskel.ext.auth import jwtm
 from flaskel.tester import TestClient
@@ -37,6 +37,7 @@ def app_prod():
     def test_health_false(**kwargs):
         return False, "error"
 
+    healthcheck.health_checks.register('system')(healthcheck.health_system)
     healthcheck.health_checks.register('mongo', db=sqlalchemy.db)(healthcheck.health_mongo)
     healthcheck.health_checks.register('redis', db=sqlalchemy.db)(healthcheck.health_redis)
     healthcheck.health_checks.register('sqlalchemy', db=sqlalchemy.db)(healthcheck.health_sqlalchemy)
