@@ -1,7 +1,7 @@
 import os
 from base64 import b64encode
 from functools import partial
-
+import time
 import flask
 import werkzeug.exceptions
 
@@ -48,6 +48,10 @@ def test_api_resources(testapp):
     Asserter.assert_content_type(res, CTS.json_problem)
     Asserter.assert_schema(res.json, SCHEMAS.API_PROBLEM)
 
+    res = testapp.get(url_for('api.resource_api', res_id=1, sub_resource='not-found'))
+    Asserter.assert_status_code(res, httpcode.TOO_MANY_REQUESTS)
+
+    time.sleep(int(res.headers.get('Retry-After')))  # check rate limit
     res = testapp.delete(url_for('api.resource_api', res_id=1))
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 
@@ -391,3 +395,14 @@ def test_proxyview(testapp):
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.headers.K, 'v')
     Asserter.assert_equals(res.json.args.k, 'v')
+
+
+def test_ipban(testapp):
+    res = None
+    conf = testapp.application.config
+    ipban = testapp.application.extensions['ipban']
+    ipban.remove_whitelist('127.0.0.1')
+    for i in range(0, conf.IPBAN_COUNT + 2):
+        res = testapp.get(f"{conf.SERVER_NAME}/phpmyadmin")
+
+    Asserter.assert_status_code(res, httpcode.FORBIDDEN)

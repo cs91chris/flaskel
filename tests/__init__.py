@@ -3,7 +3,7 @@ import os
 import pytest
 
 from flaskel import datastruct, middlewares
-from flaskel.ext import BASE_EXTENSIONS, crypto, healthcheck, sqlalchemy, useragent
+from flaskel.ext import BASE_EXTENSIONS, caching, crypto, healthcheck, ip_ban, limiter, sqlalchemy, useragent
 from flaskel.ext.auth import jwtm
 from flaskel.tester import TestClient
 from tests.blueprints import BLUEPRINTS
@@ -70,6 +70,9 @@ def app_prod():
                 "useragent":     (useragent.UserAgent(),),
                 "argon2":        (crypto.Argon2(),),
                 "jwt":           (jwtm,),
+                "limiter":       (limiter,),
+                "caching":       (caching,),
+                "ipban":         (ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
                 "health_checks": (
                     healthcheck.health_checks, {'extensions': (
                         {

@@ -37,7 +37,7 @@ def _header_whitelist():
     return header_whitelist()
 
 
-class RateLimit:
+class RateLimit:  # pragma: no cover
     limiter = limiter
 
     @classmethod
@@ -86,7 +86,7 @@ class FlaskIPBan:
         }
 
         if app:
-            self.init_app(app, **kwargs)
+            self.init_app(app, **kwargs)  # pragma: no cover
 
     def init_app(self, app, whitelist=(), nuisances=None):
         """
@@ -98,7 +98,7 @@ class FlaskIPBan:
         """
         app.config.setdefault('IPBAN_COUNT', 20)
         app.config.setdefault('IPBAN_SECONDS', Day.seconds)
-        app.config.setdefault('IPBAN_NUISANCES', {})
+        app.config.setdefault('IPBAN_NUISANCES', nuisances or {})
         app.config.setdefault('IPBAN_STATUS_CODE', httpcode.FORBIDDEN)
         app.config.setdefault('IPBAN_CHECK_CODES', (
             httpcode.NOT_FOUND, httpcode.METHOD_NOT_ALLOWED, httpcode.NOT_IMPLEMENTED
@@ -108,7 +108,11 @@ class FlaskIPBan:
         app.before_request(self._before_request)
 
         self.add_whitelist(whitelist or [])
-        self.load_nuisances(conf=cap.config.IPBAN_NUISANCES or nuisances)
+        self.load_nuisances(conf=cap.config.IPBAN_NUISANCES)
+
+        if not hasattr(app, 'extensions'):
+            app.extensions = dict()  # pragma: no cover
+        app.extensions['ipban'] = self
 
     @staticmethod
     def get_ip():
@@ -147,10 +151,10 @@ class FlaskIPBan:
         query_path = url.split('?')[0]
         for pattern, item in self._url_blocked.items():
             if item.match_type == 'regex' and item.pattern.match(query_path):
-                cap.logger.warning(f'Url {url} matches block pattern {pattern}')
+                cap.logger.warning(f'url {url} matches block pattern {pattern}')
                 return True
             elif item.match_type == 'string' and pattern == query_path:
-                cap.logger.warning(f'Url {url} matches block string {pattern}')
+                cap.logger.warning(f'url {url} matches block string {pattern}')
                 return True
             elif ip and item.match_type == 'ip' and pattern == ip:
                 cap.logger.warning(f'ip block match {ip}')
@@ -316,3 +320,10 @@ class FlaskIPBan:
             self._ip_whitelist[ip] = True
 
         return len(self._ip_whitelist)
+
+    def remove_whitelist(self, el):
+        if not self._ip_whitelist.get(el):
+            return False
+
+        del self._ip_whitelist[el]
+        return True
