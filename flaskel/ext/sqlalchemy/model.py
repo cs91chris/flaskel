@@ -25,14 +25,20 @@ class SQLAModel(Model):
             return res
 
     @classmethod
-    def get_list(cls, to_dict=True, **kwargs):
+    def get_list(cls, to_dict=True, order_by=None, **kwargs):
         """
 
         :param to_dict:
+        :param order_by:
         :param kwargs:
         :return:
         """
-        res = cls.query.filter_by(**kwargs).all()
+        q = cls.query.filter_by(**kwargs)
+        if order_by is not None:
+            q = q.order_by(order_by)
+
+        res = q.all()
+
         if to_dict is not True:
             return res
 

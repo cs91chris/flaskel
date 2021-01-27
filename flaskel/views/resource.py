@@ -13,7 +13,8 @@ class CatalogResource(Resource):
         return self._model.get_one(id=res_id)
 
     def on_collection(self, *args, **kwargs):
-        res = self._model.get_list(to_dict=False)
+        order_by = getattr(self._model, 'order_by', None)
+        res = self._model.get_list(to_dict=False, order_by=order_by)
         restricted = False if flask.request.args.get('_related') else True
         return [r.to_dict(restricted=restricted) for r in res]
 
