@@ -1,7 +1,10 @@
 import functools
 
+import flask
+
 from flaskel import cap, httpcode
 from flaskel.ext import builder
+from flaskel.utils.batch import AsyncBatchExecutor
 
 
 class HealthCheck:
@@ -15,55 +18,65 @@ class HealthCheck:
         if app:
             self.init_app(app, **kwargs)  # pragma: no cover
 
-    def init_app(self, app, bp=None, extensions=()):
+    def init_app(self, app, bp=None, extensions=(), decorators=()):
         """
 
         :param app:
         :param bp:
         :param extensions:
+        :param decorators:
         """
         app.config.setdefault('HEALTHCHECK_ABOUT_LINK', None)
         app.config.setdefault('HEALTHCHECK_PATH', '/healthcheck')
+        app.config.setdefault('HEALTHCHECK_PARAM_KEY', 'checks')
+        app.config.setdefault('HEALTHCHECK_PARAM_SEP', '+')
         app.config.setdefault('HEALTHCHECK_CONTENT_TYPE', 'application/health+json')
 
         if not hasattr(app, 'extensions'):
             app.extensions = dict()  # pragma: no cover
         app.extensions['healthcheck'] = self
 
+        view = self.perform
+        for decorator in decorators:
+            view = decorator(view)
+
         blueprint = bp or app
-        blueprint.add_url_rule(
-            app.config['HEALTHCHECK_PATH'],
-            view_func=self.do_health_check
-        )
+        blueprint.add_url_rule(app.config['HEALTHCHECK_PATH'], view_func=view)
 
         for ex in extensions:
             self.register(**ex)(ex.pop('func'))
 
     @builder.response('json')
-    def do_health_check(self):
+    def perform(self):
         """
 
         :return:
         """
         healthy = True
         response = dict(
-            status='pass',
-            checks={},
+            status='pass', checks={},
             links={"about": cap.config['HEALTHCHECK_ABOUT_LINK']}
         )
 
-        for name, check_func in self._health_checks.items():
-            try:
-                state, message = check_func()
-            except Exception as exc:  # pragma: no cover
-                state = False
-                message = str(exc)
+        params = flask.request.args.get(cap.config['HEALTHCHECK_PARAM_KEY'])
+        all_checks = set(self._health_checks.keys())
+        if not params:
+            params = all_checks
+        else:
+            params = params.split(cap.config['HEALTHCHECK_PARAM_SEP'])
+            params = set(params).intersection(all_checks)
 
-            healthy = state
-            response['checks'][name] = dict(
+        params = list(params)
+        resp = AsyncBatchExecutor().run([(self._health_checks.get(p),) for p in params])
+
+        for i, p in enumerate(params):
+            state, message = resp[i]
+            response['checks'][p] = dict(
                 status='pass' if state else 'fail',
                 output=message
             )
+            if not state:
+                healthy = False
 
         if not healthy:
             response['status'] = 'fail'

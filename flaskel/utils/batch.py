@@ -33,9 +33,15 @@ class AsyncBatchExecutor:
         :return:
         """
         tasks = []
-        for params in functions:
-            func = params[0]
-            args = params[1]
+        for f in functions:
+            try:
+                if len(f) > 1:
+                    func, args = f[0], f[1] or {}
+                else:
+                    func, args = f[0], {}
+            except TypeError:
+                func, args = f, {}
+
             if not self.is_async(func):
                 tasks.append(self._executor(func, **args))  # pragma: no cover
             else:
