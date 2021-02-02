@@ -1,9 +1,10 @@
 import asyncio
 
+import aiohttp
 import flask
 
 from flaskel import cap
-from flaskel.utils.batch import aiohttp, AsyncBatchExecutor
+from flaskel.utils.batch import AsyncBatchExecutor
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.uuid import get_uuid
 from .client import HTTPBase, httpcode
@@ -38,8 +39,6 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         elif not isinstance(timeout, aiohttp.ClientTimeout):
             timeout = aiohttp.ClientTimeout(sock_read=timeout, sock_connect=timeout)
 
-        if not aiohttp:
-            raise ImportError("You must install 'aiohttp'")  # pragma: no cover
         try:
             async with aiohttp.ClientSession(timeout=timeout) as session, \
                     session.request(**kwargs) as resp:

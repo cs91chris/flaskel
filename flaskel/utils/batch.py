@@ -1,17 +1,6 @@
 import asyncio
-import warnings
 
-try:
-    import aiohttp
-except ImportError as err:  # pragma: no cover
-    warnings.warn(str(err))
-    aiohttp = None
-
-try:
-    import nest_asyncio
-except ImportError as err:  # pragma: no cover
-    warnings.warn(str(err))
-    nest_asyncio = None
+import nest_asyncio
 
 
 class AsyncBatchExecutor:
@@ -57,10 +46,7 @@ class AsyncBatchExecutor:
         """
         try:
             asyncio.get_running_loop()
-            if not nest_asyncio:  # pragma: no cover
-                raise ImportError("You must install 'nest-asyncio'")
-            # noinspection PyUnresolvedReferences
-            nest_asyncio.apply()  # pragma: no cover
+            nest_asyncio.apply()
         except RuntimeError:
             asyncio.set_event_loop(asyncio.new_event_loop())
 
