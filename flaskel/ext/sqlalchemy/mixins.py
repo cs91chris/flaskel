@@ -23,12 +23,34 @@ class CatalogMixin:
     def __str__(self):
         return self.label
 
-    def to_dict(self):
+    def to_dict(self, **kwargs):
         return ObjectDict(
             id=self.id,
             label=self.label,
             description=self.description,
-            typeId=self.type_id
+            typeId=self.type_id,
+            **kwargs
+        )
+
+
+class CatalogXMixin(CatalogMixin):
+    @declared_attr
+    def __table_args__(self):
+        return db.UniqueConstraint('code', 'type_id'),
+
+    code = db.Column(db.String(20))
+    order_id = db.Column(db.Integer, index=True)
+
+    order_by = order_id.asc()
+
+    def __str__(self):
+        return f"<{self.code} - {self.label}>"
+
+    def to_dict(self, **kwargs):
+        return super().to_dict(
+            code=self.code,
+            orderId=self.order_id,
+            **kwargs
         )
 
 
