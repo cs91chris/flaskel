@@ -1,15 +1,17 @@
 import os
+import time
 from base64 import b64encode
 from functools import partial
-import time
+
 import flask
 import werkzeug.exceptions
 
 from flaskel import datetime, http, httpcode, SCHEMAS, uuid, yaml
 from flaskel.http import batch, rpc, useragent
 from flaskel.tester import Asserter
+from flaskel.utils.faker import DummyLogger
 # noinspection PyUnresolvedReferences
-from . import app_dev, app_prod, testapp, CTS, HOSTS
+from . import app_dev, app_prod, CTS, HOSTS, testapp
 
 yaml.setup_yaml_parser()
 
@@ -210,7 +212,7 @@ def test_utils_http_client_filename(testapp):
 
 def test_http_client_batch(testapp):
     with testapp.application.test_request_context():
-        responses = batch.FlaskelHTTPBatch(dump_body=True).request([
+        responses = batch.FlaskelHTTPBatch(logger=DummyLogger(), dump_body=True).request([
             dict(url=f"{HOSTS.apitester}/anything", method="GET", headers={"HDR1": "HDR1"}),
             dict(url=f"{HOSTS.apitester}/status/{httpcode.NOT_FOUND}", method="GET"),
             dict(url=HOSTS.fake, method='GET', timeout=0.1),
@@ -222,11 +224,12 @@ def test_http_client_batch(testapp):
 
 def test_utils_http_jsonrpc_client(testapp):
     params = dict(a=1, b=2)
-    api = http.JsonRPCClient(HOSTS.apitester, "/anything", logger=testapp.application.logger)
-    res = api.request('method.test', params=params)
-    Asserter.assert_equals(res.json.jsonrpc, '2.0')
-    Asserter.assert_equals(res.json.id, api.request_id)
-    Asserter.assert_equals(res.json.params, params)
+    with testapp.application.test_request_context():
+        api = http.FlaskelJsonRPC(HOSTS.apitester, "/anything")
+        res = api.request('method.test', params=params)
+        Asserter.assert_equals(res.json.jsonrpc, '2.0')
+        Asserter.assert_equals(res.json.id, api.request_id)
+        Asserter.assert_equals(res.json.params, params)
 
 
 def test_healthcheck(testapp):

@@ -257,3 +257,18 @@ class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):
             kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
 
         return super().request(uri, **kwargs)
+
+
+class FlaskelJsonRPC(JsonRPCClient, FlaskelHTTPDumper):
+    def __init__(self, endpoint, uri, **kwargs):
+        kwargs.setdefault('logger', cap.logger)
+        super().__init__(endpoint, uri, **kwargs)
+        self._timeout = cap.config.HTTP_TIMEOUT or self._timeout
+
+    def request(self, uri, **kwargs):
+        if flask.request.id:
+            if not kwargs.get('headers'):
+                kwargs['headers'] = {}
+            kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
+
+        return super().request(uri, **kwargs)
