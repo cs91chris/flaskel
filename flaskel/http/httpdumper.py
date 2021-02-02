@@ -88,12 +88,7 @@ class HTTPDumper:
         body = ''
         if dump_body is True:
             body = cls.response_filename(resp.headers) or resp.text
-            try:
-                if type(body) is not str:
-                    body = body.decode()
-            except AttributeError as exc:
-                body = str(exc)
-            body = f"\nbody:\n{body}"
+            body = f"\nbody:\n{body}" if body else ''
 
         try:
             seconds = resp.elapsed.total_seconds()
@@ -102,7 +97,11 @@ class HTTPDumper:
 
         headers = cls.dump_headers(resp.headers, only=only_hdr)
         headers = f"\nheaders:\n{headers}" if headers else ''
-        status = resp.status_code if hasattr(resp, 'status_code') else resp.status
+        try:
+            status = resp.status_code
+        except AttributeError:
+            status = resp.status if hasattr(resp, 'status') else None
+
         return f"time: {seconds} - status code: {status}{headers}{body}"
 
 

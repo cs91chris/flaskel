@@ -20,24 +20,31 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         """
         HTTPBase.__init__(self, **kwargs)
         AsyncBatchExecutor.__init__(self, return_exceptions=not self._raise_on_exc)
-        self._timeout = aiohttp.ClientTimeout(
-            sock_read=read_timeout,
-            sock_connect=conn_timeout
-        )
+        self._timeout = aiohttp.ClientTimeout(sock_read=read_timeout, sock_connect=conn_timeout)
 
-    async def http_request(self, **kwargs):
+    async def http_request(self, dump_body=None, timeout=None, **kwargs):
         """
 
+        :param dump_body:
+        :param timeout:
         :param kwargs:
         :return:
         """
+        if dump_body is None:
+            dump_body = self._dump_body
+
+        if timeout is None:
+            timeout = self._timeout
+        elif not isinstance(timeout, aiohttp.ClientTimeout):
+            timeout = aiohttp.ClientTimeout(sock_read=timeout, sock_connect=timeout)
+
         if not aiohttp:
             raise ImportError("You must install 'aiohttp'")  # pragma: no cover
         try:
-            async with aiohttp.ClientSession(timeout=self._timeout) as session, \
+            async with aiohttp.ClientSession(timeout=timeout) as session, \
                     session.request(**kwargs) as resp:
                 # noinspection PyProtectedMember
-                self._logger.info(self.dump_request(ObjectDict(**kwargs), self._dump_body))
+                self._logger.info(self.dump_request(ObjectDict(**kwargs), dump_body))
                 try:
                     body = await resp.json()
                 except (aiohttp.ContentTypeError, ValueError, TypeError):
@@ -45,20 +52,19 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
 
                 try:
                     response = ObjectDict(
-                        body=body,
-                        status=resp.status,
+                        body=body, status=resp.status,
                         headers={k: v for k, v in resp.headers.items()}
                     )
+                    log_resp = response
+                    log_resp.text = response.body
+                    log_resp = self.dump_response(log_resp, dump_body)
                     resp.raise_for_status()
+                    self._logger.info(log_resp)
                 except aiohttp.ClientResponseError as exc:
-                    self._logger.warning(self.dump_response(response, self._dump_body))
+                    self._logger.warning(log_resp)
                     if self._raise_on_exc is True:
                         raise  # pragma: no cover
-
                     response.exception = exc
-                    return response
-
-                self._logger.info(self.dump_response(response, self._dump_body))
                 return response
         except (aiohttp.ClientError, aiohttp.ServerTimeoutError, asyncio.TimeoutError) as exc:
             self._logger.exception(exc)
@@ -66,10 +72,8 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
                 raise  # pragma: no cover
 
             return ObjectDict(
-                body={},
-                status=httpcode.SERVICE_UNAVAILABLE,
-                headers={},
-                exception=exc
+                body={}, status=httpcode.SERVICE_UNAVAILABLE,
+                headers={}, exception=exc
             )
 
     def request(self, requests, **kwargs):
