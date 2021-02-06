@@ -4,6 +4,7 @@ import flask_jwt_extended as jwt
 from flask_httpauth import HTTPBasicAuth
 
 from flaskel import cap, httpcode
+from flaskel.utils.datastruct import ObjectDict
 from .sqlalchemy import db
 
 jwtm = jwt.JWTManager()
@@ -29,7 +30,7 @@ class RevokedTokenModel(db.Model):
     jti = db.Column(db.String(120), nullable=False, unique=True)
 
     def __repr__(self):  # pragma: no cover
-        return "<RevokedToken: %r>" % self.jti
+        return f"<RevokedToken: {self.id} - {self.jti}>"
 
     @classmethod
     def is_jti_blacklisted(cls, jti):  # pragma: no cover
@@ -41,54 +42,88 @@ def check_if_token_in_blacklist(decrypted_token):  # pragma: no cover
     return RevokedTokenModel.is_jti_blacklisted(decrypted_token['jti'])
 
 
-def refresh_access_token(expires=None):
-    """
+class TokenHandler:
+    revoked_token_model = RevokedTokenModel
 
-    :param expires: in seconds
-    :return:
-    """
-    access_token = jwt.create_access_token(
-        identity=jwt.get_jwt_identity(),
-        expires_delta=timedelta(expires) if expires else None
-    )
-    decoded = jwt.decode_token(access_token)
-    return dict(
-        access_token=access_token,
-        expires_in=decoded['exp'],
-        issued_at=decoded['iat'],
-        token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
-        scope=cap.config.JWT_DEFAULT_SCOPE
-    )
+    @classmethod
+    def identity(cls):
+        return jwt.get_jwt_identity()
 
+    @classmethod
+    def decode(cls, token):
+        return ObjectDict(**jwt.decode_token(token))
 
-def create_tokens(identity, expires_access=None, expires_refresh=None, scope=None):
-    """
+    @classmethod
+    def get_raw(cls):
+        return ObjectDict(**jwt.get_raw_jwt())
 
-    :param identity: user identifier, generally the username
-    :param expires_access: in seconds
-    :param expires_refresh: in seconds
-    :param scope:
-    :return:
-    """
-    expires = timedelta(expires_access) if expires_access else None
-    access_token = jwt.create_access_token(
-        identity=identity, expires_delta=expires
-    )
+    @classmethod
+    def get_access(cls, identity=None, expires=None):
+        return jwt.create_access_token(
+            identity=identity or cls.identity(),
+            expires_delta=timedelta(expires) if expires else None
+        )
 
-    expires = timedelta(expires_refresh) if expires_refresh else None
-    refresh_token = jwt.create_refresh_token(
-        identity=identity, expires_delta=expires
-    )
+    @classmethod
+    def get_refresh(cls, identity=None, expires=None):
+        return jwt.create_refresh_token(
+            identity=identity or cls.identity(),
+            expires_delta=timedelta(expires) if expires else None
+        )
 
-    decoded = jwt.decode_token(access_token)
-    expires_in = decoded['exp']
-    issued_at = decoded['iat']
+    @classmethod
+    def refresh(cls, expires=None):
+        """
 
-    return dict(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=expires_in,
-        issued_at=issued_at,
-        token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
-        scope=scope or cap.config.JWT_DEFAULT_SCOPE
-    )
+        :param expires: in seconds
+        :return:
+        """
+        access_token = cls.get_access(expires=expires)
+        decoded = cls.decode(access_token)
+        return ObjectDict(
+            access_token=access_token,
+            expires_in=decoded.exp,
+            issued_at=decoded.iat,
+            token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
+            scope=cap.config.JWT_DEFAULT_SCOPE
+        )
+
+    @classmethod
+    def create(cls, identity, refresh=True, expires_access=None, expires_refresh=None, scope=None):
+        """
+
+        :param identity: user identifier, generally the username
+        :param refresh: enable refresh token
+        :param expires_access: in seconds
+        :param expires_refresh: in seconds
+        :param scope:
+        :return:
+        """
+        access_token = cls.get_access(identity=identity, expires=expires_access)
+        decoded = cls.decode(access_token)
+        resp = ObjectDict(
+            access_token=access_token,
+            expires_in=decoded.exp,
+            issued_at=decoded.iat,
+            token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
+            scope=scope or cap.config.JWT_DEFAULT_SCOPE
+        )
+
+        if refresh:
+            resp.refresh_token = cls.get_refresh(identity=identity, expires=expires_refresh)
+
+        return resp
+
+    @classmethod
+    def revoke(cls, token=None):
+        token = cls.decode(token) if token else cls.get_raw()
+        if token.jti:
+            cls.revoked_token_model(jti=token.jti).add()
+
+    @classmethod
+    def dump(cls):
+        return ObjectDict(
+            token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
+            scope=cap.config.JWT_DEFAULT_SCOPE,
+            **cls.get_raw()
+        )

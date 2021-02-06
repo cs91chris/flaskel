@@ -373,6 +373,12 @@ def test_jwt(testapp):
         'access_token', 'expires_in', 'issued_at', 'token_type', 'scope'
     ))
 
+    res = testapp.get(
+        url_for('auth.check_token'),
+        headers={'Authorization': f"Bearer {res.json.access_token}"}
+    )
+    Asserter.assert_status_code(res)
+
 
 def test_http_status():
     Asserter.assert_true(httpcode.is_informational(httpcode.PROCESSING))

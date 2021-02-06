@@ -34,6 +34,10 @@ class Request(flask.Request):
 
 class Response(flask.Response):
     @staticmethod
+    def no_content():
+        return flask.make_response(b'', httpcode.NO_CONTENT)
+
+    @staticmethod
     def send_file(directory, filename, **kwargs):
         """
 
