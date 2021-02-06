@@ -134,8 +134,3 @@ def health_system(conf=None):
             resp.errors.append(f"high DISK usage on '{f}': {percent}, threshold: {th_fs}")
 
     return bool(not resp.errors), resp if conf.SYSTEM_DUMP_ALL else (resp.errors or None)
-
-
-
-if __name__ == '__main__':
-    print(*health_system())
