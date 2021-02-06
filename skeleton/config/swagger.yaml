@@ -1,0 +1,100 @@
+openapi: 3.0.0
+info:
+    title: API DOCS
+    version: '0.0.0'
+    description: HTTP APIs documentation
+servers:
+    -   url: '{host}'
+        variables:
+            version:
+                default: /
+            host:
+                default: 'http://api.flask.local:5000{version}'
+                enum:
+                    - 'http://api.flask.local:5000{version}'
+paths:
+    /access_token:
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                password:
+                                    type: string
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                    description: perform an authentication via username and password
+                '401':
+                    description: unauthorized
+                '422':
+                    description: bad request
+                '500':
+                    description: internal server error
+            summary: Get an access token
+            tags:
+                - Auth
+    /refresh_token:
+        post:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                    description: new access token provided
+                '401':
+                    description: unauthorized
+                '500':
+                    description: internal server error
+            summary: Get a refresh token
+            tags:
+                - Auth
+    /check_token:
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                    description: token decoded
+                '401':
+                    description: unauthorized
+                '500':
+                    description: internal server error
+            summary: Get token information
+            tags:
+                - Auth
+    /healthcheck:
+        get:
+            security:
+                -   basicauth: [ ]
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                    description: platform is healthy
+                '401':
+                    description: unauthorized
+                '500':
+                    description: internal server error
+                '503':
+                    description: platform is unhealty
+            summary: health check
+            tags:
+                - Monitoring
+components:
+    securitySchemes:
+        basicAuth:
+            type: http
+            scheme: basic

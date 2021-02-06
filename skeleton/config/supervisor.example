@@ -1,9 +1,18 @@
 [program:<NAME>]
-user = <USER>
-group = <GROUP>
-directory = <HOME>
-command = <APP_CLI>
 process_name = %(program_name)s
+directory = /opt/%(program_name)s
+command = /opt/%(program_name)s/bin/<CMD_NAME> -c /opt/%(program_name)s/conf.yml -w gunicorn
+
+user = root
+group = root
+
 autostart = true
 autorestart = true
 autorestart = unexpected
+stopwaitsecs = 2
+stopasgroup = true
+
+redirect_stderr = true
+stdout_logfile = /var/log/%(program_name)s.log
+stdout_logfile_maxbytes = 0
+stdout_logfile_backups = 0

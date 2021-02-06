@@ -1,0 +1,69 @@
+wsgi:
+    bind: 127.0.0.1:5000
+app:
+    DEBUG: true
+    APP_NAME: flaskel
+    FLASK_ENV: development
+    SERVER_NAME: flask.local:5000
+    USE_X_SENDFILE: false
+    EXPLAIN_TEMPLATE_LOADING: false
+    TEMPLATES_AUTO_RELOAD: true
+    LOCALE: it_IT.utf8
+    LOG_SKIP_DUMP: false
+    LOG_LOGGER_NAME: console
+    CF_STRICT_ACCESS: false
+    PRETTY_DATE: "%d %B %Y %I:%M %p"
+    SQLALCHEMY_DATABASE_URI: ${DATABASE_URI:sqlite:///db.sqlite}
+    SQLALCHEMY_TRACK_MODIFICATIONS: false
+    SQLALCHEMY_ECHO: false
+    ERROR_PAGE: errors.html
+    ERROR_HANDLER: web
+    BASIC_AUTH_PASSWORD: admin
+    BASIC_AUTH_USERNAME: admin
+    LOGGING: !include config/log.yaml
+    APISPEC: !include config/swagger.yaml
+    IPBAN_NUISANCES: !include config/nuisances.yaml
+#    CELERY: !include config/celery.yaml
+#    SCHEDULER_JOBS: !include config/scheduler.yaml
+    SCHEDULER_AUTO_START: false
+    SCHEDULER_JOBSTORES:
+        default:
+            class: apscheduler.jobstores.memory:MemoryJobStore
+    SCHEDULER_EXECUTORS:
+        default:
+            type: threadpool
+            max_workers: 20
+    SCHEDULER_JOB_DEFAULTS:
+        coalesce: false
+        max_instances: 10
+#    CACHE_REDIS_URL: 'redis://127.0.0.1:6379'
+#    CACHE_TYPE: redis
+#    CACHE_KEY_PREFIX: flaskel
+#    CACHE_DEFAULT_TIMEOUT: 3600
+#    CACHE_OPTIONS:
+#        socket_timeout: 0.05
+#        socket_connect_timeout: 0.05
+#    RATELIMIT_STORAGE_URL: 'redis://127.0.0.1:6379'
+#    RATELIMIT_IN_MEMORY_FALLBACK_ENABLED: true
+#    RATELIMIT_KEY_PREFIX: flaskel
+#    RATELIMIT_ENABLED: true
+#    RATELIMIT_HEADERS_ENABLED: true
+#    RATELIMIT_STORAGE_OPTIONS:
+#        socket_timeout: 0.05
+#        socket_connect_timeout: 0.05
+    IPBAN_COUNT: 5
+    IPBAN_SECONDS: 3600
+    LIMITER:
+        FAIL: 1/second
+        FAST: 30/minute
+        MEDIUM: 20/minute
+        SLOW: 10/minute
+        BYPASS_KEY: X-Limiter-Bypass
+        BYPASS_VALUE: bypass-rate-limit
+    MAIL_DEBUG: false
+    MAIL_SERVER: 127.0.0.1
+    MAIL_PORT: 1025
+    MAIL_DEFAULT_SENDER: admin@mail.com
+    MAIL_DEFAULT_RECEIVER: admin@mail.com
+    ADMIN_EMAIL: admin
+    ADMIN_PASSWORD: admin

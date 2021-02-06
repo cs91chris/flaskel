@@ -1,46 +1,51 @@
 version: 1
-disable_existing_loggers: true
-
 formatters:
-    default:
+    console:
         format: "[%(asctime)s][%(levelname)s][%(module)s:%(lineno)d]: %(message)s"
     syslog:
-        format: "%(ident)s[%(asctime)s][%(levelname)s]: %(message)s"
-
+        class: flask_logify.formatters.RequestFormatter
+        format: "%(ident)s[%(levelname)s][%(request_id)s]: %(message)s"
 handlers:
-    syslog:
-        class: flask_logify.handlers.syslog.FlaskSysLogHandler
-        address: [localhost, 514]
-        formatter: syslog
-        facility: daemon
-        level: INFO
-    console:
+    dev:
         class: logging.StreamHandler
-        formatter: default
+        formatter: console
         level: DEBUG
-    file:
-        class: logging.handlers.RotatingFileHandler
-        formatter: default
+    test:
+        class: logging.StreamHandler
+        formatter: syslog
         level: DEBUG
-        filename: flaskel.log
-        maxBytes: 10485760
-        backupCount: 20
-        encoding: utf8
-
+    prod:
+        class: flask_logify.handlers.FlaskSysLogHandler
+        address: [ localhost, 514 ]
+        formatter: syslog
+        facility: user
+        level: INFO
 loggers:
+    root:
+        handlers: [ dev ]
+        propogate: yes
+        level: DEBUG
     development:
-        handlers: [console]
+        handlers: [ dev ]
         propogate: yes
         level: DEBUG
     testing:
-        handlers: [file]
+        handlers: [ dev ]
         propogate: yes
         level: DEBUG
-    staging:
-        handlers: [file, syslog]
+    production:
+        handlers: [ prod ]
         propogate: yes
         level: INFO
-    production:
-        handlers: [syslog]
+    flask-limiter:
+        handlers: [ dev ]
+        propogate: yes
+        level: DEBUG
+    gunicorn.error:
+        handlers: [ prod ]
+        propogate: yes
+        level: INFO
+    gunicorn.access:
+        handlers: [ prod ]
         propogate: yes
         level: INFO

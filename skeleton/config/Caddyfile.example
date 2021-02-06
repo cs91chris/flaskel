@@ -9,5 +9,6 @@ https://<SERVER_NAME> {
         without /prefix
         transparent
         header_upstream X-Forwarded-Prefix /prefix
+        except /static  # static are served via: root <PATH>
     }
 }
