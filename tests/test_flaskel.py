@@ -190,12 +190,14 @@ def test_utils_http_client_exception(testapp):
         Asserter.assert_equals(exc.code, httpcode.INTERNAL_SERVER_ERROR)
 
 
-def test_utils_http_client_filename(testapp):
+def test_utils_http_client_filename():
     filename = "pippo.txt"
     hdr = 'Content-Disposition'
     param = {hdr: None}
 
-    api = http.HTTPClient(HOSTS.apitester, dump_body=True, logger=testapp.application.logger)
+    api = http.HTTPClient(HOSTS.apitester, dump_body=True)
+    res = api.get('/not-found')
+    Asserter.assert_status_code(res, httpcode.NOT_FOUND)
 
     param[hdr] = f"attachment; filename={filename}"
     res = api.get('/response-headers', params=param)

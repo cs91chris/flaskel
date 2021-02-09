@@ -18,16 +18,16 @@ class FakeLogger:
 # noinspection PyMethodMayBeStatic,PyUnusedLocal
 class DummyLogger:
     def debug(self, *args, **kwargs):
-        print(*args)
+        print("DEBUG:", *args)
 
     def info(self, *args, **kwargs):
-        print(*args)
+        print("INFO:", *args)
 
     def warning(self, *args, **kwargs):
-        print(*args)
+        print("WARNING:", *args)
 
     def error(self, *args, **kwargs):
-        print(*args)
+        print("ERROR:", *args)
 
     def exception(self, exc, *args, **kwargs):
-        print(*args)
+        print("CRITICAL:", *args)

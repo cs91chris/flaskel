@@ -328,7 +328,7 @@ class HttpAsserter(RegexMixin):
         :param greater:
         :param less
         """
-        status_code = response.status_code
+        status_code = response.status_code or response.status
         if type(code) in (list, tuple):
             if in_range is True:
                 cls.assert_range(status_code, code)
