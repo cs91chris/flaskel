@@ -26,7 +26,8 @@ class HTTPDumper:
         if only:
             hdr = {k: hdr[k] for k in only if k in hdr}
 
-        return cls.padding('\n'.join(f"{k}: {v}" for k, v in hdr.items()))
+        headers = '\n\t'.join(f"{k}: {v}" for k, v in hdr.items())
+        return headers.strip()
 
     @classmethod
     def response_filename(cls, headers):
@@ -64,15 +65,15 @@ class HTTPDumper:
         body = ''
         if dump_body is True:
             try:
-                body = req.body or "empty body"
+                body = req.body or ''
                 if type(body) is not str:
                     body = body.decode()
             except AttributeError as exc:
-                body = str(exc)
-            body = f"\nbody:\n{body}"
+                body = f"ERROR: {exc}"
+            body = f"\nbody:\n{body}" if body else ''
 
         headers = cls.dump_headers(req.headers, only=only_hdr)
-        headers = f"\nheaders:\n{headers}" if headers else ''
+        headers = f"\nheaders:\n\t{headers}" if headers else ''
         return f"{req.method} {req.url}{headers}{body}"
 
     @classmethod
@@ -96,13 +97,13 @@ class HTTPDumper:
             seconds = 'N/A'
 
         headers = cls.dump_headers(resp.headers, only=only_hdr)
-        headers = f"\nheaders:\n{headers}" if headers else ''
+        headers = f"\nheaders:\n\t{headers}" if headers else ''
         try:
             status = resp.status_code
         except AttributeError:
             status = resp.status if hasattr(resp, 'status') else None
 
-        return f"time: {seconds} - status code: {status}{headers}{body}"
+        return f"response time: {seconds} - status code: {status}{headers}{body}"
 
 
 class FlaskelHTTPDumper:

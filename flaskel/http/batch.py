@@ -40,10 +40,10 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
             timeout = aiohttp.ClientTimeout(sock_read=timeout, sock_connect=timeout)
 
         try:
+            self._logger.info(self.dump_request(ObjectDict(**kwargs), dump_body))
             async with aiohttp.ClientSession(timeout=timeout) as session, \
                     session.request(**kwargs) as resp:
                 # noinspection PyProtectedMember
-                self._logger.info(self.dump_request(ObjectDict(**kwargs), dump_body))
                 try:
                     body = await resp.json()
                 except (aiohttp.ContentTypeError, ValueError, TypeError):
