@@ -2,12 +2,11 @@ import os
 
 import pytest
 
-from flaskel import datastruct, middlewares
-from flaskel.ext import BASE_EXTENSIONS, caching, crypto, healthcheck, ip_ban, limiter, sqlalchemy, useragent
-from flaskel.ext.auth import jwtm
-from flaskel.ext.jobs import scheduler
-from flaskel.ext.sqlalchemy import db
-from flaskel.tester import TestClient
+from flaskel import datastruct, middlewares, tester
+from flaskel.ext import (
+    auth, BASE_EXTENSIONS, caching, crypto, healthcheck,
+    ip_ban, jobs, limiter, sqlalchemy, useragent
+)
 from tests.blueprints import BLUEPRINTS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -44,7 +43,7 @@ def app_prod():
     healthcheck.health_checks.register('redis', db=sqlalchemy.db)(healthcheck.health_redis)
     healthcheck.health_checks.register('sqlalchemy', db=sqlalchemy.db)(healthcheck.health_sqlalchemy)
 
-    return TestClient.get_app(
+    return tester.TestClient.get_app(
         conf=dict(
             DEBUG=True,
             BASIC_AUTH_USERNAME='username',
@@ -71,11 +70,11 @@ def app_prod():
                 "empty":         (None, (None,)),  # NB: needed to complete coverage
                 "useragent":     (useragent.UserAgent(),),
                 "argon2":        (crypto.Argon2(),),
-                "jwt":           (jwtm,),
+                "jwt":           (auth.jwtm,),
                 "limiter":       (limiter,),
                 "caching":       (caching,),
-                "sqlalchemy":    (db,),
-                "scheduler":     (scheduler,),
+                "sqlalchemy":    (sqlalchemy.db,),
+                "scheduler":     (jobs.scheduler,),
                 "ipban":         (ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
                 "health_checks": (
                     healthcheck.health_checks, {'extensions': (
@@ -103,7 +102,7 @@ def app_prod():
 
 @pytest.fixture(scope='session')
 def app_dev():
-    return TestClient.get_app(
+    return tester.TestClient.get_app(
         conf=dict(
             DEBUG=True,
             FLASK_ENV='development'

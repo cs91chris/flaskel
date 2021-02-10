@@ -4,7 +4,7 @@ import flask
 
 from flaskel import cap, httpcode
 from flaskel.ext import builder
-from flaskel.utils.batch import AsyncBatchExecutor
+from flaskel.utils.batch import ThreadBatchExecutor
 
 
 class HealthCheck:
@@ -13,19 +13,22 @@ class HealthCheck:
 
         :param app:
         """
+        self._executor = None
         self._health_checks = {}
 
         if app:
             self.init_app(app, **kwargs)  # pragma: no cover
 
-    def init_app(self, app, bp=None, extensions=(), decorators=()):
+    def init_app(self, app, bp=None, extensions=(), decorators=(), executor=None):
         """
 
         :param app:
         :param bp:
         :param extensions:
         :param decorators:
+        :param executor:
         """
+        self._executor = executor or ThreadBatchExecutor
         app.config.setdefault('HEALTHCHECK_ABOUT_LINK', None)
         app.config.setdefault('HEALTHCHECK_PATH', '/healthcheck')
         app.config.setdefault('HEALTHCHECK_PARAM_KEY', 'checks')
@@ -66,8 +69,11 @@ class HealthCheck:
             params = params.split(cap.config['HEALTHCHECK_PARAM_SEP'])
             params = set(params).intersection(all_checks)
 
+        # noinspection PyProtectedMember
+        app = cap._get_current_object()
         params = list(params)
-        resp = AsyncBatchExecutor().run([(self._health_checks.get(p),) for p in params])
+        tasks = [(self._health_checks.get(p), dict(app=app)) for p in params]
+        resp = self._executor(tasks=tasks).run()
 
         for i, p in enumerate(params):
             state, message = resp[i]

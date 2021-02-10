@@ -4,47 +4,56 @@ from flaskel.http.batch import HTTPBatch
 from flaskel.utils.datastruct import ObjectDict
 
 
-def health_sqlalchemy(db):
+def health_sqlalchemy(db, app, stm='SELECT 1'):
     """
 
     :param db:
+    :param app:
+    :param stm:
     :return:
     """
     try:
-        with db.engine.connect() as connection:
-            connection.execute('SELECT 1')
+        with app.app_context():
+            with db.engine.connect() as connection:
+                connection.execute(stm)
     except Exception as exc:
         return False, str(exc)
     return True, None  # pragma: no cover
 
 
-def health_mongo(db):
+def health_mongo(db, app, cmd='ping'):
     """
 
     :param db:
+    :param app:
+    :param cmd:
     :return:
     """
     try:
-        db.db.command('ping')
+        with app.app_context():
+            db.db.command(cmd)
     except Exception as exc:
         return False, str(exc)
     return True, None  # pragma: no cover
 
 
-def health_redis(db):
+def health_redis(db, app):
     """
 
     :param db:
+    :param app:
     :return:
     """
     try:
-        db.ping()
+        with app.app_context():
+            db.ping()
     except Exception as exc:
         return False, str(exc)
     return True, None  # pragma: no cover
 
 
-def health_glances(conf=None):
+# noinspection PyUnusedLocal
+def health_glances(conf=None, **kwargs):
     """
 
     :param conf:
@@ -89,11 +98,12 @@ def health_glances(conf=None):
         if f.mnt_point in conf.SYSTEM_FS_MOUNT_POINTS and f.percent > th_fs:
             resp.errors.append(f"high DISK usage on {f.mnt_point}: {f.percent}, threshold: {th_fs}")
 
-    return bool(not resp.errors), resp if conf.SYSTEM_DUMP_ALL else (resp.errors or None)
+    output = resp if conf.SYSTEM_DUMP_ALL else (resp.errors or None)
+    return bool(not resp.errors), dict(messages=output)
 
 
-# noinspection PyProtectedMember
-def health_system(conf=None):
+# noinspection PyProtectedMember,PyUnusedLocal
+def health_system(conf=None, **kwargs):
     """
 
     :param conf:
@@ -133,4 +143,5 @@ def health_system(conf=None):
         if percent > th_mem:
             resp.errors.append(f"high DISK usage on '{f}': {percent}, threshold: {th_fs}")
 
-    return bool(not resp.errors), resp if conf.SYSTEM_DUMP_ALL else (resp.errors or None)
+    output = resp if conf.SYSTEM_DUMP_ALL else (resp.errors or None)
+    return bool(not resp.errors), dict(messages=output)

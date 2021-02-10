@@ -1,10 +1,48 @@
 import asyncio
+import threading
 
 import nest_asyncio
 
 
-class AsyncBatchExecutor:
-    def __init__(self, return_exceptions=False):
+class BatchExecutor:
+    def __init__(self, tasks=None):
+        """
+
+        :param tasks:
+        """
+        self._tasks = tasks or []
+
+    @staticmethod
+    def prepare_task(task):
+        """
+
+        :param task:
+        :return:
+        """
+        try:
+            if len(task) > 1:
+                return task[0], task[1] or {}
+            else:
+                return task[0], {}
+        except TypeError:
+            return task, {}
+
+    def run(self):
+        responses = []
+        for task in self._tasks:
+            func, args = self.prepare_task(task)
+            responses.append(func(**args))
+        return responses
+
+
+class AsyncBatchExecutor(BatchExecutor):
+    def __init__(self, return_exceptions=False, **kwargs):
+        """
+
+        :param tasks:
+        :param return_exceptions:
+        """
+        super().__init__(**kwargs)
         self._return_exceptions = return_exceptions
 
     @staticmethod
@@ -15,22 +53,10 @@ class AsyncBatchExecutor:
     def is_async(fun):
         return asyncio.iscoroutinefunction(fun)
 
-    async def batch(self, functions):
-        """
-
-        :param functions:
-        :return:
-        """
+    async def batch(self):
         tasks = []
-        for f in functions:
-            try:
-                if len(f) > 1:
-                    func, args = f[0], f[1] or {}
-                else:
-                    func, args = f[0], {}
-            except TypeError:
-                func, args = f, {}
-
+        for task in self._tasks:
+            func, args = self.prepare_task(task)
             if not self.is_async(func):
                 tasks.append(self._executor(func, **args))  # pragma: no cover
             else:
@@ -38,17 +64,73 @@ class AsyncBatchExecutor:
 
         return await asyncio.gather(*tasks, return_exceptions=self._return_exceptions)
 
-    def run(self, functions):
-        """
-
-        :param functions:
-        :return:
-        """
+    def run(self):
         try:
             asyncio.get_running_loop()
-            nest_asyncio.apply()
+            nest_asyncio.apply()  # pragma: no cover
         except RuntimeError:
             asyncio.set_event_loop(asyncio.new_event_loop())
 
         loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self.batch(functions))
+        return loop.run_until_complete(self.batch())
+
+
+class Thread(threading.Thread):
+    def __init__(self, runnable, params=None, *args, **kwargs):
+        """
+
+        :param fun:
+        :param params:
+        """
+        super().__init__(**kwargs)
+        self._runnable = runnable
+        self._args = args
+        self._params = params or {}
+        self.response = None
+
+    def run(self):
+        self.response = self._runnable(*self._args, **self._params)
+
+
+class DaemonThread(threading.Thread):
+    def __init__(self, runnable, params=None, *args, **kwargs):
+        """
+
+        :param runnable:
+        :param params:
+        """
+        super().__init__(**kwargs)
+        self.daemon = True
+        self._runnable = runnable
+        self._args = args
+        self._kwargs = params or {}
+
+    def run(self):
+        self._runnable(*self._args, **self._kwargs)
+
+
+class ThreadBatchExecutor(BatchExecutor):
+    def __init__(self, thread_class=None, **kwargs):
+        """
+
+        :param tasks:
+        :param thread_class:
+        """
+        super().__init__(**kwargs)
+        self._thread_class = thread_class or Thread
+
+        for i, t in enumerate(self._tasks):
+            if isinstance(t, dict):
+                thread = self._thread_class(**t)
+            else:
+                func, args = self.prepare_task(t)
+                thread = self._thread_class(func, params=args)
+            self._tasks[i] = thread
+
+    def run(self):
+        for t in self._tasks:
+            t.start()
+        for t in self._tasks:
+            t.join()
+
+        return [t.response for t in self._tasks]

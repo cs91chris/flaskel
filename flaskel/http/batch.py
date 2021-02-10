@@ -43,7 +43,6 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
             self._logger.info(self.dump_request(ObjectDict(**kwargs), dump_body))
             async with aiohttp.ClientSession(timeout=timeout) as session, \
                     session.request(**kwargs) as resp:
-                # noinspection PyProtectedMember
                 try:
                     body = await resp.json()
                 except (aiohttp.ContentTypeError, ValueError, TypeError):
@@ -84,9 +83,9 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         _requests = []
         for r in requests:
             r.setdefault('method', 'GET')
-            _requests.append((self.http_request, r))
+            self._tasks.append((self.http_request, r))
 
-        return self.run(_requests)
+        return self.run()
 
 
 class FlaskelHTTPBatch(HTTPBatch, FlaskelHTTPDumper):
