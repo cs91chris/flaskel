@@ -6,7 +6,7 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import datetime, http, httpcode, SCHEMAS, uuid, yaml
+from flaskel import datetime, http, httpcode, SCHEMAS, JSONSchema, uuid, yaml
 from flaskel.http import batch, rpc, useragent
 from flaskel.tester import Asserter
 from flaskel.utils.faker import DummyLogger
@@ -248,7 +248,7 @@ def test_api_jsonrpc_success(testapp):
 
     res = testapp.jsonrpc(url, method="MyJsonRPC.testAction1", call_id=call_id)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, JSONSchema.load_from_file(SCHEMAS.JSONRPC)['RESPONSE'])
     Asserter.assert_equals(res.json.id, call_id)
     Asserter.assert_true(res.json.result.action1)
 
@@ -263,7 +263,7 @@ def test_api_jsonrpc_error(testapp):
     res = testapp.jsonrpc(url, method="NotFoundMethod", call_id=call_id)
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.error.code, rpc.RPCMethodNotFound().code)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, JSONSchema.load_from_file(SCHEMAS.JSONRPC)['RESPONSE'])
     Asserter.assert_equals(res.json.id, call_id)
     Asserter.assert_true(res.json.error.message)
 
@@ -294,7 +294,7 @@ def test_api_jsonrpc_params(testapp):
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"param": "testparam"})
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, JSONSchema.load_from_file(SCHEMAS.JSONRPC)['RESPONSE'])
     Asserter.assert_not_in('error', res.json)
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"params": None})

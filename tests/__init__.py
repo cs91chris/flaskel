@@ -27,6 +27,15 @@ HOSTS = datastruct.ObjectDict(
     fake="http://localhost"
 )
 
+SCHEMA_DIR = 'skeleton/blueprints/web/static/schemas'
+
+SCHEMAS = dict(
+    JSONRPC=f"file://{SCHEMA_DIR}/jsonrpc.json",
+    APIPROBLEM=f"file://{SCHEMA_DIR}/apiproblem.json",
+    HEALTHCHECK=f"file://{SCHEMA_DIR}/healthcheck.json",
+    OPENAPI3=f"file://{SCHEMA_DIR}/openapi3.json",
+)
+
 
 @pytest.fixture(scope='session')
 def app_prod():
@@ -50,6 +59,7 @@ def app_prod():
             BASIC_AUTH_PASSWORD='password',
             USER_AGENT_AUTO_PARSE=True,
             PREFERRED_URL_SCHEME='https',
+            SCHEMAS=SCHEMAS,
             PROXIES=dict(
                 CONF=dict(
                     host=HOSTS.apitester,
@@ -105,7 +115,8 @@ def app_dev():
     return tester.TestClient.get_app(
         conf=dict(
             DEBUG=True,
-            FLASK_ENV='development'
+            FLASK_ENV='development',
+            SCHEMAS=SCHEMAS
         ),
         blueprints=BLUEPRINTS,
         extensions=BASE_EXTENSIONS,

@@ -1,10 +1,8 @@
-import io
-import json
 import re
-from functools import partial
 
-import jsonschema as js
-import requests
+import jsonschema
+
+from flaskel.utils.schemas import JSONSchema
 
 
 class BaseAssert:
@@ -142,76 +140,7 @@ class BaseAssert:
         )
 
 
-class JSONValidatorMixin(BaseAssert):
-    jsonschema = js
-    dumper = partial(json.dumps, indent=4)
-    marker = "3fb539deef7c4e2991f265c0a982f5ea"
-    message_format = "{message}\nError in line {line}:\n{report}\n{message}"
-
-    @classmethod
-    def error_report(cls, e, json_object, lines_before=8, lines_after=8):
-        """
-        From: https://github.com/ccpgames/jsonschema-errorprinter/blob/master/jsonschemaerror.py
-
-        Generate a detailed report of a schema validation error.
-        'e' is a jsonschema.ValidationError exception that errored on
-        'json_object'.
-        Steps to discover the location of the validation error:
-        1. Traverse the json object using the 'path' in the validation exception
-           and replace the offending value with a special marker.
-        2. Pretty-print the json object indendented json text.
-        3. Search for the special marker in the json text to find the actual
-           line number of the error.
-        4. Make a report by showing the error line with a context of
-          'lines_before' and 'lines_after' number of lines on each side.
-        """
-        if not e.path:
-            return e.message or str(e)
-
-        # Find the object that is erroring, and replace it with the marker.
-        for entry in list(e.path)[:-1]:
-            json_object = json_object[entry]
-
-        orig, json_object[e.path[-1]] = json_object[e.path[-1]], cls.marker
-
-        # Pretty print the object and search for the marker.
-        json_error = cls.dumper(json_object)
-        errline = None
-
-        for lineno, text in enumerate(io.StringIO(json_error)):
-            if cls.marker in text:
-                errline = lineno
-                break
-
-        if not errline:
-            return e.message or str(e)
-
-        report = []
-        json_object[e.path[-1]] = orig
-        json_error = cls.dumper(json_object)
-
-        for lineno, text in enumerate(io.StringIO(json_error)):
-            line_text = "{:4}: {}".format(lineno + 1, '>' * 3 if lineno == errline else ' ' * 3)
-            report.append(line_text + text.rstrip("\n"))
-
-        report = report[max(0, errline - lines_before):errline + 1 + lines_after]
-        return cls.message_format.format(
-            line=errline + 1,
-            report="\n".join(report),
-            message=e.message or str(e)
-        )
-
-    @classmethod
-    def load_from_url(cls, url):
-        """
-
-        :param url:
-        :return:
-        """
-        res = requests.get(url)
-        res.raise_for_status()
-        return res.json()
-
+class JSONValidatorMixin(BaseAssert, JSONSchema):
     @classmethod
     def assert_schema(cls, data, schema):
         """
@@ -220,18 +149,11 @@ class JSONValidatorMixin(BaseAssert):
         :param schema:
         :return:
         """
-        valid = True
-        message = "json is valid"
-
         try:
-            if schema:
-                if type(schema) is str:
-                    schema = cls.load_from_url(schema)
-                checker = cls.jsonschema.FormatChecker()
-                cls.jsonschema.validate(data, schema, format_checker=checker)
-        except (cls.jsonschema.ValidationError, cls.jsonschema.SchemaError) as exc:
-            valid = False
-            message = cls.error_report(exc, data)
+            cls.validate(data, schema, raise_exc=True)
+            valid, message = True, None
+        except jsonschema.ValidationError as exc:
+            valid, message = True, cls.error_report(exc, data)
 
         cls.assert_that(
             lambda a, e: a is True,

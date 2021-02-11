@@ -1,0 +1,35 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": [
+        "type",
+        "title",
+        "detail",
+        "instance",
+        "status"
+    ],
+    "properties": {
+        "type": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "detail": {
+            "type": "string"
+        },
+        "instance": {
+            "type": "string"
+        },
+        "status": {
+            "type": "integer"
+        },
+        "response": {
+            "type": [
+                "null",
+                "object",
+                "array"
+            ]
+        }
+    }
+}

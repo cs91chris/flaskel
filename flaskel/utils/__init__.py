@@ -1,1 +1,1 @@
-from .schemas import SCHEMAS
+from .schemas import JSONSchema, SCHEMAS

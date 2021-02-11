@@ -1,0 +1,48 @@
+{
+    "type": "object",
+    "required": [
+        "status",
+        "checks",
+        "links"
+    ],
+    "properties": {
+        "status": {
+            "type": "string"
+        },
+        "checks": {
+            "type": "object",
+            "patternProperties": {
+                ".": {
+                    "type": "object",
+                    "required": [
+                        "status",
+                        "output"
+                    ],
+                    "properties": {
+                        "status": {
+                            "type": "string"
+                        },
+                        "output": {
+                            "type": [
+                                "null",
+                                "string",
+                                "object"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "links": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        }
+    }
+}
