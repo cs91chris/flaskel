@@ -77,10 +77,8 @@ class HealthCheck:
 
         for i, p in enumerate(params):
             state, message = resp[i]
-            response['checks'][p] = dict(
-                status='pass' if state else 'fail',
-                output=message
-            )
+            status = 'pass' if state else 'fail'
+            response['checks'][p] = dict(status=status, output=message)
             if not state:
                 healthy = False
 

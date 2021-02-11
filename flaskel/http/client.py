@@ -9,6 +9,11 @@ from . import httpcode
 from .httpdumper import FlaskelHTTPDumper, HTTPDumper
 
 
+HTTPStatusError = (http_exc.HTTPError,)
+NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
+all_errors = (*HTTPStatusError, *NetworkError)
+
+
 class HTTPTokenAuth(auth.AuthBase):
     def __init__(self, token):
         """
@@ -99,6 +104,13 @@ class HTTPClient(HTTPBase):
 
         return f"{self._endpoint}/{url.rstrip('/')}"
 
+    @staticmethod
+    def prepare_response(body=None, status=httpcode.SUCCESS, headers=None, exception=None):
+        return ObjectDict(
+            body=body or {}, status=status,
+            headers=headers or {}, exception=exception
+        )
+
     def request(self, uri, method='GET', raise_on_exc=False,
                 dump_body=None, chunk_size=None, decode_unicode=False, **kwargs):
         """
@@ -121,23 +133,21 @@ class HTTPClient(HTTPBase):
         try:
             kwargs.setdefault('timeout', self._timeout)
             url = self.normalize_url(uri)
-            self._logger.info(self.dump_request(ObjectDict(method=method, url=url, **kwargs), dump_body))
+            req = ObjectDict(method=method, url=url, **kwargs)
+            self._logger.info(self.dump_request(req, dump_body))
             response = send_request(method, self.normalize_url(uri), **kwargs)
-        except (http_exc.ConnectionError, http_exc.Timeout) as exc:
+        except NetworkError as exc:
             self._logger.exception(exc)
             if raise_on_exc or self._raise_on_exc:
                 raise  # pragma: no cover
 
-            return ObjectDict(
-                body={},
-                status=httpcode.SERVICE_UNAVAILABLE,
-                headers={},
-                exception=exc
+            return self.prepare_response(
+                status=httpcode.SERVICE_UNAVAILABLE, exception=exc
             )
 
         try:
             response.raise_for_status()
-        except http_exc.HTTPError as exc:
+        except HTTPStatusError as exc:
             self._logger.warning(self.dump_response(response, dump_body))
             response = exc.response
             if raise_on_exc or self._raise_on_exc:
@@ -152,7 +162,7 @@ class HTTPClient(HTTPBase):
         else:
             body = response.text
 
-        return ObjectDict(
+        return self.prepare_response(
             body=body,
             status=response.status_code,
             headers=dict(response.headers)
