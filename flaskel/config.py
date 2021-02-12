@@ -2,18 +2,18 @@ import os
 
 from decouple import config
 
-DEBUG = config('DEBUG', default=False)
-TESTING = config('TESTING', default=DEBUG)
+DEBUG = config('DEBUG', default=False, cast=bool)
+TESTING = config('TESTING', default=DEBUG, cast=bool)
 APP_NAME = config('APP_NAME', default="flaskel")
 APP_HOST = config('APP_HOST', default='127.0.0.1')
-APP_PORT = config('APP_PORT', default=5000)
+APP_PORT = config('APP_PORT', default=5000, cast=int)
 FLASK_APP = config('FLASK_APP', default="app:app")
 FLASK_ENV = config('FLASK_ENV', default="production")
 SERVER_NAME = config('SERVER_NAME', default=f"{APP_HOST}:{APP_PORT}")
 
 LOCALE = config('LOCALE', default="en_EN.utf8")
-TEMPLATES_AUTO_RELOAD = config("TEMPLATES_AUTO_RELOAD", default=DEBUG)
-EXPLAIN_TEMPLATE_LOADING = config("EXPLAIN_TEMPLATE_LOADING", default=DEBUG)
+TEMPLATES_AUTO_RELOAD = config("TEMPLATES_AUTO_RELOAD", default=DEBUG, cast=bool)
+EXPLAIN_TEMPLATE_LOADING = config("EXPLAIN_TEMPLATE_LOADING", default=DEBUG, cast=bool)
 
 BASE_DIR = config("BASE_DIR", default=os.path.abspath(os.path.dirname(__file__)))
 LOG_FILE_CONF = config("LOG_FILE_CONF", default=os.path.join('config', 'log.yaml'))
@@ -44,7 +44,7 @@ LOG_APP_NAME = APP_NAME
 
 CF_STRICT_ACCESS = False
 
-USE_X_SENDFILE = True
+USE_X_SENDFILE = DEBUG
 SEND_FILE_MAX_AGE_DEFAULT = 86400
 ENABLE_ACCEL = True
 ACCEL_BUFFERING = True
