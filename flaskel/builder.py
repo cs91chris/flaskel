@@ -58,11 +58,6 @@ class AppBuilder:
         self._conf_module = conf_module or self.conf_module
 
     def _generate_secret_key(self, secret_file, key_length):
-        """
-
-        :param secret_file:
-        :param key_length:
-        """
         secret_key = misc.random_string(key_length)
 
         with open(secret_file, 'w') as f:
@@ -72,11 +67,6 @@ class AppBuilder:
         return secret_key
 
     def _load_secret_key(self, secret_file):
-        """
-
-        :param secret_file:
-        :return:
-        """
         if not os.path.isfile(secret_file):
             return None
 
@@ -86,9 +76,6 @@ class AppBuilder:
         return secret_key
 
     def _set_secret_key(self):
-        """
-
-        """
         secret_key = None
         key_length = self._app.config.SECRET_KEY_MIN_LENGTH
 
@@ -110,9 +97,6 @@ class AppBuilder:
             self._app.logger.warning(f"secret key length is less than: {key_length}")
 
     def _register_extensions(self):
-        """
-
-        """
         with self._app.app_context():
             for name, e in (self._extensions or {}).items():
                 try:
@@ -132,9 +116,6 @@ class AppBuilder:
                 )
 
     def _register_blueprints(self):
-        """
-
-        """
         for b in (self._blueprints or []):
             try:
                 bp = b[0]
@@ -149,20 +130,12 @@ class AppBuilder:
             self._app.logger.debug(f"Registered blueprint '{bp.name}' with options: {str(opt)}")
 
     def _set_config(self, conf):
-        """
-
-        :param conf:
-        :return:
-        """
         self._app.config.from_object(self._conf_module)
         self._app.config.from_mapping(**(conf or {}))
         self._app.config.from_envvar('APP_CONFIG_FILE', silent=True)
         self._app.config = ObjectDict(**self._app.config)
 
     def _register_converters(self):
-        """
-
-        """
         conv = {**self.url_converters, **(self._converters or {})}
         self._app.url_map.converters.update(conv)
 
@@ -170,9 +143,6 @@ class AppBuilder:
             self._app.logger.debug(f"Registered converter: '{k}'")
 
     def _register_template_folders(self):
-        """
-
-        """
         loaders = [self._app.jinja_loader]
 
         for fsl in self._folders:
@@ -184,9 +154,6 @@ class AppBuilder:
             self._app.logger.debug(f"Registered template folders: '{folders}'")
 
     def _register_middlewares(self):
-        """
-
-        """
         for middleware in (self._middlewares or []):
             # WorkAround: in order to pass flask app to middleware without breaking chain
             if not (hasattr(middleware, 'flask_app') and middleware.flask_app):
@@ -231,11 +198,6 @@ class AppBuilder:
                 sqlalchemy.db.create_all()
 
     def create(self, conf=None):
-        """
-
-        :param conf:
-        :return:
-        """
         self._app = flaskel.Flaskel(self.app_name, **self._options)
 
         self._set_config(conf)
@@ -250,11 +212,6 @@ class AppBuilder:
         self._patch_app()
 
     def get_or_create(self, conf=None):
-        """
-
-        :param conf:
-        :return:
-        """
         if self._app is None:
             self.create(conf)
 

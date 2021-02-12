@@ -81,12 +81,6 @@ class Server:
         assert isinstance(self._wsgi_factory, WSGIFactory)
 
     def _register_options(self, func):
-        """
-
-        :param func:
-        :return:
-        """
-
         @click.command()
         @click.option('-b', '--bind', **self.opt_bing_attr)
         @click.option('-d', '--debug', **self.opt_debug_attr)
@@ -102,19 +96,10 @@ class Server:
 
     def run_from_cli(self, **kwargs):
         @self._register_options
-        def _forever(config, log_config, bind, debug, wsgi_server, wsgi_config, app_config):
-            self.serve_forever(
-                bind=bind,
-                debug=debug,
-                config=config,
-                log_config=log_config,
-                wsgi_server=wsgi_server,
-                wsgi_config=wsgi_config,
-                app_config=app_config,
-                **kwargs
-            )
+        def forever(**params):
+            self.serve_forever(**params, **kwargs)
 
-        return _forever()
+        forever()
 
     @staticmethod
     def _prepare_config(filename, debug=None, bind=None, log_config=None):
@@ -140,8 +125,6 @@ class Server:
                 wsgi={'bind': bind, 'debug': debug}
             )
 
-        os.environ['FLASK_ENV'] = config.app.FLASK_ENV
-
         if log_config is not None:
             config.app.LOG_FILE_CONF = log_config
 
@@ -149,6 +132,7 @@ class Server:
         if debug is True:
             config.app.DEBUG = True
 
+        os.environ['FLASK_ENV'] = config.app.FLASK_ENV
         return config
 
     def serve_forever(self, config=None, log_config=None, bind=None, debug=None,
@@ -165,7 +149,7 @@ class Server:
         :param app_config: app configuration
         :return: never returns
         """
-        config = self._prepare_config(config, debug=debug, bind=bind, log_config=log_config)
+        config = self._prepare_config(config, debug, bind, log_config)
         wsgi_config = {**(wsgi_config or {}), **(config.get('wsgi') or {})}
         app_config = {**(app_config or {}), **(config.get('app') or {})}
 
