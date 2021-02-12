@@ -8,7 +8,7 @@ from flaskel import cap
 from flaskel.ext import errors
 
 static_folder = os.environ.get('SPA_STATIC_FOLDER') or 'webapp'
-static_url_path = os.environ.get('SPA_STATIC_URL_PATH') or '/static/'
+static_url_path = os.environ.get('SPA_STATIC_URL_PATH') or '/assets/'
 
 spa = Blueprint(
     'spa', __name__,

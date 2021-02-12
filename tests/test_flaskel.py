@@ -20,12 +20,11 @@ url_for = partial(flask.url_for, _external=True)
 
 def test_app_dev(app_dev):
     client = app_dev.test_client()
-    res = client.get(flask.url_for('web.index'))
+    res = client.get(url_for('web.index'))
     Asserter.assert_status_code(res)
     Asserter.assert_content_type(res, CTS.html)
     Asserter.assert_equals(app_dev.config.FLASK_ENV, 'development')
     Asserter.assert_equals(app_dev.config.SECRET_KEY, 'fake_very_complex_string')
-
     res = client.get(url_for('test.test_https'))
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.scheme, 'http')

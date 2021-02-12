@@ -3,6 +3,7 @@ from ext import EXTENSIONS
 from flaskel import AppBuilder, BASE_EXTENSIONS, middlewares as middle, Server
 
 factory = AppBuilder(
+    static_folder=None,  # because static is inside web blueprint
     blueprints=BLUEPRINTS,
     extensions={**BASE_EXTENSIONS, **EXTENSIONS},
     middlewares=(

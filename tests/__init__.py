@@ -27,7 +27,7 @@ HOSTS = datastruct.ObjectDict(
     fake="http://localhost"
 )
 
-SCHEMA_DIR = 'skeleton/blueprints/web/static/schemas'
+SCHEMA_DIR = 'skeleton/blueprints/api/static/schemas'
 
 SCHEMAS = dict(
     JSONRPC=f"file://{SCHEMA_DIR}/jsonrpc.json",
@@ -60,6 +60,7 @@ def app_prod():
             USER_AGENT_AUTO_PARSE=True,
             PREFERRED_URL_SCHEME='https',
             SCHEMAS=SCHEMAS,
+            USE_X_SENDFILE=True,
             PROXIES=dict(
                 CONF=dict(
                     host=HOSTS.apitester,
