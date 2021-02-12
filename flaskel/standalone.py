@@ -5,6 +5,7 @@ import decouple
 
 from . import AppBuilder
 from .utils import misc, yaml
+from .utils.datastruct import ObjectDict
 from .wsgi import BaseApplication, WSGIFactory
 
 
@@ -59,6 +60,13 @@ class Server:
         metavar="KEY=VAL",
         help='wsgi configuration'
     )
+    option_app_config_attr = dict(
+        default={},
+        multiple=True,
+        callback=option_as_dict,
+        metavar="KEY=VAL",
+        help='app configuration'
+    )
 
     def __init__(self, app_factory=AppBuilder(), wsgi_factory=WSGIFactory()):
         """
@@ -86,6 +94,7 @@ class Server:
         @click.option('-l', '--log-config', **self.opt_log_config_attr)
         @click.option('-w', '--wsgi-server', **self.opt_wsgi_server_attr)
         @click.option('-D', '--wsgi-config', **self.option_wsgi_config_attr)
+        @click.option('-W', '--app-config', **self.option_app_config_attr)
         def _options(*args, **kwargs):
             return func(*args, **kwargs)
 
@@ -93,7 +102,7 @@ class Server:
 
     def run_from_cli(self, **kwargs):
         @self._register_options
-        def _forever(config, log_config, bind, debug, wsgi_server, wsgi_config):
+        def _forever(config, log_config, bind, debug, wsgi_server, wsgi_config, app_config):
             self.serve_forever(
                 bind=bind,
                 debug=debug,
@@ -101,6 +110,7 @@ class Server:
                 log_config=log_config,
                 wsgi_server=wsgi_server,
                 wsgi_config=wsgi_config,
+                app_config=app_config,
                 **kwargs
             )
 
@@ -125,7 +135,7 @@ class Server:
             if not config.app.FLASK_ENV:
                 config.app.FLASK_ENV = env
         else:
-            config = dict(
+            config = ObjectDict(
                 app={'DEBUG': debug, 'FLASK_ENV': env},
                 wsgi={'bind': bind, 'debug': debug}
             )
@@ -142,7 +152,7 @@ class Server:
         return config
 
     def serve_forever(self, config=None, log_config=None, bind=None, debug=None,
-                      wsgi_class=None, wsgi_server=None, wsgi_config=None):
+                      wsgi_class=None, wsgi_server=None, wsgi_config=None, app_config=None):
         """
 
         :param config: app and wsgi configuration file
@@ -150,12 +160,14 @@ class Server:
         :param bind: address to bind
         :param debug: enable debug mode
         :param wsgi_class: optional a custom subclass of BaseApplication
-        :param wsgi_server: wsgi server chose
+        :param wsgi_server: wsgi server chosen
         :param wsgi_config: wsgi configuration
+        :param app_config: app configuration
         :return: never returns
         """
         config = self._prepare_config(config, debug=debug, bind=bind, log_config=log_config)
         wsgi_config = {**(wsgi_config or {}), **(config.get('wsgi') or {})}
+        app_config = {**(app_config or {}), **(config.get('app') or {})}
 
         if wsgi_server:
             wsgi_class = self._wsgi_factory.get_class(wsgi_server)
@@ -164,6 +176,6 @@ class Server:
 
         assert issubclass(wsgi_class, BaseApplication)
 
-        app = self._app_factory.get_or_create(config.get('app'))
+        app = self._app_factory.get_or_create(app_config)
         wsgi = wsgi_class(app, options=wsgi_config)
         wsgi.run()  # run forever
