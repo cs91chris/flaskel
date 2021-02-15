@@ -31,21 +31,24 @@ class CatalogResource(Resource):
             restricted=not params.get('related', False)
         )
 
-    @staticmethod
-    def response_paginated(res, **kwargs):
+    def response_paginated(self, res, **kwargs):
         if type(res) is list:
             return [r.to_dict(**kwargs) for r in res]
 
         return (
             [r.to_dict(**kwargs) for r in res.items],
             httpcode.PARTIAL_CONTENT if res.has_next else httpcode.SUCCESS,
-            {
-                'X-Pagination-Count':     res.total,
-                'X-Pagination-Page':      res.page,
-                'X-Pagination-Num-Pages': res.pages,
-                'X-Pagination-Page-Size': res.per_page,
-            }
+            self.pagination_headers(res)
         )
+
+    @staticmethod
+    def pagination_headers(data):
+        return {
+            'X-Pagination-Count':     data.total,
+            'X-Pagination-Page':      data.page,
+            'X-Pagination-Num-Pages': data.pages,
+            'X-Pagination-Page-Size': data.per_page,
+        }
 
 
 class Restful(CatalogResource):

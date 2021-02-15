@@ -73,11 +73,10 @@ class Resource(MethodView):
         if sub_resource is None:
             return self.on_get(res_id, *args, **kwargs)
 
-        try:
-            _sub_resource = getattr(self, f"sub_{sub_resource}")
-            return _sub_resource(res_id, *args, **kwargs)
-        except AttributeError:
+        _sub_resource = getattr(self, f"sub_{sub_resource}", None)
+        if not _sub_resource:
             flask.abort(httpcode.NOT_FOUND)
+        return _sub_resource(res_id, *args, **kwargs)
 
     @builder.on_accept()
     def post(self, *args, res_id=None, sub_resource=None, **kwargs):

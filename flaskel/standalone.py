@@ -150,8 +150,8 @@ class Server:
         :return: never returns
         """
         config = self._prepare_config(config, debug, bind, log_config)
-        wsgi_config = {**(wsgi_config or {}), **(config.get('wsgi') or {})}
-        app_config = {**(app_config or {}), **(config.get('app') or {})}
+        wsgi_config = {**(config.get('wsgi') or {}), **(wsgi_config or {})}
+        app_config = {**(config.get('app') or {}), **(app_config or {})}
 
         if wsgi_server:
             wsgi_class = self._wsgi_factory.get_class(wsgi_server)

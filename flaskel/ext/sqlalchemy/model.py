@@ -10,10 +10,7 @@ class SQLAModel(Model):
         :param to_dict:
         :return:
         """
-        if args:
-            res = cls.query.filter(*args)
-        else:
-            res = cls.query.filter_by(**kwargs)
+        res = cls.query.filter(*args).filter_by(**kwargs)
 
         if raise_not_found:
             res = res.first_or_404()
