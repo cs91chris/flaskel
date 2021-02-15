@@ -7,6 +7,10 @@ from .base import Resource
 
 
 class CatalogResource(Resource):
+    methods_collection = ['GET', 'HEAD']
+    methods_resource = ['GET', 'HEAD']
+    methods_subresource = ['GET', 'HEAD']
+
     def __init__(self, model):
         self._model = model
 
@@ -18,15 +22,15 @@ class CatalogResource(Resource):
             params = webargs.paginate()
 
         model = model or self._model
-        max_per_page = cap.config.MAX_PAGE_SIZE
+        max_size = cap.config.MAX_PAGE_SIZE
         page = params.get('page')
-        size = params.get('page_size') or max_per_page
+        size = params.get('page_size') or max_size
         order_by = getattr(model, 'order_by', None)
 
         return self.response_paginated(
             model.get_list(
                 to_dict=False, order_by=order_by, page=page,
-                page_size=size, max_per_page=max_per_page, **kwargs
+                page_size=size, max_per_page=max_size, **kwargs
             ),
             restricted=not params.get('related', False)
         )
@@ -53,6 +57,9 @@ class CatalogResource(Resource):
 
 class Restful(CatalogResource):
     """TODO Not tested yet"""
+    methods_collection = ['POST', 'GET', 'HEAD']
+    methods_subresource = ['POST', 'GET', 'HEAD']
+    methods_resource = ['GET', 'HEAD', 'PUT', 'DELETE']
 
     def __init__(self, db, model):
         """

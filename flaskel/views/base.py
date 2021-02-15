@@ -1,7 +1,7 @@
 import flask
 from flask.views import MethodView, View
 
-from flaskel import httpcode
+from flaskel import httpcode, Response
 from flaskel.ext import builder
 
 
@@ -30,9 +30,9 @@ class BaseView(View):
 
 
 class Resource(MethodView):
-    methods_collection = ['POST', 'GET']
-    methods_resource = ['GET', 'PUT', 'DELETE']
-    methods_subresource = ['POST', 'GET']
+    methods_collection = ['POST', 'GET', 'HEAD']
+    methods_subresource = ['POST', 'GET', 'HEAD']
+    methods_resource = ['GET', 'HEAD', 'PUT', 'DELETE']
 
     @classmethod
     def register(cls, app, name=None, url=None, view=None, pk_type='int', **kwargs):
@@ -64,6 +64,10 @@ class Resource(MethodView):
             methods=cls.methods_subresource
         )
         return view_func
+
+    def head(self, *args, **kwargs):
+        response = self.get(*args, **kwargs)
+        return Response.no_content(response.status, response.headers)
 
     @builder.on_accept()
     def get(self, *args, res_id=None, sub_resource=None, **kwargs):

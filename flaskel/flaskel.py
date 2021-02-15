@@ -34,8 +34,19 @@ class Request(flask.Request):
 
 class Response(flask.Response):
     @staticmethod
-    def no_content():
-        return flask.make_response(b'', httpcode.NO_CONTENT)
+    def no_content(status=httpcode.NO_CONTENT, headers=None):
+        """
+
+        :param status:
+        :param headers:
+        :return:
+        """
+        response = flask.make_response(bytes())
+        response.headers.update(headers or {})
+        response.headers.pop('Content-Type', None)
+        response.headers.pop('Content-Length', None)
+        response.status = status
+        return response
 
     @staticmethod
     def send_file(directory, filename, **kwargs):
