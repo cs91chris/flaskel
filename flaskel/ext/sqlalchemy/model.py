@@ -28,31 +28,30 @@ class SQLAModel(Model):
             return res
 
     @classmethod
-    def get_list(cls, to_dict=True, order_by=None, page=None, page_size=None, *args, **kwargs):
+    def get_list(cls, to_dict=True, order_by=None,
+                 page=None, page_size=None, max_per_page=None, *args, **kwargs):
         """
 
         :param to_dict:
         :param order_by:
         :param page:
         :param page_size:
+        :param max_per_page:
         :return:
         """
-        if args:
-            q = cls.query.filter(*args)
-        else:
-            q = cls.query.filter_by(**kwargs)
+        q = cls.query.filter(*args).filter_by(**kwargs)
 
         if order_by is not None:
             q = q.order_by(order_by)
 
-        if page_size:
-            q = q.limit(page_size)
-        if page:
-            q = q.offset(page * page_size)
+        if page or page_size:
+            q = q.paginate(page, page_size, False, max_per_page)
+            res = q.items
+            if to_dict is False:
+                return q
+        else:
+            res = q.all()
 
-        res = q.all()
-
-        if to_dict is not True:
-            return res
-
-        return [r.to_dict() for r in res]
+        if to_dict is True:
+            return [r.to_dict() for r in res]
+        return res
