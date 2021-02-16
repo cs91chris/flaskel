@@ -32,13 +32,14 @@ class RPCParseError(RPCError):
 
 
 class RPCInvalidRequest(RPCError):
-    def __init__(self, message='The JSON sent is not a valid Request object', data=None):
+    def __init__(self, message='The JSON sent is not a valid Request object', data=None, req_id=None):
         """
 
         :param message:
         :param data:
         """
         super().__init__(-32600, message, data)
+        self.req_id = req_id
 
 
 class RPCMethodNotFound(RPCError):

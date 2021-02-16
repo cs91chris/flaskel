@@ -1,12 +1,13 @@
 import functools
 import inspect
 
-from flask import request
+import flask
 from flask.views import View
 
 import flaskel.http.rpc as rpc
-from flaskel import cap, httpcode
+from flaskel import cap, Response, httpcode
 from flaskel.ext import builder
+from flaskel.utils.batch import DaemonThread, ThreadBatchExecutor
 from flaskel.utils.datastruct import ObjectDict
 
 
@@ -16,9 +17,10 @@ class JSONRPCView(View):
     methods = ['POST']
     decorators = [builder.response('json')]
 
-    def __init__(self, operations=None):
+    def __init__(self, operations=None, batch_executor=None, **kwargs):
         """
 
+        :param batch_executor
         :param operations: a dict of jsonrpc operations like:
             {
                 None: {
@@ -35,22 +37,37 @@ class JSONRPCView(View):
             }
         """
         self.operations = operations or {}
+        self._batch_executor = batch_executor or ThreadBatchExecutor
+        kwargs.setdefault('thread_class', DaemonThread)
+        self._batch_args = kwargs
+
+    def _validate_request(self, data):
+        if 'jsonrpc' not in data or 'method' not in data:
+            raise rpc.RPCInvalidRequest() from None
+
+        if data['jsonrpc'] != self.version:
+            raise rpc.RPCInvalidRequest(
+                f"jsonrpc version is {self.version}",
+                req_id=data.get('id')
+            ) from None
 
     def _validate_payload(self):
-        """
-
-        :return:
-        """
-        payload = request.get_json(True)
+        payload = flask.request.get_json(True)
         if not payload:
             raise rpc.RPCParseError() from None
 
-        if 'jsonrpc' not in payload or \
-                'method' not in payload:
-            raise rpc.RPCInvalidRequest() from None
-
-        if payload['jsonrpc'] != self.version:
-            raise rpc.RPCInvalidRequest(f"jsonrpc version is {self.version}") from None
+        if type(payload) is list:
+            max_requests = cap.config.JSONRPC_BATCH_MAX_REQUEST
+            if max_requests and len(payload) > max_requests:
+                mess = f"Operations in a single http request must be less than {max_requests}"
+                flask.abort(
+                    httpcode.REQUEST_ENTITY_TOO_LARGE,
+                    response=dict(reason=mess)
+                )
+            for d in payload:
+                self._validate_request(d)
+        else:
+            self._validate_request(payload)
 
         return payload
 
@@ -77,26 +94,49 @@ class JSONRPCView(View):
 
         :return:
         """
-        response = ObjectDict(jsonrpc=self.version, id=None)
+        tasks = []
+        responses = []
 
         try:
             payload = self._validate_payload()
-            response.id = payload.get('id')
-
-            action = self._get_action(payload['method'])
-            response.result = action(**(payload.get('params') or {}))
-
-            if 'id' not in payload:
-                return None, httpcode.NO_CONTENT
-
         except rpc.RPCError as ex:
-            response.error = ex.as_dict()
-        except Exception as ex:
-            cap.logger.exception(ex)
-            mess = str(ex) if cap.debug is True else None
-            response.error = rpc.RPCInternalError(message=mess).as_dict()
+            return ObjectDict(
+                jsonrpc=self.version,
+                id=getattr(ex, 'req_id', None),
+                error=ex.as_dict()
+            ), httpcode.BAD_REQUEST
 
-        return response
+        for d in (payload if type(payload) is list else [payload]):
+            resp = ObjectDict(jsonrpc=self.version, id=None)
+            try:
+                if 'id' not in d:
+                    tasks.append((self._get_action(d['method']), {**(d.get('params') or {})}))
+                else:
+                    resp.id = d.get('id')
+                    action = self._get_action(d['method'])
+                    resp.result = action(**(d.get('params') or {}))
+            except rpc.RPCError as ex:
+                resp.error = ex.as_dict()
+            except Exception as ex:
+                cap.logger.exception(ex)
+                mess = str(ex) if cap.debug is True else None
+                resp.error = rpc.RPCInternalError(message=mess).as_dict()
+
+            if 'id' in d:
+                responses.append(resp)
+
+        self._batch_executor(tasks=tasks, **self._batch_args).run()
+
+        if not responses:
+            res = Response.no_content()
+            return None, res.status_code, res.headers
+
+        if type(payload) is list:
+            if len(responses) > 1:
+                return responses, httpcode.MULTI_STATUS
+            return responses
+
+        return responses[0]
 
     def load_from_object(self, obj):
         """
@@ -116,11 +156,6 @@ class JSONRPCView(View):
         """
 
         def _method(func):
-            """
-
-            :param func:
-            :return:
-            """
             nonlocal name
             name = name or func.__name__
 

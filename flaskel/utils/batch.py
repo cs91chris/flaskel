@@ -110,14 +110,18 @@ class DaemonThread(threading.Thread):
 
 
 class ThreadBatchExecutor(BatchExecutor):
-    def __init__(self, thread_class=None, **kwargs):
+    def __init__(self, thread_class=None, single_thread=False, **kwargs):
         """
 
-        :param tasks:
         :param thread_class:
         """
         super().__init__(**kwargs)
+        self._single_thread = single_thread
         self._thread_class = thread_class or Thread
+
+        if self._single_thread:
+            self._tasks[0] = self._thread_class(super().run)
+            return
 
         for i, t in enumerate(self._tasks):
             if isinstance(t, dict):
@@ -128,9 +132,21 @@ class ThreadBatchExecutor(BatchExecutor):
             self._tasks[i] = thread
 
     def run(self):
+        daemon = False
+
         for t in self._tasks:
             t.start()
+
         for t in self._tasks:
-            t.join()
+            if t.daemon is False:
+                t.join()
+            else:
+                daemon = True
+
+        if daemon is True:
+            return
+
+        if self._single_thread:
+            return self._tasks[0].response
 
         return [t.response for t in self._tasks]
