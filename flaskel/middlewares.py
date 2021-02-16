@@ -207,7 +207,7 @@ class RequestID:
 
         if request_id_prefix is not None and \
                 request_id.startswith(request_id_prefix):
-            return True
+            return True  # pragma: no cover
 
         try:
             uuid.check_uuid(request_id, exc=True)

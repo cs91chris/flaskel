@@ -27,7 +27,7 @@ class Request(flask.Request):
         if payload is None:
             if not allow_empty:
                 flask.abort(httpcode.BAD_REQUEST, 'No JSON in request')
-            payload = ObjectDict()
+            payload = ObjectDict()  # pragma: no cover
 
         return ObjectDict.normalize(payload)
 
@@ -45,7 +45,7 @@ class Response(flask.Response):
         response.headers.update(headers or {})
         response.headers.pop('Content-Type', None)
         response.headers.pop('Content-Length', None)
-        response.status = status
+        response.status_code = status
         return response
 
     @staticmethod

@@ -30,7 +30,7 @@ class ProxyView(BaseView):
         self._options = kwargs
 
         if callable(options):
-            self._options = {**kwargs, **options()}
+            self._options = {**kwargs, **options()}  # pragma: no cover
 
     # noinspection PyMethodMayBeStatic
     def _filter_kwargs(self, data):

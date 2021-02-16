@@ -61,6 +61,7 @@ def app_prod():
             PREFERRED_URL_SCHEME='https',
             SCHEMAS=SCHEMAS,
             USE_X_SENDFILE=True,
+            JSONRPC_BATCH_MAX_REQUEST=2,
             PROXIES=dict(
                 CONF=dict(
                     host=HOSTS.apitester,
@@ -116,6 +117,8 @@ def app_dev():
     return tester.TestClient.get_app(
         conf=dict(
             DEBUG=True,
+            WSGI_WERKZEUG_LINT_ENABLED=True,
+            WSGI_WERKZEUG_PROFILER_ENABLED=True,
             FLASK_ENV='development',
             SCHEMAS=SCHEMAS
         ),
