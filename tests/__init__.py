@@ -2,18 +2,16 @@ import os
 
 import pytest
 
-from flaskel import datastruct, middlewares, tester
-from flaskel.ext import (
-    auth, BASE_EXTENSIONS, caching, crypto, healthcheck,
-    ip_ban, jobs, limiter, sqlalchemy, useragent
-)
+from flaskel import middlewares, ObjectDict, tester
+from flaskel.ext import (auth, BASE_EXTENSIONS, caching, crypto, healthcheck, ip_ban, jobs, limiter, sendmail,
+                         sqlalchemy, useragent)
 from tests.blueprints import BLUEPRINTS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 SKEL_DIR = os.path.join(BASE_DIR, 'skeleton')
 CONF_DIR = os.path.join(SKEL_DIR, 'config')
 
-CTS = datastruct.ObjectDict(
+CTS = ObjectDict(
     json='application/json',
     xml='application/xml',
     html='text/html',
@@ -22,7 +20,7 @@ CTS = datastruct.ObjectDict(
     json_health='application/health+json',
 )
 
-HOSTS = datastruct.ObjectDict(
+HOSTS = ObjectDict(
     apitester="http://httpbin.org",
     fake="http://localhost"
 )
@@ -34,7 +32,34 @@ SCHEMAS = dict(
     APIPROBLEM=f"file://{SCHEMA_DIR}/apiproblem.json",
     HEALTHCHECK=f"file://{SCHEMA_DIR}/healthcheck.json",
     OPENAPI3=f"file://{SCHEMA_DIR}/openapi3.json",
+    ITEM={
+        "$schema":    "http://json-schema.org/draft-07/schema#",
+        "type":       "object",
+        "required":   ["item"],
+        "properties": {"item": {"type": "string"}}
+    }
 )
+
+APISPEC = {
+    "info":    {"version": None},
+    "servers": [
+        {
+            "variables": {
+                "version": {"default": None},
+                "host":    {"default": None}
+            }
+        }
+    ]
+}
+
+PROXIES = {
+    "CONF": dict(
+        host=HOSTS.apitester,
+        url='/anything',
+        headers={'k': 'v'},
+        params={'k': 'v'}
+    )
+}
 
 
 @pytest.fixture(scope='session')
@@ -62,14 +87,9 @@ def app_prod():
             SCHEMAS=SCHEMAS,
             USE_X_SENDFILE=True,
             JSONRPC_BATCH_MAX_REQUEST=2,
-            PROXIES=dict(
-                CONF=dict(
-                    host=HOSTS.apitester,
-                    url='/anything',
-                    headers={'k': 'v'},
-                    params={'k': 'v'}
-                )
-            )
+            APIDOCS_ENABLED=True,
+            APISPEC=APISPEC,
+            PROXIES=PROXIES
         ),
         blueprints=(
             *BLUEPRINTS,
@@ -85,18 +105,13 @@ def app_prod():
                 "jwt":           (auth.jwtm,),
                 "limiter":       (limiter,),
                 "caching":       (caching,),
+                "sendmail":      (sendmail.client_mail,),
                 "sqlalchemy":    (sqlalchemy.db,),
                 "scheduler":     (jobs.scheduler,),
-                "ipban":         (ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
                 "health_checks": (
                     healthcheck.health_checks, {'extensions': (
-                        {
-                            'name': 'health_true',
-                            'func': test_health_true,
-                        },
-                        {
-                            'func': test_health_false,
-                        },
+                        {'func': test_health_true, 'name': 'health_true'},
+                        {'func': test_health_false},
                     )},
                 ),
             }
@@ -123,7 +138,10 @@ def app_dev():
             SCHEMAS=SCHEMAS
         ),
         blueprints=BLUEPRINTS,
-        extensions=BASE_EXTENSIONS,
+        extensions={
+            **BASE_EXTENSIONS,
+            "ipban": (ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
+        },
         template_folder="skeleton/blueprints/web/templates",
         static_folder="skeleton/blueprints/web/static"
     )

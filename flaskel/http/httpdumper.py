@@ -2,15 +2,6 @@ from flask import current_app as cap, json
 
 
 class HTTPDumper:
-    @staticmethod
-    def padding(text):
-        """
-
-        :param text:
-        :return:
-        """
-        return f"\n{text}"
-
     @classmethod
     def dump_headers(cls, hdr, only=()):
         """
@@ -102,7 +93,7 @@ class HTTPDumper:
         try:
             status = resp.status_code
         except AttributeError:
-            status = resp.status if hasattr(resp, 'status') else None
+            status = getattr(resp, 'status', None)
 
         return f"response time: {seconds} - status code: {status}{headers}{body}"
 

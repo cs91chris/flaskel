@@ -1,6 +1,6 @@
 import flask
 
-from flaskel import httpcode
+from flaskel import httpcode, PayloadValidator
 from flaskel.views import Resource
 
 resources = [
@@ -15,7 +15,7 @@ sub_resources = [
 
 
 class APIResource(Resource):
-    def on_get(self, res_id):
+    def on_get(self, res_id, **kwargs):
         try:
             return resources[res_id - 1]
         except IndexError:
@@ -25,14 +25,14 @@ class APIResource(Resource):
         return resources
 
     def on_post(self):
-        resources.append(flask.request.get_json())
-        return flask.request.get_json(), httpcode.CREATED
+        payload = PayloadValidator.validate('ITEM')
+        return payload, httpcode.CREATED
 
-    def on_delete(self, res_id):
+    def on_delete(self, res_id, **kwargs):
         resources.pop(res_id)
 
-    def on_put(self, res_id):
-        resources[res_id - 1] = flask.request.get_json()
+    def on_put(self, res_id, **kwargs):
+        resources[res_id - 1] = flask.request.json
         return resources[res_id - 1]
 
     def sub_items(self, res_id):
@@ -42,5 +42,5 @@ class APIResource(Resource):
             return []
 
     def sub_items_post(self, res_id):
-        sub_resources[res_id - 1] = flask.request.get_json()
+        sub_resources[res_id - 1] = flask.request.json
         return sub_resources[res_id - 1], httpcode.CREATED

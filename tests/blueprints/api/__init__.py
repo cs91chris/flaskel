@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 from flaskel.ext import cors, errors
-from flaskel.views import JSONRPCView, TransparentProxyView, ConfProxyView
+from flaskel.views import JSONRPCView, TransparentProxyView, ConfProxyView, apidoc
 from tests.blueprints.api.resource import APIResource
 from tests.blueprints.api.rpc import MyJsonRPC
 
@@ -11,6 +11,8 @@ cors.init_app(api)
 errors.api_register(api)
 
 APIResource.register(api, 'resource_api', '/resources')
+apidoc.ApiDocTemplate.register(api, 'apidocs', '/apidocs')
+apidoc.ApiSpecTemplate.register(api, 'apispec', '/apidoc.json')
 
 jsonRPCView = JSONRPCView()
 jsonRPCView.load_from_object(MyJsonRPC())

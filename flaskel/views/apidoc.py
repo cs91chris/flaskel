@@ -5,11 +5,11 @@ from .base import BaseView
 
 
 class ApiDocTemplate(BaseView):
-    apispec_view = 'apispec'
+    apispec_view = 'api.apispec'
 
     def dispatch_request(self):
         if not cap.config.APIDOCS_ENABLED:
-            flask.abort(httpcode.NOT_FOUND)
+            flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
 
         rapidoc_version = cap.config.RAPIDOC_VERSION or '8.4.3'
         rapidoc_theme = cap.config.RAPIDOC_THEME or 'dark'
@@ -46,18 +46,18 @@ class ApiSpecTemplate(BaseView):
 
     def dispatch_request(self):
         if not cap.config.APIDOCS_ENABLED:
-            flask.abort(httpcode.NOT_FOUND)
+            flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
 
         data = cap.config.APISPEC
         scheme = cap.config.PREFERRED_URL_SCHEME or 'http'
-        current_server = f"{scheme}://{cap.config.SERVER_NAME}/{self.url_version}"
+        current_server = f"{scheme}://{cap.config.SERVER_NAME}/{self.url_version.strip('/')}"
 
         try:
             data['info']['version'] = self.api_version
             variables = data['servers'][0]['variables']
             variables['version']['default'] = self.url_version
             variables['host']['default'] = current_server
-        except (AttributeError, IndexError, KeyError, TypeError) as exc:
+        except (AttributeError, IndexError, KeyError, TypeError) as exc:  # pragma: no cover
             cap.logger.debug(str(exc))
 
         return data

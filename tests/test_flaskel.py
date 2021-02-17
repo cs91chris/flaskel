@@ -6,9 +6,10 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import datetime, http, httpcode, SCHEMAS, JSONSchema, uuid, yaml
+from flaskel import datetime, http, httpcode, JSONSchema, SCHEMAS, uuid, yaml
 from flaskel.http import batch, rpc, useragent
 from flaskel.tester import Asserter
+from flaskel.utils import misc
 from flaskel.utils.faker import DummyLogger
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, CTS, HOSTS, testapp
@@ -52,7 +53,7 @@ def test_api_resources(testapp):
     res = testapp.get(url_for('api.resource_api', res_id=1, sub_resource='not-found'))
     Asserter.assert_status_code(res, httpcode.TOO_MANY_REQUESTS)
 
-    time.sleep(int(res.headers.get('Retry-After')))  # check rate limit
+    time.sleep(int(res.headers.get('Retry-After') or 0))  # check rate limit
     res = testapp.delete(url_for('api.resource_api', res_id=1))
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 
@@ -65,6 +66,10 @@ def test_api_resources(testapp):
 
     res = testapp.post(url_for('api.resource_api', res_id=1, sub_resource='items'), json=data)
     Asserter.assert_status_code(res, httpcode.CREATED)
+
+    res = testapp.post(url_for('api.resource_api'), json={})
+    Asserter.assert_allin(res.json.response.reason, ('cause', 'message', 'path'))
+    Asserter.assert_status_code(res, httpcode.UNPROCESSABLE_ENTITY)
 
 
 def test_api_cors(testapp):
@@ -97,6 +102,7 @@ def test_reverse_proxy(testapp):
         'X-Forwarded-Prefix': '/test'
     })
     Asserter.assert_status_code(res)
+    Asserter.assert_true(bool(res.json.request_id))
     Asserter.assert_equals(res.json.script_name, '/test')
     Asserter.assert_equals(res.json.original.SCRIPT_NAME, '')
 
@@ -449,12 +455,37 @@ def test_proxyview(testapp):
     Asserter.assert_equals(res.json.args.k, 'v')
 
 
-def test_ipban(testapp):
+def test_ipban(app_dev):
     res = None
-    conf = testapp.application.config
-    ipban = testapp.application.extensions['ipban']
+    conf = app_dev.config
+    ipban = app_dev.extensions['ipban']
     ipban.remove_whitelist('127.0.0.1')
     for i in range(0, conf.IPBAN_COUNT + 2):
+        testapp = app_dev.test_client()
         res = testapp.get(f"{conf.SERVER_NAME}/phpmyadmin")
 
     Asserter.assert_status_code(res, httpcode.FORBIDDEN)
+
+
+def test_misc():
+    Asserter.assert_true(misc.to_float("1.1"))
+    Asserter.assert_none(misc.to_float("1,1"))
+    Asserter.assert_true(misc.to_int("1"))
+    Asserter.assert_none(misc.to_int("1,1"))
+    Asserter.assert_true(misc.parse_value('true'))
+    Asserter.assert_equals("test", misc.parse_value('test'))
+    Asserter.assert_equals(misc.to_int, misc.import_from_module("flaskel.utils.misc:to_int"))
+
+
+def test_apidoc(testapp):
+    res = testapp.get(url_for('api.apidocs'))
+    print(res.json)
+    Asserter.assert_status_code(res)
+    Asserter.assert_content_type(res, CTS.html)
+
+    res = testapp.get(url_for('api.apispec'))
+    Asserter.assert_status_code(res)
+    Asserter.assert_content_type(res, CTS.json)
+    Asserter.assert_equals(res.json.info.version, '1.0.0')
+    Asserter.assert_equals(res.json.servers[0].variables.version.default, '/v1')
+    Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000/v1')

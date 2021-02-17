@@ -23,6 +23,7 @@ def test_https():
 @test.route('/proxy')
 def test_proxy():
     return {
+        "request_id": flask.request.id,
         'script_name': flask.request.environ['SCRIPT_NAME'],
         'original':    flask.request.environ['werkzeug.proxy_fix.orig']
     }
@@ -35,7 +36,7 @@ def list_converter(data):
 
 @test.route('/invalid-json', methods=['POST'])
 def get_invalid_json():
-    flask.request.get_json()
+    payload = flask.request.json
     return '', httpcode.SUCCESS
 
 
@@ -47,12 +48,12 @@ def download():
 
 @test.route('/uuid')
 def return_uuid():
-    return flask.jsonify(dict(
+    return dict(
         uuid1=uuid.get_uuid(ver=1),
         uuid3=uuid.get_uuid(ver=3),
         uuid4=uuid.get_uuid(),
         uuid5=uuid.get_uuid(ver=5),
-    ))
+    )
 
 
 @test.route('/crypt/<passwd>')
