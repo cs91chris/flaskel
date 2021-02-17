@@ -69,6 +69,8 @@ class HTTPDumper:
                 body = json.dumps(body)
             else:
                 body = getattr(req, 'body', getattr(req, 'data', None))
+                if isinstance(body, (bytes, bytearray)):
+                    body = 'Binary body not dumped'
             body = f"\nbody:\n{body}" if body else ''
 
         headers = cls.dump_headers(req.headers, only=only_hdr)

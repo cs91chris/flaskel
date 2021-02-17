@@ -33,6 +33,8 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         """
         if dump_body is None:
             dump_body = self._dump_body
+        else:
+            dump_body = self._normalize_dump_flag(dump_body)
 
         if timeout is None:
             timeout = self._timeout
@@ -40,7 +42,7 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
             timeout = aiohttp.ClientTimeout(sock_read=timeout, sock_connect=timeout)
 
         try:
-            self._logger.info(self.dump_request(ObjectDict(**kwargs), dump_body))
+            self._logger.info(self.dump_request(ObjectDict(**kwargs), dump_body[0]))
             async with aiohttp.ClientSession(timeout=timeout) as session, \
                     session.request(**kwargs) as resp:
                 try:
@@ -55,7 +57,7 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
                     )
                     log_resp = response
                     log_resp.text = response.body
-                    log_resp = self.dump_response(log_resp, dump_body)
+                    log_resp = self.dump_response(log_resp, dump_body[1])
                     resp.raise_for_status()
                     self._logger.info(log_resp)
                 except aiohttp.ClientResponseError as exc:

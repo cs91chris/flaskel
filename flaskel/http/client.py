@@ -57,10 +57,18 @@ class HTTPBase(HTTPDumper):
         :param raise_on_exc:
         :param logger:
         """
-        self._dump_body = dump_body
+        self._dump_body = self._normalize_dump_flag(dump_body)
         self._timeout = timeout
         self._raise_on_exc = raise_on_exc
         self._logger = logger or FakeLogger()
+
+    @staticmethod
+    def _normalize_dump_flag(dump_body):
+        if type(dump_body) is bool:
+            return dump_body, dump_body
+        if not dump_body:
+            return False, False
+        return dump_body
 
     def request(self, uri, dump_body=None, **kwargs):
         """
@@ -127,14 +135,16 @@ class HTTPClient(HTTPBase):
         kwargs['auth'] = self.get_auth()
         if dump_body is None:
             dump_body = self._dump_body
-        if kwargs.get('stream') is True:
-            dump_body = False
+        else:
+            dump_body = self._normalize_dump_flag(dump_body)
+        if kwargs.get('stream') is True:  # if stream not dump response body
+            dump_body = (dump_body[0], False)
 
         try:
             kwargs.setdefault('timeout', self._timeout)
             url = self.normalize_url(uri)
             req = ObjectDict(method=method, url=url, **kwargs)
-            self._logger.info(self.dump_request(req, dump_body))
+            self._logger.info(self.dump_request(req, dump_body[0]))
             response = send_request(method, self.normalize_url(uri), **kwargs)
         except NetworkError as exc:
             self._logger.exception(exc)
@@ -145,15 +155,15 @@ class HTTPClient(HTTPBase):
                 status=httpcode.SERVICE_UNAVAILABLE, exception=exc
             )
 
+        log_resp = self.dump_response(response, dump_body[1])
         try:
             response.raise_for_status()
+            self._logger.info(log_resp)
         except HTTPStatusError as exc:
-            self._logger.warning(self.dump_response(response, dump_body))
+            self._logger.warning(log_resp)
             response = exc.response
             if raise_on_exc or self._raise_on_exc:
                 raise
-        else:
-            self._logger.info(self.dump_response(response, dump_body))
 
         if kwargs.get('stream') is True:
             body = response.iter_content(chunk_size, decode_unicode)

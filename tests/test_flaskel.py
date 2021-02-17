@@ -213,7 +213,7 @@ def test_utils_http_client_filename():
 
 def test_http_client_batch(testapp):
     with testapp.application.test_request_context():
-        responses = batch.FlaskelHTTPBatch(logger=DummyLogger(), dump_body=True).request([
+        responses = batch.FlaskelHTTPBatch(logger=DummyLogger(), dump_body=(True, False)).request([
             dict(url=f"{HOSTS.apitester}/anything", method="GET", headers={"HDR1": "HDR1"}),
             dict(url=f"{HOSTS.apitester}/status/{httpcode.NOT_FOUND}", method="GET"),
             dict(url=HOSTS.fake, method='GET', timeout=0.1),
