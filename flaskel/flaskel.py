@@ -1,7 +1,8 @@
 import flask
+from flask import current_app as cap
 from flask_response_builder import encoders
 
-from . import cap, httpcode
+from .http import httpcode
 from .utils.datastruct import ObjectDict
 
 

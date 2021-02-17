@@ -3,7 +3,7 @@ from functools import partial
 from flask import request
 from flask_caching import Cache as FlaskCache
 
-from flaskel import httpcode
+from flaskel.http import httpcode
 
 caching = FlaskCache()
 

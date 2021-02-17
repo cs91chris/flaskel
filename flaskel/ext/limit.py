@@ -2,10 +2,11 @@ import re
 from datetime import datetime
 
 import flask
+from flask import current_app as cap
 from flask_limiter import Limiter
 
-from flaskel import cap, httpcode
 from flaskel.ext import cfremote
+from flaskel.http import httpcode
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.datetime import Day
 

@@ -3,16 +3,12 @@ from functools import partial
 
 import flask
 import jsonschema
+from flask import current_app as cap
 
-from flaskel import cap
+from flaskel.http import httpcode
+from flaskel.utils.datastruct import ConfigProxy
 
-
-class Schemas:
-    def __getattr__(self, item):
-        return cap.config.SCHEMAS.get(item)
-
-
-SCHEMAS = Schemas()
+SCHEMAS = ConfigProxy('SCHEMAS')
 
 
 class JSONSchema:
@@ -39,7 +35,10 @@ class JSONSchema:
         :param file:
         :return:
         """
-        with open(file[7:]) as f:
+        if file.startswith('file://'):
+            file = file[7:]
+
+        with open(file) as f:
             return cls.loader(f.read())
 
     @classmethod
@@ -127,3 +126,28 @@ class JSONSchema:
             report="\n".join(report),
             message=e.message or str(e)
         )
+
+
+class PayloadValidator:
+    schemas = SCHEMAS
+    validator = JSONSchema
+
+    @classmethod
+    def validate(cls, schema):
+        """
+
+        :param schema:
+        :return:
+        """
+        payload = flask.request.json
+        try:
+            schema = cls.schemas.get(schema) if type(schema) is str else schema
+            cls.validator.validate(payload, schema, raise_exc=True)
+            return payload
+        except jsonschema.SchemaError as exc:
+            cap.logger.exception(exc)
+            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+        except jsonschema.ValidationError as exc:
+            cap.logger.error(cls.validator.error_report(exc, payload))
+            reason = dict(cause=exc.cause, message=exc.message, path=exc.path)
+            flask.abort(httpcode.UNPROCESSABLE_ENTITY, response=dict(reason=reason))

@@ -1,5 +1,43 @@
 import enum
 
+from flask import current_app as cap
+
+
+class ConfigProxy:
+    def __init__(self, key=None):
+        self.key = key
+
+    def __getattr__(self, item):
+        obj = self._proxy() or {}
+        if not isinstance(item, str):
+            return obj.get(item)
+        for i in item.split('.'):
+            obj = obj.get(item)
+        return obj
+
+    def __call__(self, item=None, *args, **kwargs):
+        if item is None:
+            return self._proxy()
+        return self.__getattr__(item)
+
+    def __getitem__(self, item):
+        if item is None:
+            return self._proxy()
+        return self.__getattr__(item)
+
+    def _proxy(self):
+        res = cap.config
+
+        if self.key is None:
+            return cap.config
+        for c in self.key.split('.'):
+            res = res.get(c)
+
+        return res
+
+    def get(self, item=None):
+        return self.__call__(item)
+
 
 class HashableDict(dict):
     def __hash__(self):
