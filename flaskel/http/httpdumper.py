@@ -1,4 +1,4 @@
-from flask import current_app as cap
+from flask import current_app as cap, json
 
 
 class HTTPDumper:
@@ -64,17 +64,16 @@ class HTTPDumper:
         """
         body = ''
         if dump_body is True:
-            try:
-                body = req.body or ''
-                if type(body) is not str:
-                    body = body.decode()
-            except AttributeError as exc:
-                body = f"ERROR: {exc}"
+            body = getattr(req, 'json', None)
+            if body:
+                body = json.dumps(body)
+            else:
+                body = getattr(req, 'body', getattr(req, 'data', None))
             body = f"\nbody:\n{body}" if body else ''
 
         headers = cls.dump_headers(req.headers, only=only_hdr)
         headers = f"\nheaders:\n\t{headers}" if headers else ''
-        return f"{req.method} {req.url}{headers}{body}"
+        return f"requested {req.method} {req.url}{headers}{body}"
 
     @classmethod
     def dump_response(cls, resp, dump_body=None, only_hdr=()):

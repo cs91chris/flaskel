@@ -255,7 +255,7 @@ class JsonRPCClient(HTTPClient):
         return resp.body or ObjectDict()
 
 
-class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):
+class FlaskelHttp(FlaskelHTTPDumper, HTTPClient):
     def __init__(self, endpoint, **kwargs):
         kwargs.setdefault('logger', cap.logger)
         super().__init__(endpoint, **kwargs)
@@ -270,7 +270,7 @@ class FlaskelHttp(HTTPClient, FlaskelHTTPDumper):
         return super().request(uri, **kwargs)
 
 
-class FlaskelJsonRPC(JsonRPCClient, FlaskelHTTPDumper):
+class FlaskelJsonRPC(FlaskelHTTPDumper, JsonRPCClient):
     def __init__(self, endpoint, uri, **kwargs):
         kwargs.setdefault('logger', cap.logger)
         super().__init__(endpoint, uri, **kwargs)

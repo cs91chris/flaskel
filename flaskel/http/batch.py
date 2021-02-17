@@ -88,7 +88,7 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         return self.run()
 
 
-class FlaskelHTTPBatch(HTTPBatch, FlaskelHTTPDumper):
+class FlaskelHTTPBatch(FlaskelHTTPDumper, HTTPBatch):
     def __init__(self, **kwargs):
         kwargs.setdefault('logger', cap.logger)
         kwargs.setdefault('conn_timeout', cap.config.HTTP_TIMEOUT or 10)
