@@ -45,7 +45,7 @@ APISPEC = {
     "servers": [
         {
             "variables": {
-                "version": {"default": None},
+                "context": {"default": None},
                 "host":    {"default": None}
             }
         }

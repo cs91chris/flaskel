@@ -153,7 +153,7 @@ class JSONValidatorMixin(BaseAssert, JSONSchema):
             cls.validate(data, schema, raise_exc=True)
             valid, message = True, None
         except jsonschema.ValidationError as exc:
-            valid, message = True, cls.error_report(exc, data)
+            valid, message = False, cls.error_report(exc, data)
 
         cls.assert_that(
             lambda a, e: a is True,

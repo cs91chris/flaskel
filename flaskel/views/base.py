@@ -47,7 +47,7 @@ class Resource(MethodView):
         _class = view or cls
         name = name or _class.__name__
         view_func = _class.as_view(name, **kwargs)
-        url = f"/{(url or name).rstrip('/')}"
+        url = f"/{(url or name).lstrip('/')}"
 
         app.add_url_rule(
             url, view_func=view_func,

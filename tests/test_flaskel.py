@@ -479,7 +479,6 @@ def test_misc():
 
 def test_apidoc(testapp):
     res = testapp.get(url_for('api.apidocs'))
-    print(res.json)
     Asserter.assert_status_code(res)
     Asserter.assert_content_type(res, CTS.html)
 
@@ -487,5 +486,5 @@ def test_apidoc(testapp):
     Asserter.assert_status_code(res)
     Asserter.assert_content_type(res, CTS.json)
     Asserter.assert_equals(res.json.info.version, '1.0.0')
-    Asserter.assert_equals(res.json.servers[0].variables.version.default, '/v1')
-    Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000/v1')
+    Asserter.assert_equals(res.json.servers[0].variables.context.default, '/')
+    Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000/')
