@@ -41,23 +41,24 @@ class ApiDocTemplate(BaseView):
 
 
 class ApiSpecTemplate(BaseView):
-    api_version = '1.0.0'
-    url_version = '/v1'
+    def __init__(self, version='1.0.0', context_path=''):
+        self._api_version = version
+        self._context_path = f"{flask.request.environ['SCRIPT_NAME']}/{context_path}"
 
     def dispatch_request(self):
         if not cap.config.APIDOCS_ENABLED:
             flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
 
-        data = cap.config.APISPEC
-        scheme = cap.config.PREFERRED_URL_SCHEME or 'http'
-        current_server = f"{scheme}://{cap.config.SERVER_NAME}/{self.url_version.strip('/')}"
+        return self.set_variables(cap.config.APISPEC)
 
+    def set_variables(self, data):
         try:
-            data['info']['version'] = self.api_version
-            variables = data['servers'][0]['variables']
-            variables['version']['default'] = self.url_version
+            data.info.version = self._api_version
+            variables = data.servers[0].variables
+            variables['context']['default'] = self._context_path
+            scheme = cap.config.PREFERRED_URL_SCHEME or 'http'
+            current_server = f"{scheme}://{cap.config.SERVER_NAME}/{self._context_path.strip('/')}"
             variables['host']['default'] = current_server
         except (AttributeError, IndexError, KeyError, TypeError) as exc:  # pragma: no cover
             cap.logger.debug(str(exc))
-
         return data
