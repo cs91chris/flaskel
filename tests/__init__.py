@@ -3,7 +3,7 @@ import os
 import pytest
 
 from flaskel import middlewares, ObjectDict, tester
-from flaskel.ext import (auth, BASE_EXTENSIONS, caching, crypto, healthcheck, ip_ban, jobs, limiter, sendmail,
+from flaskel.ext import (auth, BASE_EXTENSIONS, caching, crypto, healthcheck, ip_ban, jobs, limiter, redis, sendmail,
                          sqlalchemy, useragent)
 from tests.blueprints import BLUEPRINTS
 
@@ -108,6 +108,7 @@ def app_prod():
                 "sendmail":      (sendmail.client_mail,),
                 "sqlalchemy":    (sqlalchemy.db,),
                 "scheduler":     (jobs.scheduler,),
+                "redis":         (redis.client_redis,),
                 "health_checks": (
                     healthcheck.health_checks, {'extensions': (
                         {'func': test_health_true, 'name': 'health_true'},
