@@ -21,27 +21,30 @@ class ApiDocTemplate(BaseView):
             _scheme=cap.config.PREFERRED_URL_SCHEME
         )
 
-        return f"""
-            <!doctype html>
-            <html>
-            <head>
-            <meta charset="utf-8"/>
-            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-            <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
-            <title>{page_title}</title>
-            <script type="module"
-                src="https://unpkg.com/rapidoc@{rapidoc_version}/dist/rapidoc-min.js">
-            </script>
-            </head>
-            <body>
-                <rapi-doc theme="{rapidoc_theme}" spec-url="{spec_url}"></rapi-doc>
-            </body>
-            </html>
-        """
+        return f"""<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
+        <title>{page_title}</title>
+        <script type="module"
+            src="https://unpkg.com/rapidoc@{rapidoc_version}/dist/rapidoc-min.js">
+        </script>
+    </head>
+    <body>
+        <rapi-doc theme="{rapidoc_theme}" spec-url="{spec_url}"></rapi-doc>
+    </body>
+</html>"""
 
 
 class ApiSpecTemplate(BaseView):
     def __init__(self, version='1.0.0', context_path=''):
+        """
+
+        :param version:
+        :param context_path:
+        """
         self._api_version = version
         self._context_path = f"{flask.request.environ['SCRIPT_NAME']}/{context_path}"
 
@@ -51,14 +54,18 @@ class ApiSpecTemplate(BaseView):
 
         return self.set_variables(cap.config.APISPEC)
 
-    def set_variables(self, data):
+    def set_variables(self, apispec):
+        """
+
+        :param apispec:
+        :return:
+        """
         try:
-            data.info.version = self._api_version
-            variables = data.servers[0].variables
+            apispec.info.version = self._api_version
+            variables = apispec.servers[0].variables
             variables['context']['default'] = self._context_path
             scheme = cap.config.PREFERRED_URL_SCHEME or 'http'
-            current_server = f"{scheme}://{cap.config.SERVER_NAME}/{self._context_path.strip('/')}"
-            variables['host']['default'] = current_server
+            variables['host']['default'] = f"{scheme}://{cap.config.SERVER_NAME}"
         except (AttributeError, IndexError, KeyError, TypeError) as exc:  # pragma: no cover
             cap.logger.debug(str(exc))
-        return data
+        return apispec
