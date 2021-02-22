@@ -76,7 +76,7 @@ class AsyncBatchExecutor(BatchExecutor):
 
 
 class Thread(threading.Thread):
-    def __init__(self, runnable, params=None, *args, **kwargs):
+    def __init__(self, runnable, params=None, daemon=False, *args, **kwargs):
         """
 
         :param fun:
@@ -87,6 +87,7 @@ class Thread(threading.Thread):
         self._args = args
         self._params = params or {}
         self.response = None
+        self.daemon = daemon
 
     def run(self):
         self.response = self._runnable(*self._args, **self._params)
@@ -103,10 +104,10 @@ class DaemonThread(threading.Thread):
         self.daemon = True
         self._runnable = runnable
         self._args = args
-        self._kwargs = params or {}
+        self._params = params or {}
 
     def run(self):
-        self._runnable(*self._args, **self._kwargs)
+        self._runnable(*self._args, **self._params)
 
 
 class ThreadBatchExecutor(BatchExecutor):
@@ -132,8 +133,6 @@ class ThreadBatchExecutor(BatchExecutor):
             self._tasks[i] = thread
 
     def run(self):
-        daemon = False
-
         for t in self._tasks:
             t.start()
 
@@ -141,10 +140,7 @@ class ThreadBatchExecutor(BatchExecutor):
             if t.daemon is False:
                 t.join()
             else:
-                daemon = True
-
-        if daemon is True:
-            return
+                return
 
         if self._single_thread:
             return self._tasks[0].response
