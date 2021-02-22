@@ -5,7 +5,7 @@ import flask
 import jsonschema
 from flask import current_app as cap
 
-from flaskel.http import httpcode
+from flaskel.http.client import HTTPClient, httpcode
 from flaskel.utils.datastruct import ConfigProxy
 
 SCHEMAS = ConfigProxy('SCHEMAS')
@@ -24,7 +24,6 @@ class JSONSchema:
         :param url:
         :return:
         """
-        from flaskel.http import HTTPClient
         res = HTTPClient(url, raise_on_exc=True).get(url)
         return res.body
 

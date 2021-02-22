@@ -130,6 +130,7 @@ try:
             "python-decouple==3.4.*",
             "PyYAML==5.4.*",
             "requests==2.25.*",
+            "simplejson-3.*",
             "sqlalchemy-schemadisplay==1.3.*",
             "user-agents==2.2.*",
             "webargs==7.0.*",

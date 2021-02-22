@@ -487,4 +487,4 @@ def test_apidoc(testapp):
     Asserter.assert_content_type(res, CTS.json)
     Asserter.assert_equals(res.json.info.version, '1.0.0')
     Asserter.assert_equals(res.json.servers[0].variables.context.default, '/')
-    Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000/')
+    Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000')
