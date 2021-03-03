@@ -1,6 +1,6 @@
 import uuid
 
-from flaskel import cap
+from flaskel.flaskel import cap
 
 
 def get_uuid(ver=4, hexify=True, ns=None, name=None):

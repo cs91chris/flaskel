@@ -1,8 +1,8 @@
 import flask
 from flask.views import MethodView, View
 
-from flaskel import httpcode, Response
-from flaskel.ext import builder
+from flaskel.flaskel import httpcode, Response
+from flaskel.ext.default import builder
 
 
 class BaseView(View):

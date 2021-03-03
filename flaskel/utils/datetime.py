@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flaskel import cap
+from flaskel.flaskel import cap
 
 
 class Millis:

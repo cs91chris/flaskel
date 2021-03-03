@@ -3,9 +3,9 @@ from datetime import timedelta
 import flask_jwt_extended as jwt
 from flask_httpauth import HTTPBasicAuth
 
-from flaskel import cap, httpcode
+from flaskel.flaskel import cap, httpcode
 from flaskel.utils.datastruct import ObjectDict
-from .sqlalchemy import db
+from .sqlalchemy.ext import db
 
 jwtm = jwt.JWTManager()
 basic_auth = HTTPBasicAuth()

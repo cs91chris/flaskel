@@ -6,11 +6,12 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import datetime, http, httpcode, JSONSchema, SCHEMAS, uuid, yaml
+from flaskel.flaskel import httpcode
 from flaskel.http import batch, rpc, useragent
-from flaskel.tester import Asserter
-from flaskel.utils import misc
-from flaskel.utils.faker import DummyLogger
+from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC, http_exc, HTTPClient
+from flaskel.tester.mixins import Asserter
+from flaskel.utils import datetime, misc, schemas, uuid, yaml
+from flaskel.utils.faker.logger import DummyLogger
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, CTS, HOSTS, testapp
 
@@ -48,7 +49,7 @@ def test_api_resources(testapp):
     res = testapp.get(url_for('api.resource_api', res_id=1, sub_resource='not-found'))
     Asserter.assert_status_code(res, httpcode.NOT_FOUND)
     Asserter.assert_content_type(res, CTS.json_problem)
-    Asserter.assert_schema(res.json, SCHEMAS.API_PROBLEM)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.API_PROBLEM)
 
     res = testapp.get(url_for('api.resource_api', res_id=1, sub_resource='not-found'))
     Asserter.assert_status_code(res, httpcode.TOO_MANY_REQUESTS)
@@ -87,7 +88,7 @@ def test_dispatch_error_api(testapp):
     res = testapp.get(f"http://api.{testapp.application.config.SERVER_NAME}/not_found")
     Asserter.assert_status_code(res, httpcode.NOT_FOUND)
     Asserter.assert_content_type(res, CTS.json_problem)
-    Asserter.assert_schema(res.json, SCHEMAS.API_PROBLEM)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.API_PROBLEM)
 
 
 def test_force_https(testapp):
@@ -171,7 +172,7 @@ def test_crypto(testapp):
 
 def test_utils_http_client_simple(testapp):
     with testapp.application.test_request_context():
-        api = http.FlaskelHttp(HOSTS.apitester, token='pippo', dump_body=True)
+        api = FlaskelHttp(HOSTS.apitester, token='pippo', dump_body=True)
         res = api.delete('/status/202')
         Asserter.assert_equals(res.status, httpcode.ACCEPTED)
         res = api.patch('/status/400')
@@ -180,14 +181,14 @@ def test_utils_http_client_simple(testapp):
 
 def test_utils_http_client_exception(testapp):
     logger = testapp.application.logger
-    api = http.HTTPClient(HOSTS.apitester, token='pippo', raise_on_exc=True, logger=logger)
-    fake_api = http.HTTPClient(HOSTS.fake, username='test', password='test', logger=logger)
+    api = HTTPClient(HOSTS.apitester, token='pippo', raise_on_exc=True, logger=logger)
+    fake_api = HTTPClient(HOSTS.fake, username='test', password='test', logger=logger)
 
     res = fake_api.put('/', timeout=0.1)
     Asserter.assert_equals(res.status, httpcode.SERVICE_UNAVAILABLE)
     try:
         api.request('/status/500', 'PUT')
-    except http.client.http_exc.HTTPError as exc:
+    except http_exc.HTTPError as exc:
         Asserter.assert_equals(exc.response.status_code, httpcode.INTERNAL_SERVER_ERROR)
     try:
         fake_api.request('/', timeout=0.1)
@@ -200,7 +201,7 @@ def test_utils_http_client_filename():
     hdr = 'Content-Disposition'
     param = {hdr: None}
 
-    api = http.HTTPClient(HOSTS.apitester, dump_body=True)
+    api = HTTPClient(HOSTS.apitester, dump_body=True)
     res = api.get('/not-found')
     Asserter.assert_status_code(res, httpcode.NOT_FOUND)
 
@@ -232,7 +233,7 @@ def test_http_client_batch(testapp):
 def test_utils_http_jsonrpc_client(testapp):
     params = dict(a=1, b=2)
     with testapp.application.test_request_context():
-        api = http.FlaskelJsonRPC(HOSTS.apitester, "/anything")
+        api = FlaskelJsonRPC(HOSTS.apitester, "/anything")
         res = api.request('method.test', params=params)
         Asserter.assert_equals(res.json.jsonrpc, '2.0')
         Asserter.assert_equals(res.json.id, api.request_id)
@@ -243,7 +244,7 @@ def test_healthcheck(testapp):
     res = testapp.get(testapp.application.config.HEALTHCHECK_PATH)
     Asserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
     Asserter.assert_content_type(res, CTS.json_health)
-    Asserter.assert_schema(res.json, SCHEMAS.HEALTHCHECK)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.HEALTHCHECK)
     Asserter.assert_allin(res.json.checks.keys(), ('mongo', 'redis', 'sqlalchemy', 'system'))
 
 
@@ -253,7 +254,7 @@ def test_api_jsonrpc_success(testapp):
 
     res = testapp.jsonrpc(url, method="MyJsonRPC.testAction1", call_id=call_id)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, JSONSchema.load_from_file(SCHEMAS.JSONRPC)['RESPONSE'])
+    Asserter.assert_schema(res.json, schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE'])
     Asserter.assert_equals(res.json.id, call_id)
     Asserter.assert_true(res.json.result.action1)
 
@@ -270,28 +271,28 @@ def test_api_jsonrpc_error(testapp):
     res = testapp.jsonrpc(url, method="NotFoundMethod", call_id=call_id, **headers)
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.error.code, rpc.RPCMethodNotFound().code)
-    Asserter.assert_schema(res.json, JSONSchema.load_from_file(SCHEMAS.JSONRPC)['RESPONSE'])
+    Asserter.assert_schema(res.json, schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE'])
     Asserter.assert_equals(res.json.id, call_id)
     Asserter.assert_true(res.json.error.message)
 
     res = testapp.jsonrpc(url, json={}, **headers)
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
     Asserter.assert_equals(res.json.error.code, rpc.RPCParseError().code)
 
     res = testapp.jsonrpc(url, json={"params": None}, **headers)
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = testapp.jsonrpc(url, json={"jsonrpc": 1, 'method': "MyJsonRPC.testAction1"}, **headers)
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = testapp.jsonrpc(url, method="MyJsonRPC.testInternalError", call_id=call_id, **headers)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInternalError().code)
 
 
@@ -303,12 +304,12 @@ def test_api_jsonrpc_params(testapp):
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"param": "testparam"}, **headers)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, JSONSchema.load_from_file(SCHEMAS.JSONRPC)['RESPONSE'])
+    Asserter.assert_schema(res.json, schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE'])
     Asserter.assert_not_in('error', res.json)
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"params": None}, **headers)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidParams().code)
 
 
@@ -455,6 +456,19 @@ def test_proxyview(testapp):
     Asserter.assert_equals(res.json.args.k, 'v')
 
 
+def test_apidoc(testapp):
+    res = testapp.get(url_for('api.apidocs'))
+    Asserter.assert_status_code(res)
+    Asserter.assert_content_type(res, CTS.html)
+
+    res = testapp.get(url_for('api.apispec'))
+    Asserter.assert_status_code(res)
+    Asserter.assert_content_type(res, CTS.json)
+    Asserter.assert_equals(res.json.info.version, '1.0.0')
+    Asserter.assert_equals(res.json.servers[0].variables.context.default, '/')
+    Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000')
+
+
 def test_ipban(app_dev):
     res = None
     conf = app_dev.config
@@ -475,16 +489,3 @@ def test_misc():
     Asserter.assert_true(misc.parse_value('true'))
     Asserter.assert_equals("test", misc.parse_value('test'))
     Asserter.assert_equals(misc.to_int, misc.import_from_module("flaskel.utils.misc:to_int"))
-
-
-def test_apidoc(testapp):
-    res = testapp.get(url_for('api.apidocs'))
-    Asserter.assert_status_code(res)
-    Asserter.assert_content_type(res, CTS.html)
-
-    res = testapp.get(url_for('api.apispec'))
-    Asserter.assert_status_code(res)
-    Asserter.assert_content_type(res, CTS.json)
-    Asserter.assert_equals(res.json.info.version, '1.0.0')
-    Asserter.assert_equals(res.json.servers[0].variables.context.default, '/')
-    Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000')

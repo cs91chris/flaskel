@@ -1,7 +1,7 @@
 import flask
 from webargs import fields
 
-from flaskel import httpcode
+from flaskel.flaskel import httpcode
 from flaskel.ext.auth import jwt, TokenHandler
 from flaskel.utils.webargs import query
 from . import auth

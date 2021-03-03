@@ -3,10 +3,11 @@ import os
 import click
 import decouple
 
-from . import AppBuilder
+from .builder import AppBuilder
 from .utils import misc, yaml
 from .utils.datastruct import ObjectDict
-from .wsgi import BaseApplication, WSGIFactory
+from .wsgi.base import BaseApplication
+from .wsgi.factory import WSGIFactory
 
 
 # noinspection PyUnusedLocal

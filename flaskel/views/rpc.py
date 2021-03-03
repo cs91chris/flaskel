@@ -5,8 +5,8 @@ import flask
 from flask.views import View
 
 import flaskel.http.rpc as rpc
-from flaskel import cap, Response, httpcode
-from flaskel.ext import builder
+from flaskel.ext.default import builder
+from flaskel.flaskel import cap, httpcode, Response
 from flaskel.utils.batch import DaemonThread, ThreadBatchExecutor
 from flaskel.utils.datastruct import ObjectDict
 

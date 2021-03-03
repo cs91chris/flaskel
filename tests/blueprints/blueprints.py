@@ -1,7 +1,7 @@
 from flask import Blueprint
 
-from flaskel.ext.default import errors
-from flaskel.views.template import RenderTemplate
+from flaskel.ext import errors
+from flaskel.views import RenderTemplate
 
 web = Blueprint(
     'web', __name__,

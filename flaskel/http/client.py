@@ -1,13 +1,12 @@
 import flask
 from requests import auth, exceptions as http_exc, request as send_request
 
-from flaskel import cap
+from flaskel.flaskel import cap
 from flaskel.utils.datastruct import ObjectDict
-from flaskel.utils.faker import FakeLogger
+from flaskel.utils.faker.logger import FakeLogger
 from flaskel.utils.uuid import get_uuid
 from . import httpcode
 from .httpdumper import FlaskelHTTPDumper, HTTPDumper
-
 
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)

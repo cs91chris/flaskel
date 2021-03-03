@@ -1,6 +1,6 @@
 import flask
 
-from flaskel.http import UserAgent as UserAgentParser
+from flaskel.http.useragent import UserAgent as UserAgentParser
 
 
 class UserAgent:

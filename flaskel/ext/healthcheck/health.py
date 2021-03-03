@@ -2,8 +2,8 @@ import functools
 
 import flask
 
-from flaskel import cap, httpcode
-from flaskel.ext import builder
+from flaskel.flaskel import cap, httpcode
+from flaskel.ext.default import builder
 from flaskel.utils.batch import ThreadBatchExecutor
 
 
@@ -112,3 +112,6 @@ class HealthCheck:
             return wrapped()
 
         return _register
+
+
+health_checks = HealthCheck()

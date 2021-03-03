@@ -5,7 +5,7 @@ import flask
 from flask import current_app as cap
 from flask_limiter import Limiter
 
-from flaskel.ext import cfremote
+from flaskel.ext.default import cfremote
 from flaskel.http import httpcode
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.datetime import Day
@@ -328,3 +328,6 @@ class FlaskIPBan:
 
         del self._ip_whitelist[el]
         return True
+
+
+ip_ban = FlaskIPBan()

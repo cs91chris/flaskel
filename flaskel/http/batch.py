@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 import flask
 
-from flaskel import cap
+from flaskel.flaskel import cap
 from flaskel.utils.batch import AsyncBatchExecutor
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.uuid import get_uuid

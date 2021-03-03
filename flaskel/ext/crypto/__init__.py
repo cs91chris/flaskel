@@ -1,3 +1,1 @@
-from .argon import Argon2
-
-argon2 = Argon2()
+pass  # windows issue with cython

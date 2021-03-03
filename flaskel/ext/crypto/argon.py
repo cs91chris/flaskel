@@ -60,3 +60,6 @@ class Argon2:
             if exc is True:
                 raise  # pragma: no cover
             return False
+
+
+argon2 = Argon2()

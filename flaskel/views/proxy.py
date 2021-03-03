@@ -1,7 +1,7 @@
 import flask
 
-from flaskel import cap
-from flaskel.http import FlaskelHttp
+from flaskel.flaskel import cap
+from flaskel.http.client import FlaskelHttp
 from flaskel.utils.datastruct import ObjectDict
 from .base import BaseView
 

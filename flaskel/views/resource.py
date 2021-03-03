@@ -1,7 +1,7 @@
 import flask
 from sqlalchemy.exc import IntegrityError
 
-from flaskel import cap, httpcode
+from flaskel.flaskel import cap, httpcode
 from flaskel.utils import webargs
 from .base import Resource
 

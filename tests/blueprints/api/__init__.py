@@ -1,7 +1,9 @@
 from flask import Blueprint
 
-from flaskel.ext import cors, errors
-from flaskel.views import JSONRPCView, TransparentProxyView, ConfProxyView, apidoc
+from flaskel.ext.default import cors, errors
+from flaskel.views import apidoc
+from flaskel.views.proxy import ConfProxyView, TransparentProxyView
+from flaskel.views.rpc import JSONRPCView
 from tests.blueprints.api.resource import APIResource
 from tests.blueprints.api.rpc import MyJsonRPC
 

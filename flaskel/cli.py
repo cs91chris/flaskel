@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from .ext.sqlalchemy import db_to_schema, model_to_uml
+from .ext.sqlalchemy.schema import db_to_schema, model_to_uml
 from .tester import cli as cli_tester
 
 INIT_CONTENT = """

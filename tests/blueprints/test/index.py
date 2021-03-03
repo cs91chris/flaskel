@@ -1,6 +1,6 @@
 import flask
 
-from flaskel import cap, httpcode
+from flaskel.flaskel import cap, httpcode
 from flaskel.utils import uuid
 from . import test
 

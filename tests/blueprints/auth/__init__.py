@@ -2,7 +2,7 @@
 #
 from flask import Blueprint
 
-from flaskel.ext import cors, errors
+from flaskel.ext.default import cors, errors
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
