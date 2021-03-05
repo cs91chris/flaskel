@@ -3,8 +3,7 @@ import functools
 import flask
 from webargs import fields, flaskparser
 
-from flaskel import config
-from flaskel.flaskel import httpcode
+from flaskel import config, httpcode
 
 parser = flaskparser.FlaskParser()
 query = functools.partial(parser.use_args, location="query")

@@ -2,23 +2,15 @@ import os
 
 import pytest
 
-from flaskel import middlewares
-from flaskel.ext import auth, limit, sendmail
-from flaskel.ext.caching import caching
-from flaskel.ext.crypto.argon import argon2
-from flaskel.ext.default import builder, cfremote, cors, errors, logger, template
-from flaskel.ext.healthcheck.checks import health_mongo, health_redis, health_sqlalchemy, health_system
-from flaskel.ext.healthcheck.health import health_checks
-from flaskel.ext.jobs import scheduler
-from flaskel.ext.redis import client_redis
-from flaskel.ext.sqlalchemy import ext as sqlalchemy
-from flaskel.ext.useragent import useragent
-from flaskel.tester.client import TestClient
-from flaskel.utils.datastruct import ObjectDict
-from .blueprints.api import api as api_bp
-from .blueprints.auth import auth as auth_bp
-from .blueprints.test import test as test_bp
-from .blueprints.web import web as web_bp
+from flaskel import middlewares, ObjectDict, TestClient
+from flaskel.ext import (
+    auth, builder, caching, cfremote, client_redis, cors, errors,
+    limit, logger, scheduler, sendmail, template, useragent
+)
+from flaskel.ext.crypto import argon2
+from flaskel.ext.healthcheck import health_checks, health_mongo, health_redis, health_sqlalchemy, health_system
+from flaskel.ext.sqlalchemy import db as sqlalchemy
+from .blueprints import BLUEPRINTS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 SKEL_DIR = os.path.join(BASE_DIR, 'skeleton')
@@ -53,17 +45,6 @@ SCHEMAS = dict(
     }
 )
 
-BLUEPRINTS = (
-    (api_bp,),
-    (test_bp,),
-    (web_bp, {
-        'url_prefix': '/'
-    }),
-    (auth_bp, {
-        'url_prefix': '/auth'
-    }),
-)
-
 BASE_EXTENSIONS = {
     # "name":   (<extension>, parameters: dict)
     "cfremote":      (cfremote,),  # MUST be the first
@@ -71,7 +52,7 @@ BASE_EXTENSIONS = {
     "template":      (template,),
     "builder":       (builder,),
     "cors":          (cors,),
-    "database":      (sqlalchemy.db,),
+    "database":      (sqlalchemy,),
     "limiter":       (limit.limiter,),
     "ip_ban":        (limit.ip_ban,),
     "cache":         (caching,),
@@ -123,9 +104,9 @@ def app_prod():
         return False, "error"
 
     health_checks.register('system')(health_system)
-    health_checks.register('mongo', db=sqlalchemy.db)(health_mongo)
-    health_checks.register('redis', db=sqlalchemy.db)(health_redis)
-    health_checks.register('sqlalchemy', db=sqlalchemy.db)(health_sqlalchemy)
+    health_checks.register('mongo', db=sqlalchemy)(health_mongo)
+    health_checks.register('redis', db=sqlalchemy)(health_redis)
+    health_checks.register('sqlalchemy', db=sqlalchemy)(health_sqlalchemy)
 
     return TestClient.get_app(
         conf=dict(
@@ -185,7 +166,7 @@ def app_dev():
             **BASE_EXTENSIONS,
             "ipban": (limit.ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
         },
-        template_folder="skeleton/blueprints/web/templates",
+        folders=["skeleton/blueprints/web/templates"],
         static_folder="skeleton/blueprints/web/static"
     )
 

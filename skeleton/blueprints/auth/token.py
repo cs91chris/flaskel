@@ -1,23 +1,20 @@
 import flask
 from jwt import InvalidTokenError
-from webargs import fields
 
-from flaskel.flaskel import cap, httpcode
-from flaskel.ext.default import builder
-from flaskel.ext.auth import jwt, TokenHandler
-from flaskel.utils.webargs import query
-from .auth import bp_auth
+from flaskel import cap, httpcode, webargs
+from flaskel.ext import auth, builder
+from . import bp_auth
 
 
 @bp_auth.route('/token/access', methods=['POST'])
-@query({
-    'expire_access':  fields.Integer(missing=None, validate=lambda x: x > 0),
-    'expire_refresh': fields.Integer(missing=None, validate=lambda x: x > 0),
+@webargs.query({
+    'expire_access':  webargs.Fields.positive(missing=None),
+    'expire_refresh': webargs.Fields.positive(missing=None),
 })
 def access_token(args):
     data = flask.request.json
     if data.email == 'email' and data.password == 'password':
-        return TokenHandler.create(
+        return auth.TokenHandler.create(
             data.email,
             expires_access=args['expire_access'],
             expires_refresh=args['expire_refresh']
@@ -27,15 +24,15 @@ def access_token(args):
 
 
 @bp_auth.route('/token/refresh', methods=['POST'])
-@jwt.jwt_refresh_token_required
+@auth.jwt.jwt_refresh_token_required
 def refresh_token():
-    return TokenHandler.refresh()
+    return auth.TokenHandler.refresh()
 
 
 @bp_auth.route('/token/check', methods=['GET'])
-@jwt.jwt_required
+@auth.jwt.jwt_required
 def check_token():
-    return TokenHandler.dump()
+    return auth.TokenHandler.dump()
 
 
 @bp_auth.route('/token/revoke', methods=['POST'])
@@ -43,9 +40,9 @@ def check_token():
 def revoke_tokens():
     try:
         if flask.request.json.access_token:
-            TokenHandler.revoke(flask.request.json.access_token)
+            auth.TokenHandler.revoke(flask.request.json.access_token)
         if flask.request.json.refresh_token:
-            TokenHandler.revoke(flask.request.json.refresh_token)
+            auth.TokenHandler.revoke(flask.request.json.refresh_token)
     except InvalidTokenError as exc:
         cap.logger.exception(exc)
         flask.abort(httpcode.UNPROCESSABLE_ENTITY, response="invalid token")

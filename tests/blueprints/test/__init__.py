@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-test = Blueprint('test', __name__)
+bp_test = Blueprint('test', __name__)
 
 from . import index

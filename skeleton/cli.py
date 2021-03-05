@@ -1,11 +1,11 @@
 from blueprints import BLUEPRINTS
 from ext import EXTENSIONS
-from flaskel import AppBuilder, BASE_EXTENSIONS, middlewares as middle, Server
+from flaskel import AppBuilder, middlewares as middle, Server
 
 factory = AppBuilder(
     static_folder=None,  # because static is inside web blueprint
     blueprints=BLUEPRINTS,
-    extensions={**BASE_EXTENSIONS, **EXTENSIONS},
+    extensions=EXTENSIONS,
     middlewares=(
         middle.RequestID,
         middle.HTTPMethodOverride,

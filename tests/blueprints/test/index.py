@@ -1,16 +1,15 @@
 import flask
 
-from flaskel.flaskel import cap, httpcode
-from flaskel.utils import uuid
-from . import test
+from flaskel import cap, httpcode, uuid
+from . import bp_test
 
 
-@test.route('/method_override', methods=['POST', 'PUT'])
+@bp_test.route('/method_override', methods=['POST', 'PUT'])
 def method_override_post():
     return '', httpcode.SUCCESS if flask.request.method == 'PUT' else httpcode.METHOD_NOT_ALLOWED
 
 
-@test.route('/test_https')
+@bp_test.route('/test_https')
 def test_https():
     remote = cap.extensions['cloudflareRemote']
     return {
@@ -20,33 +19,33 @@ def test_https():
     }
 
 
-@test.route('/proxy')
+@bp_test.route('/proxy')
 def test_proxy():
     return {
-        "request_id": flask.request.id,
+        "request_id":  flask.request.id,
         'script_name': flask.request.environ['SCRIPT_NAME'],
         'original':    flask.request.environ['werkzeug.proxy_fix.orig']
     }
 
 
-@test.route("/list/<list('-'):data>")
+@bp_test.route("/list/<list('-'):data>")
 def list_converter(data):
     return flask.jsonify(data)
 
 
-@test.route('/invalid-json', methods=['POST'])
+@bp_test.route('/invalid-json', methods=['POST'])
 def get_invalid_json():
     payload = flask.request.json
     return '', httpcode.SUCCESS
 
 
-@test.route('/download')
+@bp_test.route('/download')
 def download():
     response = cap.response_class
     return response.send_file('./', flask.request.args.get('filename'))
 
 
-@test.route('/uuid')
+@bp_test.route('/uuid')
 def return_uuid():
     return dict(
         uuid1=uuid.get_uuid(ver=1),
@@ -56,12 +55,12 @@ def return_uuid():
     )
 
 
-@test.route('/crypt/<passwd>')
+@bp_test.route('/crypt/<passwd>')
 def crypt(passwd):
     crypto = cap.extensions['argon2']
     return crypto.generate_hash(passwd)
 
 
-@test.route('/useragent')
+@bp_test.route('/useragent')
 def useragent():
     return flask.g.user_agent.to_dict()

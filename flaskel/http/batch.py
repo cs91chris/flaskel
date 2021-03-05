@@ -1,6 +1,10 @@
 import asyncio
 
-import aiohttp
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None
+
 import flask
 
 from flaskel.flaskel import cap
@@ -19,6 +23,8 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         :param read_timeout:
         :param kwargs:
         """
+        assert aiohttp is not None, "You myst install 'aiohttp"
+
         HTTPBase.__init__(self, **kwargs)
         AsyncBatchExecutor.__init__(self, return_exceptions=not self._raise_on_exc)
         self._timeout = aiohttp.ClientTimeout(sock_read=read_timeout, sock_connect=conn_timeout)

@@ -1,21 +1,21 @@
 import flask
 from webargs import fields
 
-from flaskel.flaskel import httpcode
-from flaskel.ext.auth import jwt, TokenHandler
-from flaskel.utils.webargs import query
-from . import auth
+from flaskel import httpcode
+from flaskel.ext import auth
+from flaskel import webargs
+from . import bp_auth
 
 
-@auth.route('/token/access', methods=['POST'])
-@query({
+@bp_auth.route('/token/access', methods=['POST'])
+@webargs.query({
     'expire_access':  fields.Integer(missing=None, validate=lambda x: x > 0),
     'expire_refresh': fields.Integer(missing=None, validate=lambda x: x > 0),
 })
 def access_token(args):
     data = flask.request.json
     if data.email == 'email' and data.password == 'password':
-        return TokenHandler.create(
+        return auth.TokenHandler.create(
             data.email,
             expires_access=args['expire_access'],
             expires_refresh=args['expire_refresh']
@@ -24,13 +24,13 @@ def access_token(args):
     flask.abort(httpcode.UNAUTHORIZED)
 
 
-@auth.route('/token/refresh', methods=['POST'])
-@jwt.jwt_refresh_token_required
+@bp_auth.route('/token/refresh', methods=['POST'])
+@auth.jwt.jwt_refresh_token_required
 def refresh_token():
-    return TokenHandler.refresh()
+    return auth.TokenHandler.refresh()
 
 
-@auth.route('/token/check', methods=['GET'])
-@jwt.jwt_required
+@bp_auth.route('/token/check', methods=['GET'])
+@auth.jwt.jwt_required
 def check_token():
-    return TokenHandler.dump()
+    return auth.TokenHandler.dump()

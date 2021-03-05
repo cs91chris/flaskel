@@ -1,7 +1,8 @@
 from flask_sqlalchemy import event
 from sqlalchemy.ext.declarative import declared_attr
+
+from flaskel.ext.sqlalchemy import db
 from flaskel.utils.datastruct import ObjectDict
-from .ext import db
 
 
 class StandardMixin:

@@ -6,12 +6,11 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel.flaskel import httpcode
-from flaskel.http import batch, rpc, useragent
-from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC, http_exc, HTTPClient
-from flaskel.tester.mixins import Asserter
-from flaskel.utils import datetime, misc, schemas, uuid, yaml
-from flaskel.utils.faker.logger import DummyLogger
+from flaskel import httpcode, misc, uuid, yaml
+from flaskel.http import batch, FlaskelHttp, FlaskelJsonRPC, HTTPClient, HTTPStatusError, rpc, useragent
+from flaskel.tester import Asserter
+from flaskel.utils import datetime, schemas
+from flaskel.utils.faker import DummyLogger
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, CTS, HOSTS, testapp
 
@@ -188,7 +187,7 @@ def test_utils_http_client_exception(testapp):
     Asserter.assert_equals(res.status, httpcode.SERVICE_UNAVAILABLE)
     try:
         api.request('/status/500', 'PUT')
-    except http_exc.HTTPError as exc:
+    except HTTPStatusError as exc:
         Asserter.assert_equals(exc.response.status_code, httpcode.INTERNAL_SERVER_ERROR)
     try:
         fake_api.request('/', timeout=0.1)

@@ -5,7 +5,6 @@ import pytest
 from blueprints import BLUEPRINTS
 from ext import EXTENSIONS
 from flaskel import TestClient
-from flaskel.ext import BASE_EXTENSIONS
 from flaskel.utils import yaml
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -22,6 +21,6 @@ def testapp():
     return TestClient.get_app(
         conf=yaml.load_yaml_file(CONF_FILE),
         blueprints=BLUEPRINTS,
-        extensions={**BASE_EXTENSIONS, **EXTENSIONS},
+        extensions=EXTENSIONS,
         **(EXTRAS or {})
     ).test_client()

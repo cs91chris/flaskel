@@ -1,1 +1,1 @@
-pass  # windows issue with cython
+from .argon import argon2

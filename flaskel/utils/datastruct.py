@@ -93,7 +93,7 @@ class ObjectDict(dict):
                     for r in data
                 ]
             return ObjectDict(**data)
-        except (TypeError, AttributeError):
+        except (TypeError, ValueError, AttributeError):
             return data
 
 

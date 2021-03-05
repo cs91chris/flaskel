@@ -1,24 +1,24 @@
 from flask import Blueprint
 
-from flaskel.ext.default import cors, errors
+from flaskel.ext import cors, errors
 from flaskel.views import apidoc
 from flaskel.views.proxy import ConfProxyView, TransparentProxyView
 from flaskel.views.rpc import JSONRPCView
 from tests.blueprints.api.resource import APIResource
 from tests.blueprints.api.rpc import MyJsonRPC
 
-api = Blueprint('api', __name__, subdomain='api')
+bp_api = Blueprint('api', __name__, subdomain='api')
 
-cors.init_app(api)
-errors.api_register(api)
+cors.init_app(bp_api)
+errors.api_register(bp_api)
 
-APIResource.register(api, 'resource_api', '/resources')
-apidoc.ApiDocTemplate.register(api, 'apidocs', '/apidocs')
-apidoc.ApiSpecTemplate.register(api, 'apispec', '/apidoc.json')
+APIResource.register(bp_api, 'resource_api', '/resources')
+apidoc.ApiDocTemplate.register(bp_api, 'apidocs', '/apidocs')
+apidoc.ApiSpecTemplate.register(bp_api, 'apispec', '/apidoc.json')
 
 jsonRPCView = JSONRPCView()
 jsonRPCView.load_from_object(MyJsonRPC())
-jsonRPCView.register(api, 'myJsonRPC', "/rpc")
+jsonRPCView.register(bp_api, 'myJsonRPC', "/rpc")
 
 
 class CustomProxy(TransparentProxyView):
@@ -26,8 +26,8 @@ class CustomProxy(TransparentProxyView):
 
 
 CustomProxy.register(
-    api, 'proxyview', '/proxy',
+    bp_api, 'proxyview', '/proxy',
     host='https://httpbin.org', method='POST', url='/anything'
 )
 
-ConfProxyView.register(api, 'confproxy', '/confproxy', config_key='PROXIES.CONF')
+ConfProxyView.register(bp_api, 'confproxy', '/confproxy', config_key='PROXIES.CONF')

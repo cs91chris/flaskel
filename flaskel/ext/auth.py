@@ -5,7 +5,7 @@ from flask_httpauth import HTTPBasicAuth
 
 from flaskel.flaskel import cap, httpcode
 from flaskel.utils.datastruct import ObjectDict
-from .sqlalchemy.ext import db
+from .sqlalchemy import db
 
 jwtm = jwt.JWTManager()
 basic_auth = HTTPBasicAuth()

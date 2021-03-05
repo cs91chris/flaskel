@@ -1,8 +1,8 @@
 import flask
 
-from flaskel.flaskel import httpcode
+from flaskel import httpcode
 from flaskel.utils.schemas import PayloadValidator
-from flaskel.views.resource import Resource
+from flaskel.views import Resource
 
 resources = [
     {'item': 1},

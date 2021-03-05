@@ -1,1 +1,1 @@
-pass  # windows issue with cython
+from .logger import DummyLogger, FakeLogger
