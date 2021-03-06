@@ -247,10 +247,10 @@ def test_healthcheck(testapp):
     Asserter.assert_allin(res.json.checks.keys(), ('mongo', 'redis', 'sqlalchemy', 'system'))
 
 
-def test_api_jsonrpc_success(testapp):
+def test_api_jsonrpc_success(app_dev):
     call_id = 1
-    url = url_for('api.myJsonRPC')
-
+    url = url_for('myJsonRPC')
+    testapp = app_dev.test_client()
     res = testapp.jsonrpc(url, method="MyJsonRPC.testAction1", call_id=call_id)
     Asserter.assert_status_code(res)
     Asserter.assert_schema(res.json, schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE'])
@@ -261,11 +261,11 @@ def test_api_jsonrpc_success(testapp):
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 
 
-def test_api_jsonrpc_error(testapp):
+def test_api_jsonrpc_error(app_dev):
     call_id = 1
-    url = url_for('api.myJsonRPC')
-    cap = testapp.application
-    headers = dict(headers={cap.config.LIMITER.BYPASS_KEY: cap.config.LIMITER.BYPASS_VALUE})
+    url = url_for('myJsonRPC')
+    testapp = app_dev.test_client()
+    headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method="NotFoundMethod", call_id=call_id, **headers)
     Asserter.assert_status_code(res)
@@ -295,11 +295,11 @@ def test_api_jsonrpc_error(testapp):
     Asserter.assert_equals(res.json.error.code, rpc.RPCInternalError().code)
 
 
-def test_api_jsonrpc_params(testapp):
-    url = url_for('api.myJsonRPC')
+def test_api_jsonrpc_params(app_dev):
+    url = url_for('myJsonRPC')
     method = "MyJsonRPC.testInvalidParams"
-    cap = testapp.application
-    headers = dict(headers={cap.config.LIMITER.BYPASS_KEY: cap.config.LIMITER.BYPASS_VALUE})
+    testapp = app_dev.test_client()
+    headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"param": "testparam"}, **headers)
     Asserter.assert_status_code(res)
@@ -312,30 +312,31 @@ def test_api_jsonrpc_params(testapp):
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidParams().code)
 
 
-def test_api_jsonrpc_batch(testapp):
-    url = url_for('api.myJsonRPC')
+def test_api_jsonrpc_batch(app_dev):
+    url = url_for('myJsonRPC')
+    testapp = app_dev.test_client()
+    headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
     res = testapp.jsonrpc_batch(url, requests=(
         dict(method="MyJsonRPC.testAction1", call_id=1, params={}),
         dict(method="MyJsonRPC.NotFoundMethod", call_id=2),
-    ))
+    ), **headers)
     Asserter.assert_true(res.json[0].result.action1)
     Asserter.assert_equals(res.json[1].error.code, rpc.RPCMethodNotFound().code)
     Asserter.assert_status_code(res, httpcode.MULTI_STATUS)
 
-    cap = testapp.application
-    headers = dict(headers={cap.config.LIMITER.BYPASS_KEY: cap.config.LIMITER.BYPASS_VALUE})
     res = testapp.jsonrpc_batch(url, requests=(
         dict(method="MyJsonRPC.testAction1", call_id=1, params={}),
         dict(method="MyJsonRPC.NotFoundMethod", call_id=2),
         dict(method="MyJsonRPC.NotFoundMethod", call_id=3),
     ), **headers)
+    print(res.data)
     Asserter.assert_status_code(res, httpcode.REQUEST_ENTITY_TOO_LARGE)
 
 
-def test_api_jsonrpc_notification(testapp):
-    url = url_for('api.myJsonRPC')
-    cap = testapp.application
-    headers = dict(headers={cap.config.LIMITER.BYPASS_KEY: cap.config.LIMITER.BYPASS_VALUE})
+def test_api_jsonrpc_notification(app_dev):
+    url = url_for('myJsonRPC')
+    testapp = app_dev.test_client()
+    headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
     res = testapp.jsonrpc_batch(url, requests=(
         dict(method="MyJsonRPC.testAction1", params={}),
         dict(method="MyJsonRPC.NotFoundMethod"),
@@ -345,7 +346,7 @@ def test_api_jsonrpc_notification(testapp):
     res = testapp.jsonrpc_batch(url, requests=(
         dict(method="MyJsonRPC.testAction1", call_id=1, params={}),
         dict(method="MyJsonRPC.NotFoundMethod"),
-    ))
+    ), **headers)
     Asserter.assert_status_code(res)
     Asserter.assert_equals(len(res.json), 1)
 

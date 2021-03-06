@@ -8,9 +8,9 @@ from flaskel.ext import (
     limit, logger, scheduler, sendmail, template, useragent
 )
 from flaskel.ext.crypto import argon2
-from flaskel.ext.healthcheck import health_checks, health_mongo, health_redis, health_sqlalchemy, health_system
+from flaskel.ext.healthcheck import checks, health_checks
 from flaskel.ext.sqlalchemy import db as sqlalchemy
-from .blueprints import BLUEPRINTS
+from .blueprints import BLUEPRINTS, VIEWS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 SKEL_DIR = os.path.join(BASE_DIR, 'skeleton')
@@ -103,10 +103,10 @@ def app_prod():
     def test_health_false(**kwargs):
         return False, "error"
 
-    health_checks.register('system')(health_system)
-    health_checks.register('mongo', db=sqlalchemy)(health_mongo)
-    health_checks.register('redis', db=sqlalchemy)(health_redis)
-    health_checks.register('sqlalchemy', db=sqlalchemy)(health_sqlalchemy)
+    health_checks.register('system')(checks.health_system)
+    health_checks.register('mongo', db=sqlalchemy)(checks.health_mongo)
+    health_checks.register('redis', db=sqlalchemy)(checks.health_redis)
+    health_checks.register('sqlalchemy', db=sqlalchemy)(checks.health_sqlalchemy)
 
     return TestClient.get_app(
         conf=dict(
@@ -117,20 +117,14 @@ def app_prod():
             PREFERRED_URL_SCHEME='https',
             SCHEMAS=SCHEMAS,
             USE_X_SENDFILE=True,
-            JSONRPC_BATCH_MAX_REQUEST=2,
             APIDOCS_ENABLED=True,
             APISPEC=APISPEC,
             PROXIES=PROXIES
         ),
-        blueprints=(
-            *BLUEPRINTS,
-            *(None,),  # NB: needed to complete coverage
-            *((None,),)  # NB: needed to complete coverage
-        ),
+        blueprints=BLUEPRINTS,
         extensions={
             **BASE_EXTENSIONS,
             **{
-                "empty":         (None, (None,)),  # NB: needed to complete coverage
                 "ipban":         None,
                 "health_checks": (
                     health_checks, {'extensions': (
@@ -159,15 +153,25 @@ def app_dev():
             WSGI_WERKZEUG_LINT_ENABLED=True,
             WSGI_WERKZEUG_PROFILER_ENABLED=True,
             FLASK_ENV='development',
-            SCHEMAS=SCHEMAS
+            JSONRPC_BATCH_MAX_REQUEST=2,
+            SCHEMAS=SCHEMAS,
+            PROXIES=PROXIES
         ),
-        blueprints=BLUEPRINTS,
+        blueprints=(
+            *BLUEPRINTS,
+            *(None,),  # NB: needed to complete coverage
+            *((None,),)  # NB: needed to complete coverage
+        ),
         extensions={
             **BASE_EXTENSIONS,
+            "empty": (None, (None,)),  # NB: needed to complete coverage
             "ipban": (limit.ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
         },
+        views=VIEWS,
         folders=["skeleton/blueprints/web/templates"],
-        static_folder="skeleton/blueprints/web/static"
+        static_folder="skeleton/blueprints/web/static",
+        after_request=(lambda x: x, lambda x: x),
+        before_request=(lambda: None, lambda: None)
     )
 
 
