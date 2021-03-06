@@ -35,26 +35,35 @@ class AppBuilder:
     """
     conf_module = config
 
-    def __init__(self, conf_module=None, extensions=None,
-                 converters=(), blueprints=(), folders=(), middlewares=(), **options):
+    def __init__(self, conf_module=None, extensions=None, converters=None,
+                 blueprints=None, folders=None, middlewares=None, views=None,
+                 after_request=None, before_request=None, callback=None, **options):
         """
 
         :param conf_module: python module file
         :param converters: custom url converter mapping
         :param extensions: custom extension appended to defaults
         :param blueprints: list of application's blueprints
-        :param middlewares: list of wsgi middleware
         :param folders: list of custom jinja2's template folders
+        :param middlewares: list of wsgi middleware
+        :param views: list of views to register
+        :param after_request: list of functions to register after request
+        :param before_request: list of functions to register before request
+        :param callback: a function called to patch app after all components registration
         :param options: passed to Flask class
         :return:
         """
         self._app = None
-        self._converters = converters
-        self._blueprints = blueprints
-        self._extensions = extensions
-        self._middlewares = middlewares
-        self._folders = folders
-        self._options = options
+        self._converters = converters or {}
+        self._blueprints = blueprints or ()
+        self._extensions = extensions or {}
+        self._middlewares = middlewares or ()
+        self._folders = folders or ()
+        self._options = options or ()
+        self._views = views or ()
+        self._after_request = after_request or ()
+        self._before_request = before_request or ()
+        self._callback = callback or (lambda: None)
         self._conf_module = conf_module or self.conf_module
 
     def _generate_secret_key(self, secret_file, key_length):
@@ -98,10 +107,9 @@ class AppBuilder:
 
     def _register_extensions(self):
         with self._app.app_context():
-            for name, e in (self._extensions or {}).items():
+            for name, e in self._extensions.items():
                 try:
-                    ext = e[0]
-                    opt = e[1] if len(e) > 1 else {}
+                    ext, opt = e[0], e[1] if len(e) > 1 else {}
                     if not ext:
                         raise TypeError("extension could not be None")
                 except (TypeError, IndexError) as exc:
@@ -116,10 +124,9 @@ class AppBuilder:
                 )
 
     def _register_blueprints(self):
-        for b in (self._blueprints or []):
+        for b in self._blueprints:
             try:
-                bp = b[0]
-                opt = b[1] if len(b) > 1 else {}
+                bp, opt = b[0], b[1] if len(b) > 1 else {}
                 if not bp:
                     raise TypeError('blueprint could not be None')
             except (TypeError, IndexError) as exc:
@@ -136,11 +143,11 @@ class AppBuilder:
         self._app.config = ObjectDict(**self._app.config)
 
     def _register_converters(self):
-        conv = {**self.url_converters, **(self._converters or {})}
+        conv = {**self.url_converters, **self._converters}
         self._app.url_map.converters.update(conv)
 
-        for k in conv.keys():
-            self._app.logger.debug(f"Registered converter: '{k}'")
+        for k, v in conv.items():
+            self._app.logger.debug(f"Registered converter: '{k}' = {v.__name__}")
 
     def _register_template_folders(self):
         loaders = [self._app.jinja_loader]
@@ -149,18 +156,47 @@ class AppBuilder:
             loaders.append(jinja2.FileSystemLoader(fsl))
 
         if self._folders:
-            folders = ", ".join(self._folders)
             self._app.jinja_loader = jinja2.ChoiceLoader(loaders)
-            self._app.logger.debug(f"Registered template folders: '{folders}'")
+            for f in self._folders:
+                self._app.logger.debug(f"Registered template folder: '{f}'")
 
     def _register_middlewares(self):
-        for middleware in (self._middlewares or []):
+        for middleware in self._middlewares:
             # WorkAround: in order to pass flask app to middleware without breaking chain
             if not (hasattr(middleware, 'flask_app') and middleware.flask_app):
                 setattr(middleware, 'flask_app', self._app)
 
             self._app.wsgi_app = middleware(self._app.wsgi_app)
-            self._app.logger.debug(f"Registered middleware: '{middleware}'")
+            self._app.logger.debug(
+                f"Registered middleware: '{middleware.__name__}'"
+            )
+
+    def _register_views(self):
+        def normalize(data):
+            d = data + (None,) * (3 - len(data))
+            if isinstance(d[1], dict):
+                return d[0], d[2], d[1]
+            return d[0], d[1], d[2] or {}
+
+        for view in self._views:
+            v, b, p = normalize(view)
+            v.register(b or self._app, **p)
+            bp_mess = f"on blueprint '{b.name}'" if b else ""
+            self._app.logger.debug(f"Registered view: '{v.__name__}' {bp_mess} with params: {p}")
+
+    def _register_after_request(self):
+        for f in self._after_request:
+            self._app.after_request_funcs.setdefault(None, []).append(f)
+            self._app.logger.debug(
+                f"Registered function after request: '{f.__name__}'"
+            )
+
+    def _register_before_request(self):
+        for f in self._before_request:
+            self._app.before_request_funcs.setdefault(None, []).append(f)
+            self._app.logger.debug(
+                f"Registered function before request: '{f.__name__}'"
+            )
 
     def _set_linter_and_profiler(self):
         if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
@@ -197,6 +233,8 @@ class AppBuilder:
             if sqlalchemy is not None:
                 sqlalchemy.db.create_all()
 
+        self._callback()
+
     def create(self, conf=None):
         self._app = flaskel.Flaskel(self.app_name, **self._options)
 
@@ -207,7 +245,10 @@ class AppBuilder:
         self._register_middlewares()
         self._register_template_folders()
         self._register_converters()
+        self._register_views()
         self._register_blueprints()
+        self._register_after_request()
+        self._register_before_request()
 
         self._patch_app()
 
