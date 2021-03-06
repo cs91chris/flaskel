@@ -16,6 +16,7 @@ class JSONRPCView(View):
     separator = '.'
     methods = ['POST']
     decorators = [builder.response('json')]
+    operations = {}
 
     def __init__(self, operations=None, batch_executor=None, **kwargs):
         """
@@ -60,10 +61,7 @@ class JSONRPCView(View):
             max_requests = cap.config.JSONRPC_BATCH_MAX_REQUEST
             if max_requests and len(payload) > max_requests:
                 mess = f"Operations in a single http request must be less than {max_requests}"
-                flask.abort(
-                    httpcode.REQUEST_ENTITY_TOO_LARGE,
-                    response=dict(reason=mess)
-                )
+                flask.abort(httpcode.REQUEST_ENTITY_TOO_LARGE, mess)
             for d in payload:
                 self._validate_request(d)
         else:
@@ -138,16 +136,18 @@ class JSONRPCView(View):
 
         return responses[0]
 
-    def load_from_object(self, obj):
+    @classmethod
+    def load_from_object(cls, obj):
         """
 
         :param obj:
         """
         for m in inspect.getmembers(obj, predicate=inspect.isroutine):
             if not m[0].startswith('_'):
-                self.method(obj.__class__.__name__, m[0])(m[1])
+                cls.method(obj.__class__.__name__, m[0])(m[1])
 
-    def method(self, name=None, operation=None):
+    @classmethod
+    def method(cls, name=None, operation=None):
         """
 
         :param name:
@@ -162,23 +162,24 @@ class JSONRPCView(View):
             @functools.wraps(func)
             def wrapped():
                 obj = {operation: func}
-                if name not in self.operations:
-                    self.operations[name] = obj
+                if name not in cls.operations:
+                    cls.operations[name] = obj
                 else:
-                    self.operations[name].update(obj)
+                    cls.operations[name].update(obj)
 
             return wrapped()
 
         return _method
 
-    def register(self, app, name=None, url=None, **kwargs):
+    @classmethod
+    def register(cls, app, name=None, url=None, **kwargs):
         """
 
         :param app: Flask or Blueprint instance
         :param name: view name
         :param url: url to bind
         """
-        name = name or self.__class__.__name__
+        name = name or cls.__name__
         url = url or f"/{name}"
-        view_func = self.__class__.as_view(name, self.operations, **kwargs)
-        app.add_url_rule(f"/{url.rstrip('/')}", view_func=view_func, methods=self.methods)
+        view_func = cls.as_view(name, cls.operations, **kwargs)
+        app.add_url_rule(f"/{url.rstrip('/')}", view_func=view_func, methods=cls.methods)
