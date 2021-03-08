@@ -34,6 +34,11 @@ class Unauthorized(HTTPExceptionMixin, exceptions.Unauthorized):
     description = "UNAUTHORIZED"
 
 
+class PaymentRequired(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.PAYMENT_REQUIRED
+    description = "PAYMENT_REQUIRED"
+
+
 class Forbidden(HTTPExceptionMixin, exceptions.Forbidden):
     code = httpcode.FORBIDDEN
     description = "FORBIDDEN"
@@ -52,6 +57,11 @@ class MethodNotAllowed(HTTPExceptionMixin, exceptions.MethodNotAllowed):
 class NotAcceptable(HTTPExceptionMixin, exceptions.NotAcceptable):
     code = httpcode.NOT_ACCEPTABLE
     description = "NOT_ACCEPTABLE"
+
+
+class ProxyAuthenticationRequired(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.PROXY_AUTHENTICATION_REQUIRED
+    description = "PROXY_AUTHENTICATION_REQUIRED"
 
 
 class RequestTimeout(HTTPExceptionMixin, exceptions.RequestTimeout):
@@ -104,6 +114,11 @@ class ExpectationFailed(HTTPExceptionMixin, exceptions.ExpectationFailed):
     description = "EXPECTATION_FAILED"
 
 
+class MisdirectedRequest(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.MISDIRECTED_REQUEST
+    description = "MISDIRECTED_REQUEST"
+
+
 class UnprocessableEntity(HTTPExceptionMixin, exceptions.UnprocessableEntity):
     code = httpcode.UNPROCESSABLE_ENTITY
     description = "UNPROCESSABLE_ENTITY"
@@ -117,6 +132,16 @@ class Locked(HTTPExceptionMixin, exceptions.Locked):
 class FailedDependency(HTTPExceptionMixin, exceptions.FailedDependency):
     code = httpcode.FAILED_DEPENDENCY
     description = "FAILED_DEPENDENCY"
+
+
+class TooEarly(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.TOO_EARLY
+    description = "TOO_EARLY"
+
+
+class UpgradeRequired(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.UPGRADE_REQUIRED
+    description = "UPGRADE_REQUIRED"
 
 
 class PreconditionRequired(HTTPExceptionMixin, exceptions.PreconditionRequired):
@@ -134,6 +159,11 @@ class RequestHeaderFieldsTooLarge(HTTPExceptionMixin, exceptions.RequestHeaderFi
     description = "REQUEST_HEADER_FIELDS_TOO_LARGE"
 
 
+class NoResponse(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.NO_RESPONSE
+    description = "NO_RESPONSE"
+
+
 class UnavailableForLegalReasons(HTTPExceptionMixin, exceptions.UnavailableForLegalReasons):
     code = httpcode.UNAVAILABLE_FOR_LEGAL_REASON
     description = "UNAVAILABLE_FOR_LEGAL_REASON"
@@ -144,6 +174,7 @@ class InternalServerError(HTTPExceptionMixin, exceptions.InternalServerError):
     description = "INTERNAL_SERVER_ERROR"
 
 
+# noinspection PyShadowingBuiltins
 class NotImplemented(HTTPExceptionMixin, exceptions.NotImplemented):
     code = httpcode.NOT_IMPLEMENTED
     description = "NOT_IMPLEMENTED"
@@ -167,6 +198,36 @@ class GatewayTimeout(HTTPExceptionMixin, exceptions.GatewayTimeout):
 class HTTPVersionNotSupported(HTTPExceptionMixin, exceptions.HTTPVersionNotSupported):
     code = httpcode.HTTP_VERSION_NOT_SUPPORTED
     description = "HTTP_VERSION_NOT_SUPPORTED"
+
+
+class InsufficientStorage(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.INSUFFICIENT_STORAGE
+    description = "INSUFFICIENT_STORAGE"
+
+
+class LoopDetected(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.LOOP_DETECTED
+    description = "LOOP_DETECTED"
+
+
+class BandwidthLimit(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.BANDWIDTH_LIMIT
+    description = "BANDWIDTH_LIMIT"
+
+
+class NotExtended(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.NOT_EXTENDED
+    description = "NOT_EXTENDED"
+
+
+class NetworkAuthenticationRequired(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.NETWORK_AUTHENTICATION_REQUIRED
+    description = "NETWORK_AUTHENTICATION_REQUIRED"
+
+
+class UnknownError(HTTPExceptionMixin, exceptions.HTTPException):
+    code = httpcode.UNKNOWN_ERROR
+    description = "UNKNOWN_ERROR"
 
 
 _errors = inspect.getmembers(
