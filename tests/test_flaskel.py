@@ -1,6 +1,5 @@
 import os
 import time
-from base64 import b64encode
 from functools import partial
 
 import flask
@@ -402,12 +401,10 @@ def test_correlation_id(testapp):
 def test_jwt(testapp):
     user = testapp.application.config.BASIC_AUTH_USERNAME
     passwd = testapp.application.config.BASIC_AUTH_PASSWORD
-    credential = b64encode(f"{user}:{passwd}".encode()).decode()
 
     res = testapp.post(
         url_for('auth.access_token'),
-        json=dict(email='email', password='password'),
-        headers={"Authorization": f"Basic {credential}"}
+        json=dict(email='email', password='password')
     )
     Asserter.assert_status_code(res)
     Asserter.assert_allin(res.json.keys(), (

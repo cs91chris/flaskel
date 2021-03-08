@@ -37,9 +37,9 @@ class RevokedTokenModel(db.Model):
         return bool(cls.query.filter_by(jti=jti).first())
 
 
-@jwtm.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):  # pragma: no cover
-    return RevokedTokenModel.is_jti_blacklisted(decrypted_token['jti'])
+@jwtm.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_headers, jwt_data):  # pragma: no cover
+    return RevokedTokenModel.is_jti_blacklisted(jwt_data['jti'])
 
 
 class TokenHandler:
@@ -55,7 +55,7 @@ class TokenHandler:
 
     @classmethod
     def get_raw(cls):
-        return ObjectDict(**jwt.get_raw_jwt())
+        return ObjectDict(**jwt.get_jwt())
 
     @classmethod
     def get_access(cls, identity=None, expires=None):
@@ -121,9 +121,9 @@ class TokenHandler:
             cls.revoked_token_model(jti=token.jti).add()
 
     @classmethod
-    def dump(cls):
+    def dump(cls, token_type=None, scope=None):
         return ObjectDict(
-            token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
-            scope=cap.config.JWT_DEFAULT_SCOPE,
+            token_type=token_type or cap.config.JWT_DEFAULT_TOKEN_TYPE,
+            scope=scope or cap.config.JWT_DEFAULT_SCOPE,
             **cls.get_raw()
         )
