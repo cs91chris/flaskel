@@ -49,6 +49,7 @@ def test_api_resources(testapp):
     Asserter.assert_status_code(res, httpcode.NOT_FOUND)
     Asserter.assert_content_type(res, CTS.json_problem)
     Asserter.assert_schema(res.json, schemas.SCHEMAS.API_PROBLEM)
+    Asserter.assert_equals(res.json.detail, 'not found')
 
     res = testapp.get(url_for('api.resource_api', res_id=1, sub_resource='not-found'))
     Asserter.assert_status_code(res, httpcode.TOO_MANY_REQUESTS)
@@ -329,7 +330,6 @@ def test_api_jsonrpc_batch(app_dev):
         dict(method="MyJsonRPC.NotFoundMethod", call_id=2),
         dict(method="MyJsonRPC.NotFoundMethod", call_id=3),
     ), **headers)
-    print(res.data)
     Asserter.assert_status_code(res, httpcode.REQUEST_ENTITY_TOO_LARGE)
 
 

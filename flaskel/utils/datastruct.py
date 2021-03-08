@@ -31,9 +31,9 @@ class ConfigProxy:
         if self.key is None:
             return cap.config
         for c in self.key.split('.'):
-            res = res.get(c)
+            res = res.get(c) or {}
 
-        return res
+        return res or None
 
     def get(self, item=None):
         return self.__call__(item)

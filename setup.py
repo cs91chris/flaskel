@@ -11,8 +11,11 @@ from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py as _build_py
 from setuptools.command.test import test
 
-pass  # don not move from here
-from Cython.Build import cythonize  # must be after setuptools
+try:
+    # must be after setuptools
+    from Cython.Build import cythonize
+except ImportError:
+    cythonize = None
 
 PKG_NAME = 'flaskel'
 PKG_TEST = 'tests'
@@ -31,7 +34,7 @@ REQUIRES = [
     "Flask-Caching==1.9.*",
     "Flask-CloudflareRemote==1.1.*",
     "Flask-Cors==3.0.*",
-    "Flask-ErrorsHandler==3.0.*",
+    "Flask-ErrorsHandler==4.0.*",
     "Flask-HTTPAuth==4.2.*",
     "Flask-JWT-Extended==3.25.*",
     "Flask-Limiter==1.4.*",
@@ -139,7 +142,7 @@ try:
         package_data={
             PKG_NAME: package_files(SKEL_DIR)
         },
-        ext_modules=cythonize(
+        ext_modules=None if not cythonize else cythonize(
             get_ext_paths(PKG_NAME, EXCLUDE_FILES),
             compiler_directives={'language_level': 3}
         ),
