@@ -1,4 +1,4 @@
-import functools
+from functools import partial
 
 import flask
 from webargs import fields, flaskparser
@@ -6,21 +6,21 @@ from webargs import fields, flaskparser
 from flaskel import config, httpcode
 
 parser = flaskparser.FlaskParser()
-query = functools.partial(parser.use_args, location="query")
-payload = functools.partial(parser.use_args, location="json")
+query = partial(parser.use_args, location="query")
+payload = partial(parser.use_args, location="json")
 
 
 class Fields:
-    integer = fields.Integer
-    string = fields.String
-    decimal = fields.Decimal
-    boolean = functools.partial(fields.Boolean, truthy={'true', 1}, falsy={'false', 0})
-    positive = functools.partial(fields.Integer, validate=lambda x: x > 0)
-    not_negative = functools.partial(fields.Integer, validate=lambda x: x >= 0)
-    not_positive = functools.partial(fields.Integer, validate=lambda x: x <= 0)
-    negative = functools.partial(fields.Integer, validate=lambda x: x < 0)
-    isodate = functools.partial(fields.DateTime, format=config.DATE_ISO_FORMAT)
-    list_of = functools.partial(fields.DelimitedList, cls_or_instance=string, delimiter='+')
+    integer = partial(fields.Integer, missing=None)
+    string = partial(fields.String, missing=None)
+    decimal = partial(fields.Decimal, missing=None)
+    boolean = partial(fields.Boolean, missing=None, truthy={'true', 1}, falsy={'false', 0})
+    positive = partial(fields.Integer, missing=None, validate=lambda x: x > 0)
+    not_negative = partial(fields.Integer, missing=None, validate=lambda x: x >= 0)
+    not_positive = partial(fields.Integer, missing=None, validate=lambda x: x <= 0)
+    negative = partial(fields.Integer, missing=None, validate=lambda x: x < 0)
+    isodate = partial(fields.DateTime, missing=None, format=config.DATE_ISO_FORMAT)
+    list_of = partial(fields.DelimitedList, missing=(), cls_or_instance=string, delimiter='+')
 
 
 # noinspection PyUnusedLocal
@@ -31,8 +31,8 @@ def handle_error(error, *args, **kwargs):
 
 def paginate(f=None):
     @query(dict(
-        page=Fields.positive(missing=None),
-        page_size=Fields.positive(missing=None),
+        page=Fields.positive(),
+        page_size=Fields.positive(),
         related=Fields.boolean(missing=False),
     ))
     def _route(*args, **kwargs):
@@ -42,4 +42,4 @@ def paginate(f=None):
 
         return f(*args[:-1], params=params, **kwargs)
 
-    return _route if f is not None else _route()
+    return _route if f else _route()
