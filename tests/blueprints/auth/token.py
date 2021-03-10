@@ -7,8 +7,8 @@ from . import bp_auth
 
 @bp_auth.route('/token/access', methods=['POST'])
 @webargs.query(dict(
-    expires_access=webargs.Fields.positive(),
-    expires_refresh=webargs.Fields.positive()
+    expires_access=webargs.OptField.positive(),
+    expires_refresh=webargs.OptField.positive()
 ))
 def access_token(args):
     data = flask.request.json

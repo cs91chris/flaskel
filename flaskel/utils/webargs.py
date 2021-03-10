@@ -10,17 +10,43 @@ query = partial(parser.use_args, location="query")
 payload = partial(parser.use_args, location="json")
 
 
-class Fields:
-    integer = partial(fields.Integer, missing=None)
-    string = partial(fields.String, missing=None)
-    decimal = partial(fields.Decimal, missing=None)
-    boolean = partial(fields.Boolean, missing=None, truthy={'true', 1}, falsy={'false', 0})
-    positive = partial(fields.Integer, missing=None, validate=lambda x: x > 0)
-    not_negative = partial(fields.Integer, missing=None, validate=lambda x: x >= 0)
-    not_positive = partial(fields.Integer, missing=None, validate=lambda x: x <= 0)
-    negative = partial(fields.Integer, missing=None, validate=lambda x: x < 0)
-    isodate = partial(fields.DateTime, missing=None, format=config.DATE_ISO_FORMAT)
-    list_of = partial(fields.DelimitedList, missing=(), cls_or_instance=string, delimiter='+')
+class Field:
+    integer = partial(fields.Integer)
+    string = partial(fields.String)
+    decimal = partial(fields.Decimal)
+    boolean = partial(fields.Boolean, truthy={'true', 1}, falsy={'false', 0})
+    positive = partial(integer, validate=lambda x: x > 0)
+    not_negative = partial(integer, validate=lambda x: x >= 0)
+    not_positive = partial(integer, validate=lambda x: x <= 0)
+    negative = partial(integer, validate=lambda x: x < 0)
+    isodate = partial(fields.DateTime, format=config.DATE_ISO_FORMAT)
+    list_of = partial(fields.DelimitedList, cls_or_instance=string(), delimiter='+')
+
+
+class OptField:
+    integer = partial(Field.integer, missing=None)
+    string = partial(Field.string, missing=None)
+    decimal = partial(Field.decimal, missing=None)
+    boolean = partial(Field.boolean, missing=False)
+    positive = partial(Field.positive, missing=None)
+    not_negative = partial(Field.not_negative, missing=None)
+    not_positive = partial(Field.not_positive, missing=None)
+    negative = partial(Field.negative, missing=None)
+    isodate = partial(Field.isodate, missing=None)
+    list_of = partial(Field.list_of, missing=())
+
+
+class ReqField:
+    integer = partial(Field.integer, required=True)
+    string = partial(Field.string, required=True)
+    decimal = partial(Field.decimal, required=True)
+    boolean = partial(Field.boolean, required=True)
+    positive = partial(Field.positive, required=True)
+    not_negative = partial(Field.not_negative, required=True)
+    not_positive = partial(Field.not_positive, required=True)
+    negative = partial(Field.negative, required=True)
+    isodate = partial(Field.isodate, required=True)
+    list_of = partial(Field.list_of, required=True)
 
 
 # noinspection PyUnusedLocal
@@ -31,9 +57,9 @@ def handle_error(error, *args, **kwargs):
 
 def paginate(f=None):
     @query(dict(
-        page=Fields.positive(),
-        page_size=Fields.positive(),
-        related=Fields.boolean(missing=False),
+        page=OptField.positive(),
+        page_size=OptField.positive(),
+        related=OptField.boolean(missing=False),
     ))
     def _route(*args, **kwargs):
         params = args[-1]
