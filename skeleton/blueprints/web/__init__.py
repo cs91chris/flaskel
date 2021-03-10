@@ -14,4 +14,4 @@ bp_web = Blueprint(
 )
 
 errors.web_register(bp_web)
-RenderTemplate.register(bp_web, url='/', name='index', template='index.html')
+RenderTemplate.register(bp_web, name='index', urls=['/'], template='index.html')

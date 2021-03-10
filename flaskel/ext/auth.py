@@ -6,6 +6,7 @@ from flask_httpauth import HTTPBasicAuth
 from flaskel.flaskel import cap, httpcode
 from flaskel.utils.datastruct import ObjectDict
 from .sqlalchemy import db
+from .sqlalchemy.mixins import StandardMixin
 
 jwtm = jwt.JWTManager()
 basic_auth = HTTPBasicAuth()
@@ -23,10 +24,9 @@ def invalid_token_loader(mess):
     return dict(message=mess), httpcode.UNAUTHORIZED  # pragma: no cover
 
 
-class RevokedTokenModel(db.Model):
+class RevokedTokenModel(db.Model, StandardMixin):
     __tablename__ = 'revoked_tokens'
 
-    id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(120), nullable=False, unique=True)
 
     def __repr__(self):  # pragma: no cover
@@ -38,7 +38,7 @@ class RevokedTokenModel(db.Model):
 
 
 @jwtm.token_in_blocklist_loader
-def check_if_token_in_blacklist(jwt_headers, jwt_data):  # pragma: no cover
+def check_token_blacklisted(jwt_headers, jwt_data):  # pragma: no cover
     return RevokedTokenModel.is_jti_blacklisted(jwt_data['jti'])
 
 

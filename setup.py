@@ -59,6 +59,7 @@ REQUIRES = [
     "sqlalchemy-schemadisplay==1.3.*",
     "user-agents==2.2.*",
     "webargs==7.0.*",
+    "redis==3.5.*",
 ]
 
 
@@ -143,6 +144,9 @@ try:
         package_data={
             PKG_NAME: package_files(SKEL_DIR)
         },
+        data_files=[
+            (os.path.dirname(f), [f]) for f in package_files(SKEL_DIR)
+        ],
         ext_modules=None if not cythonize else cythonize(
             get_ext_paths(PKG_NAME, EXCLUDE_FILES),
             compiler_directives={'language_level': 3}

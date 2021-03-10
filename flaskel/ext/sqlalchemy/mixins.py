@@ -6,12 +6,26 @@ from flaskel.utils.datastruct import ObjectDict
 
 
 class StandardMixin:
+    def __init__(self, *args, **kwargs):
+        """
+
+        :param args:
+        :param kwargs:
+        """
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
 
 class CatalogMixin:
+    def __init__(self, *args, **kwargs):
+        """
+
+        :param args:
+        :param kwargs:
+        """
+
     @declared_attr
     def __table_args__(self):
         return db.UniqueConstraint('label', 'type_id'),
@@ -58,11 +72,16 @@ class CatalogXMixin(CatalogMixin):
 class LoaderMixin:
     values = ()
 
-    # noinspection PyUnusedLocal
+    def __init__(self, *args, **kwargs):
+        """
+
+        :param args:
+        :param kwargs:
+        """
+
     @classmethod
     def load_values(cls, *args, **kwargs):
         for d in cls.values:
-            # noinspection PyArgumentList
             db.session.add(cls(**d))
         db.session.commit()
 
