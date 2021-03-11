@@ -36,7 +36,7 @@ REQUIRES = [
     "Flask-Cors==3.0.*",
     "Flask-ErrorsHandler==4.0.*",
     "Flask-HTTPAuth==4.2.*",
-    "Flask-JWT-Extended==4.0.*",
+    "Flask-JWT-Extended==4.1.*",
     "Flask-Limiter==1.4.*",
     "Flask-Logify==2.2.3",
     "Flask-Mail==0.9.*",
@@ -60,6 +60,7 @@ REQUIRES = [
     "user-agents==2.2.*",
     "webargs==7.0.*",
     "redis==3.5.*",
+    "hiredis==1.1.0",
 ]
 
 

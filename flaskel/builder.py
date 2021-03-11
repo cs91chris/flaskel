@@ -7,8 +7,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from . import config, flaskel
 from .converters import CONVERTERS
-from .utils import misc
-from .utils.datastruct import ObjectDict
+from .utils import misc, ObjectDict
 
 
 class AppBuilder:
@@ -72,7 +71,7 @@ class AppBuilder:
         with open(secret_file, 'w') as f:
             f.write(secret_key)
             abs_file = os.path.abspath(secret_file)
-            self._app.logger.warning(f"new secret key generated: take care of this file:{abs_file}")
+            self._app.logger.warning(f"new secret key generated: take care of this file: {abs_file}")
         return secret_key
 
     def _load_secret_key(self, secret_file):
@@ -113,15 +112,15 @@ class AppBuilder:
                     if not ext:
                         raise TypeError("extension could not be None")
                 except (TypeError, IndexError) as exc:
-                    self._app.logger.debug(
-                        f"Invalid extension '{name}' configuration '{e}': {exc}"
-                    )
+                    self._app.logger.debug(f"Invalid extension '{name}' configuration '{e}': {exc}")
                     continue
 
                 ext.init_app(self._app, **opt)
-                self._app.logger.debug(
-                    f"Registered extension '{name}' with options: {str(opt)}"
-                )
+                self._app.logger.debug(f"Registered extension '{name}' with options: {opt}")
+
+        self._app.logger.debug(f"Dump flask extensions:")
+        for k, v in self._app.extensions.items():
+            self._app.logger.debug(f"Registered extension '{k}': {v}")
 
     def _register_blueprints(self):
         for b in self._blueprints:
@@ -134,7 +133,7 @@ class AppBuilder:
                 continue
 
             self._app.register_blueprint(bp, **opt)
-            self._app.logger.debug(f"Registered blueprint '{bp.name}' with options: {str(opt)}")
+            self._app.logger.debug(f"Registered blueprint '{bp.name}' with options: {opt}")
 
     def _set_config(self, conf):
         self._app.config.from_object(self._conf_module)
@@ -161,15 +160,13 @@ class AppBuilder:
                 self._app.logger.debug(f"Registered template folder: '{f}'")
 
     def _register_middlewares(self):
-        for middleware in self._middlewares:
+        for m in self._middlewares:
             # WorkAround: in order to pass flask app to middleware without breaking chain
-            if not (hasattr(middleware, 'flask_app') and middleware.flask_app):
-                setattr(middleware, 'flask_app', self._app)
+            if not (hasattr(m, 'flask_app') and m.flask_app):
+                setattr(m, 'flask_app', self._app)
 
-            self._app.wsgi_app = middleware(self._app.wsgi_app)
-            self._app.logger.debug(
-                f"Registered middleware: '{middleware.__name__}'"
-            )
+            self._app.wsgi_app = m(self._app.wsgi_app)
+            self._app.logger.debug(f"Registered middleware: '{m.__name__}'")
 
     def _register_views(self):
         def normalize(data):
@@ -181,37 +178,32 @@ class AppBuilder:
         for view in self._views:
             v, b, p = normalize(view)
             v.register(b or self._app, **p)
-            bp_mess = f"on blueprint '{b.name}'" if b else ""
-            self._app.logger.debug(f"Registered view: '{v.__name__}' {bp_mess} with params: {p}")
+            mess = f"on blueprint '{b.name}'" if b else ""
+            self._app.logger.debug(f"Registered view: '{v.__name__}' {mess} with params: {p}")
 
     def _register_after_request(self):
         for f in self._after_request:
             self._app.after_request_funcs.setdefault(None, []).append(f)
-            self._app.logger.debug(
-                f"Registered function after request: '{f.__name__}'"
-            )
+            self._app.logger.debug(f"Registered function after request: '{f.__name__}'")
 
     def _register_before_request(self):
         for f in self._before_request:
             self._app.before_request_funcs.setdefault(None, []).append(f)
-            self._app.logger.debug(
-                f"Registered function before request: '{f.__name__}'"
-            )
+            self._app.logger.debug(f"Registered function before request: '{f.__name__}'")
 
     def _set_linter_and_profiler(self):
         if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
             self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
+            self._app.logger.debug(f"Registered middleware: '{LintMiddleware.__name__}'")
 
         if self._app.config.WSGI_WERKZEUG_PROFILER_ENABLED:
-            stream = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
-            stream = open(stream, 'w') if stream else sys.stdout
-        else:
-            stream = None  # pragma: no cover
-
-        self._app.wsgi_app = ProfilerMiddleware(
-            self._app.wsgi_app, stream=stream,
-            restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION
-        )
+            file = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
+            self._app.wsgi_app = ProfilerMiddleware(
+                self._app.wsgi_app,
+                stream=open(file, 'w') if file else sys.stdout,
+                restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION
+            )
+            self._app.logger.debug(f"Registered middleware: '{ProfilerMiddleware.__name__}'")
 
     def _dump_urls(self):
         output = []

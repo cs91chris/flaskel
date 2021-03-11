@@ -1,51 +1,51 @@
 version: 1
 formatters:
-    console:
-        format: "[%(asctime)s][%(levelname)s][%(module)s:%(lineno)d]: %(message)s"
-    syslog:
-        class: flask_logify.formatters.RequestFormatter
-        format: "%(ident)s[%(levelname)s][%(request_id)s]: %(message)s"
+  console:
+    format: "[%(asctime)s][%(levelname)s][%(module)s:%(lineno)d]: %(message)s"
+  syslog:
+    class: flask_logify.formatters.RequestFormatter
+    format: "%(ident)s[%(levelname)s][%(request_id)s]: %(message)s"
 handlers:
-    dev:
-        class: logging.StreamHandler
-        formatter: console
-        level: DEBUG
-    test:
-        class: logging.StreamHandler
-        formatter: syslog
-        level: DEBUG
-    prod:
-        class: flask_logify.handlers.FlaskSysLogHandler
-        address: [ localhost, 514 ]
-        formatter: syslog
-        facility: user
-        level: INFO
+  dev:
+    class: logging.StreamHandler
+    formatter: console
+    level: DEBUG
+  test:
+    class: logging.StreamHandler
+    formatter: syslog
+    level: DEBUG
+  prod:
+    class: flask_logify.handlers.FlaskSysLogHandler
+    address: [ localhost, 514 ]
+    formatter: syslog
+    facility: user
+    level: INFO
 loggers:
-    root:
-        handlers: [ dev ]
-        propogate: yes
-        level: DEBUG
-    development:
-        handlers: [ dev ]
-        propogate: yes
-        level: DEBUG
-    testing:
-        handlers: [ dev ]
-        propogate: yes
-        level: DEBUG
-    production:
-        handlers: [ prod ]
-        propogate: yes
-        level: INFO
-    flask-limiter:
-        handlers: [ dev ]
-        propogate: yes
-        level: DEBUG
-    gunicorn.error:
-        handlers: [ prod ]
-        propogate: yes
-        level: INFO
-    gunicorn.access:
-        handlers: [ prod ]
-        propogate: yes
-        level: INFO
+  root:
+    handlers: [ dev ]
+    propogate: yes
+    level: DEBUG
+  development:
+    handlers: [ dev ]
+    propogate: yes
+    level: DEBUG
+  testing:
+    handlers: [ dev ]
+    propogate: yes
+    level: DEBUG
+  production:
+    handlers: [ prod ]
+    propogate: yes
+    level: INFO
+  flask-limiter:
+    handlers: [ dev ]
+    propogate: yes
+    level: DEBUG
+  gunicorn.error:
+    handlers: [ prod ]
+    propogate: yes
+    level: INFO
+  gunicorn.access:
+    handlers: [ prod ]
+    propogate: yes
+    level: INFO
