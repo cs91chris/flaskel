@@ -8,7 +8,7 @@ import werkzeug.exceptions
 from flaskel import httpcode, misc, uuid, yaml
 from flaskel.http import batch, FlaskelHttp, FlaskelJsonRPC, HTTPClient, HTTPStatusError, rpc, useragent
 from flaskel.tester import Asserter
-from flaskel.utils import datetime, schemas
+from flaskel.utils import datetime, schemas, ExtProxy
 from flaskel.utils.faker import DummyLogger
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, CTS, HOSTS, testapp
@@ -163,7 +163,7 @@ def test_utils_uuid(testapp):
 
 def test_crypto(testapp):
     passwd = 'my-favourite-password'
-    crypto = testapp.application.extensions['argon2']
+    crypto = ExtProxy('argon2')
     res = testapp.get(url_for('test.crypt', passwd=passwd))
     Asserter.assert_true(crypto.verify_hash(res.data, passwd))
     Asserter.assert_false(crypto.verify_hash(res.data, "wrong-pass"))
@@ -469,7 +469,7 @@ def test_apidoc(testapp):
 def test_ipban(app_dev):
     res = None
     conf = app_dev.config
-    ipban = app_dev.extensions['ipban']
+    ipban = ExtProxy('ipban')
     ipban.remove_whitelist('127.0.0.1')
     for i in range(0, conf.IPBAN_COUNT + 2):
         testapp = app_dev.test_client()

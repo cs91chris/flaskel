@@ -39,12 +39,26 @@ class ConfigProxy:
         return self.__call__(item)
 
 
+class ExtProxy:
+    def __init__(self, name):
+        self._name = name
+
+    @property
+    def extension(self):
+        return cap.extensions[self._name]
+
+    def __getattr__(self, item):
+        return getattr(self.extension, item)
+
+    def __call__(self, *args, **kwargs):
+        return self.extension()
+
+    def __getitem__(self, item):
+        return self.extension[item]
+
+
 class HashableDict(dict):
     def __hash__(self):
-        """
-
-        :return:
-        """
         return hash(tuple(sorted(self.items())))
 
 
