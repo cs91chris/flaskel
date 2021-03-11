@@ -2,8 +2,8 @@ import functools
 
 import flask
 
-from flaskel.flaskel import cap, httpcode
 from flaskel.ext.default import builder
+from flaskel.flaskel import cap, httpcode
 from flaskel.utils.batch import ThreadBatchExecutor
 
 
@@ -29,32 +29,50 @@ class HealthCheck:
         :param executor:
         """
         self._executor = executor or ThreadBatchExecutor
+        self.set_default_config(app)
+        self.register_route(bp or app, decorators)
+        self.register_extensions(app, extensions)
+
+        if not hasattr(app, 'extensions'):
+            app.extensions = dict()  # pragma: no cover
+        app.extensions['healthcheck'] = self
+
+    @staticmethod
+    def set_default_config(app):
         app.config.setdefault('HEALTHCHECK_ABOUT_LINK', None)
         app.config.setdefault('HEALTHCHECK_PATH', '/healthcheck')
         app.config.setdefault('HEALTHCHECK_PARAM_KEY', 'checks')
         app.config.setdefault('HEALTHCHECK_PARAM_SEP', '+')
         app.config.setdefault('HEALTHCHECK_CONTENT_TYPE', 'application/health+json')
 
-        if not hasattr(app, 'extensions'):
-            app.extensions = dict()  # pragma: no cover
-        app.extensions['healthcheck'] = self
+    def register_route(self, app, decorators):
+        """
 
+        :param app:
+        :param decorators:
+        """
         view = self.perform
         for decorator in decorators:
             view = decorator(view)
 
-        blueprint = bp or app
-        blueprint.add_url_rule(app.config['HEALTHCHECK_PATH'], view_func=view)
+        app.add_url_rule(app.config['HEALTHCHECK_PATH'], view_func=view)
 
+    def register_extensions(self, app, extensions):
+        """
+
+        :param app:
+        :param extensions:
+        """
         for ex in extensions:
-            self.register(**ex)(ex.pop('func'))
+            try:
+                func = ex.pop('func')
+                self.register(**ex)(func)
+            except Exception as exc:
+                app.logger.exception(exc)
+                app.logger.error(f"invalid healthcheck extension:\n{ex}")
 
     @builder.response('json')
     def perform(self):
-        """
-
-        :return:
-        """
         healthy = True
         response = dict(
             status='pass', checks={},
@@ -97,11 +115,6 @@ class HealthCheck:
         """
 
         def _register(func):
-            """
-
-            :param func:
-            :return:
-            """
             nonlocal name
             name = name or func.__name__
 
