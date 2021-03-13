@@ -5,7 +5,7 @@ import jinja2
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from . import config, flaskel
+from flaskel import config, flaskel
 from .converters import CONVERTERS
 from .utils import misc, ObjectDict
 

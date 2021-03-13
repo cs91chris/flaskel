@@ -1,7 +1,4 @@
-"""
-Flaskel
--------
-"""
+# generated via cli
 import os
 import re
 import sys
@@ -10,20 +7,17 @@ from setuptools import find_packages as base_find_packages, setup
 from setuptools.command.test import test
 
 LICENSE = 'MIT'
+URL = None
 PLATFORMS = 'any'
 PYTHON_VERSION = '>3.6'
-URL = 'https://github.com/cs91chris/flaskel'
-DESCRIPTION = 'Skeleton for flask applications'
+DESCRIPTION = None
+PACKAGE_DATA = True
 
-PKG_NAME = 'flaskel'
+PKG_NAME = '{skeleton}'
 PKG_TEST = 'tests'
 PKG_SCRIPTS = f'{PKG_NAME}.scripts'
 
-ENTRY_POINTS = dict(
-    console_scripts=[
-        f"{PKG_NAME}={PKG_SCRIPTS}.cli:cli",
-    ],
-)
+EXCLUDE_FILES = []
 
 CLASSIFIERS = [
     "Environment :: Web Environment",
@@ -39,43 +33,17 @@ CLASSIFIERS = [
 ]
 
 REQUIRES = [
-    "Flask==1.1.*",
-    "Flask-APScheduler==1.12.*",
-    "Flask-Caching==1.10.*",
-    "Flask-CloudflareRemote==1.1.*",
-    "Flask-Cors==3.0.*",
-    "Flask-ErrorsHandler==4.0.*",
-    "Flask-HTTPAuth==4.2.*",
-    "Flask-JWT-Extended==4.1.*",
-    "Flask-Limiter==1.4.*",
-    "Flask-Logify==2.2.3",
-    "Flask-Mail==0.9.*",
-    "Flask-ResponseBuilder==2.0.*",
-    "Flask-SQLAlchemy==2.4.*",
-    "Flask-TemplateSupport==2.0.*",
-    "aiohttp==3.7.*",
-    "argon2-cffi==20.1.*",
-    "coverage==5.3.*",
-    "nest-asyncio==1.5.*",
-    "psutil==5.8.*",
-    "pytest==6.2.*",
-    "pytest-cov==2.11.*",
-    "python-dateutil==2.8.*",
-    "python-decouple==3.4.*",
-    "PyYAML==5.4.*",
-    "requests==2.25.*",
-    "jsonschema==3.2.*",
-    "simplejson==3.*",
-    "sqlalchemy-schemadisplay==1.3.*",
-    "user-agents==2.2.*",
-    "webargs==7.0.*",
-    "redis==3.5.*",
-    "hiredis==1.1.*",
+    "flaskel"
 ]
 
+ENTRY_POINTS = dict(
+    console_scripts=[
+        f'run-{PKG_NAME}={PKG_SCRIPTS}.cli:cli',
+    ],
+)
+
 BASE_PATH = os.path.dirname(__file__)
-SKEL_DIR = os.path.join(*PKG_SCRIPTS.split('.'), 'skeleton')
-VERSION_FILE = os.path.join(BASE_PATH, PKG_NAME, 'version.py')
+VERSION_FILE = os.path.join(PKG_NAME, 'version.py')
 
 try:
     # must be after setuptools
@@ -125,14 +93,6 @@ def readme(file):
         print(str(exc), file=sys.stderr)
 
 
-def skeleton_files():
-    paths = []
-    for path, _, filenames in os.walk(SKEL_DIR):
-        for f in filenames:
-            paths.append(os.path.join(path, f))
-    return paths
-
-
 class PyTest(test):
     def finalize_options(self):
         test.finalize_options(self)
@@ -154,7 +114,7 @@ def find_packages():
 
 
 setup(
-    name='Flaskel',
+    name=PKG_NAME,
     url=URL,
     license=LICENSE,
     description=DESCRIPTION,
@@ -165,12 +125,12 @@ setup(
     author=grep(VERSION_FILE, '__author_name__'),
     author_email=grep(VERSION_FILE, '__author_email__'),
     zip_safe=False,
-    include_package_data=True,
+    include_package_data=PACKAGE_DATA,
     packages=find_packages(),
-    ext_modules=cythonize(ext_paths(PKG_NAME, skeleton_files())),
-    test_suite=PKG_TEST,
+    ext_modules=cythonize(ext_paths(PKG_NAME, EXCLUDE_FILES)),
     entry_points=ENTRY_POINTS,
-    cmdclass=dict(test=PyTest),
+    test_suite=PKG_TEST,
     install_requires=REQUIRES,
+    cmdclass=dict(test=PyTest),
     classifiers=CLASSIFIERS
 )

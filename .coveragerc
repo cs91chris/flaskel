@@ -1,6 +1,6 @@
 [run]
 omit =
-	flaskel/cli.py
+	flaskel/scripts/cli.py
 	flaskel/standalone.py
 	flaskel/ext/sqlalchemy/schema.py
 	flaskel/tester/cli.py

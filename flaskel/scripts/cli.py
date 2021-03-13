@@ -5,8 +5,8 @@ from pathlib import Path
 
 import click
 
-from .ext.sqlalchemy.schema import db_to_schema, model_to_uml
-from .tester import cli as cli_tester
+from flaskel.ext.sqlalchemy.schema import db_to_schema, model_to_uml
+from flaskel.tester import cli as cli_tester
 
 INIT_CONTENT = """
 # generated via cli
@@ -16,9 +16,6 @@ from .version import *
 
 @click.group()
 def cli():
-    """
-
-    """
     pass
 
 
@@ -26,20 +23,20 @@ def cli():
 @click.argument('name')
 def init(name):
     """Create skeleton for new application"""
-    import flaskel
+    from flaskel import scripts as flaskel_scripts
 
-    package_path = flaskel.__path__[0]
-    source = os.path.join(package_path, 'skeleton')
     destination = name
+    package_path = flaskel_scripts.__path__[0]
+    source = os.path.join(package_path, 'skeleton')
 
     try:
         shutil.copytree(source, destination)
 
-        init_file = Path(os.path.join(destination, '__init__.py'))
+        init_file = Path(os.path.join(destination, '..', '__init__.py'))
         init_file.write_text(INIT_CONTENT)
 
         if not os.path.isfile('setup.py'):
-            shutil.move(os.path.join(destination, 'setup.py'), '.')
+            shutil.move(os.path.join(destination, 'setup.py'), '..')
             setup_file = Path('setup.py')
             text = setup_file.read_text()
             text = text.replace('{skeleton}', name)
@@ -48,18 +45,18 @@ def init(name):
             os.remove(os.path.join(destination, 'setup.py'))
 
         if not os.path.isdir('config'):
-            shutil.move(os.path.join(destination, 'config'), '.')
+            shutil.move(os.path.join(destination, 'config'), '..')
         else:
             os.remove(os.path.join(destination, 'config'))
 
         if not os.path.isfile('Dockerfile'):
-            shutil.move(os.path.join(destination, 'Dockerfile'), '.')
+            shutil.move(os.path.join(destination, 'Dockerfile'), '..')
         else:
             os.remove(os.path.join(destination, 'Dockerfile'))
 
         if not os.path.isdir('tests'):
-            shutil.move(os.path.join(destination, 'tests'), '.')
-            cli_file = Path(os.path.join('tests', '__init__.py'))
+            shutil.move(os.path.join(destination, 'tests'), '..')
+            cli_file = Path(os.path.join('tests', '..', '__init__.py'))
             text = cli_file.read_text()
             text = text.replace('from ext', f"from {name}.ext")
             text = text.replace('from blueprint', f"from {name}.blueprint")

@@ -10,7 +10,7 @@ bp_web = Blueprint(
     url_prefix='/',
     template_folder="templates",
     static_folder="static",
-    static_url_path="/static/"
+    static_url_path="static/"
 )
 
 errors.web_register(bp_web)
