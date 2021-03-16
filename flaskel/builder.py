@@ -219,13 +219,12 @@ class AppBuilder:
             self._set_linter_and_profiler()
             self._dump_urls()
 
-        @self._app.before_first_request
-        def create_database():
+        with self._app.app_context():
             sqlalchemy = self._app.extensions.get('sqlalchemy')
             if sqlalchemy is not None:
                 sqlalchemy.db.create_all()
 
-        self._callback()
+            self._callback()
 
     def create(self, conf=None):
         self._app = flaskel.Flaskel(self.app_name, **self._options)

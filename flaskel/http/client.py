@@ -109,7 +109,7 @@ class HTTPClient(HTTPBase):
         if url.startswith('http'):
             return url
 
-        return f"{self._endpoint}/{url.rstrip('/')}"
+        return f"{self._endpoint}/{url.lstrip('/')}"
 
     @staticmethod
     def prepare_response(body=None, status=httpcode.SUCCESS, headers=None, exception=None):

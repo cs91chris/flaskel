@@ -45,7 +45,12 @@ class ExtProxy:
 
     @property
     def extension(self):
-        return cap.extensions[self._name]
+        attrs = self._name.split('.')
+        ret = cap.extensions[attrs[0]]
+        for a in attrs[1:]:
+            ret = getattr(ret, a, None)
+
+        return ret
 
     def __getattr__(self, item):
         return getattr(self.extension, item)
@@ -74,7 +79,9 @@ class ObjectDict(dict):
             if isinstance(v, ObjectDict):
                 data[k] = v.__dict__()
             elif isinstance(v, list):
-                data[k] = [i.__dict__() for i in v]
+                data[k] = []
+                for i in v:
+                    data[k].append(i.__dict__() if hasattr(i, '__dict__') else i)
             else:
                 data[k] = v
 

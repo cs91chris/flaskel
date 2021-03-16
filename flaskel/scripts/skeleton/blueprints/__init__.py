@@ -11,3 +11,7 @@ BLUEPRINTS = (
         'url_prefix': '/auth'
     }),
 )
+
+VIEWS = (
+    # (view, blueprint, dict options)
+)

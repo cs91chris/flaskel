@@ -399,9 +399,6 @@ def test_correlation_id(testapp):
 
 
 def test_jwt(testapp):
-    user = testapp.application.config.BASIC_AUTH_USERNAME
-    passwd = testapp.application.config.BASIC_AUTH_PASSWORD
-
     res = testapp.post(
         url_for('auth.access_token'),
         json=dict(email='email', password='password')

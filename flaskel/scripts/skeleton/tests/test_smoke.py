@@ -1,9 +1,8 @@
-# noinspection PyUnresolvedReferences
-from flaskel.tester import Asserter, HttpAsserter
+from flaskel.tester.mixins import Asserter
 # noinspection PyUnresolvedReferences
 from . import testapp
 
 
 def test_app_runs(testapp):
     res = testapp.get('/')
-    HttpAsserter.assert_status_code(res)
+    Asserter.assert_status_code(res)

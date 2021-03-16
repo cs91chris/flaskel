@@ -28,7 +28,7 @@ app:
   LOGGING: !include config/log.yaml
   APISPEC: !include config/swagger.yaml
   IPBAN_NUISANCES: !include config/nuisances.yaml
-  #    SCHEDULER_JOBS: !include config/scheduler.yaml
+  # SCHEDULER_JOBS: !include config/scheduler.yaml
   SCHEDULER_AUTO_START: false
   SCHEDULER_JOBSTORES:
     default:
@@ -41,8 +41,8 @@ app:
     coalesce: false
     max_instances: 10
   REDIS_URL: &redis redis://127.0.0.1:6379
-    REDIS_OPTS:
-      socket_connect_timeout: &redis_timeout 0.06
+  REDIS_OPTS:
+    socket_connect_timeout: &redis_timeout 0.06
   CACHE_REDIS_URL: *redis
   CACHE_TYPE: redis
   CACHE_KEY_PREFIX: *appname

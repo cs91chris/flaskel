@@ -8,16 +8,17 @@ class FetchMail(HTTPClient):
     Fetch emails from sendria
     """
 
-    def __init__(self, endpoint, auth=None, retry=3, wait=1, timeout=3):
+    def __init__(self, endpoint, username=None, password=None, retry=3, wait=1, timeout=3):
         """
 
         :param endpoint:
-        :param auth:
+        :param username:
+        :param password:
         :param retry:
         :param wait:
         :param timeout:
         """
-        super().__init__(endpoint, auth, timeout)
+        super().__init__(endpoint, username=username, password=password, timeout=timeout)
         self.retry = retry
         self.wait = wait
 
@@ -28,10 +29,9 @@ class FetchMail(HTTPClient):
         :param subject:
         :return:
         """
-        resp = self.request('/')
-
         response = []
-        for d in resp.data:
+        resp = self.request('/', raise_on_exc=True)
+        for d in resp.body.data:
             if recipient in d.recipients_envelope:
                 if subject and d.subject != subject:
                     continue

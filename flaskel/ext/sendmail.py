@@ -4,6 +4,12 @@ from flask_mail import Mail, Message
 
 
 class ClientMail(Mail):
+    def init_app(self, app):
+        super().init_app(app)
+
+        app.extensions = getattr(app, 'extensions', {})
+        app.extensions['mail'] = self
+
     def sendmail(self, app, sender=None, recipients=None, message=None, attachments=None, **kwargs):
         """
 
@@ -14,13 +20,13 @@ class ClientMail(Mail):
         :param attachments:
         """
         destination = recipients or [app.config.MAIL_RECIPIENT]
-        if sender:
-            try:
+        try:
+            if sender.name and sender.surname:
                 sender = (f"{sender.name} {sender.surname}", sender.email)
-            except AttributeError:
-                pass
-        else:
-            sender = app.config.MAIL_DEFAULT_SENDER
+            else:
+                sender = sender.email or app.config.MAIL_DEFAULT_SENDER
+        except AttributeError:
+            sender = sender or app.config.MAIL_DEFAULT_SENDER
 
         mail_message = Message(sender=sender, recipients=destination, **kwargs)
         mail_message.html = message
