@@ -15,7 +15,7 @@ app:
   LOG_LOGGER_NAME: *env
   CF_STRICT_ACCESS: false
   PRETTY_DATE: "%d %B %Y %I:%M %p"
-  SQLALCHEMY_DATABASE_URI: ${DATABASE_URI:sqlite:///db.sqlite}
+  SQLALCHEMY_DATABASE_URI: &db ${DATABASE_URI:sqlite:///db.sqlite}
   SQLALCHEMY_TRACK_MODIFICATIONS: false
   SQLALCHEMY_ECHO: false
   HTTP_DUMP_BODY: [ true, true ]
@@ -29,10 +29,13 @@ app:
   APISPEC: !include config/swagger.yaml
   IPBAN_NUISANCES: !include config/nuisances.yaml
   # SCHEDULER_JOBS: !include config/scheduler.yaml
-  SCHEDULER_AUTO_START: false
+  SCHEDULER_AUTO_START: true
   SCHEDULER_JOBSTORES:
     default:
-      class: apscheduler.jobstores.memory:MemoryJobStore
+      # class: apscheduler.jobstores.memory:MemoryJobStore
+      class: apscheduler.jobstores.sqlalchemy:SQLAlchemyJobStore
+      tablename: scheduler
+      url: *db
   SCHEDULER_EXECUTORS:
     default:
       type: threadpool
