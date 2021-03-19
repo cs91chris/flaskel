@@ -8,7 +8,7 @@ class ClientMail(Mail):
         super().init_app(app)
 
         app.extensions = getattr(app, 'extensions', {})
-        app.extensions['mail'] = self
+        app.extensions['client_mail'] = self
 
     def sendmail(self, app, sender=None, recipients=None, message=None, attachments=None, **kwargs):
         """

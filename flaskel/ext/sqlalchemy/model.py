@@ -2,6 +2,10 @@ from flask_sqlalchemy import Model
 
 
 class SQLAModel(Model):
+    def columns(self):
+        # noinspection PyUnresolvedReferences
+        return self.__table__.columns
+
     @classmethod
     def get_one(cls, raise_not_found=True, to_dict=True, *args, **kwargs):
         """
@@ -25,11 +29,12 @@ class SQLAModel(Model):
             return res
 
     @classmethod
-    def get_list(cls, to_dict=True, order_by=None,
+    def get_list(cls, to_dict=True, restricted=False, order_by=None,
                  page=None, page_size=None, max_per_page=None, *args, **kwargs):
         """
 
         :param to_dict:
+        :param restricted:
         :param order_by:
         :param page:
         :param page_size:
@@ -50,5 +55,25 @@ class SQLAModel(Model):
             res = q.all()
 
         if to_dict is True:
-            return [r.to_dict() for r in res]
+            return [r.to_dict(restricted) for r in res]
         return res
+
+    def update(self, attributes):
+        """
+
+        :param attributes:
+        :return:
+        """
+        for attr, val in attributes.items():
+            if attr in self.columns():
+                setattr(self, attr, val)
+
+        return self
+
+    def to_dict(self, restricted=False):
+        """
+
+        :param restricted:
+        :return:
+        """
+        return {col: getattr(self, col) for col in self.columns()}

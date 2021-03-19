@@ -2,22 +2,43 @@ import flask
 from sqlalchemy.exc import IntegrityError
 
 from flaskel.flaskel import cap, httpcode
-from flaskel.utils import webargs
+from flaskel.utils import PayloadValidator, webargs
 from .base import Resource
 
 
 class CatalogResource(Resource):
-    methods_collection = ['GET', 'HEAD']
-    methods_resource = ['GET', 'HEAD']
-    methods_subresource = ['GET', 'HEAD']
+    methods_collection = ['GET']
+    methods_resource = ['GET']
+    methods_subresource = ['GET']
 
     def __init__(self, model):
+        """
+
+        :param model: SqlAlchemy model class
+        """
         self._model = model
 
-    def on_get(self, res_id, *args, **kwargs):
-        return self._model.get_one(id=res_id)
+    def on_get(self, res_id, model=None, *args, **kwargs):
+        """
+        Get resource info
+
+        :param res_id: resource identifier (primary key value)
+        :param model: alternative SqlAlchemy model class
+        :param kwargs: extra query filters
+        :return:
+        """
+        model = model or self._model
+        return model.get_one(id=res_id, **kwargs)
 
     def on_collection(self, params=None, model=None, *args, **kwargs):
+        """
+        Resource collection paginated and sorted
+
+        :param params: parameters (usually from query string)
+        :param model: alternative SqlAlchemy model class
+        :param kwargs: extra query filters
+        :return:
+        """
         if params is None:
             params = webargs.paginate()
 
@@ -36,6 +57,12 @@ class CatalogResource(Resource):
         )
 
     def response_paginated(self, res, **kwargs):
+        """
+        Prepare the paginated response for resource collection
+
+        :param res: list of sqlalchemy models
+        :return:
+        """
         if type(res) is list:
             return [r.to_dict(**kwargs) for r in res]
 
@@ -56,56 +83,84 @@ class CatalogResource(Resource):
 
 
 class Restful(CatalogResource):
-    """TODO Not tested yet"""
-    methods_collection = ['POST', 'GET', 'HEAD']
-    methods_subresource = ['POST', 'GET', 'HEAD']
-    methods_resource = ['GET', 'HEAD', 'PUT', 'DELETE']
+    post_schema = None
+    put_schema = None
+    validator = PayloadValidator
+    methods_collection = ['GET', 'POST']
+    methods_subresource = ['GET', 'POST']
+    methods_resource = ['GET', 'PUT', 'DELETE']
 
-    def __init__(self, db, model):
+    def __init__(self, session, model):
         """
 
-        :param db:
-        :param model:
+        :param session: sqlalchemy session instance
+        :param model: sqlalchemy model
         """
         super().__init__(model)
-        self._db = db
+        self._session = session
 
-    def on_post(self, payload=None, *args, **kwargs):
+    def validate(self, schema):
         """
 
-        :param payload:
+        :param schema: schema compatible with self validator
         :return:
         """
-        res = self._model(**(payload or {}))
+        schema = schema() if callable(schema) else schema
+        return self.validator.validate(schema)
+
+    def create_resource(self, data):
+        """
+
+        :param data: dictionary data that represents the resource
+        :return: sqlalchemy model instance
+        """
+        return self._model(**data)
+
+    # noinspection PyMethodMayBeStatic
+    def update_resource(self, resource, data):
+        """
+
+        :param resource: sqlalchemy model instance
+        :param data: dictionary data that represents the resource
+        :return:
+        """
+        resource.update(data)
+        return resource
+
+    def on_post(self, *args, **kwargs):
+        """
+
+        :return:
+        """
+        payload = self.validate(self.post_schema)
+        res = self.create_resource(payload)
         try:
-            self._db.session.add()
-            self._db.session.commit()
+            self._session.add(res)
+            self._session.commit()
         except IntegrityError:
-            self._db.session.rollback()
+            self._session.rollback()
             flask.abort(httpcode.CONFLICT)
-        finally:
-            self._db.session.close()
 
         return res.to_dict(), httpcode.CREATED
 
     def on_delete(self, res_id, *args, **kwargs):
         """
 
-        :param res_id:
+        :param res_id: resource identifier (primary key value)
         """
         res = self._model.query.get_or_404(res_id)
-        res.delete()
-        self._db.session.commit()
+        self._session.delete(res)
+        self._session.commit()
 
-    def on_put(self, res_id, payload=None, *args, **kwargs):
+    def on_put(self, res_id, *args, **kwargs):
         """
 
-        :param res_id:
-        :param payload:
+        :param res_id: resource identifier (primary key value)
         :return:
         """
+        payload = self.validate(self.put_schema)
         res = self._model.query.get_or_404(res_id)
-        res.update(**(payload or {}))
-        self._db.session.add(res)
-        self._db.session.commit()
+        res = self.update_resource(res, payload)
+        self._session.merge(res)
+        self._session.commit()
         return res.to_dict()
