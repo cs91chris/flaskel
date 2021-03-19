@@ -1,18 +1,22 @@
 import flask
 from flask.views import MethodView, View
 
-from flaskel.flaskel import httpcode, Response
 from flaskel.ext.default import builder
+from flaskel.flaskel import cap, httpcode
 
 
 class BaseView(View):
     methods = ['GET']
 
-    def dispatch_request(self):
+    def dispatch_request(self, *args, **kwargs):
         """
         Must be implemented in every subclass
         """
-        raise NotImplementedError  # pragma: no cover
+        return self._not_implemented()  # pragma: no cover
+
+    # noinspection PyMethodMayBeStatic
+    def _not_implemented(self):  # pragma: no cover
+        flask.abort(httpcode.NOT_IMPLEMENTED)
 
     @classmethod
     def register(cls, app, name, urls=(), **kwargs):
@@ -30,9 +34,9 @@ class BaseView(View):
 
 
 class Resource(MethodView):
-    methods_collection = ['POST', 'GET', 'HEAD']
-    methods_subresource = ['POST', 'GET', 'HEAD']
-    methods_resource = ['GET', 'HEAD', 'PUT', 'DELETE']
+    methods_collection = ['GET', 'POST']
+    methods_subresource = ['GET', 'POST']
+    methods_resource = ['GET', 'PUT', 'DELETE']
 
     @classmethod
     def register(cls, app, name=None, url=None, view=None, pk_type='int', **kwargs):
@@ -49,47 +53,55 @@ class Resource(MethodView):
         view_func = _class.as_view(name, **kwargs)
         url = f"/{(url or name).lstrip('/')}"
 
-        app.add_url_rule(
-            url, view_func=view_func,
-            methods=cls.methods_collection
-        )
-        app.add_url_rule(
-            f"{url}/<{pk_type}:res_id>",
-            view_func=view_func,
-            methods=cls.methods_resource
-        )
-        app.add_url_rule(
-            f"{url}/<{pk_type}:res_id>/<sub_resource>",
-            view_func=view_func,
-            methods=cls.methods_subresource
-        )
+        if cls.methods_collection:
+            app.add_url_rule(
+                url, view_func=view_func,
+                methods=cls.methods_collection
+            )
+        if cls.methods_resource:
+            app.add_url_rule(
+                f"{url}/<{pk_type}:res_id>",
+                view_func=view_func,
+                methods=cls.methods_resource
+            )
+        if cls.methods_subresource:
+            app.add_url_rule(
+                f"{url}/<{pk_type}:res_id>/<sub_resource>",
+                view_func=view_func,
+                methods=cls.methods_subresource
+            )
         return view_func
 
+    @builder.no_content
     def head(self, *args, **kwargs):
-        response = self.get(*args, **kwargs)
-        return Response.no_content(response.status, response.headers)
+        return self.get(*args, **kwargs)
 
     @builder.on_accept()
     def get(self, *args, res_id=None, sub_resource=None, **kwargs):
         if res_id is None:
             return self.on_collection(*args, **kwargs)
-
         if sub_resource is None:
             return self.on_get(res_id, *args, **kwargs)
-
-        _sub_resource = getattr(self, f"sub_{sub_resource}", None)
-        if not _sub_resource:
+        if self.methods_subresource and 'GET' not in self.methods_subresource:
+            flask.abort(httpcode.METHOD_NOT_ALLOWED)
+        try:
+            _sub_resource = getattr(self, f"sub_{sub_resource}")
+            return _sub_resource(res_id, *args, **kwargs)
+        except AttributeError as exc:
+            cap.logger.debug(str(exc))
             flask.abort(httpcode.NOT_FOUND)
-        return _sub_resource(res_id, *args, **kwargs)
 
     @builder.on_accept()
     def post(self, *args, res_id=None, sub_resource=None, **kwargs):
         if res_id is None:
             return self.on_post(*args, **kwargs)
+        if self.methods_subresource and 'POST' not in self.methods_subresource:
+            flask.abort(httpcode.METHOD_NOT_ALLOWED)
         try:
-            _sub_resource_post = getattr(self, f"sub_{sub_resource}_post")
-            return _sub_resource_post(res_id, *args, **kwargs)
-        except AttributeError:
+            _sub_resource = getattr(self, f"sub_{sub_resource}_post")
+            return _sub_resource(res_id, *args, **kwargs)
+        except AttributeError as exc:
+            cap.logger.debug(str(exc))
             flask.abort(httpcode.NOT_FOUND)
 
     @builder.no_content
@@ -101,19 +113,19 @@ class Resource(MethodView):
         return self.on_put(res_id, *args, **kwargs)
 
     def on_get(self, res_id, *args, **kwargs):
-        self._not_implemented()  # pragma: no cover
+        return self._not_implemented()  # pragma: no cover
 
     def on_post(self, *args, **kwargs):
-        self._not_implemented()  # pragma: no cover
+        return self._not_implemented()  # pragma: no cover
 
     def on_put(self, res_id, *args, **kwargs):
-        self._not_implemented()  # pragma: no cover
+        return self._not_implemented()  # pragma: no cover
 
     def on_delete(self, res_id, *args, **kwargs):
-        self._not_implemented()  # pragma: no cover
+        return self._not_implemented()  # pragma: no cover
 
     def on_collection(self, *args, **kwargs):
-        self._not_implemented()  # pragma: no cover
+        return self._not_implemented()  # pragma: no cover
 
     # noinspection PyMethodMayBeStatic
     def _not_implemented(self):  # pragma: no cover
