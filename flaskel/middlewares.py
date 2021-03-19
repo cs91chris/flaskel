@@ -2,9 +2,22 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.urls import url_decode
 
 from .utils import uuid
+from .utils.datastruct import ObjectDict
 
 
-class ForceHttps:
+class BaseMiddleware:
+    # noinspection PyUnresolvedReferences
+    def get_config(self):
+        try:
+            # flask_app is added by flaskel factory as a workaround
+            if isinstance(self.flask_app.config, ObjectDict):
+                return self.flask_app.config
+            return ObjectDict.normalize(self.flask_app.config)  # pragma: no cover
+        except AttributeError:  # pragma: no cover
+            return ObjectDict()
+
+
+class ForceHttps(BaseMiddleware):
     """
     NOTE: use this only if you can not touch reverse proxy configuration
     use ReverseProxied instead
@@ -24,18 +37,13 @@ class ForceHttps:
         :param start_response:
         :return:
         """
-        try:
-            # noinspection PyUnresolvedReferences
-            # flask_app is added by flaskel factory as a workaround
-            url_scheme = self.flask_app.config.get('PREFERRED_URL_SCHEME') or 'https'
-        except AttributeError:  # pragma: no cover
-            url_scheme = 'https'
-
+        conf = self.get_config()
+        url_scheme = conf.PREFERRED_URL_SCHEME or 'https'
         environ['wsgi.url_scheme'] = url_scheme
         return self.app(environ, start_response)
 
 
-class ReverseProxied(ProxyFix):
+class ReverseProxied(ProxyFix, BaseMiddleware):
     """
     adjust the WSGI environ based on X-Forwarded- that proxies in
     front of the application may set:
@@ -77,7 +85,7 @@ class ReverseProxied(ProxyFix):
         super().__init__(app, x_for, x_proto, x_host, x_port, x_prefix)
 
 
-class HTTPMethodOverride:
+class HTTPMethodOverride(BaseMiddleware):
     """
     Implements the hidden HTTP method technique.
     Not all web browsers or reverse proxy supports every HTTP method.
@@ -100,19 +108,21 @@ class HTTPMethodOverride:
         :param start_response:
         :return:
         """
+        conf = self.get_config()
+        methods = conf.OVERRIDE_METHODS or ('POST',)
         method = environ.get('HTTP_X_HTTP_METHOD_OVERRIDE', None)
 
         if '_method_override' in environ.get('QUERY_STRING', ''):
             args = url_decode(environ['QUERY_STRING'])
             method = args.get('_method_override')
 
-        if environ['REQUEST_METHOD'] == 'POST' and method:
+        if method and environ['REQUEST_METHOD'] in methods:
             environ['REQUEST_METHOD'] = method.upper()
 
         return self.app(environ, start_response)
 
 
-class RequestID:
+class RequestID(BaseMiddleware):
     """
     From: https://github.com/antarctica/flask-request-id-header
 
@@ -157,13 +167,8 @@ class RequestID:
         :param start_response:
         :return:
         """
-        try:
-            # noinspection PyUnresolvedReferences
-            # flask_app is added by flaskel factory as a workaround
-            header_name = self.flask_app.config.REQUEST_ID_HEADER or self.header_name
-        except AttributeError:  # pragma: no cover
-            header_name = self.header_name
-
+        conf = self.get_config()
+        header_name = conf.REQUEST_ID_HEADER or self.header_name
         flask_header_name = f"HTTP_{header_name.upper().replace('-', '_')}"
         request_id_header = self._compute_request_id_header(environ.get(flask_header_name))
         environ[flask_header_name] = request_id_header
@@ -198,13 +203,8 @@ class RequestID:
         :param request_id: A request ID
         :return: Whether the Request ID is unique or not
         """
-        try:
-            # noinspection PyUnresolvedReferences
-            # flask_app is added by flaskel factory as a workaround
-            request_id_prefix = self.flask_app.config.REQUEST_ID_PREFIX
-        except AttributeError:  # pragma: no cover
-            request_id_prefix = self.request_id_prefix
-
+        conf = self.get_config()
+        request_id_prefix = conf.REQUEST_ID_PREFIX or self.request_id_prefix
         if request_id_prefix is not None and \
                 request_id.startswith(request_id_prefix):
             return True  # pragma: no cover

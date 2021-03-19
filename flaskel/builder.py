@@ -14,10 +14,14 @@ class AppBuilder:
     """Flask app builder"""
 
     """
-
     default app name
     """
     app_name = config.FLASK_APP
+
+    """
+    default flask class
+    """
+    flask_class = flaskel.Flaskel
 
     """
     default secret key file name
@@ -89,7 +93,6 @@ class AppBuilder:
 
         if not self._app.config.get('FLASK_ENV', '').lower().startswith('dev'):
             secret_file = self._app.config.SECRET_KEY
-
             if secret_file:
                 secret_key = self._load_secret_key(secret_file) or secret_file
             else:
@@ -142,10 +145,8 @@ class AppBuilder:
         self._app.config = ObjectDict(**self._app.config)
 
     def _register_converters(self):
-        conv = {**self.url_converters, **self._converters}
-        self._app.url_map.converters.update(conv)
-
-        for k, v in conv.items():
+        self._app.url_map.converters.update({**self.url_converters, **self._converters})
+        for k, v in self._app.url_map.converters.items():
             self._app.logger.debug(f"Registered converter: '{k}' = {v.__name__}")
 
     def _register_template_folders(self):
@@ -227,7 +228,7 @@ class AppBuilder:
             self._callback()
 
     def create(self, conf=None):
-        self._app = flaskel.Flaskel(self.app_name, **self._options)
+        self._app = self.flask_class(self.app_name, **self._options)
 
         self._set_config(conf)
         self._set_secret_key()
