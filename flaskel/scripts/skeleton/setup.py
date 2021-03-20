@@ -19,19 +19,6 @@ PKG_SCRIPTS = f'{PKG_NAME}.scripts'
 
 EXCLUDE_FILES = []
 
-CLASSIFIERS = [
-    "Environment :: Web Environment",
-    "Framework :: Flask",
-    "Intended Audience :: Developers",
-    "License :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.6",
-    "Topic :: Software Development",
-    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
-    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
-    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-]
-
 REQUIRES = [
     "flaskel"
 ]
@@ -132,5 +119,16 @@ setup(
     test_suite=PKG_TEST,
     install_requires=REQUIRES,
     cmdclass=dict(test=PyTest),
-    classifiers=CLASSIFIERS
+    classifiers=[
+        "Environment :: Web Environment",
+        "Framework :: Flask",
+        "Intended Audience :: Developers",
+        "License :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.6",
+        "Topic :: Software Development",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+        "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    ]
 )

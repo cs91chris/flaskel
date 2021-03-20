@@ -25,19 +25,6 @@ ENTRY_POINTS = dict(
     ],
 )
 
-CLASSIFIERS = [
-    "Environment :: Web Environment",
-    "Framework :: Flask",
-    "Intended Audience :: Developers",
-    "License :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.6",
-    "Topic :: Software Development",
-    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
-    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
-    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-]
-
 REQUIRES = [
     "Flask==1.1.*",
     "Flask-APScheduler==1.12.*",
@@ -51,7 +38,7 @@ REQUIRES = [
     "Flask-Logify==2.2.3",
     "Flask-Mail==0.9.*",
     "Flask-ResponseBuilder==2.0.*",
-    "Flask-SQLAlchemy==2.4.*",
+    "Flask-SQLAlchemy==2.5.*",
     "Flask-TemplateSupport==2.0.*",
     "aiohttp==3.7.*",
     "argon2-cffi==20.1.*",
@@ -172,5 +159,16 @@ setup(
     entry_points=ENTRY_POINTS,
     cmdclass=dict(test=PyTest),
     install_requires=REQUIRES,
-    classifiers=CLASSIFIERS
+    classifiers=[
+        "Environment :: Web Environment",
+        "Framework :: Flask",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.6",
+        "Topic :: Software Development",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+        "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    ]
 )
