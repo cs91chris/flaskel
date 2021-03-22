@@ -1,8 +1,16 @@
 import flask
 
 from flaskel import httpcode, webargs
-from flaskel.ext import auth
+from flaskel.ext import auth, builder
+from flaskel.ext.sqlalchemy import db
 from . import bp_auth
+
+
+class BlackListToken(db.Model, auth.RevokedTokenMixin):
+    __tablename__ = 'revoked_tokens'
+
+
+handler = auth.DBTokenHandler(BlackListToken, db.session)
 
 
 @bp_auth.route('/token/access', methods=['POST'])
@@ -13,17 +21,27 @@ from . import bp_auth
 def access_token(args):
     data = flask.request.json
     if data.email == 'email' and data.password == 'password':
-        return auth.TokenHandler.create(data.email, **args)
+        return handler.create(data.email, **args)
     flask.abort(httpcode.UNAUTHORIZED)
 
 
 @bp_auth.route('/token/refresh', methods=['POST'])
 @auth.jwt.jwt_required(refresh=True)
 def refresh_token():
-    return auth.TokenHandler.refresh()
+    return handler.refresh()
 
 
 @bp_auth.route('/token/check', methods=['GET'])
 @auth.jwt.jwt_required()
 def check_token():
-    return auth.TokenHandler.dump()
+    return handler.dump()
+
+
+@bp_auth.route('/token/revoke', methods=['POST'])
+@builder.no_content
+def revoke_token():
+    data = flask.request.json
+    if data.access_token:
+        handler.revoke(data.access_token)
+    if data.refresh_token:
+        handler.revoke(data.refresh_token)

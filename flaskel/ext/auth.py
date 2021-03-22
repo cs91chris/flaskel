@@ -24,62 +24,76 @@ def invalid_token_loader(mess):
     return dict(message=mess), httpcode.UNAUTHORIZED  # pragma: no cover
 
 
-class RevokedTokenModel(db.Model, StandardMixin):
-    __tablename__ = 'revoked_tokens'
-
+class RevokedTokenMixin(StandardMixin):
     jti = db.Column(db.String(120), nullable=False, unique=True)
 
     def __repr__(self):  # pragma: no cover
         return f"<RevokedToken: {self.id} - {self.jti}>"
 
     @classmethod
-    def is_jti_blacklisted(cls, jti):  # pragma: no cover
+    def is_block_listed(cls, jti):  # pragma: no cover
+        # noinspection PyUnresolvedReferences
         return bool(cls.query.filter_by(jti=jti).first())
 
 
-@jwtm.token_in_blocklist_loader
-def check_token_blacklisted(jwt_headers, jwt_data):  # pragma: no cover
-    return RevokedTokenModel.is_jti_blacklisted(jwt_data['jti'])
+class BaseTokenHandler:
+    def __init__(self, blocklist_loader=None):
+        """
 
+        :param blocklist_loader:
+        """
+        jwtm.token_in_blocklist_loader(blocklist_loader)
 
-class TokenHandler:
-    revoked_token_model = RevokedTokenModel
+    def check_token_block_listed(self, jwt_headers, jwt_data):
+        raise NotImplementedError()  # pragma: no cover
+
+    def revoke(self, token=None):
+        raise NotImplementedError()  # pragma: no cover
 
     @classmethod
     def identity(cls):
         return jwt.get_jwt_identity()
 
     @classmethod
-    def decode(cls, token):
-        return ObjectDict(**jwt.decode_token(token))
-
-    @classmethod
     def get_raw(cls):
         return ObjectDict(**jwt.get_jwt())
 
     @classmethod
-    def get_access(cls, identity=None, expires=None):
+    def decode(cls, token):
+        return ObjectDict(**jwt.decode_token(token))
+
+    def get_access(self, identity=None, expires=None):
+        """
+
+        :param identity:
+        :param expires:
+        :return:
+        """
         return jwt.create_access_token(
-            identity=identity or cls.identity(),
+            identity=identity or self.identity(),
             expires_delta=timedelta(expires) if expires else None
         )
 
-    @classmethod
-    def get_refresh(cls, identity=None, expires=None):
+    def get_refresh(self, identity=None, expires=None):
+        """
+
+        :param identity:
+        :param expires:
+        :return:
+        """
         return jwt.create_refresh_token(
-            identity=identity or cls.identity(),
+            identity=identity or self.identity(),
             expires_delta=timedelta(expires) if expires else None
         )
 
-    @classmethod
-    def refresh(cls, expires=None):
+    def refresh(self, expires=None):
         """
 
         :param expires: in seconds
         :return:
         """
-        access_token = cls.get_access(expires=expires)
-        decoded = cls.decode(access_token)
+        access_token = self.get_access(expires=expires)
+        decoded = self.decode(access_token)
         return ObjectDict(
             access_token=access_token,
             expires_in=decoded.exp,
@@ -88,8 +102,7 @@ class TokenHandler:
             scope=cap.config.JWT_DEFAULT_SCOPE
         )
 
-    @classmethod
-    def create(cls, identity, refresh=True, expires_access=None, expires_refresh=None, scope=None):
+    def create(self, identity, refresh=True, expires_access=None, expires_refresh=None, scope=None):
         """
 
         :param identity: user identifier, generally the username
@@ -99,8 +112,8 @@ class TokenHandler:
         :param scope:
         :return:
         """
-        access_token = cls.get_access(identity=identity, expires=expires_access)
-        decoded = cls.decode(access_token)
+        access_token = self.get_access(identity=identity, expires=expires_access)
+        decoded = self.decode(access_token)
         resp = ObjectDict(
             access_token=access_token,
             expires_in=decoded.exp,
@@ -110,20 +123,80 @@ class TokenHandler:
         )
 
         if refresh:
-            resp.refresh_token = cls.get_refresh(identity=identity, expires=expires_refresh)
+            resp.refresh_token = self.get_refresh(identity=identity, expires=expires_refresh)
 
         return resp
 
-    @classmethod
-    def revoke(cls, token=None):
-        token = cls.decode(token) if token else cls.get_raw()
-        if token.jti:
-            cls.revoked_token_model(jti=token.jti).add()
+    def dump(self, token_type=None, scope=None):
+        """
 
-    @classmethod
-    def dump(cls, token_type=None, scope=None):
+        :param token_type:
+        :param scope:
+        :return:
+        """
         return ObjectDict(
             token_type=token_type or cap.config.JWT_DEFAULT_TOKEN_TYPE,
             scope=scope or cap.config.JWT_DEFAULT_SCOPE,
-            **cls.get_raw()
+            **self.get_raw()
         )
+
+
+class DBTokenHandler(BaseTokenHandler):
+    def __init__(self, model, session, blocklist_loader=None):
+        """
+
+        :param model:
+        """
+        self.model = model
+        self.session = session
+        super().__init__(blocklist_loader or self.check_token_block_listed)
+
+    def check_token_block_listed(self, jwt_headers, jwt_data):
+        """
+
+        :param jwt_headers:
+        :param jwt_data:
+        :return:
+        """
+        return self.model.is_block_listed(jwt_data['jti'])
+
+    def revoke(self, token=None):
+        """
+
+        :param token:
+        """
+        token = self.decode(token) if token else self.get_raw()
+        if token.jti:
+            self.session.add(self.model(jti=token.jti))
+            self.session.commit()
+
+
+class RedisTokenHandler(BaseTokenHandler):
+    def __init__(self, redis, blocklist_loader=None, entry_value='true'):
+        """
+
+        :param redis:
+        :param blocklist_loader:
+        :param entry_value:
+        """
+        self.redis = redis
+        self._entry_value = entry_value
+        super().__init__(blocklist_loader or self.check_token_block_listed)
+
+    def check_token_block_listed(self, jwt_headers, jwt_data):
+        """
+
+        :param jwt_headers:
+        :param jwt_data:
+        :return:
+        """
+        entry = self.redis.get(jwt_data['jti'])
+        return entry == self._entry_value or entry == self._entry_value.encode()
+
+    def revoke(self, token=None):
+        """
+
+        :param token:
+        """
+        token = self.decode(token) if token else self.get_raw()
+        self.redis.set(token.jti, self._entry_value)
