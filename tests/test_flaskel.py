@@ -8,7 +8,7 @@ import werkzeug.exceptions
 from flaskel import httpcode, misc, uuid, yaml
 from flaskel.http import batch, FlaskelHttp, FlaskelJsonRPC, HTTPClient, HTTPStatusError, rpc, useragent
 from flaskel.tester import Asserter
-from flaskel.utils import datetime, schemas, ExtProxy
+from flaskel.utils import datetime, ExtProxy, schemas
 from flaskel.utils.faker import DummyLogger
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, CTS, HOSTS, testapp
@@ -399,29 +399,50 @@ def test_correlation_id(testapp):
 
 
 def test_jwt(testapp):
-    res = testapp.post(
+    config = testapp.application.config
+    bypass = {config.LIMITER.BYPASS_KEY: config.LIMITER.BYPASS_VALUE}
+    tokens = testapp.post(
         url_for('auth.access_token'),
         json=dict(email='email', password='password')
     )
-    Asserter.assert_status_code(res)
-    Asserter.assert_allin(res.json.keys(), (
+    Asserter.assert_status_code(tokens)
+    Asserter.assert_allin(tokens.json.keys(), (
         'access_token', 'refresh_token', 'expires_in', 'issued_at', 'token_type', 'scope'
     ))
 
     res = testapp.post(
         url_for('auth.refresh_token'),
-        headers={'Authorization': f"Bearer {res.json.refresh_token}"}
+        headers={'Authorization': f"Bearer {tokens.json.refresh_token}", **bypass}
     )
     Asserter.assert_status_code(res)
     Asserter.assert_allin(res.json.keys(), (
         'access_token', 'expires_in', 'issued_at', 'token_type', 'scope'
     ))
 
+    check = testapp.get(
+        url_for('auth.check_token'),
+        headers={'Authorization': f"Bearer {res.json.access_token}", **bypass}
+    )
+    Asserter.assert_status_code(check)
+
+    unauth = testapp.get(
+        url_for('auth.check_token'),
+        headers={'Authorization': f"Bearer invalid-token", **bypass}
+    )
+    Asserter.assert_status_code(unauth, httpcode.UNAUTHORIZED)
+
+    revoked = testapp.post(
+        url_for('auth.revoke_token'),
+        headers={'Authorization': f"Bearer {tokens.json.access_token}", **bypass},
+        json={'access_token': tokens.json.access_token, 'refresh_token': tokens.json.refresh_token}
+    )
+    Asserter.assert_status_code(revoked, httpcode.NO_CONTENT)
+
     res = testapp.get(
         url_for('auth.check_token'),
-        headers={'Authorization': f"Bearer {res.json.access_token}"}
+        headers={'Authorization': f"Bearer {tokens.json.access_token}", **bypass}
     )
-    Asserter.assert_status_code(res)
+    Asserter.assert_status_code(res, httpcode.UNAUTHORIZED)
 
 
 def test_http_status():

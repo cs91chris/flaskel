@@ -15,7 +15,7 @@ class FakeLogger:
         pass
 
 
-# noinspection PyMethodMayBeStatic,PyUnusedLocal
+# noinspection PyMethodMayBeStatic
 class DummyLogger:
     def debug(self, *args, **kwargs):
         print("DEBUG:", *args)
