@@ -18,6 +18,10 @@ class JSONRPCView(View):
     decorators = [builder.response('json')]
     operations = {}
 
+    @staticmethod
+    def normalize_url(url):
+        return f"/{url.lstrip('/')}"
+
     def __init__(self, operations=None, batch_executor=None, **kwargs):
         """
 
@@ -177,9 +181,9 @@ class JSONRPCView(View):
 
         :param app: Flask or Blueprint instance
         :param name: view name
-        :param url: url to bind
+        :param url: url to bind if missing, name is used
         """
         name = name or cls.__name__
-        url = url or f"/{name}"
+        url = cls.normalize_url(url or name)
         view_func = cls.as_view(name, cls.operations, **kwargs)
-        app.add_url_rule(f"/{url.rstrip('/')}", view_func=view_func, methods=cls.methods)
+        app.add_url_rule(url, view_func=view_func, methods=cls.methods)

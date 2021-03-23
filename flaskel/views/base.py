@@ -38,20 +38,24 @@ class Resource(MethodView):
     methods_subresource = ['GET', 'POST']
     methods_resource = ['GET', 'PUT', 'DELETE']
 
+    @staticmethod
+    def normalize_url(url):
+        return f"/{url.lstrip('/')}"
+
     @classmethod
     def register(cls, app, name=None, url=None, view=None, pk_type='int', **kwargs):
         """
 
         :param app: Flask or Blueprint instance
         :param name: view name
-        :param url: url to bind
-        :param view: view class
+        :param url: url to bind if missing, name is used
+        :param view: view class, subclass che call this must pass its reference
         :param pk_type: type of res_id
         """
         _class = view or cls
         name = name or _class.__name__
+        url = cls.normalize_url(url or name)
         view_func = _class.as_view(name, **kwargs)
-        url = f"/{(url or name).lstrip('/')}"
 
         if cls.methods_collection:
             app.add_url_rule(
