@@ -4,7 +4,7 @@ import flask
 
 from flaskel.ext.default import builder
 from flaskel.flaskel import cap, httpcode
-from flaskel.utils.batch import ThreadBatchExecutor
+from flaskel.utils.batch import BatchExecutor, ThreadBatchExecutor
 
 
 class HealthCheck:
@@ -22,13 +22,15 @@ class HealthCheck:
     def init_app(self, app, bp=None, extensions=(), decorators=(), executor=None):
         """
 
-        :param app:
-        :param bp:
-        :param extensions:
-        :param decorators:
-        :param executor:
+        :param app: Flask app or blueprint instance
+        :param bp: optional a blueprint instance on which register the healthcheck view
+        :param extensions: functions and arguments that execute the checks
+        :param decorators: functions that decorates the healthcheck view
+        :param executor: batch executor class, must be subclass of BatchExecutor
         """
         self._executor = executor or ThreadBatchExecutor
+        assert issubclass(self._executor, BatchExecutor)
+
         self.set_default_config(app)
         self.register_route(bp or app, decorators)
         self.register_extensions(app, extensions)
@@ -40,28 +42,30 @@ class HealthCheck:
     @staticmethod
     def set_default_config(app):
         app.config.setdefault('HEALTHCHECK_ABOUT_LINK', None)
+        app.config.setdefault('HEALTHCHECK_VIEW_NAME', 'healthcheck')
         app.config.setdefault('HEALTHCHECK_PATH', '/healthcheck')
         app.config.setdefault('HEALTHCHECK_PARAM_KEY', 'checks')
         app.config.setdefault('HEALTHCHECK_PARAM_SEP', '+')
         app.config.setdefault('HEALTHCHECK_CONTENT_TYPE', 'application/health+json')
 
-    def register_route(self, app, decorators):
+    def register_route(self, app, decorators=()):
         """
 
-        :param app:
-        :param decorators:
+        :param app: Flask app or blueprint instance
+        :param decorators: functions that decorates the healthcheck view
         """
         view = self.perform
         for decorator in decorators:
             view = decorator(view)
 
-        app.add_url_rule(app.config['HEALTHCHECK_PATH'], view_func=view)
+        conf = cap.config
+        app.add_url_rule(conf['HEALTHCHECK_PATH'], conf['HEALTHCHECK_VIEW_NAME'], view_func=view)
 
     def register_extensions(self, app, extensions):
         """
 
-        :param app:
-        :param extensions:
+        :param app: Flask app instance
+        :param extensions: functions and arguments that execute the checks
         """
         for ex in extensions:
             try:
@@ -110,7 +114,6 @@ class HealthCheck:
         """
 
         :param name:
-        :param kwargs:
         :return:
         """
 
