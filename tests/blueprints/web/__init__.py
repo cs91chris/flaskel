@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from flaskel.ext import errors
+from flaskel.ext import error_handler
 
 bp_web = Blueprint(
     'web', __name__,
@@ -8,4 +8,4 @@ bp_web = Blueprint(
     static_folder="static"
 )
 
-errors.web_register(bp_web)
+error_handler.web_register(bp_web)

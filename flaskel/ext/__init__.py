@@ -1,6 +1,6 @@
 from .caching import Cache, caching
 from .default import builder, cfremote, cors, logger, template
-from .errors import errors
+from .errors import error_handler, ErrorNormalizer
 from .jobs import APJobs, scheduler
 from .limit import FlaskIPBan, ip_ban, limiter, RateLimit
 from .redis import client_redis, FlaskRedis

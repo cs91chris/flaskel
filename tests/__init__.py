@@ -56,9 +56,10 @@ BASE_EXTENSIONS = {
     "limiter":       (limit.limiter,),
     "ip_ban":        (limit.ip_ban,),
     "cache":         (caching,),
-    "errors":        (errors, {
+    "errors":        (errors.error_handler, {
         "dispatcher": 'subdomain',
         "response":   builder.on_accept(strict=False),
+        "normalizer": errors.ErrorNormalizer()
     }),
     "useragent":     (useragent,),
     "argon2":        (argon2,),

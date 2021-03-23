@@ -1,4 +1,4 @@
-from flaskel.ext import caching, client_mail, client_redis, default, limit, scheduler, useragent
+from flaskel.ext import caching, client_mail, client_redis, default, errors, limit, scheduler, useragent
 from flaskel.ext.auth import jwtm
 from flaskel.ext.crypto import argon2
 from flaskel.ext.healthcheck import health_checks
@@ -15,9 +15,10 @@ EXTENSIONS = {
     "limiter":       (limit.limiter,),
     "ip_ban":        (limit.ip_ban,),
     "cache":         (caching,),
-    "errors":        (default.errors, {
+    "errors":        (errors.error_handler, {
         "dispatcher": 'subdomain',
         "response":   default.builder.on_accept(strict=False),
+        "normalizer": errors.ErrorNormalizer()
     }),
     "useragent":     (useragent,),
     "argon2":        (argon2,),

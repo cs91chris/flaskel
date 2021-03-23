@@ -2,7 +2,7 @@
 #
 from flask import Blueprint
 
-from flaskel.ext import errors
+from flaskel.ext import error_handler
 from flaskel.views import RenderTemplate
 
 bp_web = Blueprint(
@@ -13,5 +13,5 @@ bp_web = Blueprint(
     static_url_path="static/"
 )
 
-errors.web_register(bp_web)
+error_handler.web_register(bp_web)
 RenderTemplate.register(bp_web, name='index', urls=['/'], template='index.html')

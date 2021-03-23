@@ -18,4 +18,4 @@ class ErrorNormalizer(DefaultNormalizer):
         return super().normalize(ex)
 
 
-errors = ErrorHandler(normalizer=ErrorNormalizer())
+error_handler = ErrorHandler()
