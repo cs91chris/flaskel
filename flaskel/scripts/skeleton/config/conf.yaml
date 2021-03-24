@@ -27,6 +27,7 @@ app:
   BASIC_AUTH_USERNAME: admin
   LOGGING: !include config/log.yaml
   APISPEC: !include config/swagger.yaml
+  SCHEMAS: !include config/schemas.yaml
   IPBAN_NUISANCES: !include config/nuisances.yaml
   # SCHEDULER_JOBS: !include config/scheduler.yaml
   SCHEDULER_AUTO_START: true

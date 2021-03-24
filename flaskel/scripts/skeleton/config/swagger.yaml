@@ -1,95 +1,104 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
   title: API DOCS
   version: '0.0.0'
   description: HTTP APIs documentation
 servers:
-  - url: '{host}'
+  - url: '{host}{context}'
     variables:
-      version:
+      context:
         default: /
       host:
-        default: 'http://api.flask.local:5000{version}'
+        default: 'http://api.flask.local:5000'
         enum:
-          - 'http://api.flask.local:5000{version}'
+          - 'http://api.flask.local:5000'
 paths:
-  /token/access:
+  '/token/access':
     post:
+      summary: Access token
+      tags:
+        - Auth
+      parameters:
+        - $ref: '#/components/parameters/expire_access'
+        - $ref: '#/components/parameters/expire_refresh'
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
+              $ref: '#/components/schemas/PostAccessToken'
       responses:
-        '200':
+        200:
           content:
             application/json:
               schema:
-                type: object
-          description: perform an authentication via username and password
-        '401':
-          description: unauthorized
-        '422':
-          description: bad request
-        '500':
-          description: internal server error
-      summary: Get an access token
-      tags:
-        - Auth
-  /token/refresh:
+                $ref: '#/components/schemas/AccessToken'
+          description: login eseguito con successo
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        422:
+          $ref: '#/components/responses/422'
+        500:
+          $ref: '#/components/responses/500'
+  '/token/refresh':
     post:
+      summary: Refresh token
+      tags:
+        - Auth
+      security:
+        - token: [ ]
+      parameters:
+        - $ref: '#/components/parameters/expire_access'
       responses:
-        '200':
+        200:
+          description: refresh eseguito con successo
           content:
             application/json:
               schema:
-                type: object
-          description: new access token provided
-        '401':
-          description: unauthorized
-        '500':
-          description: internal server error
-      summary: Get a refresh token
+                $ref: '#/components/schemas/RefreshToken'
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        500:
+          $ref: '#/components/responses/500'
+  '/token/revoke':
+    post:
+      summary: Revoke token
       tags:
         - Auth
-  /token/check:
-    get:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRevokeToken'
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-          description: token decoded
-        '401':
-          description: unauthorized
-        '500':
-          description: internal server error
-      summary: Get token information
-      tags:
-        - Auth
+        204:
+          description: logout eseguito con successo
+        400:
+          $ref: '#/components/responses/400'
+        422:
+          $ref: '#/components/responses/422'
+        500:
+          $ref: '#/components/responses/500'
   /healthcheck:
     get:
       security:
         - basicauth: [ ]
       responses:
-        '200':
+        200:
           content:
             application/json:
               schema:
                 type: object
           description: platform is healthy
-        '401':
-          description: unauthorized
-        '500':
-          description: internal server error
-        '503':
-          description: platform is unhealty
+        401:
+          $ref: '#/components/responses/401'
+        500:
+          $ref: '#/components/responses/500'
+        503:
+          $ref: '#/components/responses/503'
       summary: health check
       tags:
         - Monitoring
@@ -98,3 +107,169 @@ components:
     basicAuth:
       type: http
       scheme: basic
+    token:
+      type: apiKey
+      in: header
+      name: Authorization
+  parameters:
+    page:
+      in: query
+      name: page
+      schema:
+        type: integer
+      description: numero pagina
+    page_size:
+      in: query
+      name: page_size
+      description: numero elementi per pagina
+      schema:
+        type: integer
+    related:
+      in: query
+      name: related
+      description: con dettaglio
+      schema:
+        type: boolean
+    expire_access:
+      in: query
+      name: expire_access
+      schema:
+        type: integer
+      description: espresso in secondi
+    expire_refresh:
+      in: query
+      name: expire_refresh
+      schema:
+        type: integer
+      description: espresso in secondi
+  responses:
+    400:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    401:
+      description: Not Autenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    402:
+      description: Server require payment
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    403:
+      description: 'Forbidden: insufficient privileges'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    404:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    409:
+      description: 'Conflict: resource already exists'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    422:
+      description: 'Entity not processable: payload does not match the resource schema'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    429:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    500:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    503:
+      description: Service Unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+  schemas:
+    ApiProblem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        instance:
+          type: string
+        status:
+          type: integer
+        response:
+          type: object
+    PostRevokeToken:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+    PostAccessToken:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    AccessToken:
+      type: object
+      required:
+        - access_token
+        - refresh_token
+        - expires_in
+        - issued_at
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        issued_at:
+          type: integer
+        token_type:
+          type: string
+        scope:
+          type: string
+    RefreshToken:
+      type: object
+      required:
+        - access_token
+        - expires_in
+        - issued_at
+      properties:
+        access_token:
+          type: string
+        expires_in:
+          type: integer
+        issued_at:
+          type: integer
+        token_type:
+          type: string
+        scope:
+          type: string
