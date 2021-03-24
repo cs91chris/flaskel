@@ -1,5 +1,5 @@
 import flask
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from flaskel.flaskel import cap, httpcode
 from flaskel.utils import PayloadValidator, webargs
@@ -127,6 +127,20 @@ class Restful(CatalogResource):
         resource.update(data)
         return resource
 
+    def _create(self, res):
+        try:
+            self._session.add(res)
+            self._session.commit()
+        except IntegrityError:
+            self._session.rollback()
+            flask.abort(httpcode.CONFLICT)
+        except SQLAlchemyError as exc:
+            cap.logger.exception(exc)
+            self._session.rollback()
+            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+
+        return res.to_dict(), httpcode.CREATED
+
     def on_post(self, *args, **kwargs):
         """
 
@@ -134,14 +148,7 @@ class Restful(CatalogResource):
         """
         payload = self.validate(self.post_schema)
         res = self.create_resource(payload)
-        try:
-            self._session.add(res)
-            self._session.commit()
-        except IntegrityError:
-            self._session.rollback()
-            flask.abort(httpcode.CONFLICT)
-
-        return res.to_dict(), httpcode.CREATED
+        return self._create(res)
 
     def on_delete(self, res_id, *args, **kwargs):
         """
@@ -149,8 +156,25 @@ class Restful(CatalogResource):
         :param res_id: resource identifier (primary key value)
         """
         res = self._model.query.get_or_404(res_id)
-        self._session.delete(res)
-        self._session.commit()
+
+        try:
+            self._session.delete(res)
+            self._session.commit()
+        except SQLAlchemyError as exc:
+            cap.logger.exception(exc)
+            self._session.rollback()
+            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+
+    def _update(self, res):
+        try:
+            self._session.merge(res)
+            self._session.commit()
+        except SQLAlchemyError as exc:
+            cap.logger.exception(exc)
+            self._session.rollback()
+            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+
+        return res.to_dict()
 
     def on_put(self, res_id, *args, **kwargs):
         """
@@ -161,6 +185,4 @@ class Restful(CatalogResource):
         payload = self.validate(self.put_schema)
         res = self._model.query.get_or_404(res_id)
         res = self.update_resource(res, payload)
-        self._session.merge(res)
-        self._session.commit()
-        return res.to_dict()
+        return self._update(res)

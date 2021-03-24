@@ -76,4 +76,5 @@ class SQLAModel(Model):
         :param restricted:
         :return:
         """
-        return {col: getattr(self, col) for col in self.columns()}
+        columns = self.columns().keys()
+        return {col: getattr(self, col, None) for col in columns}
