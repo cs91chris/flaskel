@@ -34,7 +34,7 @@ SCHEMA_DIR = 'flaskel/scripts/skeleton/blueprints/api/static/schemas'
 
 SCHEMAS = dict(
     JSONRPC=f"file://{SCHEMA_DIR}/jsonrpc.json",
-    APIPROBLEM=f"file://{SCHEMA_DIR}/apiproblem.json",
+    API_PROBLEM=f"file://{SCHEMA_DIR}/apiproblem.json",
     HEALTHCHECK=f"file://{SCHEMA_DIR}/healthcheck.json",
     OPENAPI3=f"file://{SCHEMA_DIR}/openapi3.json",
     ITEM={

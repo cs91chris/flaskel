@@ -265,33 +265,34 @@ def test_api_jsonrpc_error(app_dev):
     call_id = 1
     url = url_for('myJsonRPC')
     testapp = app_dev.test_client()
+    response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method="NotFoundMethod", call_id=call_id, **headers)
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.error.code, rpc.RPCMethodNotFound().code)
-    Asserter.assert_schema(res.json, schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE'])
+    Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.id, call_id)
     Asserter.assert_true(res.json.error.message)
 
     res = testapp.jsonrpc(url, json={}, **headers)
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCParseError().code)
 
     res = testapp.jsonrpc(url, json={"params": None}, **headers)
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = testapp.jsonrpc(url, json={"jsonrpc": 1, 'method': "MyJsonRPC.testAction1"}, **headers)
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = testapp.jsonrpc(url, method="MyJsonRPC.testInternalError", call_id=call_id, **headers)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInternalError().code)
 
 
@@ -299,16 +300,17 @@ def test_api_jsonrpc_params(app_dev):
     url = url_for('myJsonRPC')
     method = "MyJsonRPC.testInvalidParams"
     testapp = app_dev.test_client()
+    response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"param": "testparam"}, **headers)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE'])
+    Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_not_in('error', res.json)
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"params": None}, **headers)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, schemas.SCHEMAS.JSONRPC_RESPONSE)
+    Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidParams().code)
 
 
@@ -320,9 +322,9 @@ def test_api_jsonrpc_batch(app_dev):
         dict(method="MyJsonRPC.testAction1", call_id=1, params={}),
         dict(method="MyJsonRPC.NotFoundMethod", call_id=2),
     ), **headers)
+    Asserter.assert_status_code(res, httpcode.MULTI_STATUS)
     Asserter.assert_true(res.json[0].result.action1)
     Asserter.assert_equals(res.json[1].error.code, rpc.RPCMethodNotFound().code)
-    Asserter.assert_status_code(res, httpcode.MULTI_STATUS)
 
     res = testapp.jsonrpc_batch(url, requests=(
         dict(method="MyJsonRPC.testAction1", call_id=1, params={}),

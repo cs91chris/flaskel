@@ -4,7 +4,6 @@ from functools import partial
 import flask
 import jsonschema
 from flask import current_app as cap
-
 from flaskel.http.client import HTTPClient, httpcode
 from flaskel.utils.datastruct import ConfigProxy
 
@@ -63,7 +62,7 @@ class JSONSchema:
         try:
             checker = checker or jsonschema.FormatChecker()
             jsonschema.validate(data, schema, format_checker=checker)
-        except jsonschema.ValidationError as exc:
+        except (jsonschema.ValidationError, jsonschema.SchemaError) as exc:
             if not raise_exc:
                 if pretty_error:
                     cap.logger.error(cls.error_report(exc, data))
@@ -132,12 +131,16 @@ class PayloadValidator:
     validator = JSONSchema
 
     @classmethod
-    def validate(cls, schema):
+    def validate(cls, schema, strict=True):
         """
 
         :param schema:
+        :param strict:
         :return:
         """
+        if strict and not schema:
+            flask.abort(httpcode.INTERNAL_SERVER_ERROR, 'empty schema')
+
         payload = flask.request.json
         try:
             schema = cls.schemas.get(schema) if type(schema) is str else schema

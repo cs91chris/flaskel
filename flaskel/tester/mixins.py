@@ -142,13 +142,19 @@ class BaseAssert:
 
 class JSONValidatorMixin(BaseAssert, JSONSchema):
     @classmethod
-    def assert_schema(cls, data, schema):
+    def assert_schema(cls, data, schema, strict=True):
         """
 
         :param data:
         :param schema:
+        :param strict:
         :return:
         """
+        if strict and not schema:
+            cls.assert_that(
+                lambda a, e: a is not None,
+                actual=schema, error="Missing schema"
+            )
         try:
             cls.validate(data, schema, raise_exc=True)
             valid, message = True, None
