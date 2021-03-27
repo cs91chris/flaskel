@@ -50,8 +50,8 @@ class CatalogResource(Resource):
 
         return self.response_paginated(
             model.get_list(
-                to_dict=False, order_by=order_by, page=page,
-                page_size=size, max_per_page=max_size, **kwargs
+                to_dict=False, order_by=order_by, page=page, page_size=size,
+                max_per_page=max_size, params=params, **kwargs
             ),
             restricted=not params.get('related', False)
         )

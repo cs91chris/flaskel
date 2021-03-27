@@ -29,6 +29,10 @@ class SQLAModel(Model):
             return res
 
     @classmethod
+    def query_collection(cls, params=None, *args, **kwargs):
+        return cls.query.filter(*args).filter_by(**kwargs)
+
+    @classmethod
     def get_list(cls, to_dict=True, restricted=False, order_by=None,
                  page=None, page_size=None, max_per_page=None, *args, **kwargs):
         """
@@ -41,7 +45,7 @@ class SQLAModel(Model):
         :param max_per_page:
         :return:
         """
-        q = cls.query.filter(*args).filter_by(**kwargs)
+        q = cls.query_collection(*args, **kwargs)
 
         if order_by is not None:
             q = q.order_by(order_by)
