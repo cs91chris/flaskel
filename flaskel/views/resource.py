@@ -1,8 +1,8 @@
 import flask
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-
 from flaskel.flaskel import cap, httpcode
 from flaskel.utils import PayloadValidator, webargs
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
 from .base import Resource
 
 
@@ -45,7 +45,8 @@ class CatalogResource(Resource):
         model = model or self._model
         max_size = cap.config.MAX_PAGE_SIZE
         page = params.get('page')
-        size = params.get('page_size') or max_size
+        size = params.get('page_size')
+        size = max(size, max_size or 0) if size else max_size
         order_by = getattr(model, 'order_by', None)
 
         return self.response_paginated(
@@ -139,8 +140,6 @@ class Restful(CatalogResource):
             self._session.rollback()
             flask.abort(httpcode.INTERNAL_SERVER_ERROR)
 
-        return res.to_dict(), httpcode.CREATED
-
     def on_post(self, *args, **kwargs):
         """
 
@@ -148,7 +147,8 @@ class Restful(CatalogResource):
         """
         payload = self.validate(self.post_schema)
         res = self.create_resource(payload)
-        return self._create(res)
+        self._create(res)
+        return res.to_dict(), httpcode.CREATED
 
     def on_delete(self, res_id, *args, **kwargs):
         """
@@ -174,8 +174,6 @@ class Restful(CatalogResource):
             self._session.rollback()
             flask.abort(httpcode.INTERNAL_SERVER_ERROR)
 
-        return res.to_dict()
-
     def on_put(self, res_id, *args, **kwargs):
         """
 
@@ -185,4 +183,5 @@ class Restful(CatalogResource):
         payload = self.validate(self.put_schema)
         res = self._model.query.get_or_404(res_id)
         res = self.update_resource(res, payload)
-        return self._update(res)
+        self._update(res)
+        return res.to_dict()

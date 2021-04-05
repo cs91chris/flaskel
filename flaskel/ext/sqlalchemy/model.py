@@ -1,5 +1,7 @@
 from flask_sqlalchemy import Model
 
+from flaskel.utils.datastruct import ObjectDict
+
 
 class SQLAModel(Model):
     def columns(self):
@@ -81,4 +83,4 @@ class SQLAModel(Model):
         :return:
         """
         columns = self.columns().keys()
-        return {col: getattr(self, col, None) for col in columns}
+        return ObjectDict(**{col: getattr(self, col, None) for col in columns})

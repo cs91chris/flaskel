@@ -2,7 +2,7 @@ import flask
 from flask.views import MethodView, View
 
 from flaskel.ext.default import builder
-from flaskel.flaskel import cap, httpcode
+from flaskel.flaskel import httpcode
 
 
 class BaseView(View):
@@ -88,12 +88,11 @@ class Resource(MethodView):
             return self.on_get(res_id, *args, **kwargs)
         if self.methods_subresource and 'GET' not in self.methods_subresource:
             flask.abort(httpcode.METHOD_NOT_ALLOWED)
-        try:
-            _sub_resource = getattr(self, f"sub_{sub_resource}")
-            return _sub_resource(res_id, *args, **kwargs)
-        except AttributeError as exc:
-            cap.logger.debug(str(exc))
+
+        _sub_resource = getattr(self, f"sub_{sub_resource}", None)
+        if _sub_resource is None:
             flask.abort(httpcode.NOT_FOUND)
+        return _sub_resource(res_id, *args, **kwargs)
 
     @builder.on_accept()
     def post(self, *args, res_id=None, sub_resource=None, **kwargs):
@@ -101,12 +100,11 @@ class Resource(MethodView):
             return self.on_post(*args, **kwargs)
         if self.methods_subresource and 'POST' not in self.methods_subresource:
             flask.abort(httpcode.METHOD_NOT_ALLOWED)
-        try:
-            _sub_resource = getattr(self, f"sub_{sub_resource}_post")
-            return _sub_resource(res_id, *args, **kwargs)
-        except AttributeError as exc:
-            cap.logger.debug(str(exc))
+
+        _sub_resource = getattr(self, f"sub_{sub_resource}_post", None)
+        if _sub_resource is None:
             flask.abort(httpcode.NOT_FOUND)
+        return _sub_resource(res_id, *args, **kwargs)
 
     @builder.no_content
     def delete(self, res_id, *args, **kwargs):
