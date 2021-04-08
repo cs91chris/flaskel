@@ -10,7 +10,11 @@ EXTENSIONS = {
     "logger":        (default.logger,),  # MUST be the second
     "template":      (default.template,),
     "builder":       (default.builder,),
-    "cors":          (default.cors,),
+    "cors":          (default.cors, {
+        "resources": {
+            r'/*': {'origins': '*'}
+        }
+    }),
     "database":      (sqlalchemy,),
     "limiter":       (limit.limiter,),
     "ip_ban":        (limit.ip_ban,),

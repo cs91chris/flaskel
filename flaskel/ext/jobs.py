@@ -1,14 +1,19 @@
 import logging
 
 from apscheduler import events
+from apscheduler.schedulers.blocking import BlockingScheduler
 from flask_apscheduler import APScheduler
 
 from flaskel.utils.uuid import get_uuid
 
 
 class APJobs(APScheduler):
-    def init_app(self, app):
+    def init_app(self, app, test_sync=True):
         super().init_app(app)
+
+        # if app is in testing mode execute tasks synchronously
+        if test_sync and app.testing:
+            self._scheduler = BlockingScheduler()
 
         if app.debug:
             logger = logging.getLogger('apscheduler')
