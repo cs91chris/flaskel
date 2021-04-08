@@ -1,8 +1,9 @@
 from flask_sqlalchemy import event
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
 
+from flaskel import ExtProxy, ObjectDict
 from flaskel.ext.sqlalchemy import db
-from flaskel.utils.datastruct import ObjectDict
 
 
 class StandardMixin:
@@ -89,3 +90,27 @@ class LoaderMixin:
     def register_loader(cls):
         # noinspection PyUnresolvedReferences
         event.listen(cls.__table__, 'after_create', cls.load_values)
+
+
+class UserMixin(StandardMixin):
+    _hasher = ExtProxy('argon2')
+    _password = db.Column('password', db.String(128), nullable=False)
+
+    email = db.Column(db.String(255), unique=True, nullable=False)
+
+    @hybrid_property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, password):
+        self._password = self._hasher.generate_hash(password)
+
+    def check_password(self, password):
+        return self._hasher.verify_hash(self._password, password)
+
+    def to_dict(self, restricted=False):
+        return ObjectDict(
+            id=self.id,
+            email=self.email
+        )
