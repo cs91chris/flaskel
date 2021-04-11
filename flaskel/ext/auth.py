@@ -1,3 +1,4 @@
+import functools
 from datetime import timedelta
 
 import flask_jwt_extended as jwt
@@ -51,8 +52,32 @@ class BaseTokenHandler:
         raise NotImplementedError()  # pragma: no cover
 
     @classmethod
+    def check_permission(cls, perm):
+        """
+
+        :param perm:
+        """
+
+    @classmethod
+    def auth_required(cls, perm=None, **kwargs):
+        def wrapper(f):
+            @functools.wraps(f)
+            @jwt.jwt_required(**kwargs)
+            def check_optional_permission(*args, **kw):
+                if perm is not None:
+                    cls.check_permission(perm)
+                return f(*args, **kw)
+
+            return check_optional_permission
+
+        return wrapper
+
+    @classmethod
     def identity(cls):
-        return jwt.get_jwt_identity()
+        identity = jwt.get_jwt_identity()
+        if type(identity) is dict:
+            identity = ObjectDict(**identity)
+        return identity
 
     @classmethod
     def get_raw(cls):
