@@ -6,11 +6,12 @@ app:
   FLASK_ENV: &env development
   SERVER_NAME: flask.local:5000
   USE_X_SENDFILE: false
-  EXPLAIN_TEMPLATE_LOADING: false
+  EXPLAIN_TEMPLATE_LOADING: *debug
   TEMPLATES_AUTO_RELOAD: *debug
   PREFERRED_URL_SCHEME: http
   LOCALE: it_IT.utf8
   LOG_SKIP_DUMP: false
+  LOG_APP_NAME: *appname
   LOG_BUILDER: text
   LOG_LOGGER_NAME: *env
   CF_STRICT_ACCESS: false
@@ -72,8 +73,8 @@ app:
     BYPASS_KEY: X-Limiter-Bypass
     BYPASS_VALUE: bypass-rate-limit
   MAIL_DEBUG: false
-  MAIL_SERVER: 127.0.0.1
-  MAIL_PORT: 1025
+  MAIL_SERVER: sendria.local
+  MAIL_PORT: 62000
   MAIL_DEFAULT_SENDER: admin@mail.com
   MAIL_DEFAULT_RECEIVER: admin@mail.com
   ADMIN_EMAIL: admin

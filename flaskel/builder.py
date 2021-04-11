@@ -113,7 +113,7 @@ class AppBuilder:
                 try:
                     ext, opt = e[0], e[1] if len(e) > 1 else {}
                     if not ext:
-                        raise TypeError("extension could not be None")
+                        raise TypeError("extension could not be None or empty")
                 except (TypeError, IndexError) as exc:
                     self._app.logger.debug(f"Invalid extension '{name}' configuration '{e}': {exc}")
                     continue
@@ -130,7 +130,7 @@ class AppBuilder:
             try:
                 bp, opt = b[0], b[1] if len(b) > 1 else {}
                 if not bp:
-                    raise TypeError('blueprint could not be None')
+                    raise TypeError('blueprint could not be None or empty')
             except (TypeError, IndexError) as exc:
                 self._app.logger.debug(f"invalid blueprint configuration '{b}': {exc}")
                 continue
@@ -162,11 +162,21 @@ class AppBuilder:
 
     def _register_middlewares(self):
         for m in self._middlewares:
+            kwargs = {}
+            try:
+                if isinstance(m, (list, tuple)):
+                    m, kwargs = m[0], m[1] if len(m) > 1 else {}
+                if not m:
+                    raise TypeError('middleware could not be None or empty')
+            except (TypeError, IndexError) as exc:
+                self._app.logger.debug(f"invalid middleware configuration '{m}': {exc}")
+                continue
+
             # WorkAround: in order to pass flask app to middleware without breaking chain
             if not (hasattr(m, 'flask_app') and m.flask_app):
                 setattr(m, 'flask_app', self._app)
 
-            self._app.wsgi_app = m(self._app.wsgi_app)
+            self._app.wsgi_app = m(self._app.wsgi_app, **kwargs)
             self._app.logger.debug(f"Registered middleware: '{m.__name__}'")
 
     def _register_views(self):

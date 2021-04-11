@@ -39,7 +39,9 @@ class APJobs(APScheduler):
         """
         kwargs = kwargs or {}
         kw['kwargs'] = kwargs
-        return super().add_job(id=get_uuid(), func=func, **kw)
+        job_id = get_uuid()
+        self.app.logger.debug(f'added job {func}: {job_id}')
+        return super().add_job(id=job_id, func=func, **kw)
 
 
 scheduler = APJobs()
