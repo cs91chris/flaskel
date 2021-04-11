@@ -197,15 +197,16 @@ class DBTokenHandler(BaseTokenHandler):
 
 
 class RedisTokenHandler(BaseTokenHandler):
-    def __init__(self, redis, blocklist_loader=None, entry_value='true'):
+    entry_value = 'true'
+    key_prefix = 'token_revoked::'
+
+    def __init__(self, redis, blocklist_loader=None):
         """
 
         :param redis:
         :param blocklist_loader:
-        :param entry_value:
         """
         self.redis = redis
-        self._entry_value = entry_value
         super().__init__(blocklist_loader or self.check_token_block_listed)
 
     def check_token_block_listed(self, jwt_headers, jwt_data):
@@ -215,8 +216,11 @@ class RedisTokenHandler(BaseTokenHandler):
         :param jwt_data:
         :return:
         """
-        entry = self.redis.get(jwt_data['jti'])
-        return entry == self._entry_value or entry == self._entry_value.encode()
+        entry = self.redis.get(f"{self.key_prefix}{jwt_data['jti']}")
+        if not entry:
+            return False
+
+        return entry == self.entry_value or entry == self.entry_value.encode()
 
     def revoke(self, token=None):
         """
@@ -224,4 +228,4 @@ class RedisTokenHandler(BaseTokenHandler):
         :param token:
         """
         token = self.decode(token) if token else self.get_raw()
-        self.redis.set(token.jti, self._entry_value)
+        self.redis.set(f"{self.key_prefix}{token.jti}", self.entry_value)
