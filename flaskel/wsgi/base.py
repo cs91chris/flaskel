@@ -16,6 +16,7 @@ class BaseApplication:
 
         self._interface = bind[0] or self.default_host
         self._port = int(bind[1]) if len(bind) > 1 else self.default_port
+        self._bind = (self._interface, self._port)
 
     def run(self):
         """

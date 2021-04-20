@@ -11,7 +11,11 @@ class WSGIGevent(BaseApplication, WSGIServer):
         :param options:
         """
         BaseApplication.__init__(self, app, options)
-        WSGIServer.__init__(self, (self._interface, self._port), self.application)
+        opts = dict(
+            spawn=options.get('spawn') or 'default',
+            backlog=options.get('backlog')
+        )
+        WSGIServer.__init__(self, self._bind, self.application, **opts)
 
     def run(self):
         """
