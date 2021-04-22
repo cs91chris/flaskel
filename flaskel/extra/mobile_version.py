@@ -4,7 +4,7 @@ import flask
 from flask import current_app as cap
 from packaging import version
 
-from flaskel import Response
+from flaskel import ExtProxy, Response
 from flaskel.ext import builder
 from flaskel.http import httpcode
 from flaskel.utils import webargs
@@ -52,9 +52,9 @@ class MobileVersionCompatibility:
         if app is not None:
             self.init_app(app, store, current_version)
 
-    def init_app(self, app, store, current_version):
-        self._store = store
-        self._current_version = current_version
+    def init_app(self, app, store=None, current_version=None):
+        self._store = store or self._store
+        self._current_version = current_version or self._current_version
 
         self.load_config(app)
         self.load_from_storage()
@@ -90,6 +90,10 @@ class MobileVersionCompatibility:
         app.config.setdefault('VERSION_API_HEADER', 'X-Api-Version')
 
     @staticmethod
+    def version_parse(ver):
+        return version.Version(ver)
+
+    @staticmethod
     def _set_mobile_version():
         flask.g.mobile_version = flask.request.headers.get(cap.config.VERSION_HEADER_KEY)
 
@@ -116,7 +120,7 @@ class MobileVersionCompatibility:
     def publish(self, ver, critical=False):
         key = cap.config.VERSION_STORE_KEY
         latest, _ = self._store.latest(key)
-        if latest is not None and latest >= version.parse(ver):
+        if latest is not None and latest >= self.version_parse(ver):
             raise ValueError('New version must be greater than latest')
 
         self._store.release(cap.config.VERSION_STORE_KEY, ver, critical)
@@ -144,7 +148,7 @@ class MobileVersionCompatibility:
         self.load_from_storage()
 
         try:
-            mobile_version = version.parse(self.mobile_version)
+            mobile_version = self.version_parse(self.mobile_version)
             for v, u in self._versions:
                 if v > mobile_version and u is True:
                     return True
@@ -157,28 +161,33 @@ class MobileVersionCompatibility:
         return len(self._versions) >= cap.config.VERSION_STORE_MAX
 
 
-class MobileRelease(BaseView):
+class MobileReleaseView(BaseView):
+    builder = builder
+    ext = ExtProxy('mobile_version')
     methods = ['POST', 'GET', 'DELETE']
+    default_view_name = 'mobile_release'
+    default_urls = [
+        '/mobile/release',
+        '/mobile/release/<ver>',
+    ]
 
     @webargs.query(dict(critical=webargs.OptField.boolean(), all=webargs.OptField.boolean()))
     def dispatch_request(self, params=None, ver=None, *args, **kwargs):
-        ext = flask.current_app.extensions['mobile_version']
-
         if ver == 'latest':
-            return ext.latest(), {'Content-Type': 'text/plain'}
+            return self.ext.latest(), {'Content-Type': 'text/plain'}
 
         if ver is None:
             if flask.request.method == 'DELETE':
                 if params['all']:
-                    ext.clear()
+                    self.ext.clear()
                     return Response.no_content()
-                ext.rollback()
+                self.ext.rollback()
 
-            mimetype, response = builder.get_mimetype_accept()
-            return response.build(ext.all_releases()), {'Content-Type': mimetype}
+            mimetype, response = self.builder.get_mimetype_accept()
+            return response.build(self.ext.all_releases()), {'Content-Type': mimetype}
 
         try:
-            ext.publish(ver, params['critical'])
+            self.ext.publish(ver, params['critical'])
         except ValueError as exc:
             flask.abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
         return Response.no_content()
