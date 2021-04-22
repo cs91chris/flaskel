@@ -8,17 +8,19 @@ except ImportError:
 
 
 class NotificationHandler:
-    def __init__(self, model, session, provider=None):
+    def __init__(self, model, session, provider=None, dry_run=False):
         """
 
         :param model: sqlalchemy model class, must have a token column
         :param session: sqlalchemy session
         :param provider: an object with app attribute reference of app instance (nor current_app)
                          only if async methods are used (for background tasks)
+        :param dry_run: perform but not send notification (test only)
         """
         self.provider = provider
         self.session = session
         self.model = model
+        self.dry_run = dry_run
 
         assert FCMNotification is not None, "you must install 'pyfcm'"
         assert SQLAlchemyError is not None, "you must install 'sqlalchemy'"
@@ -66,7 +68,7 @@ class NotificationHandler:
         tokens_set = [tokens[x:x + rmax] for x in range(0, len(tokens), rmax)]
 
         kwargs.setdefault('sound', 'Default')
-        kwargs.setdefault('dry_run', app.testing)
+        kwargs.setdefault('dry_run', self.dry_run)
 
         for ts in tokens_set:
             try:

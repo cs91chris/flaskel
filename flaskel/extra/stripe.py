@@ -1,6 +1,6 @@
 import flask
 
-from flaskel import cap, httpcode
+from flaskel import cap, httpcode, ObjectDict
 
 try:
     import stripe
@@ -33,34 +33,34 @@ class PaymentHandler:
         app.config.setdefault('STRIPE_API_VERSION', '2020-08-27')
         app.config.setdefault('STRIPE_DEFAULT_CURRENCY', 'eur')
         self._stripe.log = 'debug' if app.debug else 'info'
-        self._stripe.api_key = app.config.STRIP_SECRET_KEY
+        self._stripe.api_key = app.config.STRIPE_SECRET_KEY
         self._stripe.api_version = app.config.STRIPE_API_VERSION
         self._stripe.set_app_info(name or app.config.APP_NAME, **kwargs)
 
+        if not hasattr(app, 'extensions'):
+            app.extensions = dict()  # pragma: no cover
+        app.extensions['stripe'] = self
+
     def create_payment_intent(self, amount, currency=None, **kwargs):
-        return self._stripe.PaymentIntent.create(
+        return ObjectDict(**self._stripe.PaymentIntent.create(
             amount=amount, currency=currency or cap.config.STRIPE_DEFAULT_CURRENCY, **kwargs
-        )
+        ))
 
     def create_event(self, data, raise_exc=False):
         webhook_secret = cap.config.STRIPE_WEBHOOK_SECRET
         signature = flask.request.headers.get('stripe-signature')
-        if webhook_secret and signature:
-            try:
-                event = self._stripe.Webhook.construct_event(
-                    payload=data, sig_header=signature,
-                    secret=cap.config.STRIPE_WEBHOOK_SECRET
-                )
-                return event['type'], event['data']
-            except StripeError as exc:
-                cap.logger.exception(exc)
-                if raise_exc:
-                    raise
-
-        return None, None
+        try:
+            return ObjectDict(**self._stripe.Webhook.construct_event(
+                payload=data, sig_header=signature, secret=webhook_secret
+            ))
+        except StripeError as exc:
+            cap.logger.exception(exc)
+            if raise_exc:
+                raise
 
     def webhook_handler(self):
-        event_type, data = self.create_event(flask.request.json)
+        data = self.create_event(flask.request.json)
+        event_type = data.get('type')
         if event_type == self.payment_intent_ok:
             return self._success(data)
         elif event_type == self.payment_intent_ko:

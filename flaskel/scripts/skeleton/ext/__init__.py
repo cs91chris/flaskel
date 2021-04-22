@@ -22,7 +22,6 @@ EXTENSIONS = {
     "errors":        (errors.error_handler, {
         "dispatcher": 'subdomain',
         "response":   default.builder.on_accept(strict=False),
-        "normalizer": errors.ErrorNormalizer()
     }),
     "useragent":     (useragent,),
     "argon2":        (argon2,),

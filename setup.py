@@ -42,7 +42,7 @@ REQUIRES = [
     "Flask-TemplateSupport==2.0.*",
     "aiohttp==3.7.*",
     "argon2-cffi==20.1.*",
-    "coverage==5.3.*",
+    "coverage==5.5.*",
     "nest-asyncio==1.5.*",
     "psutil==5.8.*",
     "pytest==6.2.*",
@@ -55,9 +55,9 @@ REQUIRES = [
     "simplejson==3.*",
     "sqlalchemy-schemadisplay==1.3.*",
     "user-agents==2.2.*",
-    "webargs==7.0.*",
+    "webargs==8.0.*",
     "redis==3.5.*",
-    "hiredis==1.1.*",
+    "hiredis==2.0.*",
 ]
 
 BASE_PATH = os.path.dirname(__file__)
