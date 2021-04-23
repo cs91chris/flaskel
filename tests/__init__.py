@@ -10,6 +10,7 @@ from flaskel.ext import (
 from flaskel.ext.crypto import argon2
 from flaskel.ext.healthcheck import checks, health_checks
 from flaskel.ext.sqlalchemy import db as sqlalchemy
+from flaskel.extra.mobile_support import mobile_version, RedisStore
 from .blueprints import BLUEPRINTS, VIEWS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -47,29 +48,32 @@ SCHEMAS = dict(
 
 BASE_EXTENSIONS = {
     # "name":   (<extension>, parameters: dict)
-    "cfremote":      (cfremote,),  # MUST be the first
-    "logger":        (logger,),  # MUST be the second
-    "template":      (template,),
-    "builder":       (builder,),
-    "cors":          (cors,),
-    "database":      (sqlalchemy,),
-    "limiter":       (limit.limiter,),
-    "ip_ban":        (limit.ip_ban,),
-    "cache":         (caching,),
-    "errors":        (errors.error_handler, {
+    "cfremote":       (cfremote,),  # MUST be the first
+    "logger":         (logger,),  # MUST be the second
+    "template":       (template,),
+    "builder":        (builder,),
+    "cors":           (cors,),
+    "database":       (sqlalchemy,),
+    "limiter":        (limit.limiter,),
+    "ip_ban":         (limit.ip_ban,),
+    "cache":          (caching,),
+    "errors":         (errors.error_handler, {
         "dispatcher": 'subdomain',
         "response":   builder.on_accept(strict=False),
         "normalizer": errors.ErrorNormalizer()
     }),
-    "useragent":     (useragent,),
-    "argon2":        (argon2,),
-    "caching":       (caching,),
-    "scheduler":     (scheduler,),
-    "sendmail":      (sendmail.client_mail,),
-    "redis":         (client_redis,),
-    "health_checks": (health_checks,),
-    "jwt":           (auth.jwtm,),
-    "ipban":         (limit.ip_ban,),
+    "useragent":      (useragent,),
+    "argon2":         (argon2,),
+    "caching":        (caching,),
+    "scheduler":      (scheduler,),
+    "sendmail":       (sendmail.client_mail,),
+    "redis":          (client_redis,),
+    "health_checks":  (health_checks,),
+    "jwt":            (auth.jwtm,),
+    "ipban":          (limit.ip_ban,),
+    "mobile_version": (mobile_version, dict(
+        store=RedisStore(client_redis),
+    )),
 }
 
 APISPEC = {
@@ -172,7 +176,8 @@ def app_dev():
         folders=["skeleton/blueprints/web/templates"],
         static_folder="skeleton/blueprints/web/static",
         after_request=(lambda x: x, lambda x: x),
-        before_request=(lambda: None, lambda: None)
+        before_request=(lambda: None, lambda: None),
+        version='1.0.0',
     )
 
 

@@ -1,3 +1,4 @@
+# pragma: no cover
 try:
     import redis
 except ImportError:
@@ -20,7 +21,7 @@ class FlaskRedis:
 
     @property
     def client(self):
-        return self._client
+        return self._client   # pragma: no cover
 
     def init_app(self, app):
         """

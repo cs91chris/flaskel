@@ -5,7 +5,7 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import httpcode, misc, uuid, yaml
+from flaskel import httpcode, misc, uuid, yaml, ObjectDict
 from flaskel.http import batch, FlaskelHttp, FlaskelJsonRPC, HTTPClient, HTTPStatusError, rpc, useragent
 from flaskel.tester import Asserter
 from flaskel.utils import datetime, ExtProxy, schemas
@@ -249,7 +249,7 @@ def test_healthcheck(testapp):
 
 def test_api_jsonrpc_success(app_dev):
     call_id = 1
-    url = url_for('myJsonRPC')
+    url = url_for('jsonrpc')
     testapp = app_dev.test_client()
     res = testapp.jsonrpc(url, method="MyJsonRPC.testAction1", call_id=call_id)
     Asserter.assert_status_code(res)
@@ -263,7 +263,7 @@ def test_api_jsonrpc_success(app_dev):
 
 def test_api_jsonrpc_error(app_dev):
     call_id = 1
-    url = url_for('myJsonRPC')
+    url = url_for('jsonrpc')
     testapp = app_dev.test_client()
     response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
@@ -297,7 +297,7 @@ def test_api_jsonrpc_error(app_dev):
 
 
 def test_api_jsonrpc_params(app_dev):
-    url = url_for('myJsonRPC')
+    url = url_for('jsonrpc')
     method = "MyJsonRPC.testInvalidParams"
     testapp = app_dev.test_client()
     response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
@@ -315,7 +315,7 @@ def test_api_jsonrpc_params(app_dev):
 
 
 def test_api_jsonrpc_batch(app_dev):
-    url = url_for('myJsonRPC')
+    url = url_for('jsonrpc')
     testapp = app_dev.test_client()
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
     res = testapp.jsonrpc_batch(url, requests=(
@@ -335,7 +335,7 @@ def test_api_jsonrpc_batch(app_dev):
 
 
 def test_api_jsonrpc_notification(app_dev):
-    url = url_for('myJsonRPC')
+    url = url_for('jsonrpc')
     testapp = app_dev.test_client()
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
     res = testapp.jsonrpc_batch(url, requests=(
@@ -459,6 +459,10 @@ def test_http_status():
     Asserter.assert_false(httpcode.is_server_error(httpcode.NOT_MODIFIED))
     Asserter.assert_true(httpcode.is_ok(httpcode.FOUND))
     Asserter.assert_false(httpcode.is_ko(httpcode.SUCCESS))
+    Asserter.assert_status_code(ObjectDict(status=201), code=(201, 202, 203), is_in=True)
+    Asserter.assert_status_code(ObjectDict(status=201), code=(200, 299), in_range=True)
+    Asserter.assert_status_code(ObjectDict(status=400), code=300, greater=True)
+    Asserter.assert_status_code(ObjectDict(status=200), code=300, less=True)
 
 
 def test_proxyview(testapp):
@@ -486,7 +490,33 @@ def test_apidoc(testapp):
     Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000')
 
 
-def test_ipban(app_dev):
+def test_mobile_version(app_dev):
+    testapp = app_dev.test_client()
+    headers = {app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE}
+    res = testapp.get(url_for('web.index'), headers=headers)
+    Asserter.assert_header(res, 'X-Upgrade-Needed', '0')
+    Asserter.assert_header(res, 'X-Api-Version', '1.0.0')
+
+    res = testapp.get('/web-page-not-found')
+    Asserter.assert_not_in('X-Upgrade-Needed', list(res.headers.keys()))
+    Asserter.assert_not_in('X-Api-Version', list(res.headers.keys()))
+
+
+def test_mobile_views(app_dev):
+    testapp = app_dev.test_client()
+    url = url_for('api.mobile_logger')
+    data = {'stacktrace': "exception"}
+
+    res = testapp.post(url, json=data)
+    print(res.json)
+    Asserter.assert_status_code(res, httpcode.NO_CONTENT)
+
+    res = testapp.post(f"{url}?debug", json=data)
+    Asserter.assert_status_code(res)
+    Asserter.assert_equals(res.json, data)
+
+
+def test_ipban(app_dev):  # must be last test on dev app
     res = None
     conf = app_dev.config
     ipban = ExtProxy('ipban')
@@ -499,6 +529,12 @@ def test_ipban(app_dev):
 
 
 def test_misc():
+    Asserter.assert_less(1, 2)
+    Asserter.assert_greater(2, 1)
+    Asserter.assert_range(2, (1, 3))
+    Asserter.assert_occurrence('abacca', r'a', 3)
+    Asserter.assert_occurrence('abacca', r'a', 4, less=True)
+    Asserter.assert_occurrence('abacca', r'a', 2, greater=True)
     Asserter.assert_true(misc.to_float("1.1"))
     Asserter.assert_none(misc.to_float("1,1"))
     Asserter.assert_true(misc.to_int("1"))

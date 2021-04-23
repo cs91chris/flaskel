@@ -1,12 +1,13 @@
 from flaskel import views
+from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
 from flaskel.views import apidoc, proxy, rpc
-from .api import bp_api, resource, rpc as rpcserice
+from .api import bp_api, resource, rpc as rpc_service
 from .auth import bp_auth
 from .test import bp_test
 from .web import bp_web
 
 jsonRPCView = rpc.JSONRPCView
-rpc.JSONRPCView.load_from_object(rpcserice.MyJsonRPC())
+rpc.JSONRPCView.load_from_object(rpc_service.MyJsonRPC())
 
 
 class CustomProxy(proxy.TransparentProxyView):
@@ -42,20 +43,28 @@ VIEWS = (
         host='https://httpbin.org',
         url='/anything'
     )),
-    (jsonRPCView, dict(
-        name='myJsonRPC',
-        url="/rpc"
-    )),
-    (apidoc.ApiDocTemplate, bp_api, dict(
-        name='apidocs',
-        urls=['/apidocs']
-    )),
-    (apidoc.ApiSpecTemplate, bp_api, dict(
-        name='apispec',
-        urls=['/apidoc.json']
-    )),
     (resource.APIResource, bp_api, dict(
         name='resource_api',
         url='/resources'
+    )),
+    (jsonRPCView, dict(
+        name=jsonRPCView.default_view_name,
+        url=jsonRPCView.default_url
+    )),
+    (apidoc.ApiDocTemplate, bp_api, dict(
+        name=apidoc.ApiDocTemplate.default_view_name,
+        urls=apidoc.ApiDocTemplate.default_urls
+    )),
+    (apidoc.ApiSpecTemplate, bp_api, dict(
+        name=apidoc.ApiSpecTemplate.default_view_name,
+        urls=apidoc.ApiSpecTemplate.default_urls
+    )),
+    (MobileReleaseView, bp_api, dict(
+        name=MobileReleaseView.default_view_name,
+        urls=MobileReleaseView.default_urls,
+    )),
+    (MobileLoggerView, bp_api, dict(
+        name=MobileLoggerView.default_view_name,
+        urls=MobileLoggerView.default_urls,
     )),
 )
