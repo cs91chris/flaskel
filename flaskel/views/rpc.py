@@ -14,9 +14,14 @@ from flaskel.utils.datastruct import ObjectDict
 class JSONRPCView(View):
     version = '2.0'
     separator = '.'
-    methods = ['POST']
-    decorators = [builder.response('json')]
     operations = {}
+    default_view_name = 'jsonrpc'
+    default_url = '/jsonrpc'
+    methods = ['POST']
+
+    decorators = (
+        builder.response('json'),
+    )
 
     @staticmethod
     def normalize_url(url):
