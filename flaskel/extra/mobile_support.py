@@ -5,7 +5,7 @@ from flask import current_app as cap
 from packaging import version
 
 from flaskel import ExtProxy, Response
-from flaskel.ext import builder
+from flaskel.ext import builder, limit
 from flaskel.http import httpcode
 from flaskel.utils import webargs
 from flaskel.views import BaseView
@@ -50,11 +50,13 @@ class MobileVersionCompatibility:
         self._current_version = current_version
 
         if app is not None:
-            self.init_app(app, store, current_version)
+            self.init_app(app, store, current_version)  # pragma: no cover
 
     def init_app(self, app, store=None, current_version=None):
         self._store = store or self._store
         self._current_version = current_version or self._current_version
+        if not self._current_version:
+            self._current_version = getattr(app, 'version', None)
 
         self.load_config(app)
         self.load_from_storage()
@@ -73,7 +75,7 @@ class MobileVersionCompatibility:
         return flask.g.get('mobile_version')
 
     @property
-    def store(self):
+    def store(self):  # pragma: no cover
         return self._store
 
     @property
@@ -82,12 +84,18 @@ class MobileVersionCompatibility:
 
     @staticmethod
     def load_config(app):
-        app.config.setdefault('VERSION_CACHE_EXPIRE', 60)
         app.config.setdefault('VERSION_STORE_MAX', 5)
+        app.config.setdefault('VERSION_CACHE_EXPIRE', 60)
+        app.config.setdefault('VERSION_API_HEADER', 'X-Api-Version')
         app.config.setdefault('VERSION_STORE_KEY', 'x_upgrade_needed')
         app.config.setdefault('VERSION_HEADER_KEY', 'X-Mobile-Version')
         app.config.setdefault('VERSION_UPGRADE_HEADER', 'X-Upgrade-Needed')
-        app.config.setdefault('VERSION_API_HEADER', 'X-Api-Version')
+        app.config.setdefault('VERSION_SKIP_STATUSES', (
+            httpcode.NOT_FOUND,
+            httpcode.METHOD_NOT_ALLOWED,
+            httpcode.FORBIDDEN,
+            httpcode.TOO_MANY_REQUESTS,
+        ))
 
     @staticmethod
     def version_parse(ver):
@@ -98,9 +106,10 @@ class MobileVersionCompatibility:
         flask.g.mobile_version = flask.request.headers.get(cap.config.VERSION_HEADER_KEY)
 
     def _set_version_headers(self, resp):
-        upgrade = self.check_upgrade()
-        resp.headers[cap.config.VERSION_UPGRADE_HEADER] = int(upgrade)
-        resp.headers[cap.config.VERSION_API_HEADER] = self._current_version
+        if resp.status_code not in cap.config.VERSION_SKIP_STATUSES:
+            upgrade = self.check_upgrade()
+            resp.headers[cap.config.VERSION_UPGRADE_HEADER] = int(upgrade)
+            resp.headers[cap.config.VERSION_API_HEADER] = self._current_version
         return resp
 
     def latest(self):
@@ -148,11 +157,11 @@ class MobileVersionCompatibility:
         self.load_from_storage()
 
         try:
-            mobile_version = self.version_parse(self.mobile_version)
+            mv = self.version_parse(self.mobile_version)
             for v, u in self._versions:
-                if v > mobile_version and u is True:
+                if v > mv and u is True:
                     return True
-                if v <= mobile_version:
+                if v <= mv:
                     return False
         except Exception as exc:
             cap.logger.exception(exc)
@@ -191,3 +200,43 @@ class MobileReleaseView(BaseView):
         except ValueError as exc:
             flask.abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
         return Response.no_content()
+
+
+class MobileLoggerView(BaseView):
+    methods = ['POST']
+    unavailable = "N/A"
+    intro = "An exception occurred on mobile app:"
+    default_view_name = 'mobile_logger'
+    default_urls = (
+        '/mobile/logger',
+    )
+    decorators = (
+        builder.no_content,
+        limit.RateLimit.medium(),
+        limit.RateLimit.fail(),
+    )
+
+    def dump_log(self, data, key):
+        return data.get(key) or self.unavailable
+
+    def get_user_info(self, *args, **kwargs):
+        return self.unavailable
+
+    def dispatch_request(self, *args, **kwargs):
+        payload = flask.request.json
+        stacktrace = self.dump_log(payload, 'stacktrace').replace('\\n', '\n')
+        cap.logger.error(
+            f"{self.intro}"
+            f"\n\tUser-Info: {self.get_user_info(*args, **kwargs)}"
+            f"\n\tMobile-Version: {self.dump_log(flask.request.headers, 'X-Mobile-Version')}"
+            f"\n\tUser-Agent: {self.dump_log(flask.request.headers, 'User-Agent')}"
+            f"\n\tDevice-Info: {self.dump_log(payload, 'device_info')}"
+            f"\n\tDebug-Info: {self.dump_log(payload, 'debug_info')}"
+            f"\n\tPayload: {self.dump_log(payload, 'payload')}"
+            f"\n\tStack-Trace:\n{stacktrace}"
+        )
+        if 'debug' in flask.request.args:
+            return payload, httpcode.SUCCESS
+
+
+mobile_version = MobileVersionCompatibility()

@@ -59,7 +59,7 @@ class PaymentHandler:
                 raise
 
     def webhook_handler(self):
-        data = self.create_event(flask.request.json)
+        data = self.create_event(flask.request.data)
         event_type = data.get('type')
         if event_type == self.payment_intent_ok:
             return self._success(data)
@@ -74,3 +74,6 @@ class PaymentHandler:
     def on_error(self, callback):
         self._error = callback
         return callback
+
+
+payment_handler = PaymentHandler()

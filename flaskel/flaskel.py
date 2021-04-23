@@ -87,3 +87,7 @@ class Flaskel(flask.Flask):
     request_class = Request
     response_class = Response
     json_encoder = encoders.JsonEncoder
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.version = None

@@ -40,7 +40,7 @@ class AppBuilder:
 
     def __init__(self, conf_module=None, extensions=None, converters=None,
                  blueprints=None, folders=None, middlewares=None, views=None,
-                 after_request=None, before_request=None, callback=None, **options):
+                 after_request=None, before_request=None, callback=None, version=None, **options):
         """
 
         :param conf_module: python module file
@@ -54,9 +54,11 @@ class AppBuilder:
         :param before_request: list of functions to register before request
         :param callback: a function called to patch app after all components registration
         :param options: passed to Flask class
+        :param version: app version, may be used by extensions
         :return:
         """
         self._app = None
+        self._version = version
         self._converters = converters or {}
         self._blueprints = blueprints or ()
         self._extensions = extensions or {}
@@ -239,6 +241,7 @@ class AppBuilder:
 
     def create(self, conf=None):
         self._app = self.flask_class(self.app_name, **self._options)
+        self._app.version = self._version
 
         self._set_config(conf)
         self._set_secret_key()
