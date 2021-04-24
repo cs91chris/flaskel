@@ -1,4 +1,7 @@
-from flaskel.ext import caching, client_mail, client_redis, default, errors, limit, scheduler, useragent
+from flaskel.ext import (
+    caching, client_mail, client_redis, date_helper,
+    default, errors, limit, scheduler, useragent
+)
 from flaskel.ext.auth import jwtm
 from flaskel.ext.crypto import argon2
 from flaskel.ext.healthcheck import health_checks
@@ -12,6 +15,7 @@ EXTENSIONS = {
     "logger":         (default.logger,),  # MUST be the second
     "template":       (default.template,),
     "builder":        (default.builder,),
+    "date_helper":    (date_helper,),
     "cors":           (default.cors, {
         "resources": {
             r'/*': {'origins': '*'}

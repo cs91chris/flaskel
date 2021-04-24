@@ -5,7 +5,7 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import httpcode, misc, uuid, yaml, ObjectDict
+from flaskel import httpcode, misc, ObjectDict, uuid, yaml
 from flaskel.http import batch, FlaskelHttp, FlaskelJsonRPC, HTTPClient, HTTPStatusError, rpc, useragent
 from flaskel.tester import Asserter
 from flaskel.utils import datetime, ExtProxy, schemas

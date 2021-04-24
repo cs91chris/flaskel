@@ -20,19 +20,12 @@ class Argon2:
         """
         app.config.setdefault("ARGON2_ENCODING", "utf-8")
         app.config.setdefault("ARGON2_TIME_COST", _argon2.DEFAULT_TIME_COST)
-        app.config.setdefault("ARGON2_HASH_LENGTH", _argon2.DEFAULT_HASH_LENGTH)
+        app.config.setdefault("ARGON2_HASH_LEN", _argon2.DEFAULT_HASH_LENGTH)
         app.config.setdefault("ARGON2_MEMORY_COST", _argon2.DEFAULT_MEMORY_COST)
         app.config.setdefault("ARGON2_PARALLELISM", _argon2.DEFAULT_PARALLELISM)
-        app.config.setdefault("ARGON2_RANDOM_SALT_LENGTH", _argon2.DEFAULT_RANDOM_SALT_LENGTH)
+        app.config.setdefault("ARGON2_SALT_LEN", _argon2.DEFAULT_RANDOM_SALT_LENGTH)
 
-        self._ph = _argon2.PasswordHasher(
-            encoding=app.config['ARGON2_ENCODING'],
-            time_cost=app.config['ARGON2_TIME_COST'],
-            hash_len=app.config['ARGON2_HASH_LENGTH'],
-            memory_cost=app.config['ARGON2_MEMORY_COST'],
-            parallelism=app.config['ARGON2_PARALLELISM'],
-            salt_len=app.config['ARGON2_RANDOM_SALT_LENGTH']
-        )
+        self._ph = _argon2.PasswordHasher(**app.config.get_namespace('ARGON2_'))
 
         if not hasattr(app, 'extensions'):
             app.extensions = dict()  # pragma: no cover

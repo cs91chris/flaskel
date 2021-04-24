@@ -4,13 +4,14 @@ import pytest
 
 from flaskel import middlewares, ObjectDict, TestClient
 from flaskel.ext import (
-    auth, builder, caching, cfremote, client_redis, cors, errors,
+    auth, builder, caching, cfremote, client_redis, cors, date_helper, errors,
     limit, logger, scheduler, sendmail, template, useragent
 )
 from flaskel.ext.crypto import argon2
 from flaskel.ext.healthcheck import checks, health_checks
 from flaskel.ext.sqlalchemy import db as sqlalchemy
 from flaskel.extra.mobile_support import mobile_version, RedisStore
+from flaskel.extra.stripe import payment_handler
 from .blueprints import BLUEPRINTS, VIEWS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -52,6 +53,7 @@ BASE_EXTENSIONS = {
     "logger":         (logger,),  # MUST be the second
     "template":       (template,),
     "builder":        (builder,),
+    "date_helper":    (date_helper,),
     "cors":           (cors,),
     "database":       (sqlalchemy,),
     "limiter":        (limit.limiter,),
@@ -160,7 +162,9 @@ def app_dev():
             FLASK_ENV='development',
             JSONRPC_BATCH_MAX_REQUEST=2,
             SCHEMAS=SCHEMAS,
-            PROXIES=PROXIES
+            PROXIES=PROXIES,
+            STRIPE_SECRET_KEY='stripe_secret_key',
+            STRIPE_PUBLIC_KEY='stripe_public_key'
         ),
         blueprints=(
             *BLUEPRINTS,
@@ -169,8 +173,9 @@ def app_dev():
         ),
         extensions={
             **BASE_EXTENSIONS,
-            "empty": (None, (None,)),  # NB: needed to complete coverage
-            "ipban": (limit.ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
+            "empty":  (None, (None,)),  # NB: needed to complete coverage
+            "ipban":  (limit.ip_ban, dict(nuisances=dict(string=["/phpmyadmin"]))),
+            "stripe": (payment_handler,),
         },
         views=VIEWS,
         folders=["skeleton/blueprints/web/templates"],

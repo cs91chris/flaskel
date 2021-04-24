@@ -3,7 +3,6 @@ import sys
 
 import flask
 from werkzeug import exceptions
-from werkzeug.exceptions import Aborter
 
 from flaskel.utils.datastruct import ConfigProxy
 from . import httpcode
@@ -236,4 +235,4 @@ _errors = inspect.getmembers(
 )
 
 # until a better solution are found
-setattr(flask, 'abort', Aborter(mapping={e.code: e for _, e in _errors}))
+setattr(flask, 'abort', exceptions.Aborter(mapping={e.code: e for _, e in _errors}))

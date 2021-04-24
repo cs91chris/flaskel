@@ -117,6 +117,22 @@ class ObjectDict(dict):
         except (TypeError, ValueError, AttributeError):
             return data
 
+    def get_namespace(self, prefix, lowercase=True, trim=True):
+        """
+        Returns a dictionary containing a subset of configuration options
+        that match the specified prefix.
+
+        :param prefix: a configuration prefix
+        :param lowercase: a flag indicating if the keys should be lowercase
+        :param trim: a flag indicating if the keys should include the namespace
+        """
+        res = {}
+        for k, v in self.items():
+            if k.startswith(prefix):
+                key = k[len(prefix):] if trim else k
+                res[key.lower() if lowercase else key] = v
+        return res
+
 
 class IntEnum(enum.IntEnum):
     @classmethod
