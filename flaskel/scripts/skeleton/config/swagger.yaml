@@ -68,6 +68,8 @@ paths:
       summary: Revoke token
       tags:
         - Auth
+      security:
+        - token: [ ]
       requestBody:
         content:
           application/json:
@@ -85,7 +87,7 @@ paths:
   /healthcheck:
     get:
       security:
-        - basicauth: [ ]
+        - basicAuth: [ ]
       responses:
         200:
           content:
@@ -100,6 +102,138 @@ paths:
         503:
           $ref: '#/components/responses/503'
       summary: health check
+      tags:
+        - Monitoring
+  '/auth/device/register':
+    post:
+      summary: Device register token
+      tags:
+        - Account
+      security:
+        - token: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegister'
+      responses:
+        204:
+          description: device registrato con successo
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        422:
+          $ref: '#/components/responses/422'
+        500:
+          $ref: '#/components/responses/500'
+        502:
+          $ref: '#/components/responses/502'
+  /mobile/logger:
+    post:
+      summary: Log recording from the mobile app
+      tags:
+        - Monitoring
+      security:
+        - token: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                debug_info:
+                  type: string
+                device_info:
+                  type: string
+                  example: json string
+                payload:
+                  type: string
+                  example: json string
+                stacktrace:
+                  type: string
+      responses:
+        204:
+          description: log registrato con successo
+        401:
+          $ref: '#/components/responses/401'
+        500:
+          $ref: '#/components/responses/500'
+  /mobile/release:
+    get:
+      security:
+        - basicAuth: [ ]
+      responses:
+        200:
+          description: registered version
+        401:
+          $ref: '#/components/responses/401'
+        500:
+          $ref: '#/components/responses/500'
+      summary: registered version
+      tags:
+        - Monitoring
+    delete:
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - description: delete all version registered
+          in: query
+          name: all
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: new list of registered versions excluding the last one deleted
+        204:
+          description: all versions have been deleted
+        401:
+          $ref: '#/components/responses/401'
+        500:
+          $ref: '#/components/responses/500'
+      summary: delete the latest registered version or all
+      tags:
+        - Monitoring
+  /mobile/release/latest:
+    get:
+      security:
+        - basicAuth: [ ]
+      responses:
+        200:
+          description: latest registered release
+        401:
+          $ref: '#/components/responses/401'
+        500:
+          $ref: '#/components/responses/500'
+      summary: latest registered release
+      tags:
+        - Monitoring
+  /mobile/release/{version}:
+    post:
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - description: version to register
+          in: path
+          name: version
+          required: true
+          schema:
+            type: string
+        - description: determine if this version is critical or not
+          in: query
+          name: critical
+          schema:
+            type: boolean
+      responses:
+        204:
+          description: version successfully registered
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        500:
+          $ref: '#/components/responses/500'
+      summary: Register a release of the mobile app for monitoring critical updates
       tags:
         - Monitoring
 components:
@@ -197,6 +331,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
+    502:
+      description: Bad Gateway
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
     503:
       description: Service Unavailable
       content:
@@ -273,3 +413,10 @@ components:
           type: string
         scope:
           type: string
+    DeviceRegister:
+      additionalProperties: false
+      type: object
+      properties:
+        token:
+          type: string
+          example: firebase token
