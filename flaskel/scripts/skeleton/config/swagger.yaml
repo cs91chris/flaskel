@@ -163,6 +163,8 @@ paths:
     get:
       security:
         - basicAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/agent'
       responses:
         200:
           description: registered version
@@ -177,6 +179,7 @@ paths:
       security:
         - basicAuth: [ ]
       parameters:
+        - $ref: '#/components/parameters/agent'
         - description: delete all version registered
           in: query
           name: all
@@ -198,6 +201,8 @@ paths:
     get:
       security:
         - basicAuth: [ ]
+      parameters:
+        $ref: '#/components/parameters/agent'
       responses:
         200:
           description: latest registered release
@@ -213,6 +218,7 @@ paths:
       security:
         - basicAuth: [ ]
       parameters:
+        - $ref: '#/components/parameters/agent'
         - description: version to register
           in: path
           name: version
@@ -276,6 +282,13 @@ components:
       schema:
         type: integer
       description: espresso in secondi
+    agent:
+      description: os family
+      in: query
+      required: true
+      name: agent
+      schema:
+        type: string
   responses:
     400:
       description: Bad Request

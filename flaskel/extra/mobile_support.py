@@ -13,15 +13,15 @@ from flaskel.views import BaseView
 
 class RedisStore:
     def __init__(self, redis=None, sep='::'):
-        self._sep = sep
-        self._redis = redis
+        self.sep = sep
+        self.client = redis
 
     def _normalize(self, ver):
-        s = ver.decode().split(self._sep)
+        s = ver.decode().split(self.sep)
         return version.parse(s[0]), bool(int(s[1])) if len(s) > 1 else False
 
     def release(self, key, v, u=False):
-        if self._redis.lpush(key, f'{v}{self._sep}{int(u)}'):
+        if self.client.lpush(key, f'{v}{self.sep}{int(u)}'):
             return version.parse(v), u
 
     def latest(self, key):
@@ -31,22 +31,23 @@ class RedisStore:
         return None, None
 
     def pop(self, key):
-        res = self._redis.lpop(key)
-        return self._normalize(res)
+        res = self.client.lpop(key)
+        if res:
+            return self._normalize(res)
 
     def clear(self, key):
-        return self._redis.delete(key)
+        return self.client.delete(key)
 
     def retrieve(self, key, max_item=1):
-        data = self._redis.lrange(key, 0, max_item - 1)
+        data = self.client.lrange(key, 0, max_item - 1)
         return [self._normalize(d) for d in data]
 
 
 class MobileVersionCompatibility:
     def __init__(self, app=None, store=None, current_version=None):
-        self._versions = []
-        self._load_time = None
         self._store = store
+        self._load_time = None
+        self._versions = {None: []}
         self._current_version = current_version
 
         if app is not None:
@@ -62,13 +63,9 @@ class MobileVersionCompatibility:
         self.load_from_storage()
         app.extensions['mobile_version'] = self
 
-        @app.before_request
-        def set_mobile_version():
-            self._set_mobile_version()
-
-        @app.after_request
-        def set_version_headers(resp):
-            return self._set_version_headers(resp)
+        if app.config.app.config.VERSION_HOOKS_ENABLED:
+            app.before_request_funcs.setdefault(None, []).append(self._set_mobile_version)
+            app.after_request_funcs.setdefault(None, []).append(self._set_version_headers)
 
     @property
     def mobile_version(self):
@@ -78,22 +75,21 @@ class MobileVersionCompatibility:
     def store(self):  # pragma: no cover
         return self._store
 
-    @property
-    def versions(self):
-        return self._versions or self.load_from_storage()
-
     @staticmethod
     def load_config(app):
-        app.config.setdefault('VERSION_STORE_MAX', 5)
-        app.config.setdefault('VERSION_CACHE_EXPIRE', 60)
+        app.config.setdefault('VERSION_STORE_MAX', 6)
+        app.config.setdefault('VERSION_CACHE_EXPIRE', 3600)
+        app.config.setdefault('VERSION_HOOKS_ENABLED', True)
+        app.config.setdefault('VERSION_AGENT_HEADER', 'X-Agent')
         app.config.setdefault('VERSION_API_HEADER', 'X-Api-Version')
         app.config.setdefault('VERSION_STORE_KEY', 'x_upgrade_needed')
         app.config.setdefault('VERSION_HEADER_KEY', 'X-Mobile-Version')
         app.config.setdefault('VERSION_UPGRADE_HEADER', 'X-Upgrade-Needed')
+        app.config.setdefault('VERSION_AGENTS', ['android', 'ios'])
         app.config.setdefault('VERSION_SKIP_STATUSES', (
+            httpcode.FORBIDDEN,
             httpcode.NOT_FOUND,
             httpcode.METHOD_NOT_ALLOWED,
-            httpcode.FORBIDDEN,
             httpcode.TOO_MANY_REQUESTS,
         ))
 
@@ -105,60 +101,73 @@ class MobileVersionCompatibility:
     def _set_mobile_version():
         flask.g.mobile_version = flask.request.headers.get(cap.config.VERSION_HEADER_KEY)
 
+    @staticmethod
+    def agent_identity():
+        family = flask.g.user_agent.os.family
+        return family.lower() if family else None
+
+    def _get_agent(self):
+        agent = flask.request.headers.get(cap.config.VERSION_AGENT_HEADER)
+        if agent in cap.config.VERSION_AGENTS:
+            return agent
+        flask.g.user_agent.parse()
+        return self.agent_identity()
+
     def _set_version_headers(self, resp):
         if resp.status_code not in cap.config.VERSION_SKIP_STATUSES:
-            upgrade = self.check_upgrade()
-            resp.headers[cap.config.VERSION_UPGRADE_HEADER] = int(upgrade)
+            resp.headers[cap.config.VERSION_UPGRADE_HEADER] = int(self.check_upgrade())
             resp.headers[cap.config.VERSION_API_HEADER] = self._current_version
         return resp
 
-    def latest(self):
-        return str(self._versions[0][0]) if len(self._versions) > 0 else ''
+    def _agent_key(self, agent):
+        return f"{cap.config.VERSION_STORE_KEY}{self._store.sep}{agent}"
 
-    def all_releases(self):
-        return [{'version': str(v), 'critical': u} for v, u in self._versions]
+    def latest(self, agent):
+        versions = self._versions.get(agent) or []
+        return str(versions[0][0]) if len(versions) > 0 else ''
 
-    def rollback(self):
-        self._store.pop(cap.config.VERSION_STORE_KEY)
-        self._versions = self._versions[1:]
+    def all_releases(self, agent):
+        versions = self._versions.get(agent) or []
+        return [{'version': str(v), 'critical': u} for v, u in versions]
 
-    def clear(self):
-        self._store.clear(cap.config.VERSION_STORE_KEY)
-        self._versions = []
+    def rollback(self, agent):
+        self._store.pop(self._agent_key(agent))
+        if agent in self._versions and len(self._versions[agent]):
+            self._versions[agent] = self._versions[agent][1:]
 
-    def publish(self, ver, critical=False):
-        key = cap.config.VERSION_STORE_KEY
-        latest, _ = self._store.latest(key)
+    def clear(self, agent):
+        self._store.clear(self._agent_key(agent))
+        if agent in self._versions:
+            self._versions[agent] = []
+
+    def publish(self, agent, ver, critical=False):
+        latest, _ = self._store.latest(self._agent_key(agent))
         if latest is not None and latest >= self.version_parse(ver):
             raise ValueError('New version must be greater than latest')
 
-        self._store.release(cap.config.VERSION_STORE_KEY, ver, critical)
-        return self.load_from_storage(force=True)
+        self._store.release(self._agent_key(agent), ver, critical)
+        self.load_from_storage(force=True)
+        return self._versions[agent]
 
     def load_from_storage(self, force=False):
-        if not force and self._load_time:
+        if self._load_time:
             seconds = (datetime.now() - self._load_time).seconds
-            if seconds < cap.config.VERSION_CACHE_EXPIRE:
-                return self._versions
-        try:
-            self._versions = self._store.retrieve(
-                cap.config.VERSION_STORE_KEY, cap.config.VERSION_STORE_MAX
-            )
-            self._load_time = datetime.now()
-        except Exception as exc:
-            cap.logger.exception(exc)
-
-        return self._versions
+            if not force and seconds < cap.config.VERSION_CACHE_EXPIRE:
+                return
+        for a in cap.config.VERSION_AGENTS:
+            smax = cap.config.VERSION_STORE_MAX
+            self._versions[a] = self._store.retrieve(self._agent_key(a), smax)
+        self._load_time = datetime.now()
 
     def check_upgrade(self):
         if not self.mobile_version:
             return False
-
-        self.load_from_storage()
-
         try:
+            self.load_from_storage()
+            agent = self._get_agent()
+            versions = self._versions.get(agent) or []
             mv = self.version_parse(self.mobile_version)
-            for v, u in self._versions:
+            for v, u in versions:
                 if v > mv and u is True:
                     return True
                 if v <= mv:
@@ -166,8 +175,7 @@ class MobileVersionCompatibility:
         except Exception as exc:
             cap.logger.exception(exc)
             return False
-
-        return len(self._versions) >= cap.config.VERSION_STORE_MAX
+        return len(versions) >= cap.config.VERSION_STORE_MAX
 
 
 class MobileReleaseView(BaseView):
@@ -180,26 +188,36 @@ class MobileReleaseView(BaseView):
         '/mobile/release/<ver>',
     ]
 
-    @webargs.query(dict(critical=webargs.OptField.boolean(), all=webargs.OptField.boolean()))
+    @webargs.query(dict(
+        all=webargs.OptField.boolean(),
+        critical=webargs.OptField.boolean(),
+        agent=webargs.Field.string(required=True),
+    ))
     def dispatch_request(self, params=None, ver=None, *args, **kwargs):
+        agent = params['agent']
+        if agent not in cap.config.VERSION_AGENTS:
+            flask.abort(httpcode.BAD_REQUEST, response=dict(
+                reason="agent not compatible",
+                agents=cap.config.VERSION_AGENTS
+            ))
+
         if ver == 'latest':
-            return self.ext.latest(), {'Content-Type': 'text/plain'}
+            return self.ext.latest(agent) or '', {'Content-Type': 'text/plain'}
 
         if ver is None:
             if flask.request.method == 'DELETE':
                 if params['all']:
-                    self.ext.clear()
+                    self.ext.clear(agent)
                     return Response.no_content()
-                self.ext.rollback()
+                self.ext.rollback(agent)
+        else:
+            try:
+                self.ext.publish(agent, ver, params['critical'])
+            except ValueError as exc:
+                flask.abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
 
-            mimetype, response = self.builder.get_mimetype_accept()
-            return response.build(self.ext.all_releases()), {'Content-Type': mimetype}
-
-        try:
-            self.ext.publish(ver, params['critical'])
-        except ValueError as exc:
-            flask.abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
-        return Response.no_content()
+        mimetype, response = self.builder.get_mimetype_accept()
+        return response.build(self.ext.all_releases(agent)), {'Content-Type': mimetype}
 
 
 class MobileLoggerView(BaseView):

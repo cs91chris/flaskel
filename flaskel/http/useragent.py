@@ -26,8 +26,7 @@ class UserAgent(parsers.UserAgent):
             self._parsed = False
             self.ua_string = ua_string
 
-        if not self._parsed:
-            self._parsed = True
+        if not self._parsed and self.ua_string:
             parsed = parsers.user_agent_parser.Parse(self.ua_string)
             self.os = parsers.parse_operating_system(**parsed['os'])
             self.browser = parsers.parse_browser(**parsed['user_agent'])
