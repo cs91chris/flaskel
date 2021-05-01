@@ -48,7 +48,7 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
             timeout = aiohttp.ClientTimeout(sock_read=timeout, sock_connect=timeout)
 
         try:
-            self._logger.info(self.dump_request(ObjectDict(**kwargs), dump_body[0]))
+            self._logger.info("%s", self.dump_request(ObjectDict(**kwargs), dump_body[0]))
             async with aiohttp.ClientSession(timeout=timeout) as session, \
                     session.request(**kwargs) as resp:
                 try:
@@ -65,9 +65,9 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
                     log_resp.text = response.body
                     log_resp = self.dump_response(log_resp, dump_body[1])
                     resp.raise_for_status()
-                    self._logger.info(log_resp)
+                    self._logger.info("%s", log_resp)
                 except aiohttp.ClientResponseError as exc:
-                    self._logger.warning(log_resp)
+                    self._logger.warning("%s", log_resp)
                     if self._raise_on_exc is True:
                         raise  # pragma: no cover
                     response.exception = exc

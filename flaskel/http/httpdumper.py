@@ -1,7 +1,7 @@
 from flask import current_app as cap, json
 
 
-class HTTPDumper:
+class BaseHTTPDumper:
     @classmethod
     def dump_headers(cls, hdr, only=()):
         """
@@ -98,15 +98,35 @@ class HTTPDumper:
         return f"response time: {seconds} - status code: {status}{headers}{body}"
 
 
-class FlaskelHTTPDumper:
+class LazyHTTPDumper(BaseHTTPDumper):
     @classmethod
-    def dump_request(cls, req, dump_body=None):
-        return HTTPDumper.dump_request(
-            req, dump_body, only_hdr=cap.config.LOG_REQ_HEADERS
-        )
+    def dump_request(cls, req, *args, **kwargs):
+        dump = super().dump_request
+
+        class DumpRequest:
+            def __str__(self):
+                return dump(req, *args, **kwargs)
+
+        return DumpRequest()
 
     @classmethod
-    def dump_response(cls, resp, dump_body=None):
-        return HTTPDumper.dump_response(
-            resp, dump_body, only_hdr=cap.config.LOG_RESP_HEADERS
-        )
+    def dump_response(cls, resp, *args, **kwargs):
+        dump = super().dump_response
+
+        class DumpResponse:
+            def __str__(self):
+                return dump(resp, *args, **kwargs)
+
+        return DumpResponse()
+
+
+class FlaskelHTTPDumper(LazyHTTPDumper):
+    @classmethod
+    def dump_request(cls, req, dump_body=None, **kwargs):
+        h = cap.config.LOG_REQ_HEADERS
+        return super().dump_request(req, dump_body, only_hdr=h, **kwargs)
+
+    @classmethod
+    def dump_response(cls, resp, dump_body=None, **kwargs):
+        h = cap.config.LOG_RESP_HEADERS
+        return super().dump_response(resp, dump_body, only_hdr=h, **kwargs)

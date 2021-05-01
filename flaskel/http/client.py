@@ -6,7 +6,7 @@ from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker.logger import FakeLogger
 from flaskel.utils.uuid import get_uuid
 from . import httpcode
-from .httpdumper import FlaskelHTTPDumper, HTTPDumper
+from .httpdumper import FlaskelHTTPDumper, LazyHTTPDumper
 
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
@@ -47,7 +47,7 @@ class HTTPTokenAuth(auth.AuthBase):
         return r
 
 
-class HTTPBase(HTTPDumper):
+class HTTPBase(LazyHTTPDumper):
     def __init__(self, dump_body=False, timeout=10, raise_on_exc=False, logger=None):
         """
 
@@ -143,7 +143,7 @@ class HTTPClient(HTTPBase):
             kwargs.setdefault('timeout', self._timeout)
             url = self.normalize_url(uri)
             req = ObjectDict(method=method, url=url, **kwargs)
-            self._logger.info(self.dump_request(req, dump_body[0]))
+            self._logger.info("%s", self.dump_request(req, dump_body[0]))
             response = send_request(method, self.normalize_url(uri), **kwargs)
         except NetworkError as exc:
             self._logger.exception(exc)
@@ -157,9 +157,9 @@ class HTTPClient(HTTPBase):
         log_resp = self.dump_response(response, dump_body[1])
         try:
             response.raise_for_status()
-            self._logger.info(log_resp)
+            self._logger.info("%s", log_resp)
         except HTTPStatusError as exc:
-            self._logger.warning(log_resp)
+            self._logger.warning("%s", log_resp)
             response = exc.response
             if raise_on_exc or self._raise_on_exc:
                 raise
