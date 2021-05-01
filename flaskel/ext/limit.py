@@ -152,13 +152,13 @@ class FlaskIPBan:
         query_path = url.split('?')[0]
         for pattern, item in self._url_blocked.items():
             if item.match_type == 'regex' and item.pattern.match(query_path):
-                cap.logger.warning(f'url {url} matches block pattern {pattern}')
+                cap.logger.warning('url %s matches block pattern %s', url, pattern)
                 return True
             elif item.match_type == 'string' and pattern == query_path:
-                cap.logger.warning(f'url {url} matches block string {pattern}')
+                cap.logger.warning('url %s matches block string %s', url, pattern)
                 return True
             elif ip and item.match_type == 'ip' and pattern == ip:
-                cap.logger.warning(f'ip block match {ip}')
+                cap.logger.warning('ip %s blocked by pattern %s', ip, pattern)
                 return True
 
         return False
@@ -190,13 +190,13 @@ class FlaskIPBan:
             now = datetime.now()
             delta = now - (entry.timestamp or now)
             if delta.seconds < cap.config.IPBAN_SECONDS or cap.config.IPBAN_SECONDS == 0:
-                cap.logger.info(f"IP: {ip} updated in ban list, at url: {url}")
+                cap.logger.info("IP: %s updated in ban list, at url: %s", ip, url)
                 entry.count += 1
                 entry.timestamp = now
                 flask.abort(cap.config.IPBAN_STATUS_CODE)
 
             entry.count = 0
-            cap.logger.debug(f"IP: {ip} expired from ban list, at url: {url}")
+            cap.logger.debug("IP: %s expired from ban list, at url: %s", ip, url)
 
     def add_url_block(self, url, match_type='regex'):
         """
@@ -228,13 +228,13 @@ class FlaskIPBan:
                 entry.count = cap.config.IPBAN_COUNT * 2
                 # retain permanent on extra blocks
                 entry.permanent = entry.permanent or permanent
-                cap.logger.warning(f'{ip} added to ban list')
+                cap.logger.warning('%s added to ban list', ip)
             else:
                 self._ip_banned[ip] = ObjectDict(
                     timestamp=timestamp, count=cap.config.IPBAN_COUNT * 2,
                     permanent=permanent, url=url
                 )
-                cap.logger.info(f'{ip} updated in ban list')
+                cap.logger.info('%s updated in ban list', ip)
 
         return len(self._ip_banned)
 
@@ -271,7 +271,7 @@ class FlaskIPBan:
             count = 1
             self._ip_banned[ip] = ObjectDict(timestamp=timestamp, count=count, url=url)
 
-        cap.logger.info(f"{ip} {url} added/updated ban list. Count: {count}")
+        cap.logger.info(f"%s %s added/updated ban list. Count: %d", ip, url, count)
         return True
 
     def remove(self, ip):
@@ -304,7 +304,8 @@ class FlaskIPBan:
                     self.add_url_block(v, match_type)
                     count += 1
                 except Exception as e:
-                    cap.logger.exception(f"Exception {e} adding pattern {v}")
+                    cap.logger.error(f"an error occurred while adding pattern '%s'", v)
+                    cap.logger.exception(e)
 
         return count
 

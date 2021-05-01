@@ -29,13 +29,13 @@ class RenderTemplate(BaseView):
         return flask.Response(data, mimetype=self._content_type, **kwargs)
 
     def dispatch_request(self):
-        return self.response(
-            flask.render_template(self._template, **self.service())
-        )
+        params = self.service()
+        template = flask.render_template(self._template, **params)
+        return self.response(template)
 
 
 class RenderTemplateString(RenderTemplate):
     def dispatch_request(self):
-        return self.response(
-            flask.render_template_string(self._template, **self.service())
-        )
+        params = self.service()
+        template = flask.render_template_string(self._template, **params)
+        return self.response(template)

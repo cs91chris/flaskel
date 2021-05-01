@@ -11,7 +11,7 @@ class BaseApplication:
         self.application = app
         self.options = options or {}
 
-        default_bind = '{}:{}'.format(self.default_host, self.default_port)
+        default_bind = f'{self.default_host}:{self.default_port}'
         bind = (self.options.get('bind') or default_bind).split(':')
 
         self._interface = bind[0] or self.default_host

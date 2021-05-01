@@ -46,7 +46,7 @@ class ClientMail(Mail):
         except OSError as exc:
             app.logger.exception(exc)
 
-        app.logger.info(f"email {mail_message.msgId} from {sender} sent to {destination}")
+        app.logger.info("email %s from %s sent to %s", mail_message.msgId, sender, destination)
 
 
 client_mail = ClientMail()

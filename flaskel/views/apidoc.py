@@ -72,5 +72,5 @@ class ApiSpecTemplate(BaseView):
             scheme = cap.config.PREFERRED_URL_SCHEME or 'http'
             variables['host']['default'] = f"{scheme}://{cap.config.SERVER_NAME}"
         except (AttributeError, IndexError, KeyError, TypeError) as exc:  # pragma: no cover
-            cap.logger.debug(str(exc))
+            cap.logger.exception(exc)
         return apispec

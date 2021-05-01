@@ -68,7 +68,7 @@ class PaymentHandler:
         elif event_type == self.payment_intent_ko:
             return self._error(data)
 
-        cap.logger.warning(f"unhandled event type received: {event_type}\n{data}")
+        cap.logger.warning("unhandled event type received: %s\n%s", event_type, data)
         flask.abort(httpcode.NOT_FOUND)
 
     def on_success(self, callback):

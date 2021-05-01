@@ -73,7 +73,7 @@ class HealthCheck:
                 self.register(**ex)(func)
             except Exception as exc:
                 app.logger.exception(exc)
-                app.logger.error(f"invalid healthcheck extension:\n{ex}")
+                app.logger.error("invalid healthcheck extension: %s", ex)
 
     @builder.response('json')
     def perform(self):

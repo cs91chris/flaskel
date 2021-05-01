@@ -63,7 +63,7 @@ class MobileVersionCompatibility:
         self.load_from_storage()
         app.extensions['mobile_version'] = self
 
-        if app.config.app.config.VERSION_HOOKS_ENABLED:
+        if app.config.VERSION_HOOKS_ENABLED:
             app.before_request_funcs.setdefault(None, []).append(self._set_mobile_version)
             app.after_request_funcs.setdefault(None, []).append(self._set_version_headers)
 
@@ -234,7 +234,7 @@ class MobileLoggerView(BaseView):
         limit.RateLimit.fail(),
     )
 
-    def dump_log(self, data, key):
+    def dump_key(self, data, key):
         return data.get(key) or self.unavailable
 
     def get_user_info(self, *args, **kwargs):
@@ -242,16 +242,23 @@ class MobileLoggerView(BaseView):
 
     def dispatch_request(self, *args, **kwargs):
         payload = flask.request.json
-        stacktrace = self.dump_log(payload, 'stacktrace').replace('\\n', '\n')
         cap.logger.error(
-            f"{self.intro}"
-            f"\n\tUser-Info: {self.get_user_info(*args, **kwargs)}"
-            f"\n\tMobile-Version: {self.dump_log(flask.request.headers, 'X-Mobile-Version')}"
-            f"\n\tUser-Agent: {self.dump_log(flask.request.headers, 'User-Agent')}"
-            f"\n\tDevice-Info: {self.dump_log(payload, 'device_info')}"
-            f"\n\tDebug-Info: {self.dump_log(payload, 'debug_info')}"
-            f"\n\tPayload: {self.dump_log(payload, 'payload')}"
-            f"\n\tStack-Trace:\n{stacktrace}"
+            "%s"
+            "\n\tUser-Info: %s"
+            "\n\tMobile-Version: %s"
+            "\n\tUser-Agent: %s"
+            "\n\tDevice-Info: %s"
+            "\n\tDebug-Info: %s"
+            "\n\tPayload: %s"
+            "\n\tStack-Trace:\n%s",
+            self.intro,
+            self.get_user_info(*args, **kwargs),
+            self.dump_key(flask.request.headers, 'X-Mobile-Version'),
+            self.dump_key(flask.request.headers, 'User-Agent'),
+            self.dump_key(payload, 'device_info'),
+            self.dump_key(payload, 'debug_info'),
+            self.dump_key(payload, 'payload'),
+            self.dump_key(payload, 'stacktrace').replace('\\n', '\n')
         )
         if 'debug' in flask.request.args:
             return payload, httpcode.SUCCESS

@@ -54,7 +54,7 @@ class APJobs(APScheduler):
         kw['kwargs'] = kwargs
         job_id = get_uuid()
         job = super().add_job(id=job_id, func=func, **kw)
-        self.app.logger.debug(f'added job {func}: {job_id}')
+        self.app.logger.debug('added job %s: %s', func, job_id)
         return job
 
     @staticmethod
