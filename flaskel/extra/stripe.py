@@ -30,11 +30,13 @@ class PaymentHandler:
         assert app.config.STRIPE_SECRET_KEY is not None, 'missing STRIPE_SECRET_KEY'
         assert app.config.STRIPE_PUBLIC_KEY is not None, 'missing STRIPE_PUBLIC_KEY'
 
-        app.config.setdefault('STRIPE_API_VERSION', '2020-08-27')
+        app.config.setdefault('STRIPE_DEBUG', False)
         app.config.setdefault('STRIPE_DEFAULT_CURRENCY', 'eur')
-        self._stripe.log = 'debug' if app.debug else 'info'
+        app.config.setdefault('STRIPE_API_VERSION', '2020-08-27')
+
         self._stripe.api_key = app.config.STRIPE_SECRET_KEY
         self._stripe.api_version = app.config.STRIPE_API_VERSION
+        self._stripe.log = 'debug' if app.config.STRIPE_DEBUG else 'info'
         self._stripe.set_app_info(name or app.config.APP_NAME, **kwargs)
 
         if not hasattr(app, 'extensions'):
@@ -65,6 +67,8 @@ class PaymentHandler:
             return self._success(data)
         elif event_type == self.payment_intent_ko:
             return self._error(data)
+
+        cap.logger.warning(f"unhandled event type received: {event_type}\n{data}")
         flask.abort(httpcode.NOT_FOUND)
 
     def on_success(self, callback):

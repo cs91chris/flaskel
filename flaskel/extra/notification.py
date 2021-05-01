@@ -50,22 +50,36 @@ class NotificationHandler:
             app.logger.exception(exc)
             self.session.rollback()
 
-    def send_push_notification(self, app, user_ids, title, message, **kwargs):
+    def send_push_notification(self, app, title, message, user_ids=None, tokens=None, **kwargs):
+        """
+
+        :param app: flask app instance
+        :param title: notification title
+        :param message: notification message
+        :param user_ids: list of user ids (optional)
+        :param tokens: list of fcm tokens (optional)
+        :param kwargs: passed to notify_multiple_devices
+        :return:
+        """
         service = FCMNotification(api_key=app.config.FCM_API_KEY)
 
-        try:
-            tokens = self.model.query \
-                .with_entities(self.model.token) \
-                .where(self.model.user_id.in_(user_ids)) \
-                .all()
-        except SQLAlchemyError as exc:  # pragma: no cover
-            app.logger.exception(exc)
-            return
+        if tokens is None:
+            try:
+                tokens = self.model.query \
+                    .with_entities(self.model.token) \
+                    .where(self.model.user_id.in_(user_ids)) \
+                    .all()
+            except SQLAlchemyError as exc:  # pragma: no cover
+                app.logger.exception(exc)
+                return
 
         tokens = [t[0] for t in tokens]
         # noinspection PyUnresolvedReferences
         rmax = FCMNotification.FCM_MAX_RECIPIENTS - 1
-        tokens_set = [tokens[x:x + rmax] for x in range(0, len(tokens), rmax)]
+        if len(tokens) > rmax:
+            tokens_set = [tokens[x:x + rmax] for x in range(0, len(tokens), rmax)]
+        else:
+            tokens_set = tokens
 
         kwargs.setdefault('sound', 'Default')
         kwargs.setdefault('dry_run', self.dry_run)
