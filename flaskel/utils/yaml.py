@@ -3,6 +3,7 @@
 
 import os
 import re
+import sys
 from functools import partial
 
 import yaml
@@ -29,14 +30,29 @@ IMPLICIT_ENV_VAR_MATCHER = re.compile(
 )
 
 
+def loads(data, loader=None):
+    return ObjectDict.normalize(yaml.load(data, Loader=loader or yaml.Loader))
+
+
+def load_yaml_file(filename, **kwargs):
+    with open(filename) as f:
+        return loads(f, **kwargs)
+
+
+def load_optional_yaml_file(filename, **kwargs):
+    try:
+        return load_yaml_file(filename, **kwargs)
+    except OSError as exc:
+        print(exc, file=sys.stderr)
+        return ObjectDict()
+
+
 def _replace_env_var(match):
     env_var, default = match.groups()
     value = os.environ.get(env_var, None)
     if value is None:
-        # expand default using other vars
         if default is None:
-            # regex module return None instead of
-            #  '' if engine didn't entered default capture group
+            # regex module return None instead of '' if engine didn't entered default capture group
             default = ''
 
         value = default
@@ -52,21 +68,15 @@ def env_var_constructor(loader, node, raw=False):
 
 
 def include_constructor(loader, node):
-    with open(node.value) as f:
-        return yaml.load(f, Loader=loader.__class__)
+    return load_yaml_file(node.value, loader=loader.__class__)
 
 
-def setup_yaml_parser():
-    yaml.add_constructor('!include', include_constructor)
-    yaml.add_constructor('!env_var', env_var_constructor)
-    yaml.add_constructor('!raw_env_var', partial(env_var_constructor, raw=True))
-    yaml.add_implicit_resolver('!env_var', IMPLICIT_ENV_VAR_MATCHER)
+def optional_include_constructor(loader, node):
+    return load_optional_yaml_file(node.value, loader=loader.__class__)
 
 
-def load_yaml_file(filename):
-    with open(filename) as f:
-        return ObjectDict.normalize(yaml.load(f, Loader=yaml.Loader))
-
-
-def loads(data):
-    return ObjectDict.normalize(yaml.load(data, Loader=yaml.Loader))
+yaml.add_constructor('!include', include_constructor)
+yaml.add_constructor('!opt_include', optional_include_constructor)
+yaml.add_constructor('!env_var', env_var_constructor)
+yaml.add_constructor('!raw_env_var', partial(env_var_constructor, raw=True))
+yaml.add_implicit_resolver('!env_var', IMPLICIT_ENV_VAR_MATCHER)

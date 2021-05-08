@@ -5,15 +5,13 @@ from functools import partial
 import flask
 import werkzeug.exceptions
 
-from flaskel import httpcode, misc, ObjectDict, uuid, yaml
+from flaskel import httpcode, misc, ObjectDict, uuid
 from flaskel.http import batch, FlaskelHttp, FlaskelJsonRPC, HTTPClient, HTTPStatusError, rpc, useragent
 from flaskel.tester import Asserter
 from flaskel.utils import datetime, ExtProxy, schemas
 from flaskel.utils.faker import DummyLogger
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, CTS, HOSTS, testapp
-
-yaml.setup_yaml_parser()
 
 url_for = partial(flask.url_for, _external=True)
 

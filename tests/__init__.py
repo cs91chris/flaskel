@@ -16,7 +16,7 @@ from .blueprints import BLUEPRINTS, VIEWS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 SKEL_DIR = os.path.join(BASE_DIR, 'skeleton')
-CONF_DIR = os.path.join(SKEL_DIR, 'config')
+CONF_DIR = os.path.join(SKEL_DIR, 'res')
 
 CTS = ObjectDict(
     json='application/json',
