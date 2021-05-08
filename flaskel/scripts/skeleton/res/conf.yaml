@@ -1,81 +1,19 @@
 wsgi:
   bind: 127.0.0.1:5000
 app:
-  DEBUG: &debug true
-  APP_NAME: &appname flaskel
-  FLASK_ENV: &env development
-  SERVER_NAME: flask.local:5000
+  DEBUG: true
   USE_X_SENDFILE: false
-  EXPLAIN_TEMPLATE_LOADING: *debug
-  TEMPLATES_AUTO_RELOAD: *debug
   PREFERRED_URL_SCHEME: http
   LOCALE: it_IT.utf8
-  LOG_SKIP_DUMP: false
-  LOG_APP_NAME: *appname
-  LOG_BUILDER: text
-  LOG_LOGGER_NAME: *env
-  CF_STRICT_ACCESS: false
-  PRETTY_DATE: "%d %B %Y %I:%M %p"
-  SQLALCHEMY_DATABASE_URI: &db ${DATABASE_URI:sqlite:///db.sqlite}
-  SQLALCHEMY_TRACK_MODIFICATIONS: false
-  SQLALCHEMY_ECHO: false
   HTTP_DUMP_BODY: [ true, true ]
   HTTP_PROTECT_BODY: false
   ERROR_PAGE: errors.html
   ERROR_HANDLER: web
-  APIDOCS_ENABLED: true
-  BASIC_AUTH_PASSWORD: admin
-  BASIC_AUTH_USERNAME: admin
-  LOGGING: !include config/log.yaml
-  APISPEC: !include config/swagger.yaml
-  SCHEMAS: !include config/schemas.yaml
-  IPBAN_NUISANCES: !include config/nuisances.yaml
-  # SCHEDULER_JOBS: !include config/scheduler.yaml
+  LOGGING: !opt_include config/log.yaml
+  APISPEC: !opt_include config/swagger.yaml
+  SCHEMAS: !opt_include config/schemas.yaml
+  IPBAN_NUISANCES: !opt_include config/nuisances.yaml
+  SCHEDULER_JOBS: !opt_include config/scheduler.yaml
   SCHEDULER_AUTO_START: true
-  SCHEDULER_JOBSTORES:
-    default:
-      # class: apscheduler.jobstores.memory:MemoryJobStore
-      class: apscheduler.jobstores.sqlalchemy:SQLAlchemyJobStore
-      tablename: scheduler
-      url: *db
-  SCHEDULER_EXECUTORS:
-    default:
-      type: threadpool
-      max_workers: 20
-  SCHEDULER_JOB_DEFAULTS:
-    coalesce: false
-    max_instances: 10
-  REDIS_URL: &redis redis://127.0.0.1:6379
-  REDIS_OPTS:
-    socket_connect_timeout: &redis_timeout 0.06
-  CACHE_REDIS_URL: *redis
-  CACHE_TYPE: redis
-  CACHE_KEY_PREFIX: *appname
-  CACHE_DEFAULT_TIMEOUT: 3600
-  CACHE_OPTIONS:
-    socket_timeout: *redis_timeout
-    socket_connect_timeout: *redis_timeout
-  RATELIMIT_STORAGE_URL: *redis
-  RATELIMIT_IN_MEMORY_FALLBACK_ENABLED: true
-  RATELIMIT_KEY_PREFIX: *appname
-  RATELIMIT_ENABLED: true
-  RATELIMIT_HEADERS_ENABLED: true
-  RATELIMIT_STORAGE_OPTIONS:
-    socket_timeout: *redis_timeout
-    socket_connect_timeout: *redis_timeout
   IPBAN_COUNT: 5
   IPBAN_SECONDS: 3600
-  LIMITER:
-    FAIL: 1/second
-    FAST: 30/minute
-    MEDIUM: 20/minute
-    SLOW: 10/minute
-    BYPASS_KEY: X-Limiter-Bypass
-    BYPASS_VALUE: bypass-rate-limit
-  MAIL_DEBUG: false
-  MAIL_SERVER: sendria.local
-  MAIL_PORT: 62000
-  MAIL_DEFAULT_SENDER: admin@mail.com
-  MAIL_DEFAULT_RECEIVER: admin@mail.com
-  ADMIN_EMAIL: admin
-  ADMIN_PASSWORD: admin
