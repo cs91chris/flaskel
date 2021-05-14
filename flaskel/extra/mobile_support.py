@@ -60,12 +60,14 @@ class MobileVersionCompatibility:
             self._current_version = getattr(app, 'version', None)
 
         self.load_config(app)
-        self.load_from_storage()
-        app.extensions['mobile_version'] = self
 
-        if app.config.VERSION_HOOKS_ENABLED:
+        if app.config.VERSION_CHECK_ENABLED:
+            self.load_from_storage()
+
             app.before_request_funcs.setdefault(None, []).append(self._set_mobile_version)
             app.after_request_funcs.setdefault(None, []).append(self._set_version_headers)
+
+        app.extensions['mobile_version'] = self
 
     @property
     def mobile_version(self):
@@ -79,7 +81,7 @@ class MobileVersionCompatibility:
     def load_config(app):
         app.config.setdefault('VERSION_STORE_MAX', 6)
         app.config.setdefault('VERSION_CACHE_EXPIRE', 3600)
-        app.config.setdefault('VERSION_HOOKS_ENABLED', True)
+        app.config.setdefault('VERSION_CHECK_ENABLED', True)
         app.config.setdefault('VERSION_AGENT_HEADER', 'X-Agent')
         app.config.setdefault('VERSION_API_HEADER', 'X-Api-Version')
         app.config.setdefault('VERSION_STORE_KEY', 'x_upgrade_needed')

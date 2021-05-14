@@ -3,34 +3,45 @@ import threading
 import traceback
 from multiprocessing import cpu_count
 
-bind = '127.0.0.1:8000'  # A string of the form: 'HOST', 'HOST:PORT', 'unix:PATH'
+from decouple import config as AutoConfig
+
+host = AutoConfig('APP_HOST', default='127.0.0.1')
+port = AutoConfig('APP_PORT', default='5000', cast=int)
+pidfile = AutoConfig('PID_FILE', default='.gunicorn.pid')
+# This requires that you install the setproctitle module
+proc_name = AutoConfig('PROC_NAME', default=None)
+app_config = AutoConfig('APP_CONFIG_FILE', default='config.py')
 
 timeout = 30
 keepalive = 3
 backlog = 2048
-workers = 1 + 2 * cpu_count()  # generally in the 2-4 x $(NUM_CORES) range
+
+# generally in the 2-4 x $(NUM_CORES) range
+workers = 1 + 2 * cpu_count()
 worker_class = 'meinheld.gmeinheld.MeinheldWorker'
-# For eventlet and gevent, limits the max number of simultaneous clients that a single process can handle
+
+# For eventlet and gevent, limits the max number of simultaneous clients
+# that a single process can handle
 worker_connections = 1000
+# A string of the form: 'HOST', 'HOST:PORT', 'unix:PATH'
+bind = f'{host}:{port}'
 
 # Install a trace function that spews every line of Python that is executed when running the server
 spew = False
 
 daemon = False
+umask = 0
 user = None
 group = None
-umask = 0
-pidfile = '.gunicorn.pid'
 
 raw_env = [
-    'APP_CONFIG_FILE=config.py',
+    f'APP_CONFIG_FILE={app_config}',
 ]
 
 errorlog = '-'
 accesslog = '-'
 loglevel = 'info'  # One of "debug", "info", "warning", "error", "critical"
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
-proc_name = None  # This requires that you install the setproctitle module
 
 
 def post_fork(server, worker):
