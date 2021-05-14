@@ -1,5 +1,6 @@
 import atexit
 import logging
+import os
 
 from apscheduler import events
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -17,11 +18,12 @@ class APJobs(APScheduler):
     def init_app(self, app, test_sync=True):
         app.config.setdefault('SCHEDULER_AUTO_START', False)
         app.config.setdefault('SCHEDULER_PATCH_MULTIPROCESS', True)
+        app.config.setdefault('SCHEDULER_LOCK_FILE', '.scheduler.lock')
 
         if app.config.SCHEDULER_PATCH_MULTIPROCESS is True:
             if fcntl is None:
                 app.logger.warning('fcntl not supported on this platform')
-            elif not self._set_lock():
+            elif not self._set_lock(app.config.SCHEDULER_LOCK_FILE):
                 return  # pragma: no cover
 
         super().init_app(app)
@@ -58,7 +60,7 @@ class APJobs(APScheduler):
         return job
 
     @staticmethod
-    def _set_lock():  # pragma: no cover
+    def _set_lock(lock_file):  # pragma: no cover
         """
         ensure that only one worker starts the scheduler
         :return: (boolean) True -> scheduler can start
@@ -69,11 +71,12 @@ class APJobs(APScheduler):
             try:
                 fcntl.flock(f, fcntl.LOCK_UN)
                 f.close()
+                os.remove(lock_file)
             except OSError:
                 pass
 
         try:
-            f = open(".scheduler.lock", "wb")
+            f = open(lock_file, "wb")
             fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
             atexit.register(unlock)
             return True

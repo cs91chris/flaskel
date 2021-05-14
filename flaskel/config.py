@@ -1,8 +1,8 @@
 import os
 
-from decouple import config, Choices
+from decouple import Choices, config
 
-from flaskel.utils import yaml
+from flaskel.utils import logger, yaml
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 TESTING = config('TESTING', default=DEBUG, cast=bool)
@@ -40,6 +40,11 @@ ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin')
 ADMIN_PASSWORD = config('ADMIN_PASSWORD', default='admin')
 MAIL_DEFAULT_SENDER = config('MAIL_DEFAULT_SENDER', default='admin@mail.com')
 MAIL_DEFAULT_RECEIVER = config('MAIL_DEFAULT_RECEIVER', default='admin@mail.com')
+
+PREFERRED_URL_SCHEME = config(
+    'PREFERRED_URL_SCHEME',
+    default='http' if FLASK_ENV == 'development' else 'https'
+)
 
 SECRET_KEY_MIN_LENGTH = 256
 
@@ -128,8 +133,8 @@ CACHE_OPTIONS = {
     'socket_connect_timeout': REDIS_OPTS['socket_connect_timeout']
 }
 
-LOGGING = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, 'log.yaml'))
 APISPEC = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, 'swagger.yaml'))
 SCHEMAS = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, 'schemas.yaml'))
 SCHEDULER_JOBS = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, 'scheduler.yaml'))
 IPBAN_NUISANCES = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, 'nuisances.yaml'))
+LOGGING = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, 'log.yaml'), default=logger.LOGGING)

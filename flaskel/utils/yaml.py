@@ -39,12 +39,12 @@ def load_yaml_file(filename, **kwargs):
         return loads(f, **kwargs)
 
 
-def load_optional_yaml_file(filename, **kwargs):
+def load_optional_yaml_file(filename, default=None, **kwargs):
     try:
         return load_yaml_file(filename, **kwargs)
     except OSError as exc:
-        print(exc, file=sys.stderr)
-        return ObjectDict()
+        print(f"WARN: {exc}", file=sys.stderr)
+        return ObjectDict() if default is None else default
 
 
 def _replace_env_var(match):
