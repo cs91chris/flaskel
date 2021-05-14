@@ -276,6 +276,7 @@ class FlaskelHttp(FlaskelHTTPDumper, HTTPClient):
                 kwargs['headers'] = {}
             kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
 
+        kwargs.setdefault('verify', cap.config.HTTP_SSL_VERIFY)
         return super().request(uri, **kwargs)
 
 
@@ -291,4 +292,5 @@ class FlaskelJsonRPC(FlaskelHTTPDumper, JsonRPCClient):
                 kwargs['headers'] = {}
             kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
 
+        kwargs.setdefault('verify', cap.config.HTTP_SSL_VERIFY)
         return super().request(uri, **kwargs)

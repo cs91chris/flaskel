@@ -111,4 +111,5 @@ class FlaskelHTTPBatch(FlaskelHTTPDumper, HTTPBatch):
                 req_id = f"{flask.request.id},{get_uuid()}"
                 r['headers'][cap.config.REQUEST_ID_HEADER] = req_id
 
+        kwargs.setdefault('verify', cap.config.HTTP_SSL_VERIFY)
         return super().request(requests, **kwargs)
