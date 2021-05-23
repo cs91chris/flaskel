@@ -40,9 +40,13 @@ class ClientMail(Mail):
                 app.logger.warning(str(exc))
 
         try:
+            timeout = socket.getdefaulttimeout()
             socket.setdefaulttimeout(app.config.MAIL_TIMEOUT or 60)
+
             with app.app_context():
                 self.send(mail_message)
+
+            socket.setdefaulttimeout(timeout)
         except OSError as exc:
             app.logger.exception(exc)
 

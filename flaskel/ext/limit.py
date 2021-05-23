@@ -97,6 +97,7 @@ class FlaskIPBan:
         :param nuisances:
         :return:
         """
+        app.config.setdefault('IPBAN_ENABLED', True)
         app.config.setdefault('IPBAN_COUNT', 20)
         app.config.setdefault('IPBAN_SECONDS', Day.seconds)
         app.config.setdefault('IPBAN_NUISANCES', nuisances or {})
@@ -105,11 +106,12 @@ class FlaskIPBan:
             httpcode.NOT_FOUND, httpcode.METHOD_NOT_ALLOWED, httpcode.NOT_IMPLEMENTED
         ))
 
-        app.after_request(self._after_request)
-        app.before_request(self._before_request)
+        if app.config.IPBAN_ENABLED:
+            app.after_request(self._after_request)
+            app.before_request(self._before_request)
 
-        self.add_whitelist(whitelist or [])
-        self.load_nuisances(conf=cap.config.IPBAN_NUISANCES)
+            self.add_whitelist(whitelist or [])
+            self.load_nuisances(conf=cap.config.IPBAN_NUISANCES)
 
         if not hasattr(app, 'extensions'):
             app.extensions = dict()  # pragma: no cover
