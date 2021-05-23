@@ -26,14 +26,14 @@ ENTRY_POINTS = dict(
 )
 
 REQUIRES = [
-    "Flask==1.1.*",
+    "Flask==2.0.*",
     "Flask-APScheduler==1.12.*",
     "Flask-Caching==1.10.*",
     "Flask-CloudflareRemote==1.1.*",
-    "Flask-Cors==3.0.*",
+    "Flask-Cors>=3.0.0",
     "Flask-ErrorsHandler==4.0.*",
-    "Flask-HTTPAuth==4.2.*",
-    "Flask-JWT-Extended==4.1.*",
+    "Flask-HTTPAuth>=4.0.0",
+    "Flask-JWT-Extended>=4.2.1",
     "Flask-Limiter==1.4.*",
     "Flask-Logify==2.3.*",
     "Flask-Mail==0.9.*",

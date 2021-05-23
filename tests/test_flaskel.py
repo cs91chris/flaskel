@@ -25,8 +25,8 @@ def test_app_dev(app_dev):
     Asserter.assert_equals(app_dev.config.SECRET_KEY, 'fake_very_complex_string')
     res = client.get(url_for('test.test_https'))
     Asserter.assert_status_code(res)
-    Asserter.assert_equals(res.json.scheme, 'http')
-    Asserter.assert_true(res.json.url_for.startswith('http'))
+    Asserter.assert_equals(res.json.scheme, 'https')
+    Asserter.assert_true(res.json.url_for.startswith('https'))
 
 
 def test_api_resources(testapp):
@@ -141,7 +141,7 @@ def test_utils_send_file(testapp):
     Asserter.assert_status_code(res)
     Asserter.assert_header(res, 'Content-Disposition', f'attachment; filename={filename}')
     Asserter.assert_header(res, 'X-Accel-Redirect', f'./{filename}')
-    Asserter.assert_true(res.headers.get('X-Sendfile').endswith(f'./{filename}'))
+    Asserter.assert_true(res.headers.get('X-Sendfile').endswith(filename))
     Asserter.assert_equals(res.data, b'')
 
     res = testapp.get(url.format('nofile.txt'))
