@@ -7,28 +7,27 @@ from decouple import config as AutoConfig
 
 host = AutoConfig('APP_HOST', default='127.0.0.1')
 port = AutoConfig('APP_PORT', default='5000', cast=int)
+# A string of the form: 'HOST', 'HOST:PORT', 'unix:PATH'
+bind = AutoConfig('BIND', default=f'{host}:{port}')
+
 pidfile = AutoConfig('PID_FILE', default='.gunicorn.pid')
 # This requires that you install the setproctitle module
 proc_name = AutoConfig('PROC_NAME', default=None)
 app_config = AutoConfig('APP_CONFIG_FILE', default='config.py')
 
-timeout = 30
-keepalive = 3
-backlog = 2048
+timeout = AutoConfig('TIMEOUT', default=30, cast=int)
+backlog = AutoConfig('BACKLOG', default=2048, cast=int)
+keepalive = AutoConfig('KEEPALIVE', default=3, cast=int)
 
 # generally in the 2-4 x $(NUM_CORES) range
-workers = 1 + 2 * cpu_count()
-worker_class = 'meinheld.gmeinheld.MeinheldWorker'
-
+workers = AutoConfig('WORKERS', default=1 + 2 * cpu_count(), cast=int)
+worker_class = AutoConfig('WORKER_CLASS', default='meinheld.gmeinheld.MeinheldWorker')
 # For eventlet and gevent, limits the max number of simultaneous clients
 # that a single process can handle
-worker_connections = 1000
-# A string of the form: 'HOST', 'HOST:PORT', 'unix:PATH'
-bind = f'{host}:{port}'
+worker_connections = AutoConfig('WORKER_CONNECTIONS', default=1000, cast=int)
 
 # Install a trace function that spews every line of Python that is executed when running the server
 spew = False
-
 daemon = False
 umask = 0
 user = None
