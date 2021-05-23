@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import flask
@@ -62,7 +63,10 @@ class MobileVersionCompatibility:
         self.load_config(app)
 
         if app.config.VERSION_CHECK_ENABLED:
-            self.load_from_storage()
+            try:
+                self.load_from_storage()
+            except Exception as exc:
+                app.logger.exception(exc)
 
             app.before_request_funcs.setdefault(None, []).append(self._set_mobile_version)
             app.after_request_funcs.setdefault(None, []).append(self._set_version_headers)
@@ -236,6 +240,16 @@ class MobileLoggerView(BaseView):
         limit.RateLimit.fail(),
     )
 
+    def __init__(self, logger_name=None):
+        """
+
+        :param logger_name:
+        """
+        if logger_name:
+            self._log = logging.getLogger(logger_name)
+        else:
+            self._log = cap.logger
+
     def dump_key(self, data, key):
         return data.get(key) or self.unavailable
 
@@ -244,7 +258,7 @@ class MobileLoggerView(BaseView):
 
     def dispatch_request(self, *args, **kwargs):
         payload = flask.request.json
-        cap.logger.error(
+        self._log.error(
             "%s"
             "\n\tUser-Info: %s"
             "\n\tMobile-Version: %s"
