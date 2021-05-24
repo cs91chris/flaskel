@@ -128,7 +128,7 @@ SCHEDULER_JOB_DEFAULTS = {
     'max_instances': 10
 }
 
-CACHE_TYPE = 'redis'
+CACHE_TYPE = 'flask_caching.backends.redis'
 CACHE_REDIS_URL = REDIS_URL
 CACHE_KEY_PREFIX = APP_NAME
 CACHE_DEFAULT_TIMEOUT = 3600

@@ -1,6 +1,7 @@
 import flask
 from flask import current_app as cap
 from flask_response_builder import encoders
+from werkzeug.utils import safe_join
 
 from .http import httpcode
 from .utils.datastruct import ObjectDict
@@ -18,10 +19,11 @@ class Request(flask.Request):
         flask_header_name = f"HTTP_{hdr.upper().replace('-', '_')}"
         return flask.request.environ.get(flask_header_name)
 
-    def get_json(self, allow_empty=False):
+    def get_json(self, allow_empty=False, **kwargs):
         """
 
         :param allow_empty:
+        :param kwargs:
         :return:
         """
         payload = super().get_json()
@@ -44,8 +46,8 @@ class Response(flask.Response):
         """
         response = flask.make_response(bytes())
         response.headers.update(headers or {})
-        response.headers.pop('Content-Type', None)
-        response.headers.pop('Content-Length', None)
+        response.headers.pop('Content-Type')
+        response.headers.pop('Content-Length')
         response.status_code = status
         return response
 
@@ -58,7 +60,7 @@ class Response(flask.Response):
         :param kwargs:
         """
         kwargs.setdefault('as_attachment', True)
-        file_path = flask.safe_join(directory, filename)
+        file_path = safe_join(directory, filename)
 
         try:
             resp = flask.send_file(file_path, **kwargs)
@@ -79,7 +81,7 @@ class Response(flask.Response):
 
         return resp
 
-    def get_json(self):
+    def get_json(self, **kwargs):
         return ObjectDict.normalize(super().get_json())
 
 

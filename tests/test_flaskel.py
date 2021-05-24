@@ -506,7 +506,6 @@ def test_mobile_views(app_dev):
     data = {'stacktrace': "exception"}
 
     res = testapp.post(url, json=data)
-    print(res.json)
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 
     res = testapp.post(f"{url}?debug", json=data)
@@ -521,7 +520,7 @@ def test_ipban(app_dev):  # must be last test on dev app
     ipban.remove_whitelist('127.0.0.1')
     for i in range(0, conf.IPBAN_COUNT + 2):
         testapp = app_dev.test_client()
-        res = testapp.get(f"{conf.SERVER_NAME}/phpmyadmin")
+        res = testapp.get("/phpmyadmin")
 
     Asserter.assert_status_code(res, httpcode.FORBIDDEN)
 

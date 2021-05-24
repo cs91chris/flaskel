@@ -3,6 +3,7 @@ import logging
 import os
 
 from apscheduler import events
+from apscheduler.schedulers import SchedulerAlreadyRunningError
 from apscheduler.schedulers.blocking import BlockingScheduler
 from flask_apscheduler import APScheduler
 
@@ -24,9 +25,14 @@ class APJobs(APScheduler):
             if fcntl is None:
                 app.logger.warning('fcntl not supported on this platform')
             elif not self._set_lock(app.config.SCHEDULER_LOCK_FILE):
+                app.logger.info('scheduler already started in another process')
                 return  # pragma: no cover
 
-        super().init_app(app)
+        try:
+            super().init_app(app)
+        except SchedulerAlreadyRunningError as exc:
+            app.logger.exception(exc)
+            return
 
         # if app is in testing mode execute tasks synchronously
         if test_sync and app.testing:
