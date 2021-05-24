@@ -1,7 +1,7 @@
 import flask
 from requests import auth, exceptions as http_exc, request as send_request
 
-from flaskel.flaskel import cap
+from flaskel import flaskel
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker.logger import FakeLogger
 from flaskel.utils.uuid import get_uuid
@@ -11,6 +11,9 @@ from .httpdumper import FlaskelHTTPDumper, LazyHTTPDumper
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
 all_errors = (*HTTPStatusError, *NetworkError)
+
+cap = flaskel.cap
+request: 'flaskel.Request' = flask.request
 
 
 class HTTPTokenAuth(auth.AuthBase):
@@ -265,32 +268,21 @@ class JsonRPCClient(HTTPClient):
 
 
 class FlaskelHttp(FlaskelHTTPDumper, HTTPClient):
-    def __init__(self, endpoint, **kwargs):
+    def __init__(self, endpoint, *args, **kwargs):
         kwargs.setdefault('logger', cap.logger)
-        super().__init__(endpoint, **kwargs)
+        super().__init__(endpoint, *args, **kwargs)
         self._timeout = cap.config.HTTP_TIMEOUT or self._timeout
 
     def request(self, uri, **kwargs):
-        if flask.request.id:
+        if request.id:
             if not kwargs.get('headers'):
                 kwargs['headers'] = {}
-            kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
+            kwargs['headers'][cap.config.REQUEST_ID_HEADER] = request.id
 
         kwargs.setdefault('verify', cap.config.HTTP_SSL_VERIFY)
         return super().request(uri, **kwargs)
 
 
-class FlaskelJsonRPC(FlaskelHTTPDumper, JsonRPCClient):
-    def __init__(self, endpoint, uri, **kwargs):
-        kwargs.setdefault('logger', cap.logger)
-        super().__init__(endpoint, uri, **kwargs)
-        self._timeout = cap.config.HTTP_TIMEOUT or self._timeout
-
-    def request(self, uri, **kwargs):
-        if flask.request.id:
-            if not kwargs.get('headers'):
-                kwargs['headers'] = {}
-            kwargs['headers'][cap.config.REQUEST_ID_HEADER] = flask.request.id
-
-        kwargs.setdefault('verify', cap.config.HTTP_SSL_VERIFY)
-        return super().request(uri, **kwargs)
+class FlaskelJsonRPC(FlaskelHttp, JsonRPCClient):
+    """
+    """

@@ -55,12 +55,15 @@ def handle_error(error, *args, **kwargs):
     flask.abort(httpcode.BAD_REQUEST, response=error.messages)
 
 
+query_paginate = partial(query, dict(
+    page=OptField.positive(),
+    page_size=OptField.positive(),
+    related=OptField.boolean(missing=False),
+))
+
+
 def paginate(f=None):
-    @query(dict(
-        page=OptField.positive(),
-        page_size=OptField.positive(),
-        related=OptField.boolean(missing=False),
-    ))
+    @query_paginate()
     def _route(*args, **kwargs):
         params = args[-1]
         if f is None:

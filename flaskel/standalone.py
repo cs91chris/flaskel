@@ -116,7 +116,6 @@ class Server:
         env = decouple.config('FLASK_ENV', default=default_env)
 
         if filename is not None:
-            yaml.setup_yaml_parser()
             config = yaml.load_yaml_file(filename)
             if not config.app.FLASK_ENV:
                 config.app.FLASK_ENV = env

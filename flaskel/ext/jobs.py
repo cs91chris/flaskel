@@ -101,11 +101,11 @@ scheduler = APJobs()
 def exception_listener(event):
     logger = scheduler.app.logger
     if event.exception:
-        logger.error(f"An error occurred when executing job: {event.job_id}")
+        logger.error("An error occurred when executing job: %s", event.job_id)
         logger.exception(event.exception)
         logger.error(event.traceback)
     else:
-        logger.debug(f"successfully executed job: {event.job_id}")
+        logger.debug("successfully executed job: %s", event.job_id)
 
 
 scheduler.add_listener(

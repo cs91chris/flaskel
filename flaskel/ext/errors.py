@@ -5,10 +5,12 @@ from jwt import PyJWTError
 
 from flaskel.http.exceptions import Unauthorized
 
+jwt_errors = (JWTExtendedException, PyJWTError)
+
 
 class ErrorNormalizer(DefaultNormalizer):
     def normalize(self, ex, *args, **kwargs):
-        if isinstance(ex, (JWTExtendedException, PyJWTError)):
+        if isinstance(ex, jwt_errors):
             response = dict()
             if cap.debug:
                 response['message'] = str(ex)
