@@ -91,7 +91,7 @@ class MobileVersionCompatibility:
         app.config.setdefault('VERSION_STORE_KEY', 'x_upgrade_needed')
         app.config.setdefault('VERSION_HEADER_KEY', 'X-Mobile-Version')
         app.config.setdefault('VERSION_UPGRADE_HEADER', 'X-Upgrade-Needed')
-        app.config.setdefault('VERSION_AGENTS', ['android', 'ios'])
+        app.config.setdefault('VERSION_AGENTS', ('android', 'ios'))
         app.config.setdefault('VERSION_SKIP_STATUSES', (
             httpcode.FORBIDDEN,
             httpcode.NOT_FOUND,

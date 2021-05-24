@@ -32,7 +32,7 @@ REQUIRES = [
     "Flask-CloudflareRemote==1.1.*",
     "Flask-Cors>=3.0.0",
     "Flask-ErrorsHandler==4.0.*",
-    "Flask-HTTPAuth>=4.0.0",
+    "Flask-HTTPAuth>=4.4.*",
     "Flask-JWT-Extended>=4.2.1",
     "Flask-Limiter==1.4.*",
     "Flask-Logify==2.3.*",
