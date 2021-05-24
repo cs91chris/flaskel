@@ -150,3 +150,26 @@ class IntEnum(enum.IntEnum):
 
     def __str__(self):
         return self.name
+
+
+class Dumper:
+    def __init__(self, data, callback=None, *args, **kwargs):
+        """
+
+        :param data:
+        :param callback:
+        :param args:
+        :param kwargs:
+        """
+        self.data = data
+        self._args = args
+        self._kwargs = kwargs
+        self._callback = callback
+
+    def dump(self):
+        if self._callback is not None:
+            return self._callback(self.data, *self._args, **self._kwargs)
+        return str(self.data)
+
+    def __str__(self):
+        return self.dump()

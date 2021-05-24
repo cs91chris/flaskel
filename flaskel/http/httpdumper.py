@@ -1,5 +1,7 @@
 from flask import current_app as cap, json
 
+from flaskel.utils.datastruct import Dumper
+
 
 class BaseHTTPDumper:
     @classmethod
@@ -101,23 +103,11 @@ class BaseHTTPDumper:
 class LazyHTTPDumper(BaseHTTPDumper):
     @classmethod
     def dump_request(cls, req, *args, **kwargs):
-        dump = super().dump_request
-
-        class DumpRequest:
-            def __str__(self):
-                return dump(req, *args, **kwargs)
-
-        return DumpRequest()
+        return Dumper(req, super().dump_request, *args, **kwargs)
 
     @classmethod
     def dump_response(cls, resp, *args, **kwargs):
-        dump = super().dump_response
-
-        class DumpResponse:
-            def __str__(self):
-                return dump(resp, *args, **kwargs)
-
-        return DumpResponse()
+        return Dumper(resp, super().dump_response, *args, **kwargs)
 
 
 class FlaskelHTTPDumper(LazyHTTPDumper):
