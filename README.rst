@@ -7,9 +7,11 @@ Features
 ~~~~~~~~
 
 - Application skeleton:
-::
+
+.. code-block:: shell
 
     flaskel init --help
+..
 
 - advanced app factory, see: ``flaskel.builder.AppBuilder``
 - support for testing with ``flaskel.tester`` package
@@ -89,12 +91,15 @@ SQLAlchemy support
 Flaskel comes with auxiliaries components from sqlalchemy:
 
 - dump schema via cli:
-::
+
+.. code-block:: shell
 
     flaskel schema --help
+..
 
 - custom Model class than adds functionalities to all models
-::
+
+.. code-block:: python
 
     class SQLAModel(Model):
         def columns(self): ...
@@ -103,16 +108,85 @@ Flaskel comes with auxiliaries components from sqlalchemy:
         def get_list(cls, to_dict=True, restricted=False, order_by=None, page=None, page_size=None, max_per_page=None, *args, **kwargs): ...
         def query_collection(cls, params=None, *args, **kwargs): ...
         def update(self, attributes): ...
+..
 
 - models mixins, for common use cases
-::
+
+.. code-block:: python
 
     class StandardMixin: ...
     class CatalogMixin: ...
     class CatalogXMixin(CatalogMixin): ...
     class LoaderMixin: ...
     class UserMixin(StandardMixin): ...
+..
 
+Data Structures
+~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    class ConfigProxy: ...
+    class ExtProxy: ...
+    class HashableDict(dict): ...
+    class ObjectDict(dict): ...
+
+    class IntEnum(enum.IntEnum):
+        @classmethod
+        def to_list(cls): ...
+        def to_dict(self): ...
+
+    class Dumper:
+        def __init__(self, data, callback=None, *args, **kwargs): ...
+        def dump(self): ...
+..
+
+Webargs support
+~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    from flaskel import webargs
+
+    @webargs.query(...)
+    @webargs.payload(...)
+    @webargs.query_paginate()
+
+    webargs.paginate()
+
+    webargs.Field.integer()
+    webargs.Field.string()
+    webargs.Field.decimal()
+    webargs.Field.boolean()
+    webargs.Field.positive()
+    webargs.Field.not_negative()
+    webargs.Field.not_positive()
+    webargs.Field.negative()
+    webargs.Field.isodate()
+    webargs.Field.list_of()
+
+    webargs.OptField.integer()
+    webargs.OptField.string()
+    webargs.OptField.decimal()
+    webargs.OptField.boolean()
+    webargs.OptField.positive()
+    webargs.OptField.not_negative()
+    webargs.OptField.not_positive()
+    webargs.OptField.negative()
+    webargs.OptField.isodate()
+    webargs.OptField.list_of()
+
+    webargs.ReqField.integer()
+    webargs.ReqField.string()
+    webargs.ReqField.decimal()
+    webargs.ReqField.boolean()
+    webargs.ReqField.positive()
+    webargs.ReqField.not_negative()
+    webargs.ReqField.not_positive()
+    webargs.ReqField.negative()
+    webargs.ReqField.isodate()
+    webargs.ReqField.list_of()
+..
 
 Configuration
 ~~~~~~~~~~~~~
