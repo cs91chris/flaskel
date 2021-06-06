@@ -20,57 +20,63 @@ LOGGING = dict(
         },
         "syslog":  {
             "class":  "flask_logify.formatters.RequestFormatter",
-            "format": f"%(ident)s{LOG_FMT}"
+            "format": f"%(ident)s%(message)s"
         }
     },
     handlers={
-        "console": {
+        "console":      {
             "class":     "logging.StreamHandler",
             "formatter": "console",
             "stream":    "ext://sys.stderr"
         },
-        "queue":   {
+        "syslog":       {
+            "class":     "flask_logify.handlers.FlaskSysLogHandler",
+            "address":   ["localhost", 514],
+            "formatter": "syslog",
+            "facility":  "user"
+        },
+        "queueConsole": {
             "respect_handler_level": True,
             "class":                 "flask_logify.handlers.QueueHandler",
             "queue":                 "cfg://objects.queue",
             "handlers":              ["cfg://handlers.console"]
         },
-        "syslog":  {
-            "class":     "flask_logify.handlers.FlaskSysLogHandler",
-            "address":   ["localhost", 514],
-            "formatter": "syslog",
-            "facility":  "user"
+        "queueSyslog":  {
+            "respect_handler_level": True,
+            "class":                 "flask_logify.handlers.QueueHandler",
+            "queue":                 "cfg://objects.queue",
+            "handlers":              ["cfg://handlers.syslog"]
         }
     },
     root={
         "level":    "WARN",
-        "handlers": ["console"]
+        "handlers": ["queueConsole"]
     },
     loggers={
         "development":     {
             "level":     "DEBUG",
             "propagate": False,
-            "handlers":  ["console"]
+            "handlers":  ["queueConsole"]
         },
         "production":      {
             "level":     "INFO",
             "propagate": False,
-            "handlers":  ["syslog"]
+            "handlers":  ["queueConsole"]
         },
         "flask-limiter":   {
             "level":     "DEBUG",
             "propagate": False,
-            "handlers":  ["console"]
+            "handlers":  ["queueConsole"]
         },
         "gunicorn.error":  {
             "level":     "INFO",
             "propagate": False,
-            "handlers":  ["console"]
+            "handlers":  ["queueSyslog"]
         },
         "gunicorn.access": {
             "level":     "INFO",
             "propagate": False,
-            "handlers":  ["console"]
+            "handlers":  ["queueSyslog"]
         }
     }
 )

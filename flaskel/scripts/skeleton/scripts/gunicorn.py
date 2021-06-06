@@ -1,9 +1,17 @@
+import inspect
+import os
 import sys
 import threading
 import traceback
 from multiprocessing import cpu_count
 
 from decouple import config as AutoConfig
+
+# TODO must not be relative
+from . import config as AppConfigFile
+
+app_config_file = inspect.getmodule(AppConfigFile)
+app_config_file = os.path.abspath(app_config_file.__file__)
 
 host = AutoConfig('APP_HOST', default='127.0.0.1')
 port = AutoConfig('APP_PORT', default='5000', cast=int)
@@ -13,7 +21,7 @@ bind = AutoConfig('BIND', default=f'{host}:{port}')
 pidfile = AutoConfig('PID_FILE', default='.gunicorn.pid')
 # This requires that you install the setproctitle module
 proc_name = AutoConfig('PROC_NAME', default=None)
-app_config = AutoConfig('APP_CONFIG_FILE', default='config.py')
+app_config = AutoConfig('APP_CONFIG_FILE', default=app_config_file)
 
 timeout = AutoConfig('TIMEOUT', default=30, cast=int)
 backlog = AutoConfig('BACKLOG', default=2048, cast=int)
