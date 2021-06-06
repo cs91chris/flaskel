@@ -1,17 +1,13 @@
-Flaskel
-=======
+# Flaskel
 
 Flaskel is a skeleton for all type of Flask application with rest apis or not.
 
-Features
-~~~~~~~~
+## Features
 
 - Application skeleton:
-
-.. code-block:: shell
-
+```shell
     flaskel init --help
-..
+```
 
 - advanced app factory, see: ``flaskel.builder.AppBuilder``
 - support for testing with ``flaskel.tester`` package
@@ -22,8 +18,7 @@ Features
 - better configuration via multiple source: module, yaml (or json), env variables
 - better http support for client and server, see: ``flaskel.http``
 
-Extensions
-~~~~~~~~~~
+## Extensions
 
 Extensions are registered via AppBuilder, see: ``flaskel.scripts.skeleton.ext``
 
@@ -48,148 +43,143 @@ My own external extensions:
 
 Internal extensions:
 
-- flaskel.ext.crypto.argon.Argon2 (argon2)
-- flaskel.ext.datetime.FlaskDateHelper (date_helper)
-- flaskel.ext.limit.FlaskIPBan (ipban)
-- flaskel.ext.redis.FlaskRedis (redis)
-- flaskel.ext.useragent.UserAgent (useragent)
-- flaskel.ext.sendmail.ClientMail (client_mail) extends Flask-Mail
-- flaskel.ext.jobs.APJobs (scheduler) extends Flask-APScheduler
-- flaskel.ext.healthcheck.health.HealthCheck (healthcheck), default checks: glances, mongo, redis, sqlalchemy, system
+- ``flaskel.ext.crypto.argon.Argon2`` (argon2)
+- ``flaskel.ext.datetime.FlaskDateHelper`` (date_helper)
+- ``flaskel.ext.limit.FlaskIPBan`` (ipban)
+- ``flaskel.ext.redis.FlaskRedis`` (redis)
+- ``flaskel.ext.useragent.UserAgent`` (useragent)
+- ``flaskel.ext.sendmail.ClientMail`` (client_mail) extends Flask-Mail
+- ``flaskel.ext.jobs.APJobs`` (scheduler) extends Flask-APScheduler
+- ``flaskel.ext.healthcheck.health.HealthCheck`` (healthcheck), default checks: glances, mongo, redis, sqlalchemy, system
 
 Wrapper extensions:
 
-- flaskel.ext.caching.Cache wraps Flask-Caching
-- flaskel.ext.limit.RateLimit wraps Flask-Limiter
-- flaskel.ext.auth.DBTokenHandler, flaskel.ext.auth.RedisTokenHandler wraps Flask-JWT
+- ``flaskel.ext.caching.Cache`` wraps Flask-Caching
+- ``flaskel.ext.limit.RateLimit`` wraps Flask-Limiter
+- ``flaskel.ext.auth.DBTokenHandler``, flaskel.ext.auth.RedisTokenHandler wraps Flask-JWT
 
 Extra extensions:
 
-- flaskel.extra.mobile_support.MobileVersionCompatibility (mobile_version)
-- flaskel.extra.stripe.PaymentHandler (stripe)
+- ``flaskel.extra.mobile_support.MobileVersionCompatibility`` (mobile_version)
+- ``flaskel.extra.stripe.PaymentHandler`` (stripe)
 
 
-Views
-~~~~~
+## Views
 
 Flaskel comes with useful views for most common apis or simple web controllers:
 
-- flaskel.views.base.BaseView
-- flaskel.views.rpc.JSONRPCView
-- flaskel.views.template.RenderTemplate
-- flaskel.views.template.RenderTemplateString
-- flaskel.views.base.Resource
-- flaskel.views.resource.CatalogResource
-- flaskel.views.resource.Restful
-- flaskel.views.proxy.ProxyView
-- flaskel.views.proxy.ConfProxyView
-- flaskel.views.proxy.TransparentProxyView
+- ``flaskel.views.base.BaseView``
+- ``flaskel.views.rpc.JSONRPCView``
+- ``flaskel.views.template.RenderTemplate``
+- ``flaskel.views.template.RenderTemplateString``
+- ``flaskel.views.base.Resource``
+- ``flaskel.views.resource.CatalogResource``
+- ``flaskel.views.resource.Restful``
+- ``flaskel.views.proxy.ProxyView``
+- ``flaskel.views.proxy.ConfProxyView``
+- ``flaskel.views.proxy.TransparentProxyView``
 
-SQLAlchemy support
-~~~~~~~~~~~~~
+## SQLAlchemy support
 
 Flaskel comes with auxiliaries components from sqlalchemy:
 
 - dump schema via cli:
 
-.. code-block:: shell
-
+```shell
     flaskel schema --help
-..
+```
 
 - custom Model class than adds functionalities to all models
 
-.. code-block:: python
-
-    class SQLAModel(Model):
-        def columns(self): ...
-        def to_dict(self, restricted=False): ...
-        def get_one(cls, raise_not_found=True, to_dict=True, *args, **kwargs): ...
-        def get_list(cls, to_dict=True, restricted=False, order_by=None, page=None, page_size=None, max_per_page=None, *args, **kwargs): ...
-        def query_collection(cls, params=None, *args, **kwargs): ...
-        def update(self, attributes): ...
-..
+```python
+class SQLAModel(Model):
+    def columns(self): ...
+    def to_dict(self, restricted=False): ...
+    def get_one(cls, raise_not_found=True, to_dict=True, *args, **kwargs): ...
+    def get_list(cls, to_dict=True, restricted=False, order_by=None, page=None, page_size=None, max_per_page=None, *args, **kwargs): ...
+    def query_collection(cls, params=None, *args, **kwargs): ...
+    def update(self, attributes): ...
+```
 
 - models mixins, for common use cases
 
-.. code-block:: python
+```python
+class StandardMixin: ...
+class CatalogMixin: ...
+class CatalogXMixin(CatalogMixin): ...
+class LoaderMixin: ...
+class UserMixin(StandardMixin): ...
+```
 
-    class StandardMixin: ...
-    class CatalogMixin: ...
-    class CatalogXMixin(CatalogMixin): ...
-    class LoaderMixin: ...
-    class UserMixin(StandardMixin): ...
-..
+## Data Structures
 
-Data Structures
-~~~~~~~~~~~~~~~
+```python
+class ConfigProxy: ...
+class ExtProxy: ...
+class HashableDict(dict): ...
+class ObjectDict(dict): ...
 
-.. code-block:: python
+class IntEnum(enum.IntEnum):
+    @classmethod
+    def to_list(cls): ...
+    def to_dict(self): ...
 
-    class ConfigProxy: ...
-    class ExtProxy: ...
-    class HashableDict(dict): ...
-    class ObjectDict(dict): ...
+class Dumper:
+    def __init__(self, data, callback=None, *args, **kwargs): ...
+    def dump(self): ...
+```
 
-    class IntEnum(enum.IntEnum):
-        @classmethod
-        def to_list(cls): ...
-        def to_dict(self): ...
+## Webargs support
 
-    class Dumper:
-        def __init__(self, data, callback=None, *args, **kwargs): ...
-        def dump(self): ...
-..
+```python
+from flaskel import webargs
 
-Webargs support
-~~~~~~~~~~~~~~~
+@webargs.query(...)
+...
 
-.. code-block:: python
+@webargs.payload(...)
+...
 
-    from flaskel import webargs
+@webargs.query_paginate()
+...
 
-    @webargs.query(...)
-    @webargs.payload(...)
-    @webargs.query_paginate()
+webargs.paginate()
 
-    webargs.paginate()
+webargs.Field.integer()
+webargs.Field.string()
+webargs.Field.decimal()
+webargs.Field.boolean()
+webargs.Field.positive()
+webargs.Field.not_negative()
+webargs.Field.not_positive()
+webargs.Field.negative()
+webargs.Field.isodate()
+webargs.Field.list_of()
 
-    webargs.Field.integer()
-    webargs.Field.string()
-    webargs.Field.decimal()
-    webargs.Field.boolean()
-    webargs.Field.positive()
-    webargs.Field.not_negative()
-    webargs.Field.not_positive()
-    webargs.Field.negative()
-    webargs.Field.isodate()
-    webargs.Field.list_of()
+webargs.OptField.integer()
+webargs.OptField.string()
+webargs.OptField.decimal()
+webargs.OptField.boolean()
+webargs.OptField.positive()
+webargs.OptField.not_negative()
+webargs.OptField.not_positive()
+webargs.OptField.negative()
+webargs.OptField.isodate()
+webargs.OptField.list_of()
 
-    webargs.OptField.integer()
-    webargs.OptField.string()
-    webargs.OptField.decimal()
-    webargs.OptField.boolean()
-    webargs.OptField.positive()
-    webargs.OptField.not_negative()
-    webargs.OptField.not_positive()
-    webargs.OptField.negative()
-    webargs.OptField.isodate()
-    webargs.OptField.list_of()
+webargs.ReqField.integer()
+webargs.ReqField.string()
+webargs.ReqField.decimal()
+webargs.ReqField.boolean()
+webargs.ReqField.positive()
+webargs.ReqField.not_negative()
+webargs.ReqField.not_positive()
+webargs.ReqField.negative()
+webargs.ReqField.isodate()
+webargs.ReqField.list_of()
+```
 
-    webargs.ReqField.integer()
-    webargs.ReqField.string()
-    webargs.ReqField.decimal()
-    webargs.ReqField.boolean()
-    webargs.ReqField.positive()
-    webargs.ReqField.not_negative()
-    webargs.ReqField.not_positive()
-    webargs.ReqField.negative()
-    webargs.ReqField.isodate()
-    webargs.ReqField.list_of()
-..
-
-Configuration
-~~~~~~~~~~~~~
+## Configuration
 
 There are many configuration keys provided by many sources, the same key in different source are overridden.
 Source priorities:
