@@ -109,7 +109,7 @@ class UserMixin(StandardMixin):
     def check_password(self, password):
         return self._hasher.verify_hash(self._password, password)
 
-    def to_dict(self, restricted=False):
+    def to_dict(self, **_):
         return ObjectDict(
             id=self.id,
             email=self.email
