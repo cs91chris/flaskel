@@ -111,6 +111,29 @@ class LoaderMixin: ...
 class UserMixin(StandardMixin): ...
 ```
 
+- Support class for common problems
+
+```python
+class SQLASupport:
+    def __init__(self, model, session): ...
+
+    def get_or_create(self, defaults=None, **kwargs):
+        """
+        :param defaults: attribute used to create record
+        :param kwargs: filters used to fetch record or create
+        :return: obj, created (bool)
+        """
+
+    def update_or_create(self, defaults=None, **kwargs):
+        """
+        :param defaults: attribute used to create record
+        :param kwargs: filters used to fetch record or create
+        :return: obj, created (bool)
+        """
+
+```
+
+
 ## Data Structures
 
 ```python
@@ -216,6 +239,32 @@ Configuration via env:
 - ``MAIL_DEFAULT_SENDER``: *(default = admin@mail.com)*
 - ``MAIL_DEFAULT_RECEIVER``: *(default = admin@mail.com)*
 - ``PREFERRED_URL_SCHEME``: *(default = http if FLASK_ENV = development else https)*
+- ``IPBAN_COUNT``: *(default = 5)*
+- ``IPBAN_SECONDS``: *(default = 3600)*
+- ``LOG_BUILDER``: *(default = text)*
+- ``LOG_APP_NAME``: *(default = APP_NAME)*
+- ``LOG_LOGGER_NAME``: *(default = FLASK_ENV)*
+- ``LOG_REQ_SKIP_DUMP``: *(default = not TESTING)*
+- ``LOG_RESP_SKIP_DUMP``: *(default = not TESTING)*
+- ``LOG_RESP_HEADERS``: *(default = [])*
+- ``LOG_REQ_HEADERS``: *(default = [])*
+- ``CF_STRICT_ACCESS``: *(default = False)*
+- ``VERSION_STORE_MAX``: *(default = 6)*
+- ``VERSION_CACHE_EXPIRE``: *(default = 60)*
+- ``HTTP_PROTECT_BODY``: *(default = False)*
+- ``HTTP_DUMP_REQ_BODY``: *(default = False)*
+- ``HTTP_DUMP_RESP_BODY``: *(default = False)*
+- ``USE_X_SENDFILE``: *(default = not DEBUG)*
+- ``ENABLE_ACCEL``: *(default = True)*
+- ``WSGI_WERKZEUG_LINT_ENABLED``: *(default = TESTING)*
+- ``WSGI_WERKZEUG_PROFILER_ENABLED``: *(default = TESTING)*
+- ``SQLALCHEMY_ECHO``: *(default = TESTING)*
+- ``RATELIMIT_ENABLED``: *(default = not DEBUG)*
+- ``RATELIMIT_HEADERS_ENABLED``: *(default = True)*
+- ``RATELIMIT_IN_MEMORY_FALLBACK_ENABLED``: *(default = True)*
+- ``SCHEDULER_AUTO_START``: *(default = True)*
+- ``SCHEDULER_API_ENABLED``: *(default = False)*
+- ``CACHE_KEY_PREFIX``: *(default = APP_NAME)*
 
 Extra configurations are optionally loaded via files in folder ``CONF_PATH``:
 
@@ -274,6 +323,7 @@ Configuration specific for internal extensions:
 - flaskel.extra.stripe.PaymentHandler (stripe)
  - ``STRIPE_SECRET_KEY``:
  - ``STRIPE_PUBLIC_KEY``:
+ - ``STRIPE_WEBHOOK_SECRET``: 
  - ``STRIPE_DEBUG``: *(default = False)*
  - ``STRIPE_DEFAULT_CURRENCY``: *(default = eur)*
  - ``STRIPE_API_VERSION``: *(default = 2020-08-27)*

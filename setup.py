@@ -35,7 +35,7 @@ REQUIRES = [
     "Flask-HTTPAuth>=4.4.*",
     "Flask-JWT-Extended>=4.2.1",
     "Flask-Limiter==1.4.*",
-    "Flask-Logify==2.3.*",
+    "Flask-Logify==2.4.*",
     "Flask-Mail==0.9.*",
     "Flask-ResponseBuilder==2.0.*",
     "Flask-SQLAlchemy==2.5.*",
