@@ -91,7 +91,7 @@ class HealthCheck:
             params = params.split(cap.config['HEALTHCHECK_PARAM_SEP'])
             params = set(params).intersection(all_checks)
 
-        # noinspection PyProtectedMember
+        # noinspection PyProtectedMember,PyUnresolvedReferences
         app = cap._get_current_object()
         params = list(params)
         tasks = [(self._health_checks.get(p), dict(app=app)) for p in params]

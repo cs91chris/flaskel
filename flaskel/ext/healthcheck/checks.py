@@ -1,5 +1,6 @@
 import psutil
 
+from flaskel.http import HTTPClient, httpcode
 from flaskel.http.batch import HTTPBatch
 from flaskel.utils.datastruct import ObjectDict
 
@@ -16,9 +17,9 @@ def health_sqlalchemy(db, app, stm='SELECT 1'):
         with app.app_context():
             with db.engine.connect() as connection:
                 connection.execute(stm)
-    except Exception as exc:
+    except Exception as exc:  # pragma: no cover
         return False, str(exc)
-    return True, None  # pragma: no cover
+    return True, None
 
 
 def health_mongo(db, app, cmd='ping'):
@@ -145,3 +146,22 @@ def health_system(conf=None, **kwargs):
 
     output = resp if conf.SYSTEM_DUMP_ALL else (resp.errors or None)
     return bool(not resp.errors), dict(messages=output)
+
+
+def health_services(app, conf_key='SERVICES', *args, **kwargs):
+    status = True
+    response = {}
+    services = app.config.get(conf_key) or {}
+
+    for service, conf in services.items():
+        conf.setdefault('uri', '/')
+        conf.setdefault('method', 'GET')
+        client = HTTPClient(conf.pop('endpoint'), logger=app.logger)
+        res = client.request(**conf)
+
+        if not httpcode.is_success(res.status):
+            status = False
+            response[service] = dict(exception=str(res.exception or res.status), message=res.body)
+        else:
+            response[service] = dict(status=res.status, message=res.body)
+    return status, response
