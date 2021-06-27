@@ -1,6 +1,6 @@
 import os
 
-from decouple import Choices, config
+from decouple import Choices, config, Csv
 
 from flaskel.utils import logger, yaml
 
@@ -46,51 +46,61 @@ PREFERRED_URL_SCHEME = config(
     default='http' if FLASK_ENV == 'development' else 'https'
 )
 
-SECRET_KEY_MIN_LENGTH = 256
+IPBAN_COUNT = config('IPBAN_COUNT', default=5, cast=int)
+IPBAN_SECONDS = config('IPBAN_SECONDS', default=3600, cast=int)
 
+LOG_BUILDER = config('LOG_BUILDER', default='text')
+LOG_APP_NAME = config('LOG_APP_NAME', default=APP_NAME)
+LOG_LOGGER_NAME = config('LOG_LOGGER_NAME', default=FLASK_ENV)
+LOG_REQ_HEADERS = config('LOG_REQ_HEADERS', default='', cast=Csv())
+LOG_RESP_HEADERS = config('LOG_RESP_HEADERS', default='', cast=Csv())
+LOG_REQ_SKIP_DUMP = config('LOG_REQ_SKIP_DUMP', default=not TESTING, cast=bool)
+LOG_RESP_SKIP_DUMP = config('LOG_RESP_SKIP_DUMP', default=not TESTING, cast=bool)
+LOG_REQ_FORMAT = 'INCOMING REQUEST: {address} {method} {scheme} {path}\n{headers}\n{body}'
+LOG_RESP_FORMAT = 'OUTGOING RESPONSE for {address} at {path}: STATUS {status}\n{headers}\n{body}'
+
+CF_STRICT_ACCESS = config('CF_STRICT_ACCESS', default=False, cast=bool)
+VERSION_STORE_MAX = config('VERSION_STORE_MAX', default=6, cast=int)
+VERSION_CACHE_EXPIRE = config('VERSION_CACHE_EXPIRE', default=60, cast=int)
+
+HTTP_PROTECT_BODY = config('HTTP_PROTECT_BODY', default=False, cast=bool)
+HTTP_DUMP_BODY = [
+    config('HTTP_DUMP_REQ_BODY', default=False, cast=bool),
+    config('HTTP_DUMP_RESP_BODY', default=False, cast=bool),
+]
+
+USE_X_SENDFILE = config('USE_X_SENDFILE', default=not DEBUG, cast=bool)
+ENABLE_ACCEL = config('ENABLE_ACCEL', default=True, cast=bool)
+ACCEL_BUFFERING = True
+ACCEL_CHARSET = 'utf-8'
+ACCEL_LIMIT_RATE = 'off'
+
+WSGI_WERKZEUG_PROFILER_FILE = 'profiler.txt'
+WSGI_WERKZEUG_PROFILER_RESTRICTION = (0.1,)
+WSGI_WERKZEUG_LINT_ENABLED = config('WSGI_WERKZEUG_LINT_ENABLED', default=TESTING, cast=bool)
+WSGI_WERKZEUG_PROFILER_ENABLED = config('WSGI_WERKZEUG_PROFILER_ENABLED', default=TESTING, cast=bool)
+
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_ECHO = config('SQLALCHEMY_ECHO', default=TESTING, cast=bool)
+
+REQUEST_ID_HEADER = 'X-Request-ID'
+RATELIMIT_ENABLED = config('RATELIMIT_ENABLED', default=not DEBUG, cast=bool)
+RATELIMIT_HEADERS_ENABLED = config('RATELIMIT_HEADERS_ENABLED', default=True, cast=bool)
+RATELIMIT_IN_MEMORY_FALLBACK_ENABLED = config('RATELIMIT_IN_MEMORY_FALLBACK_ENABLED', default=True, cast=bool)
+
+DATABASE_URL = SQLALCHEMY_DATABASE_URI
+ERROR_PAGE = 'core/error.html'
+SECRET_KEY_MIN_LENGTH = 256
 RB_DEFAULT_ACCEPTABLE_MIMETYPES = [
     'application/json',
     'application/xml',
 ]
 
-LOG_BUILDER = 'text'
-LOG_APP_NAME = APP_NAME
-LOG_LOGGER_NAME = FLASK_ENV
-LOG_REQ_SKIP_DUMP = not TESTING
-LOG_RESP_SKIP_DUMP = not TESTING
-LOG_REQ_FORMAT = 'INCOMING REQUEST: {address} {method} {scheme} {path}\n{headers}\n{body}'
-LOG_RESP_FORMAT = 'OUTGOING RESPONSE for {address} at {path}: STATUS {status}\n{headers}\n{body}'
-
-ERROR_PAGE = 'core/error.html'
-
-CF_STRICT_ACCESS = False
-
-USE_X_SENDFILE = not DEBUG
-SEND_FILE_MAX_AGE_DEFAULT = 86400
-ENABLE_ACCEL = True
-ACCEL_BUFFERING = True
-ACCEL_CHARSET = 'utf-8'
-ACCEL_LIMIT_RATE = 'off'
-
 JWT_DEFAULT_SCOPE = None
 JWT_DEFAULT_TOKEN_TYPE = 'bearer'
-
-WSGI_WERKZEUG_LINT_ENABLED = TESTING
-WSGI_WERKZEUG_PROFILER_ENABLED = TESTING
-WSGI_WERKZEUG_PROFILER_RESTRICTION = (0.1,)
-WSGI_WERKZEUG_PROFILER_FILE = 'profiler.txt'
-
 PRETTY_DATE = '%d %B %Y %I:%M %p'
 DATE_ISO_FORMAT = '%Y-%m-%dT%H:%M:%S'
-
-SQLALCHEMY_ECHO = TESTING
-SQLALCHEMY_TRACK_MODIFICATIONS = False
-DATABASE_URL = SQLALCHEMY_DATABASE_URI
-
-RATELIMIT_ENABLED = not DEBUG
-RATELIMIT_HEADERS_ENABLED = True
-RATELIMIT_IN_MEMORY_FALLBACK_ENABLED = True
-REQUEST_ID_HEADER = 'X-Request-ID'
+SEND_FILE_MAX_AGE_DEFAULT = 86400
 
 RATELIMIT_STORAGE_URL = REDIS_URL
 RATELIMIT_KEY_PREFIX = APP_NAME
@@ -108,8 +118,8 @@ LIMITER = {
     'BYPASS_VALUE': 'bypass-rate-limit',
 }
 
-SCHEDULER_AUTO_START = True
-SCHEDULER_API_ENABLED = False
+SCHEDULER_AUTO_START = config('SCHEDULER_AUTO_START', default=True, cast=bool)
+SCHEDULER_API_ENABLED = config('SCHEDULER_API_ENABLED', default=False, cast=bool)
 SCHEDULER_JOBSTORES = {
     'default': {
         'class':     'apscheduler.jobstores.sqlalchemy:SQLAlchemyJobStore',
@@ -128,10 +138,10 @@ SCHEDULER_JOB_DEFAULTS = {
     'max_instances': 10
 }
 
-CACHE_TYPE = 'flask_caching.backends.redis'
 CACHE_REDIS_URL = REDIS_URL
-CACHE_KEY_PREFIX = APP_NAME
 CACHE_DEFAULT_TIMEOUT = 3600
+CACHE_TYPE = 'flask_caching.backends.redis'
+CACHE_KEY_PREFIX = config('CACHE_KEY_PREFIX', default=APP_NAME)
 CACHE_OPTIONS = {
     'socket_timeout':         REDIS_OPTS['socket_connect_timeout'],
     'socket_connect_timeout': REDIS_OPTS['socket_connect_timeout']

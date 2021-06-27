@@ -1,9 +1,3 @@
-LOG_FMT = "[%(asctime)s]" \
-          "[%(levelname)s]" \
-          "[%(request_id)s]" \
-          "[%(name)s:%(module)s.%(funcName)s:%(lineno)d]: " \
-          "%(message)s"
-
 LOGGING = dict(
     version=1,
     disable_existing_loggers=True,
@@ -14,19 +8,40 @@ LOGGING = dict(
         }
     },
     formatters={
-        "console": {
-            "class":  "flask_logify.formatters.RequestFormatter",
-            "format": LOG_FMT
+        "simple":       {
+            "format": "[%(asctime)s][%(levelname)s]: %(message)s"
         },
-        "syslog":  {
+        "consoleDebug": {
+            "class":  "flask_logify.formatters.RequestFormatter",
+            "format": "[%(asctime)s]"
+                      "[%(levelname)s]"
+                      "[%(request_id)s]"
+                      "[%(name)s:%(module)s.%(funcName)s:%(lineno)d]: "
+                      "%(message)s"
+        },
+        "console":      {
+            "class":  "flask_logify.formatters.RequestFormatter",
+            "format": "[%(asctime)s][%(levelname)s][%(request_id)s]: %(message)s"
+        },
+        "syslog":       {
             "class":  "flask_logify.formatters.RequestFormatter",
             "format": f"%(ident)s%(message)s"
         }
     },
     handlers={
+        "simple":       {
+            "class":     "logging.StreamHandler",
+            "formatter": "simple",
+            "stream":    "ext://sys.stderr"
+        },
         "console":      {
             "class":     "logging.StreamHandler",
             "formatter": "console",
+            "stream":    "ext://sys.stderr"
+        },
+        "consoleDebug": {
+            "class":     "logging.StreamHandler",
+            "formatter": "consoleDebug",
             "stream":    "ext://sys.stderr"
         },
         "syslog":       {
@@ -50,33 +65,48 @@ LOGGING = dict(
     },
     root={
         "level":    "WARN",
-        "handlers": ["queueConsole"]
+        "handlers": ["simple"]
     },
     loggers={
-        "development":     {
+        "development":      {
+            "level":     "DEBUG",
+            "propagate": False,
+            "handlers":  ["consoleDebug"]
+        },
+        "developmentQueue": {
             "level":     "DEBUG",
             "propagate": False,
             "handlers":  ["queueConsole"]
         },
-        "production":      {
+        "production":       {
+            "level":     "INFO",
+            "propagate": False,
+            "handlers":  ["console"]
+        },
+        "productionQueue":  {
             "level":     "INFO",
             "propagate": False,
             "handlers":  ["queueConsole"]
         },
-        "flask-limiter":   {
+        "flask-limiter":    {
             "level":     "DEBUG",
             "propagate": False,
-            "handlers":  ["queueConsole"]
+            "handlers":  ["console"]
         },
-        "gunicorn.error":  {
+        "gunicorn.error":   {
             "level":     "INFO",
             "propagate": False,
             "handlers":  ["queueSyslog"]
         },
-        "gunicorn.access": {
+        "gunicorn.access":  {
             "level":     "INFO",
             "propagate": False,
             "handlers":  ["queueSyslog"]
         }
     }
 )
+
+if __name__ == '__main__':
+    import json
+
+    print(json.dumps(LOGGING))

@@ -10,9 +10,6 @@ from decouple import config as AutoConfig
 # TODO must not be relative
 from . import config as AppConfigFile
 
-app_config_file = inspect.getmodule(AppConfigFile)
-app_config_file = os.path.abspath(app_config_file.__file__)
-
 host = AutoConfig('APP_HOST', default='127.0.0.1')
 port = AutoConfig('APP_PORT', default='5000', cast=int)
 # A string of the form: 'HOST', 'HOST:PORT', 'unix:PATH'
@@ -21,15 +18,19 @@ bind = AutoConfig('BIND', default=f'{host}:{port}')
 pidfile = AutoConfig('PID_FILE', default='.gunicorn.pid')
 # This requires that you install the setproctitle module
 proc_name = AutoConfig('PROC_NAME', default=None)
+app_config_file = inspect.getmodule(AppConfigFile)
+app_config_file = os.path.abspath(app_config_file.__file__)
 app_config = AutoConfig('APP_CONFIG_FILE', default=app_config_file)
 
 timeout = AutoConfig('TIMEOUT', default=30, cast=int)
 backlog = AutoConfig('BACKLOG', default=2048, cast=int)
 keepalive = AutoConfig('KEEPALIVE', default=3, cast=int)
 
-# generally in the 2-4 x $(NUM_CORES) range
-workers = AutoConfig('WORKERS', default=1 + 2 * cpu_count(), cast=int)
-worker_class = AutoConfig('WORKER_CLASS', default='meinheld.gmeinheld.MeinheldWorker')
+nw = 1 + 2 * cpu_count()  # generally in the 2-4 x $(NUM_CORES) range
+worker_class = AutoConfig('WORKER_CLASS', default='sync')
+workers = AutoConfig('WORKERS', default=nw if worker_class == 'sync' else 1, cast=int)
+threads = AutoConfig('THREADS', default=nw if worker_class == 'gthread' else 1, cast=int)
+
 # For eventlet and gevent, limits the max number of simultaneous clients
 # that a single process can handle
 worker_connections = AutoConfig('WORKER_CONNECTIONS', default=1000, cast=int)
