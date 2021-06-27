@@ -114,6 +114,7 @@ def app_prod():
     health_checks.register('mongo', db=sqlalchemy)(checks.health_mongo)
     health_checks.register('redis', db=sqlalchemy)(checks.health_redis)
     health_checks.register('sqlalchemy', db=sqlalchemy)(checks.health_sqlalchemy)
+    health_checks.register('services', conf_key='HEALTH_SERVICES')(checks.health_services)
 
     return TestClient.get_app(
         conf=dict(
@@ -126,7 +127,17 @@ def app_prod():
             USE_X_SENDFILE=True,
             APIDOCS_ENABLED=True,
             APISPEC=APISPEC,
-            PROXIES=PROXIES
+            PROXIES=PROXIES,
+            HEALTH_SERVICES={
+                'apitester': {
+                    'endpoint': HOSTS.apitester,
+                    'uri': '/anything'
+                },
+                'fakeapi': {
+                    'endpoint': HOSTS.fake,
+                    'uri':      '/fake'
+                }
+            }
         ),
         blueprints=BLUEPRINTS,
         extensions={

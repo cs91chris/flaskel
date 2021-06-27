@@ -47,7 +47,7 @@ VIEWS = (
         name='resource_api',
         url='/resources'
     )),
-    (jsonRPCView, dict(
+    (jsonRPCView, bp_api, dict(
         name=jsonRPCView.default_view_name,
         url=jsonRPCView.default_url
     )),

@@ -65,7 +65,7 @@ class MobileVersionCompatibility:
         if app.config.VERSION_CHECK_ENABLED:
             try:
                 self.load_from_storage()
-            except Exception as exc:
+            except Exception as exc:  # pragma: no cover
                 app.logger.exception(exc)
 
             app.before_request_funcs.setdefault(None, []).append(self._set_mobile_version)
@@ -246,7 +246,7 @@ class MobileLoggerView(BaseView):
         :param logger_name:
         """
         if logger_name:
-            self._log = logging.getLogger(logger_name)
+            self._log = logging.getLogger(logger_name)  # pragma: no cover
         else:
             self._log = cap.logger
 

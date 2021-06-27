@@ -106,7 +106,7 @@ LOGGING = dict(
     }
 )
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     import json
 
     print(json.dumps(LOGGING))

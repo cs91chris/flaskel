@@ -242,12 +242,12 @@ def test_healthcheck(testapp):
     Asserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
     Asserter.assert_content_type(res, CTS.json_health)
     Asserter.assert_schema(res.json, schemas.SCHEMAS.HEALTHCHECK)
-    Asserter.assert_allin(res.json.checks.keys(), ('mongo', 'redis', 'sqlalchemy', 'system'))
+    Asserter.assert_allin(res.json.checks.keys(), ('mongo', 'redis', 'sqlalchemy', 'system', 'services'))
 
 
 def test_api_jsonrpc_success(app_dev):
     call_id = 1
-    url = url_for('jsonrpc')
+    url = url_for('api.jsonrpc')
     testapp = app_dev.test_client()
     res = testapp.jsonrpc(url, method="MyJsonRPC.testAction1", call_id=call_id)
     Asserter.assert_status_code(res)
@@ -261,7 +261,7 @@ def test_api_jsonrpc_success(app_dev):
 
 def test_api_jsonrpc_error(app_dev):
     call_id = 1
-    url = url_for('jsonrpc')
+    url = url_for('api.jsonrpc')
     testapp = app_dev.test_client()
     response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
@@ -295,7 +295,7 @@ def test_api_jsonrpc_error(app_dev):
 
 
 def test_api_jsonrpc_params(app_dev):
-    url = url_for('jsonrpc')
+    url = url_for('api.jsonrpc')
     method = "MyJsonRPC.testInvalidParams"
     testapp = app_dev.test_client()
     response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
@@ -313,7 +313,7 @@ def test_api_jsonrpc_params(app_dev):
 
 
 def test_api_jsonrpc_batch(app_dev):
-    url = url_for('jsonrpc')
+    url = url_for('api.jsonrpc')
     testapp = app_dev.test_client()
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
     res = testapp.jsonrpc_batch(url, requests=(
@@ -333,7 +333,7 @@ def test_api_jsonrpc_batch(app_dev):
 
 
 def test_api_jsonrpc_notification(app_dev):
-    url = url_for('jsonrpc')
+    url = url_for('api.jsonrpc')
     testapp = app_dev.test_client()
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
     res = testapp.jsonrpc_batch(url, requests=(
