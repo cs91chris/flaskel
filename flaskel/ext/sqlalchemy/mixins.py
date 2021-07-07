@@ -2,7 +2,8 @@ from flask_sqlalchemy import event
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from flaskel import ExtProxy, ObjectDict
+from flaskel import ObjectDict
+from flaskel.ext.crypto import argon2
 from flaskel.ext.sqlalchemy import db
 
 
@@ -93,7 +94,7 @@ class LoaderMixin:
 
 
 class UserMixin(StandardMixin):
-    _hasher = ExtProxy('argon2')
+    _hasher = argon2
     _password = db.Column('password', db.String(128), nullable=False)
 
     email = db.Column(db.String(255), unique=True, nullable=False)

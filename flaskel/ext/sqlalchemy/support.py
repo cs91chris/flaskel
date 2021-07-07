@@ -1,6 +1,8 @@
 # based on https://github.com/enricobarzetti/sqlalchemy_get_or_create
+from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound as NoResultError
+from sqlalchemy.sql import text as execute_sql
 
 
 class SQLASupport:
@@ -93,3 +95,16 @@ class SQLASupport:
             self.session.flush()
 
         return obj, False
+
+    @staticmethod
+    def exec_from_file(db_uri, filename, echo=False):
+        """
+
+        :param db_uri:
+        :param filename:
+        :param echo:
+        """
+        engine = create_engine(db_uri, echo=echo)
+        with engine.connect() as conn, open(filename) as f:
+            for statement in f.read().split(';'):
+                conn.execute(execute_sql(statement))
