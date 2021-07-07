@@ -8,10 +8,10 @@ LOGGING = dict(
         }
     },
     formatters={
-        "simple":       {
+        "simple":          {
             "format": "[%(asctime)s][%(levelname)s]: %(message)s"
         },
-        "consoleDebug": {
+        "consoleDebug":    {
             "class":  "flask_logify.formatters.RequestFormatter",
             "format": "[%(asctime)s]"
                       "[%(levelname)s]"
@@ -19,13 +19,25 @@ LOGGING = dict(
                       "[%(name)s:%(module)s.%(funcName)s:%(lineno)d]: "
                       "%(message)s"
         },
-        "console":      {
+        "console":         {
             "class":  "flask_logify.formatters.RequestFormatter",
             "format": "[%(asctime)s][%(levelname)s][%(request_id)s]: %(message)s"
         },
-        "syslog":       {
+        "syslog":          {
             "class":  "flask_logify.formatters.RequestFormatter",
-            "format": f"%(ident)s%(message)s"
+            "format": "%(ident)s%(message)s"
+        },
+        "syslogNoRequest": {
+            "format": "%(ident)s%(message)s"
+        },
+        "json":            {
+            "class":  "flask_logify.formatters.RequestFormatter",
+            "format": '{'
+                      '"requestId":"%(request_id)s",'
+                      '"level":"%(levelname)s",'
+                      '"datetime":"%(asctime)s",'
+                      '"message":%(message)s'
+                      '}'
         }
     },
     handlers={
@@ -50,17 +62,23 @@ LOGGING = dict(
             "formatter": "syslog",
             "facility":  "user"
         },
+        "syslogNoRequest":       {
+            "class":     "flask_logify.handlers.FlaskSysLogHandler",
+            "address":   ["localhost", 514],
+            "formatter": "syslogNoRequest",
+            "facility":  "user"
+        },
         "queueConsole": {
             "respect_handler_level": True,
             "class":                 "flask_logify.handlers.QueueHandler",
             "queue":                 "cfg://objects.queue",
             "handlers":              ["cfg://handlers.console"]
         },
-        "queueSyslog":  {
+        "queueSyslogNoRequest":  {
             "respect_handler_level": True,
             "class":                 "flask_logify.handlers.QueueHandler",
             "queue":                 "cfg://objects.queue",
-            "handlers":              ["cfg://handlers.syslog"]
+            "handlers":              ["cfg://handlers.syslogNoRequest"]
         }
     },
     root={
@@ -91,17 +109,17 @@ LOGGING = dict(
         "flask-limiter":    {
             "level":     "DEBUG",
             "propagate": False,
-            "handlers":  ["console"]
+            "handlers":  ["simple"]
         },
         "gunicorn.error":   {
             "level":     "INFO",
             "propagate": False,
-            "handlers":  ["queueSyslog"]
+            "handlers":  ["queueSyslogNoRequest"]
         },
         "gunicorn.access":  {
             "level":     "INFO",
             "propagate": False,
-            "handlers":  ["queueSyslog"]
+            "handlers":  ["queueSyslogNoRequest"]
         }
     }
 )

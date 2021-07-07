@@ -38,6 +38,7 @@ class Day:
 
 class DateHelper:
     def __init__(self, *args, **kwargs):
+        assert holidays is not None, "you must install holidays"
         self._holidays = holidays.CountryHoliday(*args, **kwargs)
 
     @property

@@ -56,8 +56,12 @@ LOG_REQ_HEADERS = config('LOG_REQ_HEADERS', default='', cast=Csv())
 LOG_RESP_HEADERS = config('LOG_RESP_HEADERS', default='', cast=Csv())
 LOG_REQ_SKIP_DUMP = config('LOG_REQ_SKIP_DUMP', default=not TESTING, cast=bool)
 LOG_RESP_SKIP_DUMP = config('LOG_RESP_SKIP_DUMP', default=not TESTING, cast=bool)
-LOG_REQ_FORMAT = 'INCOMING REQUEST: {address} {method} {scheme} {path}\n{headers}\n{body}'
-LOG_RESP_FORMAT = 'OUTGOING RESPONSE for {address} at {path}: STATUS {status}\n{headers}\n{body}'
+LOG_REQ_FORMAT = config(
+    'LOG_REQ_FORMAT', default='INCOMING REQUEST {address} {method} {scheme} {path}{headers}{body}'
+)
+LOG_RESP_FORMAT = config(
+    'LOG_RESP_FORMAT', default='OUTGOING RESPONSE for {address} at {path}: STATUS {status}{headers}{body}'
+)
 
 CF_STRICT_ACCESS = config('CF_STRICT_ACCESS', default=False, cast=bool)
 VERSION_STORE_MAX = config('VERSION_STORE_MAX', default=6, cast=int)
