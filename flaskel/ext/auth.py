@@ -1,6 +1,7 @@
 import functools
 from datetime import timedelta
 
+import flask
 import flask_jwt_extended as jwt
 from flask_httpauth import HTTPBasicAuth
 
@@ -52,11 +53,17 @@ class BaseTokenHandler:
         raise NotImplementedError()  # pragma: no cover
 
     @classmethod
-    def check_permission(cls, perm):
-        """
+    def role(cls):
+        return None  # pragma: no cover
 
-        :param perm:
-        """
+    # noinspection PyMethodMayBeStatic
+    def prepare_identity(self, data):
+        return data
+
+    @classmethod
+    def check_permission(cls, role):
+        if cls.role() != role:
+            flask.abort(httpcode.FORBIDDEN)
 
     @classmethod
     def auth_required(cls, perm=None, **kwargs):
@@ -137,6 +144,7 @@ class BaseTokenHandler:
         :param scope:
         :return:
         """
+        identity = self.prepare_identity(identity)
         access_token = self.get_access(identity=identity, expires=expires_access)
         decoded = self.decode(access_token)
         resp = ObjectDict(

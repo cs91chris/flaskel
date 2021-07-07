@@ -67,9 +67,9 @@ class FlaskRedis:
         app.config.setdefault("REDIS_OPTS", **kwargs)
 
         if not self._client:
-            # noinspection PyUnresolvedReferences
             self._client = redis_class.from_url(
-                app.config["REDIS_URL"], **app.config["REDIS_OPTS"]
+                app.config["REDIS_URL"],
+                **app.config["REDIS_OPTS"]
             )
 
         if not hasattr(app, "extensions"):
