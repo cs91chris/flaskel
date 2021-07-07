@@ -32,7 +32,7 @@ HOSTS = ObjectDict(
     fake="http://localhost"
 )
 
-SCHEMA_DIR = 'flaskel/scripts/skeleton/blueprints/api/static/schemas'
+SCHEMA_DIR = 'flaskel/scripts/skeleton/skel/blueprints/api/static/schemas'
 
 SCHEMAS = dict(
     JSONRPC=f"file://{SCHEMA_DIR}/jsonrpc.json",
