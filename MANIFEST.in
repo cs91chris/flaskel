@@ -1,4 +1,5 @@
 exclude *.pyc
 exclude *.log
 recursive-exclude log *
+recursive-exclude tests *
 recursive-include flaskel/scripts/skeleton *
