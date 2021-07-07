@@ -256,9 +256,8 @@ class MobileLoggerView(BaseView):
     def get_user_info(self, *args, **kwargs):
         return self.unavailable
 
-    def dispatch_request(self, *args, **kwargs):
-        payload = flask.request.json
-        self._log.error(
+    def dump_message(self, payload, *args, **kwargs):
+        return (
             "%s"
             "\n\tUser-Info: %s"
             "\n\tMobile-Version: %s"
@@ -276,6 +275,16 @@ class MobileLoggerView(BaseView):
             self.dump_key(payload, 'payload'),
             self.dump_key(payload, 'stacktrace').replace('\\n', '\n')
         )
+
+    def perform(self, payload, *args, **kwargs):
+        message, *args = self.dump_message(payload, *args, **kwargs)
+        self._log.error(message, *args)
+        return message, args
+
+    def dispatch_request(self, *args, **kwargs):
+        payload = flask.request.json
+        self.perform(payload, *args, **kwargs)
+
         if 'debug' in flask.request.args:
             return payload, httpcode.SUCCESS
 
