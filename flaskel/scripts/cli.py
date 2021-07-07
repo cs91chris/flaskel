@@ -8,10 +8,7 @@ import click
 from flaskel.ext.sqlalchemy.schema import db_to_schema, model_to_uml
 from flaskel.tester import cli as cli_tester
 
-INIT_CONTENT = """
-# generated via cli
-from .version import *
-"""
+INIT_CONTENT = "from .version import *"
 
 
 @click.group()
@@ -25,50 +22,30 @@ def init(name):
     """Create skeleton for new application"""
     from flaskel import scripts as flaskel_scripts
 
-    destination = name
     package_path = flaskel_scripts.__path__[0]
     source = os.path.join(package_path, 'skeleton')
 
     try:
-        shutil.copytree(source, destination)
+        shutil.copytree(source, '.', dirs_exist_ok=True)
+        shutil.move('skel', name)
 
-        init_file = Path(os.path.join(destination, '..', '__init__.py'))
+        init_file = Path(os.path.join(name, '__init__.py'))
         init_file.write_text(INIT_CONTENT)
 
-        if not os.path.isfile('setup.py'):
-            shutil.move(os.path.join(destination, 'setup.py'), '..')
-            setup_file = Path('setup.py')
-            text = setup_file.read_text()
-            text = text.replace('{skeleton}', name)
-            setup_file.write_text(text)
-        else:
-            os.remove(os.path.join(destination, 'setup.py'))
+        setup_file = Path('setup.py')
+        text = setup_file.read_text()
+        text = text.replace('{skeleton}', name)
+        setup_file.write_text(text)
 
-        if not os.path.isdir('config'):
-            shutil.move(os.path.join(destination, 'config'), '..')
-        else:
-            os.remove(os.path.join(destination, 'config'))
+        def replace_package_import(file):
+            cli_file = Path(file)
+            t = cli_file.read_text()
+            t = t.replace('from ext', f"from {name}.ext")
+            t = t.replace('from blueprint', f"from {name}.blueprint")
+            cli_file.write_text(t)
 
-        if not os.path.isfile('Dockerfile'):
-            shutil.move(os.path.join(destination, 'Dockerfile'), '..')
-        else:
-            os.remove(os.path.join(destination, 'Dockerfile'))
-
-        if not os.path.isdir('tests'):
-            shutil.move(os.path.join(destination, 'tests'), '..')
-            cli_file = Path(os.path.join('tests', '..', '__init__.py'))
-            text = cli_file.read_text()
-            text = text.replace('from ext', f"from {name}.ext")
-            text = text.replace('from blueprint', f"from {name}.blueprint")
-            cli_file.write_text(text)
-        else:
-            os.remove(os.path.join(destination, 'tests'))
-
-        cli_file = Path(os.path.join(destination, 'cli.py'))
-        text = cli_file.read_text()
-        text = text.replace('from ext', f"from {name}.ext")
-        text = text.replace('from blueprint', f"from {name}.blueprint")
-        cli_file.write_text(text)
+        replace_package_import(os.path.join('tests', '__init__.py'))
+        replace_package_import(os.path.join(name, 'scripts', 'cli.py'))
     except OSError as e:
         print(f"Unable to create new app. Error: {e}", file=sys.stderr)
 

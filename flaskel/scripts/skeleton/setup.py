@@ -30,7 +30,7 @@ ENTRY_POINTS = dict(
 )
 
 BASE_PATH = os.path.dirname(__file__)
-VERSION_FILE = os.path.join(PKG_NAME, 'version.py')
+VERSION_FILE = os.path.join(PKG_NAME, 'skel/version.py')
 
 try:
     # must be after setuptools
