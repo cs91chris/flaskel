@@ -8,8 +8,6 @@ import click
 from flaskel.ext.sqlalchemy.schema import db_to_schema, model_to_uml
 from flaskel.tester import cli as cli_tester
 
-INIT_CONTENT = "from .version import *"
-
 
 @click.group()
 def cli():
@@ -22,32 +20,41 @@ def init(name):
     """Create skeleton for new application"""
     from flaskel import scripts as flaskel_scripts
 
-    package_path = flaskel_scripts.__path__[0]
-    source = os.path.join(package_path, 'skeleton')
-
     try:
+        source = os.path.join(flaskel_scripts.__path__[0], 'skeleton')
         shutil.copytree(source, '.', dirs_exist_ok=True)
         shutil.move('skel', name)
-
-        init_file = Path(os.path.join(name, '__init__.py'))
-        init_file.write_text(INIT_CONTENT)
-
-        setup_file = Path('setup.py')
-        text = setup_file.read_text()
-        text = text.replace('{skeleton}', name)
-        setup_file.write_text(text)
-
-        def replace_package_import(file):
-            cli_file = Path(file)
-            t = cli_file.read_text()
-            t = t.replace('from ext', f"from {name}.ext")
-            t = t.replace('from blueprint', f"from {name}.blueprint")
-            cli_file.write_text(t)
-
-        replace_package_import(os.path.join('tests', '__init__.py'))
-        replace_package_import(os.path.join(name, 'scripts', 'cli.py'))
     except OSError as e:
         print(f"Unable to create new app. Error: {e}", file=sys.stderr)
+        exit(1)
+
+    def replace_in_file(file, *args):
+        f = Path(file)
+        text = f.read_text()
+        for sd in args:
+            text = text.replace(*sd)
+        f.write_text(text)
+
+    init_file = Path(os.path.join(name, '__init__.py'))
+    init_file.write_text("from .version import *\n")
+
+    replace_in_file('setup.py', ('{skeleton}', name))
+    replace_in_file('pytest.ini', ('{skeleton}', name))
+    replace_in_file('.coveragerc', ('{skeleton}', name))
+
+    replace_in_file(
+        os.path.join(name, 'scripts', 'cli.py'),
+        ('from ext', f"from {name}.ext"),
+        ('from blueprint', f"from {name}.blueprint")
+    )
+    replace_in_file(
+        os.path.join(name, 'scripts', 'gunicorn.py'),
+        ("from . import config", f"from {name}.scripts import config")
+    )
+    replace_in_file(
+        os.path.join('tests', '__init__.py'),
+        ('from scripts.cli', f'from {name}.scripts.cli')
+    )
 
 
 @cli.command(name='tests')

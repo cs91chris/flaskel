@@ -1,0 +1,3 @@
+[run]
+omit =
+	{skeleton}/scripts/cli.py

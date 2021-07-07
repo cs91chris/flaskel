@@ -7,7 +7,6 @@ from multiprocessing import cpu_count
 
 from decouple import config as AutoConfig
 
-# TODO must not be relative
 from . import config as AppConfigFile
 
 host = AutoConfig('APP_HOST', default='127.0.0.1')
