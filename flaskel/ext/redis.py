@@ -7,7 +7,7 @@ except ImportError:  # pragma: no cover
 
 try:
     from rejson import Client, Path
-except ImportError:  # pragma: no cover
+except (ImportError, ModuleNotFoundError):  # pragma: no cover
     Client, Path = object
 
 

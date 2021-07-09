@@ -1,24 +1,33 @@
 #!/usr/bin/env bash
 
-PKG_NAME=c95api
-PID_FILE=".gunicorn.pid"
-SITE="lib/python3.8/site-packages"
+PKG_NAME=flaskel
+PID_FILE=".${PKG_NAME}.pid"
+SITE="venv/lib/python3.8/site-packages"
 PKG_APP="${PKG_NAME}.scripts.cli:create_app()"
 
 HOME=/home/${PKG_NAME}
-BIN="${HOME}/bin"
-CONF="${HOME}/${SITE}/${PKG_NAME}/scripts/gunicorn.py"
+BIN=${HOME}/venv/bin
+REPO_DIR=${HOME}/repo
+CONF=${HOME}/${SITE}/${PKG_NAME}/scripts/gunicorn.py
 
-
-case $1 in
+case ${1} in
 "reload")
-    kill -0 "$(cat ${PID_FILE})"
+    kill -SIGHUP "$(cat ${PID_FILE})"
     ;;
 "run")
+    echo -e "running command: ${BIN}/gunicorn -c ${CONF} ${PKG_APP}"
     ${BIN}/gunicorn -c ${CONF} ${PKG_APP}
     ;;
+"clean")
+    find ${REPO_DIR}/${PKG_NAME} -type f -name "*.c" -delete
+    ;;
+"build")
+    cd ${REPO_DIR} || exit 1
+    python setup.py bdist_wheel --cythonize
+    cd || exit
+    ;;
 *)
-    echo "unknown command use one of: reload, run" >&2
+    echo "unknown command use one of: reload, run, clean, build" >&2
     exit 1
     ;;
 esac

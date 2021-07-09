@@ -27,6 +27,7 @@ CONF_PATH = config('CONF_PATH', default=os.path.join('flaskel', 'scripts', 'skel
 SQLALCHEMY_DATABASE_URI = config('DATABASE_URL', default='sqlite:///db.sqlite')
 REDIS_URL = config('REDIS_URL', default='redis://127.0.0.1:6379')
 REDIS_OPTS = {
+    'decode_responses': True,
     'socket_connect_timeout': config('REDIS_CONN_TIMEOUT', default=0.05, cast=float)
 }
 
@@ -36,7 +37,7 @@ BASIC_AUTH_PASSWORD = config('BASIC_AUTH_PASSWORD', default='admin')
 MAIL_DEBUG = config('MAIL_DEBUG', default=DEBUG, cast=bool)
 MAIL_SERVER = config('MAIL_SERVER', default='sendria.local')
 MAIL_PORT = config('MAIL_SERVER', default=62000, cast=int)
-ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin')
+ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin@mail.com')
 ADMIN_PASSWORD = config('ADMIN_PASSWORD', default='admin')
 MAIL_DEFAULT_SENDER = config('MAIL_DEFAULT_SENDER', default='admin@mail.com')
 MAIL_DEFAULT_RECEIVER = config('MAIL_DEFAULT_RECEIVER', default='admin@mail.com')
