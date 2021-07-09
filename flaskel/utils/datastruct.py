@@ -105,8 +105,23 @@ class ObjectDict(dict):
         if name in self:
             del self[name]
 
+    def patch(self, m, **kwargs):
+        """
+
+        :param m:
+        :param kwargs:
+        :return:
+        """
+        super().update(m, **kwargs)
+        return self
+
     @staticmethod
     def normalize(data):
+        """
+
+        :param data:
+        :return:
+        """
         try:
             if isinstance(data, (list, tuple, set)):
                 return [
