@@ -27,19 +27,19 @@ paths:
             schema:
               $ref: '#/components/schemas/PostAccessToken'
       responses:
-        200:
+        '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccessToken'
           description: login eseguito con successo
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        422:
+        '422':
           $ref: '#/components/responses/422'
-        500:
+        '500':
           $ref: '#/components/responses/500'
   '/token/refresh':
     post:
@@ -51,17 +51,17 @@ paths:
       parameters:
         - $ref: '#/components/parameters/expire_access'
       responses:
-        200:
+        '200':
           description: refresh eseguito con successo
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefreshToken'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        500:
+        '500':
           $ref: '#/components/responses/500'
   '/token/revoke':
     post:
@@ -76,30 +76,30 @@ paths:
             schema:
               $ref: '#/components/schemas/PostRevokeToken'
       responses:
-        204:
+        '204':
           description: logout eseguito con successo
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        422:
+        '422':
           $ref: '#/components/responses/422'
-        500:
+        '500':
           $ref: '#/components/responses/500'
   /healthcheck:
     get:
       security:
         - basicAuth: [ ]
       responses:
-        200:
+        '200':
           content:
             application/json:
               schema:
                 type: object
           description: platform is healthy
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        500:
+        '500':
           $ref: '#/components/responses/500'
-        503:
+        '503':
           $ref: '#/components/responses/503'
       summary: health check
       tags:
@@ -117,17 +117,17 @@ paths:
             schema:
               $ref: '#/components/schemas/DeviceRegister'
       responses:
-        204:
+        '204':
           description: device registrato con successo
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        422:
+        '422':
           $ref: '#/components/responses/422'
-        500:
+        '500':
           $ref: '#/components/responses/500'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /mobile/logger:
     post:
@@ -153,11 +153,11 @@ paths:
                 stacktrace:
                   type: string
       responses:
-        204:
+        '204':
           description: log registrato con successo
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        500:
+        '500':
           $ref: '#/components/responses/500'
   /mobile/release:
     get:
@@ -166,11 +166,11 @@ paths:
       parameters:
         - $ref: '#/components/parameters/agent'
       responses:
-        200:
+        '200':
           description: registered version
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        500:
+        '500':
           $ref: '#/components/responses/500'
       summary: registered version
       tags:
@@ -186,13 +186,13 @@ paths:
           schema:
             type: boolean
       responses:
-        200:
+        '200':
           description: new list of registered versions excluding the last one deleted
-        204:
+        '204':
           description: all versions have been deleted
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        500:
+        '500':
           $ref: '#/components/responses/500'
       summary: delete the latest registered version or all
       tags:
@@ -204,11 +204,11 @@ paths:
       parameters:
         $ref: '#/components/parameters/agent'
       responses:
-        200:
+        '200':
           description: latest registered release
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        500:
+        '500':
           $ref: '#/components/responses/500'
       summary: latest registered release
       tags:
@@ -231,13 +231,13 @@ paths:
           schema:
             type: boolean
       responses:
-        204:
+        '204':
           description: version successfully registered
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        500:
+        '500':
           $ref: '#/components/responses/500'
       summary: Register a release of the mobile app for monitoring critical updates
       tags:
@@ -290,67 +290,67 @@ components:
       schema:
         type: string
   responses:
-    400:
+    '400':
       description: Bad Request
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    401:
+    '401':
       description: Not Autenticated
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    402:
+    '402':
       description: Server require payment
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    403:
+    '403':
       description: 'Forbidden: insufficient privileges'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    404:
+    '404':
       description: The specified resource was not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    409:
+    '409':
       description: 'Conflict: resource already exists'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    422:
+    '422':
       description: 'Entity not processable: payload does not match the resource schema'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    429:
+    '429':
       description: Too Many Requests
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    500:
+    '500':
       description: Internal Server Error
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    502:
+    '502':
       description: Bad Gateway
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'
-    503:
+    '503':
       description: Service Unavailable
       content:
         application/json:

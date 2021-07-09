@@ -1,118 +1,65 @@
+from flaskel.utils.schemas import Fields
+
 SCHEMAS = dict(
-    PostRevokeToken={
-        "additionalProperties": False,
-        "type":                 "object",
-        "properties":           {
-            "access_token":  {
-                "type": "string"
-            },
-            "refresh_token": {
-                "type": "string"
-            },
-            "device_token":  {
-                "type": "string"
-            }
+    PostRevokeToken=Fields.object(
+        properties={
+            "access_token":  Fields.string,
+            "refresh_token": Fields.string,
+            "device_token":  Fields.string
         }
-    },
-    PostAccessToken={
-        "additionalProperties": False,
-        "type":                 "object",
-        "required":             [
-            "email",
-            "password"
-        ],
-        "properties":           {
-            "email":    {
-                "type": "string"
-            },
-            "password": {
-                "type": "string"
-            }
+    ),
+    PostAccessToken=Fields.object(
+        required=["email", "password"],
+        properties={
+            "email":    Fields.string,
+            "password": Fields.string
         }
-    },
-    AccessToken={
-        "additionalProperties": False,
-        "type":                 "object",
-        "required":             [
+    ),
+    AccessToken=Fields.object(
+        required=[
             "access_token",
             "refresh_token",
             "expires_in",
             "issued_at"
         ],
-        "properties":           {
-            "access_token":  {
-                "type": "string"
-            },
-            "refresh_token": {
-                "type": "string"
-            },
-            "expires_in":    {
-                "type": "integer"
-            },
-            "issued_at":     {
-                "type": "integer"
-            },
-            "token_type":    {
-                "type": "string"
-            },
-            "scope":         {
-                "type": "string"
-            }
+        properties={
+            "access_token":  Fields.string,
+            "refresh_token": Fields.string,
+            "expires_in":    Fields.integer,
+            "issued_at":     Fields.integer,
+            "token_type":    Fields.string,
+            "scope":         Fields.string
         }
-    },
-    RefreshToken={
-        "additionalProperties": False,
-        "type":                 "object",
-        "required":             [
+    ),
+    RefreshToken=Fields.object(
+        required=[
             "access_token",
             "expires_in",
             "issued_at"
         ],
-        "properties":           {
-            "access_token": {
-                "type": "string"
-            },
-            "expires_in":   {
-                "type": "integer"
-            },
-            "issued_at":    {
-                "type": "integer"
-            },
-            "token_type":   {
-                "type": "string"
-            },
-            "scope":        {
-                "type": "string"
-            }
+        properties={
+            "access_token": Fields.string,
+            "expires_in":   Fields.integer,
+            "issued_at":    Fields.integer,
+            "token_type":   Fields.string,
+            "scope":        Fields.string
         }
-    },
-    ApiProblem={
-        "additionalProperties": False,
-        "type":                 "object",
-        "properties":           {
-            "type":     {
-                "type": "string"
-            },
-            "title":    {
-                "type": "string"
-            },
-            "detail":   {
-                "type": "string"
-            },
-            "instance": {
-                "type": "string"
-            },
-            "status":   {
-                "type": "integer"
-            },
+    ),
+    ApiProblem=Fields.object(
+        properties={
+            "type":     Fields.string,
+            "title":    Fields.string,
+            "detail":   Fields.string,
+            "instance": Fields.string,
+            "status":   Fields.integer,
             "response": {
-                "type": [
-                    "object",
-                    "array",
-                    "string",
-                    "null"
-                ]
+                "type": ["object", "array", "string", "null"]
             }
         }
-    }
+    ),
 )
+
+if __name__ == '__main__':  # pragma: no cover
+    import json
+
+    print(json.dumps(SCHEMAS))

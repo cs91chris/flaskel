@@ -4,6 +4,7 @@ from functools import partial
 import flask
 import jsonschema
 from flask import current_app as cap
+
 from flaskel.http.client import HTTPClient, httpcode
 from flaskel.utils.datastruct import ConfigProxy
 
@@ -153,3 +154,51 @@ class PayloadValidator:
             cap.logger.error(cls.validator.error_report(exc, payload))
             reason = dict(cause=exc.cause, message=exc.message, path=exc.path)
             flask.abort(httpcode.UNPROCESSABLE_ENTITY, response=dict(reason=reason))
+
+
+class Fields:
+    null = {"type": "null"}
+    integer = {"type": "integer"}
+    string = {"type": "string"}
+    number = {"type": "number"}
+    boolean = {"type": "boolean"}
+    datetime = {"type": "string", "format": "date-time"}
+
+    class Opt:
+        integer = {"type": ["integer", "null"]}
+        string = {"type": ["string", "null"]}
+        number = {"type": ["number", "null"]}
+        boolean = {"type": ["boolean", "null"]}
+
+    @classmethod
+    def oneof(cls, *args):
+        return {"oneOf": args if len(args) > 1 else (*args, cls.null)}
+
+    @classmethod
+    def anyof(cls, *args):
+        return {"anyOf": args if len(args) > 1 else (*args, cls.null)}
+
+    @classmethod
+    def object(cls, required=(), properties=None, additional=False):
+        return {
+            "type":                 "object",
+            "additionalProperties": additional,
+            "required":             required,
+            "properties":           properties or {}
+        }
+
+    @classmethod
+    def array(cls, items, min_items=0):
+        return {
+            "type":     "array",
+            "minItems": min_items,
+            "items":    items
+        }
+
+    @classmethod
+    def array_object(cls, min_items=0, **kwargs):
+        return {
+            "type":     "array",
+            "minItems": min_items,
+            "items":    cls.object(**kwargs)
+        }
