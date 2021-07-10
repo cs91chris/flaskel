@@ -6,7 +6,7 @@ import jsonschema
 from flask import current_app as cap
 
 from flaskel.http.client import HTTPClient, httpcode
-from flaskel.utils.datastruct import ConfigProxy
+from flaskel.utils.datastruct import ConfigProxy, ObjectDict
 
 SCHEMAS = ConfigProxy('SCHEMAS')
 
@@ -55,7 +55,7 @@ class JSONSchema:
             return True
 
         if type(schema) is str:
-            if schema.startswith('http'):
+            if schema.startswith('https://') or schema.startswith('http://'):
                 schema = cls.load_from_url(schema)
             if schema.startswith('file://'):
                 schema = cls.load_from_file(schema)
@@ -79,16 +79,16 @@ class JSONSchema:
         From: https://github.com/ccpgames/jsonschema-errorprinter/blob/master/jsonschemaerror.py
 
         Generate a detailed report of a schema validation error.
-        'e' is a jsonschema.ValidationError exception that errored on
-        'json_object'.
+        'e' is a jsonschema.ValidationError exception raised on 'json_object'.
+
         Steps to discover the location of the validation error:
-        1. Traverse the json object using the 'path' in the validation exception
-           and replace the offending value with a special marker.
-        2. Pretty-print the json object indendented json text.
-        3. Search for the special marker in the json text to find the actual
-           line number of the error.
-        4. Make a report by showing the error line with a context of
-          'lines_before' and 'lines_after' number of lines on each side.
+            1. Traverse the json object using the 'path' in the validation exception
+               and replace the offending value with a special marker.
+            2. Pretty-print the json object indented json text.
+            3. Search for the special marker in the json text to find the actual
+               line number of the error.
+            4. Make a report by showing the error line with a context of
+               'lines_before' and 'lines_after' number of lines on each side.
         """
         if not e.path:
             return e.message or str(e)
@@ -157,48 +157,63 @@ class PayloadValidator:
 
 
 class Fields:
-    null = {"type": "null"}
-    integer = {"type": "integer"}
-    string = {"type": "string"}
-    number = {"type": "number"}
-    boolean = {"type": "boolean"}
-    datetime = {"type": "string", "format": "date-time"}
+    null = ObjectDict(type="null")
+    integer = ObjectDict(type="integer")
+    string = ObjectDict(type="string")
+    number = ObjectDict(type="number")
+    boolean = ObjectDict(type="boolean")
+    datetime = ObjectDict(type="string", format="date-time")
 
     class Opt:
-        integer = {"type": ["integer", "null"]}
-        string = {"type": ["string", "null"]}
-        number = {"type": ["number", "null"]}
-        boolean = {"type": ["boolean", "null"]}
+        integer = ObjectDict(type=["integer", "null"])
+        string = ObjectDict(type=["string", "null"])
+        number = ObjectDict(type=["number", "null"])
+        boolean = ObjectDict(type=["boolean", "null"])
 
     @classmethod
-    def oneof(cls, *args):
-        return {"oneOf": args if len(args) > 1 else (*args, cls.null)}
+    def oneof(cls, *args, **kwargs):
+        return ObjectDict(
+            oneOf=args if len(args) > 1 else (*args, cls.null),
+            **kwargs
+        )
 
     @classmethod
-    def anyof(cls, *args):
-        return {"anyOf": args if len(args) > 1 else (*args, cls.null)}
+    def anyof(cls, *args, **kwargs):
+        return ObjectDict(
+            anyOf=args if len(args) > 1 else (*args, cls.null),
+            **kwargs
+        )
 
     @classmethod
-    def object(cls, required=(), properties=None, additional=False):
-        return {
-            "type":                 "object",
-            "additionalProperties": additional,
-            "required":             required,
-            "properties":           properties or {}
-        }
+    def object(
+            cls, required=(), properties=None,
+            all_required=False, additional=False, **kwargs
+    ):
+        properties = properties or {}
+        if not required and all_required is True:
+            required = list(properties.keys())
+
+        return ObjectDict(
+            type="object",
+            additionalProperties=additional,
+            required=required,
+            properties=properties,
+            **kwargs
+        )
 
     @classmethod
-    def array(cls, items, min_items=0):
-        return {
-            "type":     "array",
-            "minItems": min_items,
-            "items":    items
-        }
+    def array(cls, items, min_items=0, **kwargs):
+        return ObjectDict(
+            type="array",
+            minItems=min_items,
+            items=items,
+            **kwargs
+        )
 
     @classmethod
     def array_object(cls, min_items=0, **kwargs):
-        return {
-            "type":     "array",
-            "minItems": min_items,
-            "items":    cls.object(**kwargs)
-        }
+        return ObjectDict(
+            type="array",
+            minItems=min_items,
+            items=cls.object(**kwargs)
+        )
