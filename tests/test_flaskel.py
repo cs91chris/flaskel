@@ -66,8 +66,8 @@ def test_api_resources(testapp):
     Asserter.assert_status_code(res, httpcode.CREATED)
 
     res = testapp.post(url_for('api.resource_api'), json={})
-    Asserter.assert_allin(res.json.response.reason, ('cause', 'message', 'path'))
     Asserter.assert_status_code(res, httpcode.UNPROCESSABLE_ENTITY)
+    Asserter.assert_allin(res.json.response.reason, ('cause', 'message', 'path'))
 
 
 def test_api_cors(testapp):
@@ -374,6 +374,9 @@ def test_utils_date_conversion():
     Asserter.assert_equals(not_iso_date, res)
 
     res = datetime.to_iso_format(not_iso_date, fmt, exc=exc)
+    Asserter.assert_true(res)
+    Asserter.assert_equals(iso_date, res)
+    res = datetime.to_iso_format(not_iso_date, exc=exc)
     Asserter.assert_true(res)
     Asserter.assert_equals(iso_date, res)
 

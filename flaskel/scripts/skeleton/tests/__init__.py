@@ -1,40 +1,34 @@
+import functools
 import os
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.sql import text as execute_sql
-
-from flaskel import TestClient
-from flaskel.utils import yaml
 from scripts.cli import APP_CONFIG
+
+from flaskel import ObjectDict, TestClient
 from . import helpers as h
 
 DB_TEST = 'test.sqlite'
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-CONF_DIR = os.path.join(BASE_DIR, '..', 'res')
-CONF_FILE = os.path.join(CONF_DIR, 'conf.yaml')
-SAMPLE_DATA = os.path.join(CONF_DIR, 'sample.sql')
+SAMPLE_DATA = os.path.join(BASE_DIR, '..', 'res', 'sample.sql')
+CONFIG = ObjectDict()
 
-CONFIG = yaml.load_yaml_file(CONF_FILE)
+CONFIG.MAIL_DEBUG = True
+CONFIG.CACHE_TYPE = 'null'
+CONFIG.RATELIMIT_ENABLED = False
+CONFIG.SQLALCHEMY_ECHO = True
+CONFIG.SQLALCHEMY_DATABASE_URI = f'sqlite:///{DB_TEST}'
 
-CONFIG.app.CACHE_TYPE = 'null'
-CONFIG.app.RATELIMIT_ENABLED = False
-CONFIG.app.SQLALCHEMY_ECHO = True
-CONFIG.app.SQLALCHEMY_DATABASE_URI = f'sqlite:///{DB_TEST}'
-
-
-def load_sample_data():
-    engine = create_engine(CONFIG.app.SQLALCHEMY_DATABASE_URI, echo=CONFIG.app.SQLALCHEMY_ECHO)
-    with engine.connect() as conn, open(SAMPLE_DATA) as f:
-        for statement in f.read().split(';'):
-            conn.execute(execute_sql(statement))
-
+CONFIG.SENDRIA = dict(
+    endpoint='http://sendria.local:61000/api/messages',
+    username='guest123',
+    password='guest123'
+)
 
 EXTRAS = dict(
-    conf=CONFIG.app,
+    conf=CONFIG,
     template_folder="blueprints/web/templates",
     static_folder="blueprints/web/static",
-    callback=load_sample_data
+    callback=functools.partial(h.load_sample_data, SAMPLE_DATA)
 )
 
 
