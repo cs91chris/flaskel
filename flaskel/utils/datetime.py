@@ -97,7 +97,7 @@ def from_iso_format(str_date, fmt, exc=True):
 
 
 # for backwards compatibility
-def to_iso_format(str_date, fmt, exc=True):
+def to_iso_format(str_date, fmt=None, exc=True):
     return DateHelper.change_format(
         str_date, in_fmt=fmt, out_fmt=cap.config.DATE_ISO_FORMAT, raise_exc=exc
     )

@@ -8,7 +8,7 @@ except ImportError:  # pragma: no cover
 try:
     from rejson import Client, Path
 except (ImportError, ModuleNotFoundError):  # pragma: no cover
-    Client, Path = object
+    Client = Path = object
 
 
 class JSONRedisClient(Client):

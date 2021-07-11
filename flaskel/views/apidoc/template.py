@@ -1,7 +1,7 @@
 import flask
 
 from flaskel.flaskel import cap, httpcode
-from .base import BaseView
+from flaskel.views.base import BaseView
 
 
 class ApiDocTemplate(BaseView):
