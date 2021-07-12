@@ -163,6 +163,8 @@ class Fields:
     number = ObjectDict(type="number")
     boolean = ObjectDict(type="boolean")
     datetime = ObjectDict(type="string", format="date-time")
+    any_object = ObjectDict(type="object", additionalProperties=True)
+    any = ObjectDict(type=["integer", "string", "number", "boolean", "array", "object", "null"])
 
     class Opt:
         integer = ObjectDict(type=["integer", "null"])
@@ -187,7 +189,7 @@ class Fields:
     @classmethod
     def object(
             cls, required=(), properties=None,
-            all_required=False, additional=False, **kwargs
+            all_required=True, additional=False, **kwargs
     ):
         properties = properties or {}
         if not required and all_required is True:

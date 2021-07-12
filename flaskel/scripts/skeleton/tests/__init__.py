@@ -1,10 +1,10 @@
-import functools
 import os
 
 import pytest
 from scripts.cli import APP_CONFIG
 
 from flaskel import ObjectDict, TestClient
+from flaskel.ext.sqlalchemy.support import SQLASupport
 from . import helpers as h
 
 DB_TEST = 'test.sqlite'
@@ -24,11 +24,20 @@ CONFIG.SENDRIA = dict(
     password='guest123'
 )
 
+
+def load_sample_data():
+    SQLASupport.exec_from_file(
+        CONFIG.SQLALCHEMY_DATABASE_URI,
+        SAMPLE_DATA,
+        CONFIG.SQLALCHEMY_ECHO
+    )
+
+
 EXTRAS = dict(
     conf=CONFIG,
     template_folder="blueprints/web/templates",
     static_folder="blueprints/web/static",
-    callback=functools.partial(h.load_sample_data, SAMPLE_DATA)
+    callback=load_sample_data
 )
 
 
