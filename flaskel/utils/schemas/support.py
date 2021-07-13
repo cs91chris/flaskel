@@ -157,6 +157,8 @@ class PayloadValidator:
 
 
 class Fields:
+    schema = ObjectDict(**{"$schema": "http://json-schema.org/draft-07/schema#"})
+
     null = ObjectDict(type="null")
     integer = ObjectDict(type="integer")
     string = ObjectDict(type="string")
@@ -185,6 +187,18 @@ class Fields:
             anyOf=args if len(args) > 1 else (*args, cls.null),
             **kwargs
         )
+
+    @classmethod
+    def ref(cls, path, **kwargs):
+        return ObjectDict(**{"$ref": f"#{path}", **kwargs})
+
+    @classmethod
+    def enum(cls, *args, **kwargs):
+        return {"enum": args, **kwargs}
+
+    @classmethod
+    def type(cls, *args, **kwargs):
+        return {"type": args, **kwargs}
 
     @classmethod
     def object(
