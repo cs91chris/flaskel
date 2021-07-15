@@ -1,197 +1,197 @@
-{
-    "id": "https://spec.openapis.org/oas/3.0/schema/2019-04-02",
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "description": "Validation schema for OpenAPI Specification 3.0.X.",
-    "type": "object",
-    "required": [
+SCHEMA = {
+    "id":                   "https://spec.openapis.org/oas/3.0/schema/2019-04-02",
+    "$schema":              "http://json-schema.org/draft-04/schema#",
+    "description":          "Validation schema for OpenAPI Specification 3.0.X.",
+    "type":                 "object",
+    "required":             [
         "openapi",
         "info",
         "paths"
     ],
-    "properties": {
-        "openapi": {
-            "type": "string",
+    "properties":           {
+        "openapi":      {
+            "type":    "string",
             "pattern": "^3\\.0\\.\\d(-.+)?$"
         },
-        "info": {
+        "info":         {
             "$ref": "#/definitions/Info"
         },
         "externalDocs": {
             "$ref": "#/definitions/ExternalDocumentation"
         },
-        "servers": {
-            "type": "array",
+        "servers":      {
+            "type":  "array",
             "items": {
                 "$ref": "#/definitions/Server"
             }
         },
-        "security": {
-            "type": "array",
+        "security":     {
+            "type":  "array",
             "items": {
                 "$ref": "#/definitions/SecurityRequirement"
             }
         },
-        "tags": {
-            "type": "array",
-            "items": {
+        "tags":         {
+            "type":        "array",
+            "items":       {
                 "$ref": "#/definitions/Tag"
             },
-            "uniqueItems": true
+            "uniqueItems": True
         },
-        "paths": {
+        "paths":        {
             "$ref": "#/definitions/Paths"
         },
-        "components": {
+        "components":   {
             "$ref": "#/definitions/Components"
         }
     },
-    "patternProperties": {
+    "patternProperties":    {
         "^x-": {
         }
     },
-    "additionalProperties": false,
-    "definitions": {
-        "Reference": {
-            "type": "object",
-            "required": [
+    "additionalProperties": False,
+    "definitions":          {
+        "Reference":                   {
+            "type":              "object",
+            "required":          [
                 "$ref"
             ],
             "patternProperties": {
                 "^\\$ref$": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 }
             }
         },
-        "Info": {
-            "type": "object",
-            "required": [
+        "Info":                        {
+            "type":                 "object",
+            "required":             [
                 "title",
                 "version"
             ],
-            "properties": {
-                "title": {
+            "properties":           {
+                "title":          {
                     "type": "string"
                 },
-                "description": {
+                "description":    {
                     "type": "string"
                 },
                 "termsOfService": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "contact": {
+                "contact":        {
                     "$ref": "#/definitions/Contact"
                 },
-                "license": {
+                "license":        {
                     "$ref": "#/definitions/License"
                 },
-                "version": {
+                "version":        {
                     "type": "string"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Contact": {
-            "type": "object",
-            "properties": {
-                "name": {
+        "Contact":                     {
+            "type":                 "object",
+            "properties":           {
+                "name":  {
                     "type": "string"
                 },
-                "url": {
-                    "type": "string",
+                "url":   {
+                    "type":   "string",
                     "format": "uri-reference"
                 },
                 "email": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "email"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "License": {
-            "type": "object",
-            "required": [
+        "License":                     {
+            "type":                 "object",
+            "required":             [
                 "name"
             ],
-            "properties": {
+            "properties":           {
                 "name": {
                     "type": "string"
                 },
-                "url": {
-                    "type": "string",
+                "url":  {
+                    "type":   "string",
                     "format": "uri-reference"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Server": {
-            "type": "object",
-            "required": [
+        "Server":                      {
+            "type":                 "object",
+            "required":             [
                 "url"
             ],
-            "properties": {
-                "url": {
+            "properties":           {
+                "url":         {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 },
-                "variables": {
-                    "type": "object",
+                "variables":   {
+                    "type":                 "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/ServerVariable"
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "ServerVariable": {
-            "type": "object",
-            "required": [
+        "ServerVariable":              {
+            "type":                 "object",
+            "required":             [
                 "default"
             ],
-            "properties": {
-                "enum": {
-                    "type": "array",
+            "properties":           {
+                "enum":        {
+                    "type":  "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "default": {
+                "default":     {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Components": {
-            "type": "object",
-            "properties": {
-                "schemas": {
-                    "type": "object",
+        "Components":                  {
+            "type":                 "object",
+            "properties":           {
+                "schemas":         {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -205,8 +205,8 @@
                         }
                     }
                 },
-                "responses": {
-                    "type": "object",
+                "responses":       {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -220,8 +220,8 @@
                         }
                     }
                 },
-                "parameters": {
-                    "type": "object",
+                "parameters":      {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -235,8 +235,8 @@
                         }
                     }
                 },
-                "examples": {
-                    "type": "object",
+                "examples":        {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -250,8 +250,8 @@
                         }
                     }
                 },
-                "requestBodies": {
-                    "type": "object",
+                "requestBodies":   {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -265,8 +265,8 @@
                         }
                     }
                 },
-                "headers": {
-                    "type": "object",
+                "headers":         {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -281,7 +281,7 @@
                     }
                 },
                 "securitySchemes": {
-                    "type": "object",
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -295,8 +295,8 @@
                         }
                     }
                 },
-                "links": {
-                    "type": "object",
+                "links":           {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -310,8 +310,8 @@
                         }
                     }
                 },
-                "callbacks": {
-                    "type": "object",
+                "callbacks":       {
+                    "type":              "object",
                     "patternProperties": {
                         "^[a-zA-Z0-9\\.\\-_]+$": {
                             "oneOf": [
@@ -326,88 +326,88 @@
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Schema": {
-            "type": "object",
-            "properties": {
-                "title": {
+        "Schema":                      {
+            "type":                 "object",
+            "properties":           {
+                "title":                {
                     "type": "string"
                 },
-                "multipleOf": {
-                    "type": "number",
-                    "minimum": 0,
-                    "exclusiveMinimum": true
+                "multipleOf":           {
+                    "type":             "number",
+                    "minimum":          0,
+                    "exclusiveMinimum": True
                 },
-                "maximum": {
+                "maximum":              {
                     "type": "number"
                 },
-                "exclusiveMaximum": {
-                    "type": "boolean",
-                    "default": false
+                "exclusiveMaximum":     {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "minimum": {
+                "minimum":              {
                     "type": "number"
                 },
-                "exclusiveMinimum": {
-                    "type": "boolean",
-                    "default": false
+                "exclusiveMinimum":     {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "maxLength": {
-                    "type": "integer",
+                "maxLength":            {
+                    "type":    "integer",
                     "minimum": 0
                 },
-                "minLength": {
-                    "type": "integer",
+                "minLength":            {
+                    "type":    "integer",
                     "minimum": 0,
                     "default": 0
                 },
-                "pattern": {
-                    "type": "string",
+                "pattern":              {
+                    "type":   "string",
                     "format": "regex"
                 },
-                "maxItems": {
-                    "type": "integer",
+                "maxItems":             {
+                    "type":    "integer",
                     "minimum": 0
                 },
-                "minItems": {
-                    "type": "integer",
+                "minItems":             {
+                    "type":    "integer",
                     "minimum": 0,
                     "default": 0
                 },
-                "uniqueItems": {
-                    "type": "boolean",
-                    "default": false
+                "uniqueItems":          {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "maxProperties": {
-                    "type": "integer",
+                "maxProperties":        {
+                    "type":    "integer",
                     "minimum": 0
                 },
-                "minProperties": {
-                    "type": "integer",
+                "minProperties":        {
+                    "type":    "integer",
                     "minimum": 0,
                     "default": 0
                 },
-                "required": {
-                    "type": "array",
-                    "items": {
+                "required":             {
+                    "type":        "array",
+                    "items":       {
                         "type": "string"
                     },
-                    "minItems": 1,
-                    "uniqueItems": true
+                    "minItems":    1,
+                    "uniqueItems": True
                 },
-                "enum": {
-                    "type": "array",
-                    "items": {
+                "enum":                 {
+                    "type":        "array",
+                    "items":       {
                     },
-                    "minItems": 1,
-                    "uniqueItems": false
+                    "minItems":    1,
+                    "uniqueItems": False
                 },
-                "type": {
+                "type":                 {
                     "type": "string",
                     "enum": [
                         "array",
@@ -418,7 +418,7 @@
                         "string"
                     ]
                 },
-                "not": {
+                "not":                  {
                     "oneOf": [
                         {
                             "$ref": "#/definitions/Schema"
@@ -428,8 +428,8 @@
                         }
                     ]
                 },
-                "allOf": {
-                    "type": "array",
+                "allOf":                {
+                    "type":  "array",
                     "items": {
                         "oneOf": [
                             {
@@ -441,8 +441,8 @@
                         ]
                     }
                 },
-                "oneOf": {
-                    "type": "array",
+                "oneOf":                {
+                    "type":  "array",
                     "items": {
                         "oneOf": [
                             {
@@ -454,8 +454,8 @@
                         ]
                     }
                 },
-                "anyOf": {
-                    "type": "array",
+                "anyOf":                {
+                    "type":  "array",
                     "items": {
                         "oneOf": [
                             {
@@ -467,7 +467,7 @@
                         ]
                     }
                 },
-                "items": {
+                "items":                {
                     "oneOf": [
                         {
                             "$ref": "#/definitions/Schema"
@@ -477,8 +477,8 @@
                         }
                     ]
                 },
-                "properties": {
-                    "type": "object",
+                "properties":           {
+                    "type":                 "object",
                     "additionalProperties": {
                         "oneOf": [
                             {
@@ -491,7 +491,7 @@
                     }
                 },
                 "additionalProperties": {
-                    "oneOf": [
+                    "oneOf":   [
                         {
                             "$ref": "#/definitions/Schema"
                         },
@@ -502,106 +502,106 @@
                             "type": "boolean"
                         }
                     ],
-                    "default": true
+                    "default": True
                 },
-                "description": {
+                "description":          {
                     "type": "string"
                 },
-                "format": {
+                "format":               {
                     "type": "string"
                 },
-                "default": {
+                "default":              {
                 },
-                "nullable": {
-                    "type": "boolean",
-                    "default": false
+                "nullable":             {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "discriminator": {
+                "discriminator":        {
                     "$ref": "#/definitions/Discriminator"
                 },
-                "readOnly": {
-                    "type": "boolean",
-                    "default": false
+                "readOnly":             {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "writeOnly": {
-                    "type": "boolean",
-                    "default": false
+                "writeOnly":            {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "example": {
+                "example":              {
                 },
-                "externalDocs": {
+                "externalDocs":         {
                     "$ref": "#/definitions/ExternalDocumentation"
                 },
-                "deprecated": {
-                    "type": "boolean",
-                    "default": false
+                "deprecated":           {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "xml": {
+                "xml":                  {
                     "$ref": "#/definitions/XML"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Discriminator": {
-            "type": "object",
-            "required": [
+        "Discriminator":               {
+            "type":       "object",
+            "required":   [
                 "propertyName"
             ],
             "properties": {
                 "propertyName": {
                     "type": "string"
                 },
-                "mapping": {
-                    "type": "object",
+                "mapping":      {
+                    "type":                 "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 }
             }
         },
-        "XML": {
-            "type": "object",
-            "properties": {
-                "name": {
+        "XML":                         {
+            "type":                 "object",
+            "properties":           {
+                "name":      {
                     "type": "string"
                 },
                 "namespace": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri"
                 },
-                "prefix": {
+                "prefix":    {
                     "type": "string"
                 },
                 "attribute": {
-                    "type": "boolean",
-                    "default": false
+                    "type":    "boolean",
+                    "default": False
                 },
-                "wrapped": {
-                    "type": "boolean",
-                    "default": false
+                "wrapped":   {
+                    "type":    "boolean",
+                    "default": False
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Response": {
-            "type": "object",
-            "required": [
+        "Response":                    {
+            "type":                 "object",
+            "required":             [
                 "description"
             ],
-            "properties": {
+            "properties":           {
                 "description": {
                     "type": "string"
                 },
-                "headers": {
-                    "type": "object",
+                "headers":     {
+                    "type":                 "object",
                     "additionalProperties": {
                         "oneOf": [
                             {
@@ -613,14 +613,14 @@
                         ]
                     }
                 },
-                "content": {
-                    "type": "object",
+                "content":     {
+                    "type":                 "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/MediaType"
                     }
                 },
-                "links": {
-                    "type": "object",
+                "links":       {
+                    "type":                 "object",
                     "additionalProperties": {
                         "oneOf": [
                             {
@@ -633,16 +633,16 @@
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "MediaType": {
-            "type": "object",
-            "properties": {
-                "schema": {
+        "MediaType":                   {
+            "type":                 "object",
+            "properties":           {
+                "schema":   {
                     "oneOf": [
                         {
                             "$ref": "#/definitions/Schema"
@@ -652,10 +652,10 @@
                         }
                     ]
                 },
-                "example": {
+                "example":  {
                 },
                 "examples": {
-                    "type": "object",
+                    "type":                 "object",
                     "additionalProperties": {
                         "oneOf": [
                             {
@@ -668,78 +668,78 @@
                     }
                 },
                 "encoding": {
-                    "type": "object",
+                    "type":                 "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/Encoding"
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false,
-            "allOf": [
+            "additionalProperties": False,
+            "allOf":                [
                 {
                     "$ref": "#/definitions/ExampleXORExamples"
                 }
             ]
         },
-        "Example": {
-            "type": "object",
-            "properties": {
-                "summary": {
+        "Example":                     {
+            "type":                 "object",
+            "properties":           {
+                "summary":       {
                     "type": "string"
                 },
-                "description": {
+                "description":   {
                     "type": "string"
                 },
-                "value": {
+                "value":         {
                 },
                 "externalValue": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Header": {
-            "type": "object",
-            "properties": {
-                "description": {
+        "Header":                      {
+            "type":                 "object",
+            "properties":           {
+                "description":     {
                     "type": "string"
                 },
-                "required": {
-                    "type": "boolean",
-                    "default": false
+                "required":        {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "deprecated": {
-                    "type": "boolean",
-                    "default": false
+                "deprecated":      {
+                    "type":    "boolean",
+                    "default": False
                 },
                 "allowEmptyValue": {
-                    "type": "boolean",
-                    "default": false
+                    "type":    "boolean",
+                    "default": False
                 },
-                "style": {
-                    "type": "string",
-                    "enum": [
+                "style":           {
+                    "type":    "string",
+                    "enum":    [
                         "simple"
                     ],
                     "default": "simple"
                 },
-                "explode": {
+                "explode":         {
                     "type": "boolean"
                 },
-                "allowReserved": {
-                    "type": "boolean",
-                    "default": false
+                "allowReserved":   {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "schema": {
+                "schema":          {
                     "oneOf": [
                         {
                             "$ref": "#/definitions/Schema"
@@ -749,18 +749,18 @@
                         }
                     ]
                 },
-                "content": {
-                    "type": "object",
+                "content":         {
+                    "type":                 "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/MediaType"
                     },
-                    "minProperties": 1,
-                    "maxProperties": 1
+                    "minProperties":        1,
+                    "maxProperties":        1
                 },
-                "example": {
+                "example":         {
                 },
-                "examples": {
-                    "type": "object",
+                "examples":        {
+                    "type":                 "object",
                     "additionalProperties": {
                         "oneOf": [
                             {
@@ -773,12 +773,12 @@
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false,
-            "allOf": [
+            "additionalProperties": False,
+            "allOf":                [
                 {
                     "$ref": "#/definitions/ExampleXORExamples"
                 },
@@ -787,38 +787,38 @@
                 }
             ]
         },
-        "Paths": {
-            "type": "object",
-            "patternProperties": {
+        "Paths":                       {
+            "type":                 "object",
+            "patternProperties":    {
                 "^\\/": {
                     "$ref": "#/definitions/PathItem"
                 },
-                "^x-": {
+                "^x-":  {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "PathItem": {
-            "type": "object",
-            "properties": {
-                "$ref": {
+        "PathItem":                    {
+            "type":                 "object",
+            "properties":           {
+                "$ref":        {
                     "type": "string"
                 },
-                "summary": {
+                "summary":     {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 },
-                "servers": {
-                    "type": "array",
+                "servers":     {
+                    "type":  "array",
                     "items": {
                         "$ref": "#/definitions/Server"
                     }
                 },
-                "parameters": {
-                    "type": "array",
-                    "items": {
+                "parameters":  {
+                    "type":        "array",
+                    "items":       {
                         "oneOf": [
                             {
                                 "$ref": "#/definitions/Parameter"
@@ -828,45 +828,45 @@
                             }
                         ]
                     },
-                    "uniqueItems": true
+                    "uniqueItems": True
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^(get|put|post|delete|options|head|patch|trace)$": {
                     "$ref": "#/definitions/Operation"
                 },
-                "^x-": {
+                "^x-":                                              {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Operation": {
-            "type": "object",
-            "required": [
+        "Operation":                   {
+            "type":                 "object",
+            "required":             [
                 "responses"
             ],
-            "properties": {
-                "tags": {
-                    "type": "array",
+            "properties":           {
+                "tags":         {
+                    "type":  "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "summary": {
+                "summary":      {
                     "type": "string"
                 },
-                "description": {
+                "description":  {
                     "type": "string"
                 },
                 "externalDocs": {
                     "$ref": "#/definitions/ExternalDocumentation"
                 },
-                "operationId": {
+                "operationId":  {
                     "type": "string"
                 },
-                "parameters": {
-                    "type": "array",
-                    "items": {
+                "parameters":   {
+                    "type":        "array",
+                    "items":       {
                         "oneOf": [
                             {
                                 "$ref": "#/definitions/Parameter"
@@ -876,9 +876,9 @@
                             }
                         ]
                     },
-                    "uniqueItems": true
+                    "uniqueItems": True
                 },
-                "requestBody": {
+                "requestBody":  {
                     "oneOf": [
                         {
                             "$ref": "#/definitions/RequestBody"
@@ -888,11 +888,11 @@
                         }
                     ]
                 },
-                "responses": {
+                "responses":    {
                     "$ref": "#/definitions/Responses"
                 },
-                "callbacks": {
-                    "type": "object",
+                "callbacks":    {
+                    "type":                 "object",
                     "additionalProperties": {
                         "oneOf": [
                             {
@@ -904,32 +904,32 @@
                         ]
                     }
                 },
-                "deprecated": {
-                    "type": "boolean",
-                    "default": false
+                "deprecated":   {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "security": {
-                    "type": "array",
+                "security":     {
+                    "type":  "array",
                     "items": {
                         "$ref": "#/definitions/SecurityRequirement"
                     }
                 },
-                "servers": {
-                    "type": "array",
+                "servers":      {
+                    "type":  "array",
                     "items": {
                         "$ref": "#/definitions/Server"
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Responses": {
-            "type": "object",
-            "properties": {
+        "Responses":                   {
+            "type":                 "object",
+            "properties":           {
                 "default": {
                     "oneOf": [
                         {
@@ -941,7 +941,7 @@
                     ]
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^[1-5](?:\\d{2}|XX)$": {
                     "oneOf": [
                         {
@@ -952,92 +952,92 @@
                         }
                     ]
                 },
-                "^x-": {
+                "^x-":                  {
                 }
             },
-            "minProperties": 1,
-            "additionalProperties": false
+            "minProperties":        1,
+            "additionalProperties": False
         },
-        "SecurityRequirement": {
-            "type": "object",
+        "SecurityRequirement":         {
+            "type":                 "object",
             "additionalProperties": {
-                "type": "array",
+                "type":  "array",
                 "items": {
                     "type": "string"
                 }
             }
         },
-        "Tag": {
-            "type": "object",
-            "required": [
+        "Tag":                         {
+            "type":                 "object",
+            "required":             [
                 "name"
             ],
-            "properties": {
-                "name": {
+            "properties":           {
+                "name":         {
                     "type": "string"
                 },
-                "description": {
+                "description":  {
                     "type": "string"
                 },
                 "externalDocs": {
                     "$ref": "#/definitions/ExternalDocumentation"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "ExternalDocumentation": {
-            "type": "object",
-            "required": [
+        "ExternalDocumentation":       {
+            "type":                 "object",
+            "required":             [
                 "url"
             ],
-            "properties": {
+            "properties":           {
                 "description": {
                     "type": "string"
                 },
-                "url": {
-                    "type": "string",
+                "url":         {
+                    "type":   "string",
                     "format": "uri-reference"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "ExampleXORExamples": {
+        "ExampleXORExamples":          {
             "description": "Example and examples are mutually exclusive",
-            "not": {
+            "not":         {
                 "required": [
                     "example",
                     "examples"
                 ]
             }
         },
-        "SchemaXORContent": {
+        "SchemaXORContent":            {
             "description": "Schema and content are mutually exclusive, at least one is required",
-            "not": {
+            "not":         {
                 "required": [
                     "schema",
                     "content"
                 ]
             },
-            "oneOf": [
+            "oneOf":       [
                 {
                     "required": [
                         "schema"
                     ]
                 },
                 {
-                    "required": [
+                    "required":    [
                         "content"
                     ],
                     "description": "Some properties are not allowed if content is present",
-                    "allOf": [
+                    "allOf":       [
                         {
                             "not": {
                                 "required": [
@@ -1077,41 +1077,41 @@
                 }
             ]
         },
-        "Parameter": {
-            "type": "object",
-            "properties": {
-                "name": {
+        "Parameter":                   {
+            "type":                 "object",
+            "properties":           {
+                "name":            {
                     "type": "string"
                 },
-                "in": {
+                "in":              {
                     "type": "string"
                 },
-                "description": {
+                "description":     {
                     "type": "string"
                 },
-                "required": {
-                    "type": "boolean",
-                    "default": false
+                "required":        {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "deprecated": {
-                    "type": "boolean",
-                    "default": false
+                "deprecated":      {
+                    "type":    "boolean",
+                    "default": False
                 },
                 "allowEmptyValue": {
-                    "type": "boolean",
-                    "default": false
+                    "type":    "boolean",
+                    "default": False
                 },
-                "style": {
+                "style":           {
                     "type": "string"
                 },
-                "explode": {
+                "explode":         {
                     "type": "boolean"
                 },
-                "allowReserved": {
-                    "type": "boolean",
-                    "default": false
+                "allowReserved":   {
+                    "type":    "boolean",
+                    "default": False
                 },
-                "schema": {
+                "schema":          {
                     "oneOf": [
                         {
                             "$ref": "#/definitions/Schema"
@@ -1121,18 +1121,18 @@
                         }
                     ]
                 },
-                "content": {
-                    "type": "object",
+                "content":         {
+                    "type":                 "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/MediaType"
                     },
-                    "minProperties": 1,
-                    "maxProperties": 1
+                    "minProperties":        1,
+                    "maxProperties":        1
                 },
-                "example": {
+                "example":         {
                 },
-                "examples": {
-                    "type": "object",
+                "examples":        {
+                    "type":                 "object",
                     "additionalProperties": {
                         "oneOf": [
                             {
@@ -1145,16 +1145,16 @@
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false,
-            "required": [
+            "additionalProperties": False,
+            "required":             [
                 "name",
                 "in"
             ],
-            "allOf": [
+            "allOf":                [
                 {
                     "$ref": "#/definitions/ExampleXORExamples"
                 },
@@ -1166,22 +1166,22 @@
                 }
             ]
         },
-        "ParameterLocation": {
+        "ParameterLocation":           {
             "description": "Parameter location",
-            "oneOf": [
+            "oneOf":       [
                 {
                     "description": "Parameter in path",
-                    "required": [
+                    "required":    [
                         "required"
                     ],
-                    "properties": {
-                        "in": {
+                    "properties":  {
+                        "in":       {
                             "enum": [
                                 "path"
                             ]
                         },
-                        "style": {
-                            "enum": [
+                        "style":    {
+                            "enum":    [
                                 "matrix",
                                 "label",
                                 "simple"
@@ -1190,21 +1190,21 @@
                         },
                         "required": {
                             "enum": [
-                                true
+                                True
                             ]
                         }
                     }
                 },
                 {
                     "description": "Parameter in query",
-                    "properties": {
-                        "in": {
+                    "properties":  {
+                        "in":    {
                             "enum": [
                                 "query"
                             ]
                         },
                         "style": {
-                            "enum": [
+                            "enum":    [
                                 "form",
                                 "spaceDelimited",
                                 "pipeDelimited",
@@ -1216,14 +1216,14 @@
                 },
                 {
                     "description": "Parameter in header",
-                    "properties": {
-                        "in": {
+                    "properties":  {
+                        "in":    {
                             "enum": [
                                 "header"
                             ]
                         },
                         "style": {
-                            "enum": [
+                            "enum":    [
                                 "simple"
                             ],
                             "default": "simple"
@@ -1232,14 +1232,14 @@
                 },
                 {
                     "description": "Parameter in cookie",
-                    "properties": {
-                        "in": {
+                    "properties":  {
+                        "in":    {
                             "enum": [
                                 "cookie"
                             ]
                         },
                         "style": {
-                            "enum": [
+                            "enum":    [
                                 "form"
                             ],
                             "default": "form"
@@ -1248,33 +1248,33 @@
                 }
             ]
         },
-        "RequestBody": {
-            "type": "object",
-            "required": [
+        "RequestBody":                 {
+            "type":                 "object",
+            "required":             [
                 "content"
             ],
-            "properties": {
+            "properties":           {
                 "description": {
                     "type": "string"
                 },
-                "content": {
-                    "type": "object",
+                "content":     {
+                    "type":                 "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/MediaType"
                     }
                 },
-                "required": {
-                    "type": "boolean",
-                    "default": false
+                "required":    {
+                    "type":    "boolean",
+                    "default": False
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "SecurityScheme": {
+        "SecurityScheme":              {
             "oneOf": [
                 {
                     "$ref": "#/definitions/APIKeySecurityScheme"
@@ -1290,24 +1290,24 @@
                 }
             ]
         },
-        "APIKeySecurityScheme": {
-            "type": "object",
-            "required": [
+        "APIKeySecurityScheme":        {
+            "type":                 "object",
+            "required":             [
                 "type",
                 "name",
                 "in"
             ],
-            "properties": {
-                "type": {
+            "properties":           {
+                "type":        {
                     "type": "string",
                     "enum": [
                         "apiKey"
                     ]
                 },
-                "name": {
+                "name":        {
                     "type": "string"
                 },
-                "in": {
+                "in":          {
                     "type": "string",
                     "enum": [
                         "header",
@@ -1319,44 +1319,44 @@
                     "type": "string"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "HTTPSecurityScheme": {
-            "type": "object",
-            "required": [
+        "HTTPSecurityScheme":          {
+            "type":                 "object",
+            "required":             [
                 "scheme",
                 "type"
             ],
-            "properties": {
-                "scheme": {
+            "properties":           {
+                "scheme":       {
                     "type": "string"
                 },
                 "bearerFormat": {
                     "type": "string"
                 },
-                "description": {
+                "description":  {
                     "type": "string"
                 },
-                "type": {
+                "type":         {
                     "type": "string",
                     "enum": [
                         "http"
                     ]
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false,
-            "oneOf": [
+            "additionalProperties": False,
+            "oneOf":                [
                 {
                     "description": "Bearer",
-                    "properties": {
+                    "properties":  {
                         "scheme": {
                             "enum": [
                                 "bearer"
@@ -1366,12 +1366,12 @@
                 },
                 {
                     "description": "Non Bearer",
-                    "not": {
+                    "not":         {
                         "required": [
                             "bearerFormat"
                         ]
                     },
-                    "properties": {
+                    "properties":  {
                         "scheme": {
                             "not": {
                                 "enum": [
@@ -1383,66 +1383,66 @@
                 }
             ]
         },
-        "OAuth2SecurityScheme": {
-            "type": "object",
-            "required": [
+        "OAuth2SecurityScheme":        {
+            "type":                 "object",
+            "required":             [
                 "type",
                 "flows"
             ],
-            "properties": {
-                "type": {
+            "properties":           {
+                "type":        {
                     "type": "string",
                     "enum": [
                         "oauth2"
                     ]
                 },
-                "flows": {
+                "flows":       {
                     "$ref": "#/definitions/OAuthFlows"
                 },
                 "description": {
                     "type": "string"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
         "OpenIdConnectSecurityScheme": {
-            "type": "object",
-            "required": [
+            "type":                 "object",
+            "required":             [
                 "type",
                 "openIdConnectUrl"
             ],
-            "properties": {
-                "type": {
+            "properties":           {
+                "type":             {
                     "type": "string",
                     "enum": [
                         "openIdConnect"
                     ]
                 },
                 "openIdConnectUrl": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "description": {
+                "description":      {
                     "type": "string"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "OAuthFlows": {
-            "type": "object",
-            "properties": {
-                "implicit": {
+        "OAuthFlows":                  {
+            "type":                 "object",
+            "properties":           {
+                "implicit":          {
                     "$ref": "#/definitions/ImplicitOAuthFlow"
                 },
-                "password": {
+                "password":          {
                     "$ref": "#/definitions/PasswordOAuthFlow"
                 },
                 "clientCredentials": {
@@ -1452,186 +1452,186 @@
                     "$ref": "#/definitions/AuthorizationCodeOAuthFlow"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "ImplicitOAuthFlow": {
-            "type": "object",
-            "required": [
+        "ImplicitOAuthFlow":           {
+            "type":                 "object",
+            "required":             [
                 "authorizationUrl",
                 "scopes"
             ],
-            "properties": {
+            "properties":           {
                 "authorizationUrl": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "refreshUrl": {
-                    "type": "string",
+                "refreshUrl":       {
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "scopes": {
-                    "type": "object",
+                "scopes":           {
+                    "type":                 "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "PasswordOAuthFlow": {
-            "type": "object",
-            "required": [
+        "PasswordOAuthFlow":           {
+            "type":                 "object",
+            "required":             [
                 "tokenUrl"
             ],
-            "properties": {
-                "tokenUrl": {
-                    "type": "string",
+            "properties":           {
+                "tokenUrl":   {
+                    "type":   "string",
                     "format": "uri-reference"
                 },
                 "refreshUrl": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "scopes": {
-                    "type": "object",
+                "scopes":     {
+                    "type":                 "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "ClientCredentialsFlow": {
-            "type": "object",
-            "required": [
+        "ClientCredentialsFlow":       {
+            "type":                 "object",
+            "required":             [
                 "tokenUrl"
             ],
-            "properties": {
-                "tokenUrl": {
-                    "type": "string",
+            "properties":           {
+                "tokenUrl":   {
+                    "type":   "string",
                     "format": "uri-reference"
                 },
                 "refreshUrl": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "scopes": {
-                    "type": "object",
+                "scopes":     {
+                    "type":                 "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "AuthorizationCodeOAuthFlow": {
-            "type": "object",
-            "required": [
+        "AuthorizationCodeOAuthFlow":  {
+            "type":                 "object",
+            "required":             [
                 "authorizationUrl",
                 "tokenUrl"
             ],
-            "properties": {
+            "properties":           {
                 "authorizationUrl": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "tokenUrl": {
-                    "type": "string",
+                "tokenUrl":         {
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "refreshUrl": {
-                    "type": "string",
+                "refreshUrl":       {
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "scopes": {
-                    "type": "object",
+                "scopes":           {
+                    "type":                 "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         },
-        "Link": {
-            "type": "object",
-            "properties": {
-                "operationId": {
+        "Link":                        {
+            "type":                 "object",
+            "properties":           {
+                "operationId":  {
                     "type": "string"
                 },
                 "operationRef": {
-                    "type": "string",
+                    "type":   "string",
                     "format": "uri-reference"
                 },
-                "parameters": {
-                    "type": "object",
+                "parameters":   {
+                    "type":                 "object",
                     "additionalProperties": {
                     }
                 },
-                "requestBody": {
+                "requestBody":  {
                 },
-                "description": {
+                "description":  {
                     "type": "string"
                 },
-                "server": {
+                "server":       {
                     "$ref": "#/definitions/Server"
                 }
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             },
-            "additionalProperties": false,
-            "not": {
+            "additionalProperties": False,
+            "not":                  {
                 "description": "Operation Id and Operation Ref are mutually exclusive",
-                "required": [
+                "required":    [
                     "operationId",
                     "operationRef"
                 ]
             }
         },
-        "Callback": {
-            "type": "object",
+        "Callback":                    {
+            "type":                 "object",
             "additionalProperties": {
                 "$ref": "#/definitions/PathItem"
             },
-            "patternProperties": {
+            "patternProperties":    {
                 "^x-": {
                 }
             }
         },
-        "Encoding": {
-            "type": "object",
-            "properties": {
-                "contentType": {
+        "Encoding":                    {
+            "type":                 "object",
+            "properties":           {
+                "contentType":   {
                     "type": "string"
                 },
-                "headers": {
-                    "type": "object",
+                "headers":       {
+                    "type":                 "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/Header"
                     }
                 },
-                "style": {
+                "style":         {
                     "type": "string",
                     "enum": [
                         "form",
@@ -1640,15 +1640,15 @@
                         "deepObject"
                     ]
                 },
-                "explode": {
+                "explode":       {
                     "type": "boolean"
                 },
                 "allowReserved": {
-                    "type": "boolean",
-                    "default": false
+                    "type":    "boolean",
+                    "default": False
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": False
         }
     }
 }

@@ -180,7 +180,7 @@ class Restful(CatalogResource):
         :param res_id: resource identifier (primary key value)
         :return:
         """
-        payload = self.validate(self.put_schema)
+        payload = self.validate(self.put_schema or self.post_schema)
         res = self._model.query.get_or_404(res_id)
         res = self.update_resource(res, payload)
         self._update(res)

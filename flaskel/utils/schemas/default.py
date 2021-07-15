@@ -39,7 +39,7 @@ SCHEMAS = ObjectDict(
                     properties={
                         "jsonrpc": Fields.enum("2.0"),
                         "id":      Fields.type("string", "number", "null"),
-                        "result":  Fields.type("array", "object"),
+                        "result":  Fields.type("array", "object", "null"),
                         "error":   Fields.type(
                             "array",
                             "object",
@@ -111,15 +111,14 @@ SCHEMAS = ObjectDict(
         **Fields.schema,
         properties={
             "status": Fields.string,
-            "checks": {
-                "type":              "object",
-                "patternProperties": {
+            "checks": Fields.object(
+                patternProperties={
                     ".": Fields.object(properties={
                         "status": Fields.string,
                         "output": Fields.type("null", "string", "object")
                     })
                 }
-            },
+            ),
             "links":  Fields.object(properties={
                 "about": Fields.Opt.string
             })

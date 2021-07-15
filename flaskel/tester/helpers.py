@@ -86,4 +86,4 @@ def restful_tester(
 
         res = client.get(url_resource, headers=headers)
         Asserter.assert_status_code(res, httpcode.NOT_FOUND)
-        Asserter.assert_schema(res.json, schemas.ApiProblem)
+        Asserter.assert_schema(res.json, schemas.API_PROBLEM)

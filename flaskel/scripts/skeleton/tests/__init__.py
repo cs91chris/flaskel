@@ -7,6 +7,13 @@ from flaskel import ObjectDict, TestClient
 from flaskel.ext.sqlalchemy.support import SQLASupport
 from . import helpers as h
 
+__all__ = [
+    'h',
+    'testapp',
+    'test_client',
+    'auth_token',
+]
+
 DB_TEST = 'test.sqlite'
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SAMPLE_DATA = os.path.join(BASE_DIR, '..', 'res', 'sample.sql')
@@ -42,23 +49,35 @@ EXTRAS = dict(
 
 
 @pytest.fixture(scope='session')
-def test_client():
+def testapp():
     try:
         os.remove(DB_TEST)
     except OSError as exc:
         print(str(exc))
 
-    return TestClient.get_app(**{**APP_CONFIG, **EXTRAS}).test_client()
+    return TestClient.get_app(**{**APP_CONFIG, **EXTRAS})
+
+
+@pytest.fixture(scope='session')
+def test_client(testapp):
+    return testapp.test_client()
 
 
 @pytest.fixture()
 def auth_token(test_client):
-    def get_access_token(token=None):
+    def get_access_token(token=None, email=None, password=None, in_query=True):
         if token is not None:
+            if in_query is True:
+                return f"jwt={token}"
             return dict(Authorization=f"Bearer {token}")
 
-        credentials = dict(email=h.config.ADMIN_EMAIL, password=h.config.ADMIN_PASSWORD)
+        credentials = dict(
+            email=email or h.config.ADMIN_EMAIL,
+            password=password or h.config.ADMIN_PASSWORD
+        )
         tokens = test_client.post(h.url_for(h.VIEWS.access_token), json=credentials)
+        if in_query is True:
+            return f"jwt={tokens.json.access_token}"
         return dict(Authorization=f"Bearer {tokens.json.access_token}")
 
     return get_access_token

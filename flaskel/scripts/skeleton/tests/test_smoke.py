@@ -1,5 +1,4 @@
-# noinspection PyUnresolvedReferences
-from . import auth_token, h, test_client
+from . import *
 
 
 def test_app_runs(test_client):

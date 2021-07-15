@@ -1,6 +1,7 @@
-from flaskel import views
+from flaskel import ExtProxy
 from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
-from flaskel.views import apidoc, proxy, rpc
+from flaskel.views import apidoc, proxy, RenderTemplate, rpc
+from . import models, views
 from .api import bp_api, resource, rpc as rpc_service
 from .auth import bp_auth
 from .test import bp_test
@@ -8,6 +9,7 @@ from .web import bp_web
 
 jsonRPCView = rpc.JSONRPCView
 rpc.JSONRPCView.load_from_object(rpc_service.MyJsonRPC())
+session = ExtProxy('sqlalchemy.db.session')
 
 
 class CustomProxy(proxy.TransparentProxyView):
@@ -26,7 +28,7 @@ BLUEPRINTS = (
 )
 
 VIEWS = (
-    (views.RenderTemplate, bp_web, dict(
+    (RenderTemplate, bp_web, dict(
         name='index',
         urls=['/'],
         template='index.html'
@@ -66,5 +68,10 @@ VIEWS = (
     (MobileLoggerView, bp_api, dict(
         name=MobileLoggerView.default_view_name,
         urls=MobileLoggerView.default_urls,
+    )),
+    (views.ApiItem, bp_api, dict(
+        name='items',
+        model=models.Dummy,
+        session=session
     )),
 )

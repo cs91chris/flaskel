@@ -1,32 +1,29 @@
 import os
 import time
-from functools import partial
 
-import flask
 import werkzeug.exceptions
 
-from flaskel import httpcode, misc, ObjectDict, uuid
+from flaskel import misc, ObjectDict, uuid
 from flaskel.http import batch, FlaskelHttp, FlaskelJsonRPC, HTTPClient, HTTPStatusError, rpc, useragent
-from flaskel.tester import Asserter
+from flaskel.tester.helpers import *
+from flaskel.tester.http import *
 from flaskel.utils import datetime, ExtProxy, schemas
 from flaskel.utils.faker import DummyLogger
 # noinspection PyUnresolvedReferences
 from . import app_dev, app_prod, CTS, HOSTS, testapp
 
-url_for = partial(flask.url_for, _external=True)
-
 
 def test_app_dev(app_dev):
-    client = app_dev.test_client()
-    res = client.get(url_for('web.index'))
-    Asserter.assert_status_code(res)
-    Asserter.assert_content_type(res, CTS.html)
     Asserter.assert_equals(app_dev.config.FLASK_ENV, 'development')
     Asserter.assert_equals(app_dev.config.SECRET_KEY, 'fake_very_complex_string')
-    res = client.get(url_for('test.test_https'))
-    Asserter.assert_status_code(res)
-    Asserter.assert_equals(res.json.scheme, 'https')
-    Asserter.assert_true(res.json.url_for.startswith('https'))
+
+    client = TestHttpCall(app_dev.test_client())
+    client.perform(request={'url': url_for('web.index')})
+
+    client = TestHttpApi(app_dev.test_client())
+    client.perform(request={'url': url_for('test.test_https')})
+    Asserter.assert_equals(client.json.scheme, 'https')
+    Asserter.assert_true(client.json.url_for.startswith('https'))
 
 
 def test_api_resources(testapp):
@@ -71,28 +68,45 @@ def test_api_resources(testapp):
 
 
 def test_api_cors(testapp):
-    res = testapp.get(url_for('api.resource_api'))
-    Asserter.assert_header(res, 'Access-Control-Allow-Origin', '*')
+    client = TestHttpApi(testapp)
+    client.perform(
+        request={'url': url_for('api.resource_api')},
+        response={
+            'status':  {'code': httpcode.TOO_MANY_REQUESTS},
+            'headers': {
+                'Access-Control-Allow-Origin': {'value': '*'},
+                'Content-Type':                {'value': CTS.json_problem}
+            }
+        }
+    )
 
 
 def test_dispatch_error_web(testapp):
-    res = testapp.get('/web-page-not-found')
-    Asserter.assert_status_code(res, httpcode.NOT_FOUND)
-    Asserter.assert_content_type(res, CTS.html)
+    client = TestHttpCall(testapp)
+    client.perform(
+        request={'url': '/web-page-not-found'},
+        response={'status': {'code': httpcode.NOT_FOUND}}
+    )
 
 
 def test_dispatch_error_api(testapp):
-    res = testapp.get(f"http://api.{testapp.application.config.SERVER_NAME}/not_found")
-    Asserter.assert_status_code(res, httpcode.NOT_FOUND)
-    Asserter.assert_content_type(res, CTS.json_problem)
-    Asserter.assert_schema(res.json, schemas.SCHEMAS.API_PROBLEM)
+    client = TestHttpApi(testapp)
+    client.perform(
+        request={'url': f"http://api.{testapp.application.config.SERVER_NAME}/not_found"},
+        response={
+            'status':  {'code': httpcode.NOT_FOUND},
+            'headers': {'Content-Type': {'value': CTS.json_problem}},
+            'schema':  schemas.SCHEMAS.API_PROBLEM
+        }
+    )
 
 
 def test_force_https(testapp):
     res = testapp.get(url_for('test.test_https'))
-    Asserter.assert_status_code(res)
-    Asserter.assert_equals(res.json.scheme, 'https')
-    Asserter.assert_true(res.json.url_for.startswith('https'))
+    client = TestHttpApi(testapp)
+    client.perform(request={'url': url_for('test.test_https')})
+    Asserter.assert_equals(client.json.scheme, 'https')
+    Asserter.assert_true(client.json.url_for.startswith('https'))
 
 
 def test_reverse_proxy(testapp):
@@ -238,24 +252,25 @@ def test_utils_http_jsonrpc_client(testapp):
 
 
 def test_healthcheck(testapp):
-    res = testapp.get(testapp.application.config.HEALTHCHECK_PATH)
-    Asserter.assert_status_code(res, httpcode.SERVICE_UNAVAILABLE)
+    res = api_tester(
+        testapp,
+        url=testapp.application.config.HEALTHCHECK_PATH,
+        status=httpcode.SERVICE_UNAVAILABLE,
+        schema=schemas.SCHEMAS.HEALTHCHECK
+    )
     Asserter.assert_content_type(res, CTS.json_health)
-    Asserter.assert_schema(res.json, schemas.SCHEMAS.HEALTHCHECK)
     Asserter.assert_allin(res.json.checks.keys(), ('mongo', 'redis', 'sqlalchemy', 'system', 'services'))
 
 
 def test_api_jsonrpc_success(app_dev):
     call_id = 1
     url = url_for('api.jsonrpc')
-    testapp = app_dev.test_client()
-    res = testapp.jsonrpc(url, method="MyJsonRPC.testAction1", call_id=call_id)
-    Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE'])
-    Asserter.assert_equals(res.json.id, call_id)
-    Asserter.assert_true(res.json.result.action1)
+    client = TestJsonRPC(app_dev.test_client(), endpoint=url)
+    client.perform(request=dict(method="MyJsonRPC.testAction1", id=call_id))
+    Asserter.assert_equals(client.json.id, call_id)
+    Asserter.assert_true(client.json.result.action1)
 
-    res = testapp.jsonrpc(url, method="MyJsonRPC.testAction2")
+    res = app_dev.test_client().jsonrpc(url, method="MyJsonRPC.testAction2")
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 
 
@@ -263,7 +278,7 @@ def test_api_jsonrpc_error(app_dev):
     call_id = 1
     url = url_for('api.jsonrpc')
     testapp = app_dev.test_client()
-    response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
+    response_schema = schemas.SCHEMAS.JSONRPC.response
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method="NotFoundMethod", call_id=call_id, **headers)
@@ -298,7 +313,7 @@ def test_api_jsonrpc_params(app_dev):
     url = url_for('api.jsonrpc')
     method = "MyJsonRPC.testInvalidParams"
     testapp = app_dev.test_client()
-    response_schema = schemas.JSONSchema.load_from_file(schemas.SCHEMAS.JSONRPC)['RESPONSE']
+    response_schema = schemas.SCHEMAS.JSONRPC.response
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"param": "testparam"}, **headers)
@@ -402,8 +417,8 @@ def test_correlation_id(testapp):
 
 
 def test_jwt(testapp):
-    config = testapp.application.config
-    bypass = {config.LIMITER.BYPASS_KEY: config.LIMITER.BYPASS_VALUE}
+    conf = testapp.application.config
+    bypass = {conf.LIMITER.BYPASS_KEY: conf.LIMITER.BYPASS_VALUE}
     tokens = testapp.post(
         url_for('auth.access_token'),
         json=dict(email='email', password='password')
@@ -514,6 +529,42 @@ def test_mobile_views(app_dev):
     res = testapp.post(f"{url}?debug", json=data)
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json, data)
+
+
+def test_restful(app_dev):
+    restful_tester(
+        app_dev.test_client(),
+        view='api.items',
+        schema_read=schemas.SCHEMAS.ITEM,
+        schema_collection=schemas.SCHEMAS.ITEM_LIST,
+        body_create=dict(item='test'),
+        headers=basic_auth_header()
+    )
+
+    client = TestRestApi(app_dev.test_client(), endpoint=url_for('api.items'))
+    client.test_post(
+        request=dict(json=dict(item='test'), headers=basic_auth_header()),
+        response=dict(schema=schemas.SCHEMAS.ITEM)
+    )
+    res_id = client.json.id
+    client.test_get(
+        res_id,
+        request=dict(headers=basic_auth_header()),
+        response=dict(schema=schemas.SCHEMAS.ITEM)
+    )
+    client.test_put(
+        res_id,
+        request=dict(json=dict(item='test'), headers=basic_auth_header()),
+        response=dict(schema=schemas.SCHEMAS.ITEM)
+    )
+    client.test_collection(
+        request=dict(headers=basic_auth_header()),
+        response=dict(schema=schemas.SCHEMAS.ITEM_LIST)
+    )
+    client.test_delete(
+        res_id,
+        request=dict(headers=basic_auth_header())
+    )
 
 
 def test_ipban(app_dev):  # must be last test on dev app

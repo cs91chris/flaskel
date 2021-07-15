@@ -26,7 +26,7 @@ class APIResource(Resource):
         return resources
 
     def on_post(self):
-        payload = PayloadValidator.validate('ITEM')
+        payload = PayloadValidator.validate('ITEM_POST')
         return payload, httpcode.CREATED
 
     def on_delete(self, res_id, **kwargs):

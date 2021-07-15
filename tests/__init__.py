@@ -12,6 +12,8 @@ from flaskel.ext.healthcheck import checks, health_checks
 from flaskel.ext.sqlalchemy import db as sqlalchemy
 from flaskel.extra.mobile_support import mobile_version, RedisStore
 from flaskel.extra.stripe import payment_handler
+from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS, Fields
+from flaskel.utils.schemas.openapi3 import SCHEMA as OPENAPI_SCHEMA
 from .blueprints import BLUEPRINTS, VIEWS
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -32,19 +34,14 @@ HOSTS = ObjectDict(
     fake="http://localhost"
 )
 
-SCHEMA_DIR = 'flaskel/scripts/skeleton/skel/blueprints/api/static/schemas'
-
 SCHEMAS = dict(
-    JSONRPC=f"file://{SCHEMA_DIR}/jsonrpc.json",
-    API_PROBLEM=f"file://{SCHEMA_DIR}/apiproblem.json",
-    HEALTHCHECK=f"file://{SCHEMA_DIR}/healthcheck.json",
-    OPENAPI3=f"file://{SCHEMA_DIR}/openapi3.json",
-    ITEM={
-        "$schema":    "http://json-schema.org/draft-07/schema#",
-        "type":       "object",
-        "required":   ["item"],
-        "properties": {"item": {"type": "string"}}
-    }
+    JSONRPC=DEFAULT_SCHEMAS.JSONRPC,
+    API_PROBLEM=DEFAULT_SCHEMAS.API_PROBLEM,
+    HEALTHCHECK=DEFAULT_SCHEMAS.HEALTH_CHECK,
+    OPENAPI3=OPENAPI_SCHEMA,
+    ITEM_POST=Fields.object(properties={"item": Fields.string}),
+    ITEM=Fields.object(properties={"id": Fields.integer, "item": Fields.string}),
+    ITEM_LIST=Fields.array_object(properties={"id": Fields.integer, "item": Fields.string})
 )
 
 BASE_EXTENSIONS = {
@@ -131,9 +128,9 @@ def app_prod():
             HEALTH_SERVICES={
                 'apitester': {
                     'endpoint': HOSTS.apitester,
-                    'uri': '/anything'
+                    'uri':      '/anything'
                 },
-                'fakeapi': {
+                'fakeapi':   {
                     'endpoint': HOSTS.fake,
                     'uri':      '/fake'
                 }
@@ -175,7 +172,9 @@ def app_dev():
             SCHEMAS=SCHEMAS,
             PROXIES=PROXIES,
             STRIPE_SECRET_KEY='stripe_secret_key',
-            STRIPE_PUBLIC_KEY='stripe_public_key'
+            STRIPE_PUBLIC_KEY='stripe_public_key',
+            BASIC_AUTH_USERNAME='admin',
+            BASIC_AUTH_PASSWORD='admin',
         ),
         blueprints=(
             *BLUEPRINTS,
