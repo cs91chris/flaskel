@@ -231,7 +231,7 @@ paths:
           schema:
             type: boolean
       responses:
-        '204':
+        '200':
           description: version successfully registered
         '400':
           $ref: '#/components/responses/400'

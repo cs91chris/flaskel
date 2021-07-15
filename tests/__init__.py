@@ -21,6 +21,7 @@ SKEL_DIR = os.path.join(BASE_DIR, 'skeleton')
 CONF_DIR = os.path.join(SKEL_DIR, 'res')
 
 CTS = ObjectDict(
+    text='text/plain',
     json='application/json',
     xml='application/xml',
     html='text/html',

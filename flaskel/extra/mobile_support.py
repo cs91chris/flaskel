@@ -18,7 +18,7 @@ class RedisStore:
         self.client = redis
 
     def _normalize(self, ver):
-        s = ver.decode().split(self.sep)
+        s = ver.split(self.sep)
         return version.parse(s[0]), bool(int(s[1])) if len(s) > 1 else False
 
     def release(self, key, v, u=False):
@@ -178,7 +178,7 @@ class MobileVersionCompatibility:
                     return True
                 if v <= mv:
                     return False
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             cap.logger.exception(exc)
             return False
         return len(versions) >= cap.config.VERSION_STORE_MAX

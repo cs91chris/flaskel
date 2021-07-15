@@ -520,16 +520,55 @@ def test_apidoc(testapp):
     Asserter.assert_equals(res.json.servers[0].variables.host.default, 'https://127.0.0.1:5000')
 
 
+def test_mobile_release(app_dev):
+    agent = 'agent=ios'
+    version = '1.0.0'
+    testapp = app_dev.test_client()
+    res = testapp.delete(f"{url_for('api.mobile_release')}?{agent}")
+    Asserter.assert_status_code(res)
+    res = testapp.delete(f"{url_for('api.mobile_release')}?{agent}&all=true")
+    Asserter.assert_status_code(res, httpcode.NO_CONTENT)
+
+    res = testapp.post(f"{url_for('api.mobile_release', ver=version)}?{agent}")
+    Asserter.assert_status_code(res)
+    Asserter.assert_equals(res.json, 1)
+    Asserter.assert_allin(res.json[0], ('critical', 'version'))
+
+    res = testapp.get(f"{url_for('api.mobile_release')}?{agent}&all=true")
+    Asserter.assert_status_code(res)
+    Asserter.assert_allin(res.json[0], ('critical', 'version'))
+
+    res = testapp.post(f"{url_for('api.mobile_release', ver=version)}?{agent}")
+    Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
+
+    bypass = {app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE}
+    res = testapp.get(f"{url_for('api.mobile_release', ver='latest')}?{agent}", headers=bypass)
+    Asserter.assert_status_code(res)
+    Asserter.assert_header(res, 'Content-Type', CTS.text)
+    Asserter.assert_equals(res.data, version.encode())
+
+
 def test_mobile_version(app_dev):
     testapp = app_dev.test_client()
-    headers = {app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE}
-    res = testapp.get(url_for('web.index'), headers=headers)
-    Asserter.assert_header(res, 'X-Upgrade-Needed', '0')
-    Asserter.assert_header(res, 'X-Api-Version', '1.0.0')
+    upgrade_header = app_dev.config.VERSION_UPGRADE_HEADER
+    version_header = app_dev.config.VERSION_API_HEADER
+    mobile_version = app_dev.config.VERSION_HEADER_KEY
+    agent_header = app_dev.config.VERSION_AGENT_HEADER
+
+    headers = {app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE, agent_header: 'ios'}
+    res = testapp.get(url_for('web.index'), headers={mobile_version: '0.0.0', **headers})
+    Asserter.assert_header(res, upgrade_header, '0')
+    Asserter.assert_header(res, version_header, '1.0.0')
+
+    url = f"{url_for('api.mobile_release', ver='1.0.1')}?agent=ios&critical=true"
+    res = testapp.post(url, headers=headers)
+    Asserter.assert_status_code(res)
+    res = testapp.get(url_for('web.index'), headers={mobile_version: '0.0.0', **headers})
+    Asserter.assert_header(res, upgrade_header, '1')
 
     res = testapp.get('/web-page-not-found')
-    Asserter.assert_not_in('X-Upgrade-Needed', list(res.headers.keys()))
-    Asserter.assert_not_in('X-Api-Version', list(res.headers.keys()))
+    Asserter.assert_not_in(upgrade_header, list(res.headers.keys()))
+    Asserter.assert_not_in(version_header, list(res.headers.keys()))
 
 
 def test_mobile_views(app_dev):
