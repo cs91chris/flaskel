@@ -278,7 +278,7 @@ def test_api_jsonrpc_error(app_dev):
     call_id = 1
     url = url_for('api.jsonrpc')
     testapp = app_dev.test_client()
-    response_schema = schemas.SCHEMAS.JSONRPC.response
+    response_schema = schemas.SCHEMAS.JSONRPC.RESPONSE
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method="NotFoundMethod", call_id=call_id, **headers)
@@ -313,7 +313,7 @@ def test_api_jsonrpc_params(app_dev):
     url = url_for('api.jsonrpc')
     method = "MyJsonRPC.testInvalidParams"
     testapp = app_dev.test_client()
-    response_schema = schemas.SCHEMAS.JSONRPC.response
+    response_schema = schemas.SCHEMAS.JSONRPC.RESPONSE
     headers = dict(headers={app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE})
 
     res = testapp.jsonrpc(url, method=method, call_id=1, params={"param": "testparam"}, **headers)
@@ -481,7 +481,8 @@ def test_http_status():
     Asserter.assert_status_code(ObjectDict(status=200), code=300, less=True)
 
 
-def test_proxyview(testapp):
+def test_proxy_view(app_dev):
+    testapp = app_dev.test_client()
     res = testapp.post(f"{url_for('api.proxyview')}?p=v1", json={'test': 'test'})
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.json.test, 'test')
@@ -489,8 +490,21 @@ def test_proxyview(testapp):
 
     res = testapp.get(f"{url_for('api.confproxy')}")
     Asserter.assert_status_code(res)
-    Asserter.assert_equals(res.json.headers.K, 'v')
-    Asserter.assert_equals(res.json.args.k, 'v')
+    Asserter.assert_equals(res.json.headers.k, 'v')
+    Asserter.assert_equals(res.json.params.k, 'v')
+
+
+def test_proxy_schema(app_dev):
+    view = 'api.schema_proxy'
+    testapp = app_dev.test_client()
+    bypass = {app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE}
+    res = api_tester(testapp, url_for(view, filepath='pippo'), status=httpcode.NOT_FOUND, headers=bypass)
+
+    res = api_tester(testapp, url_for(view, filepath='jsonrpc/request.json'))
+    Asserter.assert_equals(res.json, app_dev.config.SCHEMAS.JSONRPC.REQUEST)
+
+    res = api_tester(testapp, url_for(view, filepath='api_problem'))
+    Asserter.assert_equals(res.json, app_dev.config.SCHEMAS.API_PROBLEM)
 
 
 def test_apidoc(testapp):
@@ -567,18 +581,6 @@ def test_restful(app_dev):
     )
 
 
-def test_ipban(app_dev):  # must be last test on dev app
-    res = None
-    conf = app_dev.config
-    ipban = ExtProxy('ipban')
-    ipban.remove_whitelist('127.0.0.1')
-    for i in range(0, conf.IPBAN_COUNT + 2):
-        testapp = app_dev.test_client()
-        res = testapp.get("/phpmyadmin")
-
-    Asserter.assert_status_code(res, httpcode.FORBIDDEN)
-
-
 def test_misc():
     Asserter.assert_less(1, 2)
     Asserter.assert_greater(2, 1)
@@ -593,3 +595,15 @@ def test_misc():
     Asserter.assert_true(misc.parse_value('true'))
     Asserter.assert_equals("test", misc.parse_value('test'))
     Asserter.assert_equals(misc.to_int, misc.import_from_module("flaskel.utils.misc:to_int"))
+
+
+def test_ipban(app_dev):  # must be last test
+    res = None
+    conf = app_dev.config
+    ipban = ExtProxy('ipban')
+    ipban.remove_whitelist('127.0.0.1')
+    for i in range(0, conf.IPBAN_COUNT + 2):
+        testapp = app_dev.test_client()
+        res = testapp.get("/phpmyadmin")
+
+    Asserter.assert_status_code(res, httpcode.FORBIDDEN)

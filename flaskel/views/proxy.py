@@ -1,6 +1,6 @@
 import flask
 
-from flaskel.flaskel import cap
+from flaskel import cap, httpcode
 from flaskel.http.client import FlaskelHttp
 from flaskel.utils.datastruct import ObjectDict
 from .base import BaseView
@@ -99,21 +99,32 @@ class ProxyView(BaseView):
             return flask.request.args
 
 
-class ConfProxyView(ProxyView):
-    def __init__(self, config_key, **kwargs):
-        super().__init__(**kwargs)
-        self._config_key = config_key
+class ConfProxyView(BaseView):
+    sep = '.'
+    config_key = None
 
-    def service(self):
+    def __init__(self, config_key=None):
+        self._config_key = config_key or config_key
+        assert self._config_key is not None, "missing 'config_key'"
+
+    def dispatch_request(self, *args, **kwargs):
+        return self.perform(*args, **kwargs)
+
+    def perform(self, *_, item=None, **kwargs):
         """
 
+        :param item:
         :return: ObjectDict
         """
         conf = cap.config
-        keys = self._config_key.split('.')
+        keys = self._config_key.split(self.sep)
+        if item is not None:
+            keys += item.split(self.sep)
         for k in keys:
             conf = conf.get(k) or ObjectDict()
-
+        if not conf:
+            cap.logger.warning(f"unable to find conf keys: {self.sep.join(keys)}")
+            flask.abort(httpcode.NOT_FOUND)
         return ObjectDict(**conf)
 
 
@@ -123,3 +134,29 @@ class TransparentProxyView(ProxyView):
         kwargs.setdefault('proxy_headers', True)
         kwargs.setdefault('proxy_params', True)
         super().__init__(**kwargs)
+
+
+class SchemaProxyView(ConfProxyView):
+    default_urls = ['/schema/<path:filepath>']
+
+    def __init__(
+            self,
+            config_key='SCHEMAS', case_sensitive=False,
+            ext_support=True, ext_name='.json'
+    ):
+        super().__init__(config_key)
+        self.ext_name = ext_name
+        self.ext_support = ext_support
+        self.case_sensitive = case_sensitive
+
+    def normalize(self, filepath):
+        if self.ext_support and filepath.endswith(self.ext_name):
+            filepath = self.sep.join(filepath.split(self.sep)[:-1])
+        if self.case_sensitive is False:
+            filepath = filepath.upper()
+
+        return filepath.replace('/', self.sep)
+
+    def dispatch_request(self, filepath, *args, **kwargs):
+        schema_path = self.normalize(filepath)
+        return super().perform(item=schema_path)

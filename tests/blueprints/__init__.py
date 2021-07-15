@@ -74,4 +74,8 @@ VIEWS = (
         model=models.Dummy,
         session=session
     )),
+    (proxy.SchemaProxyView, bp_api, dict(
+        name='schema_proxy',
+        urls=proxy.SchemaProxyView.default_urls
+    )),
 )

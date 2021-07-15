@@ -3,7 +3,7 @@ from flaskel.utils.schemas.support import Fields
 
 SCHEMAS = ObjectDict(
     JSONRPC=ObjectDict(
-        request=Fields.oneof(
+        REQUEST=Fields.oneof(
             Fields.ref("/definitions/request", description="An individual request"),
             Fields.array(items=Fields.ref("/definitions/request"), description="An array of requests"),
             **Fields.schema,
@@ -28,7 +28,7 @@ SCHEMAS = ObjectDict(
                 )
             }
         ),
-        response=Fields.oneof(
+        RESPONSE=Fields.oneof(
             Fields.ref('/definitions/response'),
             Fields.array(items=Fields.ref('/definitions/response')),
             **Fields.schema,
