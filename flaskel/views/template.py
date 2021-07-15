@@ -5,15 +5,17 @@ from .base import BaseView
 
 class RenderTemplate(BaseView):
     methods = ['GET', 'POST']
+    template = None
 
-    def __init__(self, template, content_type=None, **kwargs):
+    def __init__(self, template=None, content_type=None, **kwargs):
         """
 
         :param template:
+        :param content_type:
         """
         self._params = kwargs
-        self._template = template
         self._content_type = content_type
+        self._template = template or self.template
 
     # noinspection PyUnusedLocal
     def service(self, *args, **kwargs):
