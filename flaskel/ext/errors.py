@@ -13,8 +13,8 @@ class ErrorNormalizer(DefaultNormalizer):
         if isinstance(ex, jwt_errors):
             response = dict()
             if cap.debug:
-                response['message'] = str(ex)
-                response['exception'] = ex.__class__.__name__
+                response["message"] = str(ex)
+                response["exception"] = ex.__class__.__name__
             ex = Unauthorized(response=response)
 
         return super().normalize(ex)

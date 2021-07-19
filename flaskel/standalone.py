@@ -27,46 +27,34 @@ def option_as_dict(ctx, param, value):  # pylint: disable=W0613
 
 
 class Server:
-    opt_config_attr = dict(
-        default=None,
-        help='app yaml/json configuration file'
-    )
+    opt_config_attr = dict(default=None, help="app yaml/json configuration file")
     opt_log_config_attr = dict(
-        default=None,
-        help='alternative log yaml/json configuration file'
+        default=None, help="alternative log yaml/json configuration file"
     )
     opt_bing_attr = dict(
-        default='127.0.0.1:5000',
-        help='address to bind',
-        show_default=True
+        default="127.0.0.1:5000", help="address to bind", show_default=True
     )
     opt_debug_attr = dict(
-        is_flag=True,
-        flag_value=True,
-        default=False,
-        help='enable debug mode'
+        is_flag=True, flag_value=True, default=False, help="enable debug mode"
     )
     opt_wsgi_server_attr = dict(
         default=None,
-        type=click.Choice(
-            WSGIFactory.WSGI_SERVERS.keys(),
-            case_sensitive=False
-        ),
-        help='name of wsgi server to use'
+        type=click.Choice(WSGIFactory.WSGI_SERVERS.keys(), case_sensitive=False),
+        help="name of wsgi server to use",
     )
     option_wsgi_config_attr = dict(
         default={},
         multiple=True,
         callback=option_as_dict,
         metavar="KEY=VAL",
-        help='wsgi configuration'
+        help="wsgi configuration",
     )
     option_app_config_attr = dict(
         default={},
         multiple=True,
         callback=option_as_dict,
         metavar="KEY=VAL",
-        help='app configuration'
+        help="app configuration",
     )
 
     def __init__(self, app_factory=AppBuilder(), wsgi_factory=WSGIFactory()):
@@ -83,13 +71,13 @@ class Server:
 
     def _register_options(self, func):
         @click.command()
-        @click.option('-b', '--bind', **self.opt_bing_attr)
-        @click.option('-d', '--debug', **self.opt_debug_attr)
-        @click.option('-c', '--config', **self.opt_config_attr)
-        @click.option('-l', '--log-config', **self.opt_log_config_attr)
-        @click.option('-w', '--wsgi-server', **self.opt_wsgi_server_attr)
-        @click.option('-D', '--wsgi-config', **self.option_wsgi_config_attr)
-        @click.option('-W', '--app-config', **self.option_app_config_attr)
+        @click.option("-b", "--bind", **self.opt_bing_attr)
+        @click.option("-d", "--debug", **self.opt_debug_attr)
+        @click.option("-c", "--config", **self.opt_config_attr)
+        @click.option("-l", "--log-config", **self.opt_log_config_attr)
+        @click.option("-w", "--wsgi-server", **self.opt_wsgi_server_attr)
+        @click.option("-D", "--wsgi-config", **self.option_wsgi_config_attr)
+        @click.option("-W", "--app-config", **self.option_app_config_attr)
         def _options(*args, **kwargs):
             return func(*args, **kwargs)
 
@@ -112,8 +100,8 @@ class Server:
         :param log_config:
         :return:
         """
-        default_env = 'development' if debug else 'production'
-        env = decouple.config('FLASK_ENV', default=default_env)
+        default_env = "development" if debug else "production"
+        env = decouple.config("FLASK_ENV", default=default_env)
 
         if filename is not None:
             config = yaml.load_yaml_file(filename)
@@ -121,8 +109,8 @@ class Server:
                 config.app.FLASK_ENV = env
         else:
             config = ObjectDict(
-                app={'DEBUG': debug, 'FLASK_ENV': env},
-                wsgi={'bind': bind, 'debug': debug}
+                app={"DEBUG": debug, "FLASK_ENV": env},
+                wsgi={"bind": bind, "debug": debug},
             )
 
         if log_config is not None:
@@ -132,11 +120,20 @@ class Server:
         if debug is True:
             config.app.DEBUG = True
 
-        os.environ['FLASK_ENV'] = config.app.FLASK_ENV
+        os.environ["FLASK_ENV"] = config.app.FLASK_ENV
         return config
 
-    def serve_forever(self, config=None, log_config=None, bind=None, debug=None,
-                      wsgi_class=None, wsgi_server=None, wsgi_config=None, app_config=None):
+    def serve_forever(
+        self,
+        config=None,
+        log_config=None,
+        bind=None,
+        debug=None,
+        wsgi_class=None,
+        wsgi_server=None,
+        wsgi_config=None,
+        app_config=None,
+    ):
         """
 
         :param config: app and wsgi configuration file
@@ -151,14 +148,14 @@ class Server:
         """
         config = self._prepare_config(config, debug, bind, log_config)
         wsgi_server = wsgi_server or config.wsgi_server
-        conf_wsgi = config.get('wsgi_opts') or config.get('wsgi') or {}
+        conf_wsgi = config.get("wsgi_opts") or config.get("wsgi") or {}
         wsgi_config = {**conf_wsgi, **(wsgi_config or {})}
-        app_config = {**(config.get('app') or {}), **(app_config or {})}
+        app_config = {**(config.get("app") or {}), **(app_config or {})}
 
         if wsgi_server:
             wsgi_class = self._wsgi_factory.get_class(wsgi_server)
         elif wsgi_class is None:
-            wsgi_class = self._wsgi_factory.get_class('builtin')
+            wsgi_class = self._wsgi_factory.get_class("builtin")
 
         assert issubclass(wsgi_class, BaseApplication)
 

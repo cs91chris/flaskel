@@ -12,16 +12,14 @@ from flaskel.utils.datastruct import ObjectDict
 
 
 class JSONRPCView(View):
-    version = '2.0'
-    separator = '.'
+    version = "2.0"
+    separator = "."
     operations = {}
-    default_view_name = 'jsonrpc'
-    default_url = '/jsonrpc'
-    methods = ['POST']
+    default_view_name = "jsonrpc"
+    default_url = "/jsonrpc"
+    methods = ["POST"]
 
-    decorators = (
-        builder.response('json'),
-    )
+    decorators = (builder.response("json"),)
 
     @staticmethod
     def normalize_url(url):
@@ -48,17 +46,16 @@ class JSONRPCView(View):
         """
         self.operations = operations or {}
         self._batch_executor = batch_executor or ThreadBatchExecutor
-        kwargs.setdefault('thread_class', DaemonThread)
+        kwargs.setdefault("thread_class", DaemonThread)
         self._batch_args = kwargs
 
     def _validate_request(self, data):
-        if 'jsonrpc' not in data or 'method' not in data:
+        if "jsonrpc" not in data or "method" not in data:
             raise rpc.RPCInvalidRequest() from None
 
-        if data['jsonrpc'] != self.version:
+        if data["jsonrpc"] != self.version:
             raise rpc.RPCInvalidRequest(
-                f"jsonrpc version is {self.version}",
-                req_id=data.get('id')
+                f"jsonrpc version is {self.version}", req_id=data.get("id")
             ) from None
 
     def _validate_payload(self):
@@ -107,21 +104,26 @@ class JSONRPCView(View):
         try:
             payload = self._validate_payload()
         except rpc.RPCError as ex:
-            return ObjectDict(
-                jsonrpc=self.version,
-                id=getattr(ex, 'req_id', None),
-                error=ex.as_dict()
-            ), httpcode.BAD_REQUEST
+            return (
+                ObjectDict(
+                    jsonrpc=self.version,
+                    id=getattr(ex, "req_id", None),
+                    error=ex.as_dict(),
+                ),
+                httpcode.BAD_REQUEST,
+            )
 
         for d in payload if isinstance(payload, list) else [payload]:
             resp = ObjectDict(jsonrpc=self.version, id=None)
             try:
-                if 'id' not in d:
-                    tasks.append((self._get_action(d['method']), {**(d.get('params') or {})}))
+                if "id" not in d:
+                    tasks.append(
+                        (self._get_action(d["method"]), {**(d.get("params") or {})})
+                    )
                 else:
-                    resp.id = d.get('id')
-                    action = self._get_action(d['method'])
-                    resp.result = action(**(d.get('params') or {}))
+                    resp.id = d.get("id")
+                    action = self._get_action(d["method"])
+                    resp.result = action(**(d.get("params") or {}))
             except rpc.RPCError as ex:
                 resp.error = ex.as_dict()
             except Exception as ex:  # pylint: disable=W0703
@@ -129,7 +131,7 @@ class JSONRPCView(View):
                 mess = str(ex) if cap.debug is True else None
                 resp.error = rpc.RPCInternalError(message=mess).as_dict()
 
-            if 'id' in d:
+            if "id" in d:
                 responses.append(resp)
 
         self._batch_executor(tasks=tasks, **self._batch_args).run()
@@ -152,7 +154,7 @@ class JSONRPCView(View):
         :param obj:
         """
         for m in inspect.getmembers(obj, predicate=inspect.isroutine):
-            if not m[0].startswith('_'):
+            if not m[0].startswith("_"):
                 cls.method(obj.__class__.__name__, m[0])(m[1])
 
     @classmethod

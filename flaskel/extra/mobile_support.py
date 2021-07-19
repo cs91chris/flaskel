@@ -13,7 +13,7 @@ from flaskel.views import BaseView
 
 
 class RedisStore:
-    def __init__(self, redis=None, sep='::'):
+    def __init__(self, redis=None, sep="::"):
         self.sep = sep
         self.client = redis
 
@@ -22,7 +22,7 @@ class RedisStore:
         return version.parse(s[0]), bool(int(s[1])) if len(s) > 1 else False
 
     def release(self, key, v, u=False):
-        if self.client.lpush(key, f'{v}{self.sep}{int(u)}'):
+        if self.client.lpush(key, f"{v}{self.sep}{int(u)}"):
             return version.parse(v), u
         return None
 
@@ -58,7 +58,7 @@ class MobileVersionCompatibility:
         self._store = store or self._store
         self._current_version = current_version or self._current_version
         if not self._current_version:
-            self._current_version = getattr(app, 'version', None)
+            self._current_version = getattr(app, "version", None)
 
         self.load_config(app)
 
@@ -68,14 +68,18 @@ class MobileVersionCompatibility:
             except Exception as exc:  # pragma: no cover pylint: disable=W0703
                 app.logger.exception(exc)
 
-            app.before_request_funcs.setdefault(None, []).append(self._set_mobile_version)
-            app.after_request_funcs.setdefault(None, []).append(self._set_version_headers)
+            app.before_request_funcs.setdefault(None, []).append(
+                self._set_mobile_version
+            )
+            app.after_request_funcs.setdefault(None, []).append(
+                self._set_version_headers
+            )
 
-        app.extensions['mobile_version'] = self
+        app.extensions["mobile_version"] = self
 
     @property
     def mobile_version(self):
-        return flask.g.get('mobile_version')
+        return flask.g.get("mobile_version")
 
     @property
     def store(self):  # pragma: no cover
@@ -83,21 +87,24 @@ class MobileVersionCompatibility:
 
     @staticmethod
     def load_config(app):
-        app.config.setdefault('VERSION_STORE_MAX', 6)
-        app.config.setdefault('VERSION_CACHE_EXPIRE', 3600)
-        app.config.setdefault('VERSION_CHECK_ENABLED', True)
-        app.config.setdefault('VERSION_AGENT_HEADER', 'X-Agent')
-        app.config.setdefault('VERSION_API_HEADER', 'X-Api-Version')
-        app.config.setdefault('VERSION_STORE_KEY', 'x_upgrade_needed')
-        app.config.setdefault('VERSION_HEADER_KEY', 'X-Mobile-Version')
-        app.config.setdefault('VERSION_UPGRADE_HEADER', 'X-Upgrade-Needed')
-        app.config.setdefault('VERSION_AGENTS', ('android', 'ios'))
-        app.config.setdefault('VERSION_SKIP_STATUSES', (
-            httpcode.FORBIDDEN,
-            httpcode.NOT_FOUND,
-            httpcode.METHOD_NOT_ALLOWED,
-            httpcode.TOO_MANY_REQUESTS,
-        ))
+        app.config.setdefault("VERSION_STORE_MAX", 6)
+        app.config.setdefault("VERSION_CACHE_EXPIRE", 3600)
+        app.config.setdefault("VERSION_CHECK_ENABLED", True)
+        app.config.setdefault("VERSION_AGENT_HEADER", "X-Agent")
+        app.config.setdefault("VERSION_API_HEADER", "X-Api-Version")
+        app.config.setdefault("VERSION_STORE_KEY", "x_upgrade_needed")
+        app.config.setdefault("VERSION_HEADER_KEY", "X-Mobile-Version")
+        app.config.setdefault("VERSION_UPGRADE_HEADER", "X-Upgrade-Needed")
+        app.config.setdefault("VERSION_AGENTS", ("android", "ios"))
+        app.config.setdefault(
+            "VERSION_SKIP_STATUSES",
+            (
+                httpcode.FORBIDDEN,
+                httpcode.NOT_FOUND,
+                httpcode.METHOD_NOT_ALLOWED,
+                httpcode.TOO_MANY_REQUESTS,
+            ),
+        )
 
     @staticmethod
     def version_parse(ver):
@@ -105,7 +112,9 @@ class MobileVersionCompatibility:
 
     @staticmethod
     def _set_mobile_version():
-        flask.g.mobile_version = flask.request.headers.get(cap.config.VERSION_HEADER_KEY)  # pylint: disable=E0237
+        flask.g.mobile_version = flask.request.headers.get(
+            cap.config.VERSION_HEADER_KEY
+        )  # pylint: disable=E0237
 
     @staticmethod
     def agent_identity():
@@ -130,11 +139,11 @@ class MobileVersionCompatibility:
 
     def latest(self, agent):
         versions = self._versions.get(agent) or []
-        return str(versions[0][0]) if len(versions) > 0 else ''
+        return str(versions[0][0]) if len(versions) > 0 else ""
 
     def all_releases(self, agent):
         versions = self._versions.get(agent) or []
-        return [{'version': str(v), 'critical': u} for v, u in versions]
+        return [{"version": str(v), "critical": u} for v, u in versions]
 
     def rollback(self, agent):
         self._store.pop(self._agent_key(agent))
@@ -149,7 +158,7 @@ class MobileVersionCompatibility:
     def publish(self, agent, ver, critical=False):
         latest, _ = self._store.latest(self._agent_key(agent))
         if latest is not None and latest >= self.version_parse(ver):
-            raise ValueError('New version must be greater than latest')
+            raise ValueError("New version must be greater than latest")
 
         self._store.release(self._agent_key(agent), ver, critical)
         self.load_from_storage(force=True)
@@ -186,54 +195,56 @@ class MobileVersionCompatibility:
 
 class MobileReleaseView(BaseView):
     builder = builder
-    ext = ExtProxy('mobile_version')
-    methods = ['POST', 'GET', 'DELETE']
-    default_view_name = 'mobile_release'
+    ext = ExtProxy("mobile_version")
+    methods = ["POST", "GET", "DELETE"]
+    default_view_name = "mobile_release"
     default_urls = [
-        '/mobile/release',
-        '/mobile/release/<ver>',
+        "/mobile/release",
+        "/mobile/release/<ver>",
     ]
 
-    @webargs.query(dict(
-        all=webargs.OptField.boolean(),
-        critical=webargs.OptField.boolean(),
-        agent=webargs.Field.string(required=True),
-    ))
+    @webargs.query(
+        dict(
+            all=webargs.OptField.boolean(),
+            critical=webargs.OptField.boolean(),
+            agent=webargs.Field.string(required=True),
+        )
+    )
     def dispatch_request(self, params, *_, ver=None, **__):
-        agent = params['agent']
+        agent = params["agent"]
         if agent not in cap.config.VERSION_AGENTS:
-            flask.abort(httpcode.BAD_REQUEST, response=dict(
-                reason="agent not compatible",
-                agents=cap.config.VERSION_AGENTS
-            ))
+            flask.abort(
+                httpcode.BAD_REQUEST,
+                response=dict(
+                    reason="agent not compatible", agents=cap.config.VERSION_AGENTS
+                ),
+            )
 
-        if ver == 'latest':
-            return self.ext.latest(agent) or '', {'Content-Type': 'text/plain'}
+        if ver == "latest":
+            return self.ext.latest(agent) or "", {"Content-Type": "text/plain"}
 
         if ver is None:
-            if flask.request.method == 'DELETE':
-                if params['all']:
+            if flask.request.method == "DELETE":
+                if params["all"]:
                     self.ext.clear(agent)
                     return Response.no_content()
                 self.ext.rollback(agent)
         else:
             try:
-                self.ext.publish(agent, ver, params['critical'])
+                self.ext.publish(agent, ver, params["critical"])
             except ValueError as exc:
                 flask.abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
 
         mimetype, response = self.builder.get_mimetype_accept()
-        return response.build(self.ext.all_releases(agent)), {'Content-Type': mimetype}
+        return response.build(self.ext.all_releases(agent)), {"Content-Type": mimetype}
 
 
 class MobileLoggerView(BaseView):
-    methods = ['POST']
+    methods = ["POST"]
     unavailable = "N/A"
     intro = "An exception occurred on mobile app:"
-    default_view_name = 'mobile_logger'
-    default_urls = (
-        '/mobile/logger',
-    )
+    default_view_name = "mobile_logger"
+    default_urls = ("/mobile/logger",)
     decorators = (
         builder.no_content,
         limit.RateLimit.medium(),
@@ -268,12 +279,12 @@ class MobileLoggerView(BaseView):
             "\n\tStack-Trace:\n%s",
             self.intro,
             self.get_user_info(*args, **kwargs),
-            self.dump_key(flask.request.headers, 'X-Mobile-Version'),
-            self.dump_key(flask.request.headers, 'User-Agent'),
-            self.dump_key(payload, 'device_info'),
-            self.dump_key(payload, 'debug_info'),
-            self.dump_key(payload, 'payload'),
-            self.dump_key(payload, 'stacktrace').replace('\\n', '\n')
+            self.dump_key(flask.request.headers, "X-Mobile-Version"),
+            self.dump_key(flask.request.headers, "User-Agent"),
+            self.dump_key(payload, "device_info"),
+            self.dump_key(payload, "debug_info"),
+            self.dump_key(payload, "payload"),
+            self.dump_key(payload, "stacktrace").replace("\\n", "\n"),
         )
 
     def perform(self, payload, *args, **kwargs):
@@ -285,8 +296,9 @@ class MobileLoggerView(BaseView):
         payload = flask.request.json
         self.perform(payload, *args, **kwargs)
 
-        if 'debug' in flask.request.args:
+        if "debug" in flask.request.args:
             return payload, httpcode.SUCCESS
         return None
+
 
 mobile_version = MobileVersionCompatibility()

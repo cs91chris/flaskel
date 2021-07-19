@@ -22,16 +22,18 @@ class UserAgent:
         :param parser_class:
         """
         self._parser = parser_class
-        app.config.setdefault('USER_AGENT_AUTO_PARSE', False)
+        app.config.setdefault("USER_AGENT_AUTO_PARSE", False)
 
-        if not hasattr(app, 'extensions'):
+        if not hasattr(app, "extensions"):
             app.extensions = {}  # pragma: no cover
-        app.extensions['useragent'] = self
+        app.extensions["useragent"] = self
 
         @app.before_request
         def before_request():
-            flask.g.user_agent = self._parser(flask.request.user_agent.string)  # pylint: disable=E0237
-            if app.config['USER_AGENT_AUTO_PARSE']:
+            flask.g.user_agent = self._parser(
+                flask.request.user_agent.string
+            )  # pylint: disable=E0237
+            if app.config["USER_AGENT_AUTO_PARSE"]:
                 flask.g.user_agent.parse()
 
 

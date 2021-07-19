@@ -13,7 +13,7 @@ NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
 all_errors = (*HTTPStatusError, *NetworkError)
 
 cap = flaskel.cap
-request: 'flaskel.Request' = flask.request
+request: "flaskel.Request" = flask.request
 
 
 class HTTPTokenAuth(auth.AuthBase):
@@ -30,7 +30,7 @@ class HTTPTokenAuth(auth.AuthBase):
         :param other:
         :return:
         """
-        return self.token == getattr(other, 'token', None)  # pragma: no cover
+        return self.token == getattr(other, "token", None)  # pragma: no cover
 
     def __ne__(self, other):
         """
@@ -46,7 +46,7 @@ class HTTPTokenAuth(auth.AuthBase):
         :param r:
         :return:
         """
-        r.headers['Authorization'] = f"Bearer {self.token}"
+        r.headers["Authorization"] = f"Bearer {self.token}"
         return r
 
 
@@ -109,20 +109,29 @@ class HTTPClient(HTTPBase):
         return None
 
     def normalize_url(self, url):
-        if url.startswith('http'):
+        if url.startswith("http"):
             return url
 
         return f"{self._endpoint}/{url.lstrip('/')}"
 
     @staticmethod
-    def prepare_response(body=None, status=httpcode.SUCCESS, headers=None, exception=None):
+    def prepare_response(
+        body=None, status=httpcode.SUCCESS, headers=None, exception=None
+    ):
         return ObjectDict(
-            body=body or {}, status=status,
-            headers=headers or {}, exception=exception
+            body=body or {}, status=status, headers=headers or {}, exception=exception
         )
 
-    def request(self, uri, method='GET', raise_on_exc=False,
-                dump_body=None, chunk_size=None, decode_unicode=False, **kwargs):
+    def request(
+        self,
+        uri,
+        method="GET",
+        raise_on_exc=False,
+        dump_body=None,
+        chunk_size=None,
+        decode_unicode=False,
+        **kwargs,
+    ):
         """
 
         :param uri:
@@ -134,16 +143,16 @@ class HTTPClient(HTTPBase):
         :param kwargs:
         :return:
         """
-        kwargs['auth'] = self.get_auth()
+        kwargs["auth"] = self.get_auth()
         if dump_body is None:
             dump_body = self._dump_body
         else:
             dump_body = self._normalize_dump_flag(dump_body)
-        if kwargs.get('stream') is True:  # if stream not dump response body
+        if kwargs.get("stream") is True:  # if stream not dump response body
             dump_body = (dump_body[0], False)
 
         try:
-            kwargs.setdefault('timeout', self._timeout)
+            kwargs.setdefault("timeout", self._timeout)
             url = self.normalize_url(uri)
             req = ObjectDict(method=method, url=url, **kwargs)
             self._logger.info("%s", self.dump_request(req, dump_body[0]))
@@ -167,43 +176,41 @@ class HTTPClient(HTTPBase):
             if raise_on_exc or self._raise_on_exc:
                 raise
 
-        if kwargs.get('stream') is True:
+        if kwargs.get("stream") is True:
             body = response.iter_content(chunk_size, decode_unicode)
-        elif 'json' in (response.headers.get('Content-Type') or ''):
+        elif "json" in (response.headers.get("Content-Type") or ""):
             body = response.json()
         else:
             body = response.text
 
         return self.prepare_response(
-            body=body,
-            status=response.status_code,
-            headers=dict(response.headers)
+            body=body, status=response.status_code, headers=dict(response.headers)
         )
 
     def get(self, uri, **kwargs):
         return self.request(uri, **kwargs)
 
     def post(self, uri, **kwargs):
-        return self.request(uri, method='POST', **kwargs)
+        return self.request(uri, method="POST", **kwargs)
 
     def put(self, uri, **kwargs):
-        return self.request(uri, method='PUT', **kwargs)
+        return self.request(uri, method="PUT", **kwargs)
 
     def patch(self, uri, **kwargs):
-        return self.request(uri, method='PATCH', **kwargs)
+        return self.request(uri, method="PATCH", **kwargs)
 
     def delete(self, uri, **kwargs):
-        return self.request(uri, method='DELETE', **kwargs)
+        return self.request(uri, method="DELETE", **kwargs)
 
     def options(self, uri, **kwargs):
-        return self.request(uri, method='OPTIONS', **kwargs)
+        return self.request(uri, method="OPTIONS", **kwargs)
 
     def head(self, uri, **kwargs):
-        return self.request(uri, method='HEAD', **kwargs)
+        return self.request(uri, method="HEAD", **kwargs)
 
 
 class JsonRPCClient(HTTPClient):
-    def __init__(self, endpoint, uri, version='2.0', **kwargs):
+    def __init__(self, endpoint, uri, version="2.0", **kwargs):
         """
 
         :param endpoint:
@@ -254,14 +261,14 @@ class JsonRPCClient(HTTPClient):
         """
         resp = super().request(
             self._uri,
-            method='POST',
+            method="POST",
             json=dict(
                 jsonrpc=self._version,
                 method=method,
                 params=params or {},
-                id=self._request_id
+                id=self._request_id,
             ),
-            **kwargs
+            **kwargs,
         )
 
         return resp.body or ObjectDict()
@@ -269,17 +276,17 @@ class JsonRPCClient(HTTPClient):
 
 class FlaskelHttp(FlaskelHTTPDumper, HTTPClient):
     def __init__(self, endpoint, *args, **kwargs):
-        kwargs.setdefault('logger', cap.logger)
+        kwargs.setdefault("logger", cap.logger)
         super().__init__(endpoint, *args, **kwargs)
         self._timeout = cap.config.HTTP_TIMEOUT or self._timeout
 
     def request(self, uri, **kwargs):
         if request.id:
-            if not kwargs.get('headers'):
-                kwargs['headers'] = {}
-            kwargs['headers'][cap.config.REQUEST_ID_HEADER] = request.id
+            if not kwargs.get("headers"):
+                kwargs["headers"] = {}
+            kwargs["headers"][cap.config.REQUEST_ID_HEADER] = request.id
 
-        kwargs.setdefault('verify', cap.config.HTTP_SSL_VERIFY)
+        kwargs.setdefault("verify", cap.config.HTTP_SSL_VERIFY)
         return super().request(uri, **kwargs)
 
 

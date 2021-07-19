@@ -26,7 +26,9 @@ class NotificationHandler:
         assert SQLAlchemyError is not None, "you must install 'sqlalchemy'"
 
     def _with_app_context(self, f, *args, **kwargs):
-        assert self.provider is not None, "you must pass a provider in order to user async methods"
+        assert (
+            self.provider is not None
+        ), "you must pass a provider in order to user async methods"
 
         app = self.provider.app
         with app.app_context():
@@ -40,7 +42,7 @@ class NotificationHandler:
 
     def register_device(self, app, data):
         try:
-            device = self.model.query.filter_by(token=data['token']).first()
+            device = self.model.query.filter_by(token=data["token"]).first()
             if device:
                 self.session.merge(device.update(data))
             else:
@@ -50,7 +52,9 @@ class NotificationHandler:
             app.logger.exception(exc)
             self.session.rollback()
 
-    def send_push_notification(self, app, title, message, user_ids=None, tokens=None, **kwargs):
+    def send_push_notification(
+        self, app, title, message, user_ids=None, tokens=None, **kwargs
+    ):
         """
 
         :param app: flask app instance
@@ -65,10 +69,11 @@ class NotificationHandler:
 
         if tokens is None:
             try:
-                tokens = self.model.query \
-                    .with_entities(self.model.token) \
-                    .where(self.model.user_id.in_(user_ids)) \
+                tokens = (
+                    self.model.query.with_entities(self.model.token)
+                    .where(self.model.user_id.in_(user_ids))
                     .all()
+                )
             except SQLAlchemyError as exc:  # pragma: no cover
                 app.logger.exception(exc)
                 return
@@ -77,12 +82,12 @@ class NotificationHandler:
         # noinspection PyUnresolvedReferences
         rmax = FCMNotification.FCM_MAX_RECIPIENTS - 1
         if len(tokens) > rmax:
-            tokens_set = [tokens[x:x + rmax] for x in range(0, len(tokens), rmax)]
+            tokens_set = [tokens[x : x + rmax] for x in range(0, len(tokens), rmax)]
         else:
             tokens_set = tokens
 
-        kwargs.setdefault('sound', 'Default')
-        kwargs.setdefault('dry_run', self.dry_run)
+        kwargs.setdefault("sound", "Default")
+        kwargs.setdefault("dry_run", self.dry_run)
 
         for ts in tokens_set:
             try:

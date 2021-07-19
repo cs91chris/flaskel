@@ -14,6 +14,7 @@ class AppBuilder:
     """
     default app name
     """
+
     app_name = config.FLASK_APP
 
     """
@@ -24,7 +25,7 @@ class AppBuilder:
     """
     default secret key file name
     """
-    secret_file = '.secret.key'
+    secret_file = ".secret.key"
 
     """
     custom url converters
@@ -36,9 +37,21 @@ class AppBuilder:
     """
     conf_module = config
 
-    def __init__(self, conf_module=None, extensions=None, converters=None,
-                 blueprints=None, folders=None, middlewares=None, views=None,
-                 after_request=None, before_request=None, callback=None, version=None, **options):
+    def __init__(
+        self,
+        conf_module=None,
+        extensions=None,
+        converters=None,
+        blueprints=None,
+        folders=None,
+        middlewares=None,
+        views=None,
+        after_request=None,
+        before_request=None,
+        callback=None,
+        version=None,
+        **options,
+    ):
         """
 
         :param conf_module: python module file
@@ -72,17 +85,19 @@ class AppBuilder:
     def _generate_secret_key(self, secret_file, key_length):
         secret_key = misc.random_string(key_length)
 
-        with open(secret_file, 'w') as f:
+        with open(secret_file, "w") as f:
             f.write(secret_key)
             abs_file = os.path.abspath(secret_file)
-            self._app.logger.warning("new secret key generated: take care of this file: %s", abs_file)
+            self._app.logger.warning(
+                "new secret key generated: take care of this file: %s", abs_file
+            )
         return secret_key
 
     def _load_secret_key(self, secret_file):
         if not os.path.isfile(secret_file):
             return None
 
-        with open(secret_file, 'r') as f:
+        with open(secret_file, "r") as f:
             secret_key = f.read()
             self._app.logger.info("load secret key from: %s", secret_file)
         return secret_key
@@ -91,17 +106,19 @@ class AppBuilder:
         secret_key = None
         key_length = self._app.config.SECRET_KEY_MIN_LENGTH
 
-        if not self._app.config.get('FLASK_ENV', '').lower().startswith('dev'):
+        if not self._app.config.get("FLASK_ENV", "").lower().startswith("dev"):
             secret_file = self._app.config.SECRET_KEY
             if secret_file:
                 secret_key = self._load_secret_key(secret_file) or secret_file
             else:
                 secret_file = self.secret_file
                 secret_key = self._load_secret_key(secret_file)
-                secret_key = secret_key or self._generate_secret_key(secret_file, key_length)
-        elif not self._app.config.get('SECRET_KEY'):
-            self._app.logger.debug('set secret key in development mode')
-            secret_key = 'fake_very_complex_string'
+                secret_key = secret_key or self._generate_secret_key(
+                    secret_file, key_length
+                )
+        elif not self._app.config.get("SECRET_KEY"):
+            self._app.logger.debug("set secret key in development mode")
+            secret_key = "fake_very_complex_string"
 
         self._app.config.SECRET_KEY = secret_key or self._app.config.SECRET_KEY
         if len(secret_key) < key_length:
@@ -115,11 +132,15 @@ class AppBuilder:
                     if not ext:
                         raise TypeError("extension could not be None or empty")
                 except (TypeError, IndexError) as exc:
-                    self._app.logger.warning("Invalid extension '%s' configuration '%s': %s", name, e, exc)
+                    self._app.logger.warning(
+                        "Invalid extension '%s' configuration '%s': %s", name, e, exc
+                    )
                     continue
 
                 ext.init_app(self._app, **opt)
-                self._app.logger.debug("Registered extension '%s' with options: %s", name, opt)
+                self._app.logger.debug(
+                    "Registered extension '%s' with options: %s", name, opt
+                )
 
         self._app.logger.debug("Dump flask extensions:")
         for k, v in self._app.extensions.items():
@@ -130,18 +151,22 @@ class AppBuilder:
             try:
                 bp, opt = b[0], b[1] if len(b) > 1 else {}
                 if not bp:
-                    raise TypeError('blueprint could not be None or empty')
+                    raise TypeError("blueprint could not be None or empty")
             except (TypeError, IndexError) as exc:
-                self._app.logger.warning("invalid blueprint configuration '%s': %s", b, exc)
+                self._app.logger.warning(
+                    "invalid blueprint configuration '%s': %s", b, exc
+                )
                 continue
 
             self._app.register_blueprint(bp, **opt)
-            self._app.logger.debug("Registered blueprint '%s' with options: %s", bp.name, opt)
+            self._app.logger.debug(
+                "Registered blueprint '%s' with options: %s", bp.name, opt
+            )
 
     def _set_config(self, conf):
         self._app.config.from_object(self._conf_module)
         self._app.config.from_mapping(**(conf or {}))
-        self._app.config.from_envvar('APP_CONFIG_FILE', silent=True)
+        self._app.config.from_envvar("APP_CONFIG_FILE", silent=True)
         self._app.config = ObjectDict(**self._app.config)
 
     def _register_converters(self):
@@ -167,14 +192,16 @@ class AppBuilder:
                 if isinstance(m, (list, tuple)):
                     m, kwargs = m[0], m[1] if len(m) > 1 else {}
                 if not m:
-                    raise TypeError('middleware could not be None or empty')
+                    raise TypeError("middleware could not be None or empty")
             except (TypeError, IndexError) as exc:
-                self._app.logger.warning("invalid middleware configuration '%s': %s", m, exc)
+                self._app.logger.warning(
+                    "invalid middleware configuration '%s': %s", m, exc
+                )
                 continue
 
             # WorkAround: in order to pass flask app to middleware without breaking chain
-            if not (hasattr(m, 'flask_app') and m.flask_app):
-                setattr(m, 'flask_app', self._app)
+            if not (hasattr(m, "flask_app") and m.flask_app):
+                setattr(m, "flask_app", self._app)
 
             self._app.wsgi_app = m(self._app.wsgi_app, **kwargs)
             self._app.logger.debug("Registered middleware: '%s'", m.__name__)
@@ -190,31 +217,41 @@ class AppBuilder:
             v, b, p = normalize(view)
             v.register(b or self._app, **p)
             mess = f"on blueprint '{b.name}'" if b else ""
-            self._app.logger.debug("Registered view: '%s' %s with params: %s", v.__name__, mess, p)
+            self._app.logger.debug(
+                "Registered view: '%s' %s with params: %s", v.__name__, mess, p
+            )
 
     def _register_after_request(self):
         for f in self._after_request:
             self._app.after_request_funcs.setdefault(None, []).append(f)
-            self._app.logger.debug("Registered function after request: '%s'", f.__name__)
+            self._app.logger.debug(
+                "Registered function after request: '%s'", f.__name__
+            )
 
     def _register_before_request(self):
         for f in self._before_request:
             self._app.before_request_funcs.setdefault(None, []).append(f)
-            self._app.logger.debug("Registered function before request: '%s'", f.__name__)
+            self._app.logger.debug(
+                "Registered function before request: '%s'", f.__name__
+            )
 
     def _set_linter_and_profiler(self):
         if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
             self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
-            self._app.logger.debug("Registered middleware: '%s'", LintMiddleware.__name__)
+            self._app.logger.debug(
+                "Registered middleware: '%s'", LintMiddleware.__name__
+            )
 
         if self._app.config.WSGI_WERKZEUG_PROFILER_ENABLED:
             file = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
             self._app.wsgi_app = ProfilerMiddleware(
                 self._app.wsgi_app,
-                stream=open(file, 'w') if file else sys.stdout,  # pylint: disable=R1732
-                restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION
+                stream=open(file, "w") if file else sys.stdout,  # pylint: disable=R1732
+                restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION,
             )
-            self._app.logger.debug("Registered middleware: '%s'", ProfilerMiddleware.__name__)
+            self._app.logger.debug(
+                "Registered middleware: '%s'", ProfilerMiddleware.__name__
+            )
 
     def _dump_urls(self):
         class DumpUrls:
@@ -224,11 +261,15 @@ class AppBuilder:
             def __str__(self):
                 output = []
                 for rule in self._rules:
-                    methods = ','.join(rule.methods)
-                    output.append("{:30s} {:40s} {}".format(rule.endpoint, methods, rule))
+                    methods = ",".join(rule.methods)
+                    output.append(
+                        "{:30s} {:40s} {}".format(rule.endpoint, methods, rule)
+                    )
                 return "\n".join(sorted(output))
 
-        self._app.logger.debug("Registered routes:\n%s", DumpUrls(self._app.url_map.iter_rules()))
+        self._app.logger.debug(
+            "Registered routes:\n%s", DumpUrls(self._app.url_map.iter_rules())
+        )
 
     def _patch_app(self):
         if self._app.debug:
@@ -236,7 +277,7 @@ class AppBuilder:
             self._dump_urls()
 
         with self._app.app_context():
-            sqlalchemy = self._app.extensions.get('sqlalchemy')
+            sqlalchemy = self._app.extensions.get("sqlalchemy")
             if sqlalchemy is not None:
                 sqlalchemy.db.create_all()
 

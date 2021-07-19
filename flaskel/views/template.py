@@ -4,7 +4,7 @@ from .base import BaseView
 
 
 class RenderTemplate(BaseView):
-    methods = ['GET', 'POST']
+    methods = ["GET", "POST"]
     template = None
 
     def __init__(self, template=None, content_type=None, **kwargs):

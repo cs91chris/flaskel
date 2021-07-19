@@ -19,7 +19,7 @@ class BaseHTTPDumper:
         if only:
             hdr = {k: hdr[k] for k in only if k in hdr}
 
-        headers = '\n\t'.join(f"{k}: {v}" for k, v in hdr.items())
+        headers = "\n\t".join(f"{k}: {v}" for k, v in hdr.items())
         return headers.strip()
 
     @classmethod
@@ -32,16 +32,16 @@ class BaseHTTPDumper:
         :return: only the file name
         """
         headers = headers or {}
-        hdr = headers.get('Content-Disposition')
+        hdr = headers.get("Content-Disposition")
         if not hdr:
             return None  # pragma: no cover
 
-        tmp = hdr.split(';')
+        tmp = hdr.split(";")
         hdr = tmp[1] if len(tmp) > 1 else tmp[0]
-        tmp = hdr.split('=')
+        tmp = hdr.split("=")
 
         if len(tmp) > 1:
-            return tmp[1].strip('"').lstrip('<').rstrip('>')
+            return tmp[1].strip('"').lstrip("<").rstrip(">")
         return None
 
     @classmethod
@@ -54,19 +54,19 @@ class BaseHTTPDumper:
         :param only_hdr: dump only a subset of headers
         :return: prettified representation of input as string
         """
-        body = ''
+        body = ""
         if dump_body is True:
-            body = getattr(req, 'json', None)
+            body = getattr(req, "json", None)
             if body:
                 body = json.dumps(body)
             else:
-                body = getattr(req, 'body', getattr(req, 'data', None))
+                body = getattr(req, "body", getattr(req, "data", None))
                 if isinstance(body, (bytes, bytearray)):
-                    body = 'Binary body not dumped'
-            body = f"\nbody:\n{body}" if body else ''
+                    body = "Binary body not dumped"
+            body = f"\nbody:\n{body}" if body else ""
 
         headers = cls.dump_headers(req.headers, only=only_hdr)
-        headers = f"\nheaders:\n\t{headers}" if headers else ''
+        headers = f"\nheaders:\n\t{headers}" if headers else ""
         return f"requested {req.method} {req.url}{headers}{body}"
 
     @classmethod
@@ -79,22 +79,22 @@ class BaseHTTPDumper:
         :param only_hdr: dump only a subset of headers
         :return: prettified representation of input as string
         """
-        body = ''
+        body = ""
         if dump_body is True:
             body = cls.response_filename(resp.headers) or resp.text
-            body = f"\nbody:\n{body}" if body else ''
+            body = f"\nbody:\n{body}" if body else ""
 
         try:
             seconds = resp.elapsed.total_seconds()
         except AttributeError:  # because aiohttp.ClientResponse has not elapsed attribute
-            seconds = 'N/A'
+            seconds = "N/A"
 
         headers = cls.dump_headers(resp.headers, only=only_hdr)
-        headers = f"\nheaders:\n\t{headers}" if headers else ''
+        headers = f"\nheaders:\n\t{headers}" if headers else ""
         try:
             status = resp.status_code
         except AttributeError:
-            status = getattr(resp, 'status', None)
+            status = getattr(resp, "status", None)
 
         return f"response time: {seconds} - status code: {status}{headers}{body}"
 

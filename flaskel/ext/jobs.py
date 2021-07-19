@@ -17,15 +17,15 @@ except ImportError:
 
 class APJobs(APScheduler):
     def init_app(self, app, test_sync=True):
-        app.config.setdefault('SCHEDULER_AUTO_START', False)
-        app.config.setdefault('SCHEDULER_PATCH_MULTIPROCESS', True)
-        app.config.setdefault('SCHEDULER_LOCK_FILE', '.scheduler.lock')
+        app.config.setdefault("SCHEDULER_AUTO_START", False)
+        app.config.setdefault("SCHEDULER_PATCH_MULTIPROCESS", True)
+        app.config.setdefault("SCHEDULER_LOCK_FILE", ".scheduler.lock")
 
         if app.config.SCHEDULER_PATCH_MULTIPROCESS is True:
             if fcntl is None:
-                app.logger.warning('fcntl not supported on this platform')
+                app.logger.warning("fcntl not supported on this platform")
             elif not self._set_lock(app.config.SCHEDULER_LOCK_FILE):
-                app.logger.info('scheduler already started in another process')
+                app.logger.info("scheduler already started in another process")
                 return  # pragma: no cover
 
         try:
@@ -39,14 +39,14 @@ class APJobs(APScheduler):
             self._scheduler = BlockingScheduler()
 
         if app.debug:
-            logger = logging.getLogger('apscheduler')
+            logger = logging.getLogger("apscheduler")
             logger.setLevel(logging.DEBUG)
-            logger = logging.getLogger('flask_apscheduler')
+            logger = logging.getLogger("flask_apscheduler")
             logger.setLevel(logging.DEBUG)
 
-        if not hasattr(app, 'extensions'):
+        if not hasattr(app, "extensions"):
             app.extensions = dict()  # pragma: no cover
-        app.extensions['scheduler'] = self
+        app.extensions["scheduler"] = self
 
         if app.config.SCHEDULER_AUTO_START is True:
             self.start()
@@ -59,10 +59,10 @@ class APJobs(APScheduler):
         :return:
         """
         kwargs = kwargs or {}
-        kw['kwargs'] = kwargs
+        kw["kwargs"] = kwargs
         job_id = get_uuid()
         job = super().add_job(id=job_id, func=func, **kw)
-        self.app.logger.debug('added job %s: %s', func, job_id)
+        self.app.logger.debug("added job %s: %s", func, job_id)
         return job
 
     @staticmethod
@@ -109,6 +109,5 @@ def exception_listener(event):
 
 
 scheduler.add_listener(
-    exception_listener,
-    events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR
+    exception_listener, events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR
 )

@@ -11,7 +11,7 @@ class Request(flask.Request):
     @property
     def id(self):  # pylint: disable=C0103
         hdr = cap.config.REQUEST_ID_HEADER
-        if hasattr(flask.g, 'request_id'):
+        if hasattr(flask.g, "request_id"):
             return flask.g.request_id
         if hdr in flask.request.headers:
             return flask.request.headers[hdr]
@@ -28,7 +28,7 @@ class Request(flask.Request):
         payload = super().get_json()
         if payload is None:
             if not allow_empty:
-                flask.abort(httpcode.BAD_REQUEST, 'No JSON in request')
+                flask.abort(httpcode.BAD_REQUEST, "No JSON in request")
             payload = ObjectDict()  # pragma: no cover
 
         return ObjectDict.normalize(payload)
@@ -45,8 +45,8 @@ class Response(flask.Response):
         """
         response = flask.make_response(bytes())
         response.headers.update(headers or {})
-        response.headers.pop('Content-Type')
-        response.headers.pop('Content-Length')
+        response.headers.pop("Content-Type")
+        response.headers.pop("Content-Length")
         response.status_code = status
         return response
 
@@ -58,7 +58,7 @@ class Response(flask.Response):
         :param filename:
         :param kwargs:
         """
-        kwargs.setdefault('as_attachment', True)
+        kwargs.setdefault("as_attachment", True)
         file_path = safe_join(directory, filename)
 
         try:
@@ -70,13 +70,15 @@ class Response(flask.Response):
 
         # following headers works with nginx compatible proxy
         if cap.use_x_sendfile is True and cap.config.ENABLE_ACCEL is True:
-            resp.headers['X-Accel-Redirect'] = file_path
-            resp.headers['X-Accel-Charset'] = cap.config.ACCEL_CHARSET or 'utf-8'
-            resp.headers['X-Accel-Buffering'] = 'yes' if cap.config.ACCEL_BUFFERING else 'no'
+            resp.headers["X-Accel-Redirect"] = file_path
+            resp.headers["X-Accel-Charset"] = cap.config.ACCEL_CHARSET or "utf-8"
+            resp.headers["X-Accel-Buffering"] = (
+                "yes" if cap.config.ACCEL_BUFFERING else "no"
+            )
             if cap.config.ACCEL_LIMIT_RATE:
-                resp.headers['X-Accel-Limit-Rate'] = cap.config.ACCEL_LIMIT_RATE
+                resp.headers["X-Accel-Limit-Rate"] = cap.config.ACCEL_LIMIT_RATE
             if cap.config.SEND_FILE_MAX_AGE_DEFAULT:
-                resp.headers['X-Accel-Expires'] = cap.config.SEND_FILE_MAX_AGE_DEFAULT
+                resp.headers["X-Accel-Expires"] = cap.config.SEND_FILE_MAX_AGE_DEFAULT
 
         return resp
 

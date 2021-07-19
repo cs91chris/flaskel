@@ -1,5 +1,5 @@
 class BaseApplication:
-    default_host = '127.0.0.1'
+    default_host = "127.0.0.1"
     default_port = 5000
 
     def __init__(self, app, options=None):
@@ -11,8 +11,8 @@ class BaseApplication:
         self.application = app
         self.options = options or {}
 
-        default_bind = f'{self.default_host}:{self.default_port}'
-        bind = (self.options.get('bind') or default_bind).split(':')
+        default_bind = f"{self.default_host}:{self.default_port}"
+        bind = (self.options.get("bind") or default_bind).split(":")
 
         self._interface = bind[0] or self.default_host
         self._port = int(bind[1]) if len(bind) > 1 else self.default_port
@@ -32,10 +32,6 @@ class WSGIBuiltin(BaseApplication):
 
         :return:
         """
-        debug = self.application.config.get('DEBUG') or False
+        debug = self.application.config.get("DEBUG") or False
 
-        self.application.run(
-            host=self._interface,
-            port=self._port,
-            debug=debug
-        )
+        self.application.run(host=self._interface, port=self._port, debug=debug)

@@ -30,19 +30,21 @@ class FlaskDateHelper:
         if helper is not None:
             self._helper = helper
         else:
-            attrs = app.config.get_namespace('DATE_HELPER_')
+            attrs = app.config.get_namespace("DATE_HELPER_")
             self._helper = helper_class(**attrs)
 
         self.iso_format = app.config.DATE_ISO_FORMAT
         if not hasattr(app, "extensions"):
             app.extensions = {}  # pragma: no cover
-        app.extensions['date_helper'] = self
+        app.extensions["date_helper"] = self
 
     def __getattr__(self, name):
         return getattr(self._helper, name)
 
     def to_iso_format(self, str_date, fmt=None, **kwargs):
-        return self.change_format(str_date, in_fmt=fmt, out_fmt=self.iso_format, **kwargs)
+        return self.change_format(
+            str_date, in_fmt=fmt, out_fmt=self.iso_format, **kwargs
+        )
 
 
 date_helper = FlaskDateHelper()

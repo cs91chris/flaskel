@@ -6,36 +6,35 @@ import sys
 from setuptools import find_packages as base_find_packages, setup
 from setuptools.command.test import test
 
-LICENSE = 'MIT'
+LICENSE = "MIT"
 URL = None
-PLATFORMS = 'any'
-PYTHON_VERSION = '>3.6'
+PLATFORMS = "any"
+PYTHON_VERSION = ">3.6"
 DESCRIPTION = None
 PACKAGE_DATA = True
 
-PKG_NAME = '{skeleton}'
-PKG_TEST = 'tests'
-PKG_SCRIPTS = f'{PKG_NAME}.scripts'
+PKG_NAME = "{skeleton}"
+PKG_TEST = "tests"
+PKG_SCRIPTS = f"{PKG_NAME}.scripts"
 
 EXCLUDE_FILES = []
 
-REQUIRES = [
-    "flaskel"
-]
+REQUIRES = ["flaskel"]
 
 ENTRY_POINTS = dict(
     console_scripts=[
-        f'run-{PKG_NAME}={PKG_SCRIPTS}.cli:cli',
+        f"run-{PKG_NAME}={PKG_SCRIPTS}.cli:cli",
     ],
 )
 
 BASE_PATH = os.path.dirname(__file__)
-VERSION_FILE = os.path.join(PKG_NAME, 'skel/version.py')
+VERSION_FILE = os.path.join(PKG_NAME, "skel/version.py")
 
 try:
     # must be after setuptools
     # noinspection PyPackageRequirements
     from Cython.Build import cythonize as base_cythonize
+
     # noinspection PyPackageRequirements
     import Cython.Compiler.Options as cython_options
 
@@ -55,8 +54,8 @@ def ext_paths(root_dir, exclude=()):
     for root, dirs, files in os.walk(root_dir):
         for filename in files:
             file_path = os.path.join(root, filename)
-            file_ext = filename.split('.')[-1]
-            if file_path in exclude or file_ext not in ('py', 'pyx'):
+            file_ext = filename.split(".")[-1]
+            if file_path in exclude or file_ext not in ("py", "pyx"):
                 continue
 
             paths.append(file_path)
@@ -69,7 +68,7 @@ def read(file):
 
 
 def grep(file, name):
-    value, = re.findall(fr"{name}\W*=\W*'([^']+)'", read(file))
+    (value,) = re.findall(fr"{name}\W*=\W*'([^']+)'", read(file))
     return value
 
 
@@ -86,6 +85,7 @@ class PyTest(test):
 
     def run_tests(self):
         import pytest
+
         sys.exit(pytest.main([PKG_TEST]))
 
 
@@ -107,10 +107,10 @@ setup(
     description=DESCRIPTION,
     platforms=PLATFORMS,
     python_requires=PYTHON_VERSION,
-    long_description=readme('README.rst'),
-    version=grep(VERSION_FILE, '__version__'),
-    author=grep(VERSION_FILE, '__author_name__'),
-    author_email=grep(VERSION_FILE, '__author_email__'),
+    long_description=readme("README.rst"),
+    version=grep(VERSION_FILE, "__version__"),
+    author=grep(VERSION_FILE, "__author_name__"),
+    author_email=grep(VERSION_FILE, "__author_email__"),
     zip_safe=False,
     include_package_data=PACKAGE_DATA,
     packages=find_packages(),
@@ -130,5 +130,5 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-    ]
+    ],
 )

@@ -103,7 +103,7 @@ def is_ok(s):
     return status_type(s) in (
         StatusType.INFORMATIONAL,
         StatusType.SUCCESS,
-        StatusType.REDIRECTION
+        StatusType.REDIRECTION,
     )
 
 

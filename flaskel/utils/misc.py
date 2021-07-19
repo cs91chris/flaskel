@@ -9,7 +9,7 @@ def import_from_module(name):
     :param name:
     :return:
     """
-    mod, attr = name.split(':')
+    mod, attr = name.split(":")
     module = importlib.import_module(mod)
     return getattr(module, attr)
 
@@ -21,7 +21,7 @@ def parse_value(v):
     :return:
     """
     try:
-        return float(v) if '.' in v else int(v)
+        return float(v) if "." in v else int(v)
     except ValueError:
         if v.lower() in ("true", "false"):
             return v.lower() == "true"
@@ -75,7 +75,4 @@ def random_string(length, alphabet=string.printable):
     :param alphabet:
     :return:
     """
-    return ''.join(
-        SystemRandom().choice(alphabet)
-        for _ in range(length)
-    )
+    return "".join(SystemRandom().choice(alphabet) for _ in range(length))

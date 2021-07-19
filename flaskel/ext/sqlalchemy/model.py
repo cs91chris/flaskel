@@ -36,8 +36,17 @@ class SQLAModel(Model):
         return cls.query.filter(*args).filter_by(**kwargs)
 
     @classmethod
-    def get_list(cls, *args, to_dict=True, restricted=False, order_by=None,
-                 page=None, page_size=None, max_per_page=None, **kwargs):
+    def get_list(
+        cls,
+        *args,
+        to_dict=True,
+        restricted=False,
+        order_by=None,
+        page=None,
+        page_size=None,
+        max_per_page=None,
+        **kwargs,
+    ):
         """
 
         :param to_dict:

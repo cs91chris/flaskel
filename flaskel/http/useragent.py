@@ -28,9 +28,9 @@ class UserAgent(parsers.UserAgent):
 
         if not self._parsed and self.ua_string:
             parsed = parsers.user_agent_parser.Parse(self.ua_string)
-            self.os = parsers.parse_operating_system(**parsed['os'])
-            self.browser = parsers.parse_browser(**parsed['user_agent'])
-            self.device = parsers.parse_device(**parsed['device'])
+            self.os = parsers.parse_operating_system(**parsed["os"])
+            self.browser = parsers.parse_browser(**parsed["user_agent"])
+            self.device = parsers.parse_device(**parsed["device"])
 
         return self.to_dict()
 
@@ -47,16 +47,12 @@ class UserAgent(parsers.UserAgent):
             browser=dict(
                 family=self.browser.family,
                 version=dict(
-                    number=self.browser.version,
-                    string=self.browser.version_string
-                )
+                    number=self.browser.version, string=self.browser.version_string
+                ),
             ),
             os=dict(
                 family=self.os.family,
-                version=dict(
-                    number=self.os.version,
-                    string=self.os.version_string
-                )
+                version=dict(number=self.os.version, string=self.os.version_string),
             ),
             device=dict(
                 family=self.device.family,
@@ -68,8 +64,8 @@ class UserAgent(parsers.UserAgent):
                     pc=self.is_pc,
                     bot=self.is_bot,
                     email_client=self.is_email_client,
-                    touch_capable=self.is_touch_capable
-                )
+                    touch_capable=self.is_touch_capable,
+                ),
             ),
         )
         return self._cached

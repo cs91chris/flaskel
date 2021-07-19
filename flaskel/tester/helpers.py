@@ -9,22 +9,27 @@ from flaskel.tester import FetchMail
 from flaskel.tester.mixins import Asserter
 
 __all__ = [
-    'ConfigProxy', 'httpcode', 'Asserter',
-    'config', 'schemas', 'url_for',
-    'basic_auth_header', 'restful_tester', 'api_tester',
-    'fetch_emails', 'load_sample_data'
+    "ConfigProxy",
+    "httpcode",
+    "Asserter",
+    "config",
+    "schemas",
+    "url_for",
+    "basic_auth_header",
+    "restful_tester",
+    "api_tester",
+    "fetch_emails",
+    "load_sample_data",
 ]
 
 config = ConfigProxy()
-schemas = ConfigProxy('SCHEMAS')
+schemas = ConfigProxy("SCHEMAS")
 url_for = partial(flask.url_for, _external=True)
 
 
 def load_sample_data(filename):
     SQLASupport.exec_from_file(
-        config.SQLALCHEMY_DATABASE_URI,
-        filename,
-        echo=config.SQLALCHEMY_ECHO
+        config.SQLALCHEMY_DATABASE_URI, filename, echo=config.SQLALCHEMY_ECHO
     )
 
 
@@ -40,8 +45,10 @@ def basic_auth_header(username=None, password=None):
     return dict(Authorization=f"Basic {token}")
 
 
-def api_tester(client, url=None, view=None, schema=None, status=httpcode.SUCCESS, **kwargs):
-    kwargs.setdefault('method', 'GET')
+def api_tester(
+    client, url=None, view=None, schema=None, status=httpcode.SUCCESS, **kwargs
+):
+    kwargs.setdefault("method", "GET")
     res = client.open(url_for(view) if view else url, **kwargs)
     Asserter.assert_status_code(res, status)
     if schema:
@@ -50,22 +57,28 @@ def api_tester(client, url=None, view=None, schema=None, status=httpcode.SUCCESS
 
 
 def restful_tester(
-        client, view, headers=None, res_id=None,
-        body_create=None, body_update=None,
-        schema_read=None, schema_collection=None,
-        methods=('GET', 'POST', 'PUT', 'DELETE'), **params
+    client,
+    view,
+    headers=None,
+    res_id=None,
+    body_create=None,
+    body_update=None,
+    schema_read=None,
+    schema_collection=None,
+    methods=("GET", "POST", "PUT", "DELETE"),
+    **params,
 ):
-    args = '&'.join([f"{k}={v}" for k, v in params.items()])
+    args = "&".join([f"{k}={v}" for k, v in params.items()])
     url_collection = f"{url_for(view)}?{args}"
 
-    if 'POST' in methods:
+    if "POST" in methods:
         res = client.post(url_collection, json=body_create, headers=headers)
         Asserter.assert_status_code(res, httpcode.CREATED)
         Asserter.assert_schema(res.json, schema_read)
         res_id = res.json.id
 
     url_resource = f"{url_for(view, res_id=res_id)}?{args}"
-    if 'GET' in methods:
+    if "GET" in methods:
         res = client.get(url_collection, headers=headers)
         Asserter.assert_status_code(res)
         Asserter.assert_schema(res.json, schema_collection)
@@ -74,13 +87,13 @@ def restful_tester(
         Asserter.assert_status_code(res)
         Asserter.assert_schema(res.json, schema_read)
 
-    if 'PUT' in methods:
+    if "PUT" in methods:
         body_update = body_update or body_create
         res = client.put(url_resource, headers=headers, json=body_update)
         Asserter.assert_status_code(res)
         Asserter.assert_schema(res.json, schema_read)
 
-    if 'DELETE' in methods:
+    if "DELETE" in methods:
         res = client.delete(url_resource, headers=headers)
         Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 

@@ -30,7 +30,7 @@ class CatalogMixin:
 
     @declared_attr
     def __table_args__(self):
-        return (db.UniqueConstraint('label', 'type_id'),)
+        return (db.UniqueConstraint("label", "type_id"),)
 
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(100))
@@ -46,14 +46,14 @@ class CatalogMixin:
             label=self.label,
             description=self.description,
             typeId=self.type_id,
-            **kwargs
+            **kwargs,
         )
 
 
 class CatalogXMixin(CatalogMixin):
     @declared_attr
     def __table_args__(self):
-        return (db.UniqueConstraint('code', 'type_id'),)
+        return (db.UniqueConstraint("code", "type_id"),)
 
     code = db.Column(db.String(20))
     order_id = db.Column(db.Integer, index=True)
@@ -64,11 +64,7 @@ class CatalogXMixin(CatalogMixin):
         return f"<{self.code} - {self.label}>"
 
     def to_dict(self, **kwargs):
-        return super().to_dict(
-            code=self.code,
-            orderId=self.order_id,
-            **kwargs
-        )
+        return super().to_dict(code=self.code, orderId=self.order_id, **kwargs)
 
 
 class LoaderMixin:
@@ -90,12 +86,12 @@ class LoaderMixin:
     @classmethod
     def register_loader(cls):
         # noinspection PyUnresolvedReferences
-        event.listen(cls.__table__, 'after_create', cls.load_values)
+        event.listen(cls.__table__, "after_create", cls.load_values)
 
 
 class UserMixin(StandardMixin):
     _hasher = argon2
-    _password = db.Column('password', db.String(128), nullable=False)
+    _password = db.Column("password", db.String(128), nullable=False)
 
     email = db.Column(db.String(255), unique=True, nullable=False)
 
@@ -111,7 +107,4 @@ class UserMixin(StandardMixin):
         return self._hasher.verify_hash(self._password, password)
 
     def to_dict(self, **_):
-        return ObjectDict(
-            id=self.id,
-            email=self.email
-        )
+        return ObjectDict(id=self.id, email=self.email)

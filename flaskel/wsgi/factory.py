@@ -24,12 +24,12 @@ except ImportError:
 
 class WSGIFactory:
     WSGI_SERVERS = {
-        'builtin':  WSGIBuiltin,
-        'gunicorn': WSGIGunicorn,
-        'gevent':   WSGIGevent,
-        'tornado':  WSGITornado,
-        'twisted':  WSGITwisted,
-        'waitress': WSGIWaitress,
+        "builtin": WSGIBuiltin,
+        "gunicorn": WSGIGunicorn,
+        "gevent": WSGIGevent,
+        "tornado": WSGITornado,
+        "twisted": WSGITwisted,
+        "waitress": WSGIWaitress,
     }
 
     @classmethod

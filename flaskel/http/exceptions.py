@@ -10,22 +10,22 @@ from . import httpcode
 
 class HTTPExceptionMixin:
     description = ""
-    config = ConfigProxy('HTTP_EXCEPTIONS')
-    lang_key = ConfigProxy('HTTP_EXCEPTIONS.LANG_KEY')
-    lang_default = ConfigProxy('HTTP_EXCEPTIONS.LANG_DEFAULT')
+    config = ConfigProxy("HTTP_EXCEPTIONS")
+    lang_key = ConfigProxy("HTTP_EXCEPTIONS.LANG_KEY")
+    lang_default = ConfigProxy("HTTP_EXCEPTIONS.LANG_DEFAULT")
 
     def get_description(self, environ=None):  # pylint: disable=W0613
-        lang = self.config.get(flask.g.get(self.lang_key.get() or 'lang'))
+        lang = self.config.get(flask.g.get(self.lang_key.get() or "lang"))
         lang = lang or self.config.get(self.lang_default.get()) or {}
         desc = lang.get(self.description)
         desc = desc or self.config.get(self.description)
-        desc = desc or self.description.lower().replace('_', ' ')
+        desc = desc or self.description.lower().replace("_", " ")
         return desc or "unhandled error"
 
 
 class BadRequest(HTTPExceptionMixin, exceptions.BadRequest):
     code = httpcode.BAD_REQUEST
-    description = 'BAD_REQUEST'
+    description = "BAD_REQUEST"
 
 
 class Unauthorized(HTTPExceptionMixin, exceptions.Unauthorized):
@@ -103,7 +103,9 @@ class UnsupportedMediaType(HTTPExceptionMixin, exceptions.UnsupportedMediaType):
     description = "UNSUPPORTED_MEDIA_TYPE"
 
 
-class RequestedRangeNotSatisfiable(HTTPExceptionMixin, exceptions.RequestedRangeNotSatisfiable):
+class RequestedRangeNotSatisfiable(
+    HTTPExceptionMixin, exceptions.RequestedRangeNotSatisfiable
+):
     code = httpcode.RANGE_NOT_SATISFIABLE
     description = "RANGE_NOT_SATISFIABLE"
 
@@ -153,7 +155,9 @@ class TooManyRequests(HTTPExceptionMixin, exceptions.TooManyRequests):
     description = "TOO_MANY_REQUESTS"
 
 
-class RequestHeaderFieldsTooLarge(HTTPExceptionMixin, exceptions.RequestHeaderFieldsTooLarge):
+class RequestHeaderFieldsTooLarge(
+    HTTPExceptionMixin, exceptions.RequestHeaderFieldsTooLarge
+):
     code = httpcode.REQUEST_HEADER_FIELDS_TOO_LARGE
     description = "REQUEST_HEADER_FIELDS_TOO_LARGE"
 
@@ -163,7 +167,9 @@ class NoResponse(HTTPExceptionMixin, exceptions.HTTPException):
     description = "NO_RESPONSE"
 
 
-class UnavailableForLegalReasons(HTTPExceptionMixin, exceptions.UnavailableForLegalReasons):
+class UnavailableForLegalReasons(
+    HTTPExceptionMixin, exceptions.UnavailableForLegalReasons
+):
     code = httpcode.UNAVAILABLE_FOR_LEGAL_REASON
     description = "UNAVAILABLE_FOR_LEGAL_REASON"
 
@@ -174,7 +180,9 @@ class InternalServerError(HTTPExceptionMixin, exceptions.InternalServerError):
 
 
 # noinspection PyShadowingBuiltins
-class NotImplemented(HTTPExceptionMixin, exceptions.NotImplemented):  # pylint: disable=W0622
+class NotImplemented(
+    HTTPExceptionMixin, exceptions.NotImplemented
+):  # pylint: disable=W0622
     code = httpcode.NOT_IMPLEMENTED
     description = "NOT_IMPLEMENTED"
 
@@ -231,8 +239,8 @@ class UnknownError(HTTPExceptionMixin, exceptions.HTTPException):
 
 _errors = inspect.getmembers(
     sys.modules[__name__],
-    lambda c: inspect.isclass(c) and issubclass(c, exceptions.HTTPException)
+    lambda c: inspect.isclass(c) and issubclass(c, exceptions.HTTPException),
 )
 
 # until a better solution are found
-setattr(flask, 'abort', exceptions.Aborter(mapping={e.code: e for _, e in _errors}))
+setattr(flask, "abort", exceptions.Aborter(mapping={e.code: e for _, e in _errors}))

@@ -12,4 +12,4 @@ builder = ResponseBuilder()
 template = TemplateSupport()
 cfremote = CloudflareRemote()
 
-json_builder = functools.partial(builder.on_format('json'))
+json_builder = functools.partial(builder.on_format("json"))

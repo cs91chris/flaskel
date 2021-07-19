@@ -14,12 +14,12 @@ class WSGIWaitress(BaseApplication):
 
         :return:
         """
-        self.options.setdefault('threads', cpu_count())
+        self.options.setdefault("threads", cpu_count())
         assert serve is not None, "You must install 'waitress'"
 
         serve(
             self.application,
             host=self._interface,
             port=self._port,
-            threads=self.options['threads'],
+            threads=self.options["threads"],
         )

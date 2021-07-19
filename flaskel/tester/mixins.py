@@ -18,30 +18,35 @@ class BaseAssert:
         :param that:
         :param error:
         """
-        assert func(actual, expected), \
-            error or cls.assert_fail_message.format(
-                that=that, actual=actual, expected=expected
-            )
+        assert func(actual, expected), error or cls.assert_fail_message.format(
+            that=that, actual=actual, expected=expected
+        )
 
     @classmethod
     def assert_true(cls, actual, error=None):
         cls.assert_that(
             lambda a, _: bool(a) is True,
-            error=error, that=f"'{actual}' is True", actual=actual
+            error=error,
+            that=f"'{actual}' is True",
+            actual=actual,
         )
 
     @classmethod
     def assert_false(cls, actual, error=None):
         cls.assert_that(
             lambda a, _: bool(a) is False,
-            error=error, that=f"'{actual}' is False", actual=actual
+            error=error,
+            that=f"'{actual}' is False",
+            actual=actual,
         )
 
     @classmethod
     def assert_none(cls, actual, error=None):
         cls.assert_that(
             lambda a, _: a is None,
-            error=error, that=f"'{actual}' is None", actual=actual
+            error=error,
+            that=f"'{actual}' is None",
+            actual=actual,
         )
 
     @classmethod
@@ -53,8 +58,10 @@ class BaseAssert:
 
         cls.assert_that(
             _equals,
-            error=error, that=f"'{actual}' is equals to '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' is equals to '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
@@ -66,32 +73,40 @@ class BaseAssert:
 
         cls.assert_that(
             _different,
-            error=error, that=f"'{actual}' is different to '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' is different to '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
     def assert_in(cls, actual, expected, error=None):
         cls.assert_that(
             lambda a, e: a in e,
-            error=error, that=f"'{actual}' is in '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' is in '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
     def assert_not_in(cls, actual, expected, error=None):
         cls.assert_that(
             lambda a, e: a not in e,
-            error=error, that=f"'{actual}' is not in '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' is not in '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
     def assert_range(cls, actual, expected, error=None):
         cls.assert_that(
             lambda a, e: e[0] <= a <= e[1],
-            error=error, that=f"'{actual}' is in ranger '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' is in ranger '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
@@ -103,8 +118,10 @@ class BaseAssert:
 
         cls.assert_that(
             _greater,
-            error=error, that=f"'{actual}' is greater than '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' is greater than '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
@@ -116,8 +133,10 @@ class BaseAssert:
 
         cls.assert_that(
             _less,
-            error=error, that=f"'{actual}' is less than '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' is less than '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
@@ -127,16 +146,20 @@ class BaseAssert:
 
         cls.assert_that(
             _allin,
-            error=error, that=f"'{actual}' are all in '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' are all in '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
     def assert_type(cls, actual, expected, error=None):
         cls.assert_that(
             isinstance,
-            error=error, that=f"type of '{actual}' is '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"type of '{actual}' is '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
 
@@ -152,8 +175,7 @@ class JSONValidatorMixin(BaseAssert, JSONSchema):
         """
         if strict and not schema:
             cls.assert_that(
-                lambda a, e: a is not None,
-                actual=schema, error="Missing schema"
+                lambda a, e: a is not None, actual=schema, error="Missing schema"
             )
         try:
             cls.validate(data, schema, raise_exc=True)
@@ -163,7 +185,8 @@ class JSONValidatorMixin(BaseAssert, JSONSchema):
 
         cls.assert_that(
             lambda a, e: a is True,
-            actual=valid, error=f"Test that json is valid failed, got: {message}"
+            actual=valid,
+            error=f"Test that json is valid failed, got: {message}",
         )
 
 
@@ -204,13 +227,16 @@ class RegexMixin(BaseAssert):
         """
         cls.assert_that(
             cls.regex_match,
-            error=error, that=f"'{actual}' matches '{expected}'",
-            actual=actual, expected=expected
+            error=error,
+            that=f"'{actual}' matches '{expected}'",
+            actual=actual,
+            expected=expected,
         )
 
     @classmethod
-    def assert_occurrence(cls, actual, expected, occurrence,
-                          error=None, greater=False, less=False):
+    def assert_occurrence(
+        cls, actual, expected, occurrence, error=None, greater=False, less=False
+    ):
         """
 
         :param actual:
@@ -235,7 +261,9 @@ class RegexMixin(BaseAssert):
         elif less:
             operator = "less than"
 
-        that = f"occurrences of '{expected}' in '{actual}' are {operator} '{occurrence}'"
+        that = (
+            f"occurrences of '{expected}' in '{actual}' are {operator} '{occurrence}'"
+        )
         cls.assert_that(
             find_all, error=error, that=that, actual=actual, expected=expected
         )
@@ -243,8 +271,9 @@ class RegexMixin(BaseAssert):
 
 class HttpAsserter(RegexMixin):
     @classmethod
-    def assert_status_code(cls, response, code=200,
-                           in_range=False, is_in=False, greater=False, less=False):
+    def assert_status_code(
+        cls, response, code=200, in_range=False, is_in=False, greater=False, less=False
+    ):
         """
 
         :param response:
@@ -261,7 +290,9 @@ class HttpAsserter(RegexMixin):
             elif is_in is True:
                 cls.assert_in(status_code, code)
             else:
-                mess = "one of (is_in, in_range) must be true if a list of code is given"
+                mess = (
+                    "one of (is_in, in_range) must be true if a list of code is given"
+                )
                 cls.assert_true(False, error=mess)
         else:
             if greater is True:
@@ -305,8 +336,7 @@ class HttpAsserter(RegexMixin):
     @classmethod
     def assert_content_type(cls, response, value=None, is_in=True, regex=None):
         cls.assert_header(
-            response, name='Content-Type',
-            value=value, is_in=is_in, regex=regex
+            response, name="Content-Type", value=value, is_in=is_in, regex=regex
         )
 
 

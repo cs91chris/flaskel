@@ -103,5 +103,5 @@ class SQLASupport:
         """
         engine = create_engine(db_uri, echo=echo)
         with engine.connect() as conn, open(filename) as f:
-            for statement in f.read().split(';'):
+            for statement in f.read().split(";"):
                 conn.execute(execute_sql(statement))

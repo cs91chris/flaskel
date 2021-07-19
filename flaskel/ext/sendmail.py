@@ -7,10 +7,18 @@ class ClientMail(Mail):
     def init_app(self, app):
         super().init_app(app)
 
-        app.extensions = getattr(app, 'extensions', {})
-        app.extensions['client_mail'] = self
+        app.extensions = getattr(app, "extensions", {})
+        app.extensions["client_mail"] = self
 
-    def sendmail(self, app, sender=None, recipients=None, message=None, attachments=None, **kwargs):
+    def sendmail(
+        self,
+        app,
+        sender=None,
+        recipients=None,
+        message=None,
+        attachments=None,
+        **kwargs,
+    ):
         """
 
         :param app:
@@ -34,7 +42,7 @@ class ClientMail(Mail):
         if attachments:
             try:
                 for attach in attachments:
-                    with open(attach['filename']) as file:
+                    with open(attach["filename"]) as file:
                         mail_message.attach(data=file.read(), **(attach or {}))
             except (OSError, IOError) as exc:
                 app.logger.warning(str(exc))
@@ -50,7 +58,9 @@ class ClientMail(Mail):
         except OSError as exc:
             app.logger.exception(exc)
 
-        app.logger.info("email %s from %s sent to %s", mail_message.msgId, sender, destination)
+        app.logger.info(
+            "email %s from %s sent to %s", mail_message.msgId, sender, destination
+        )
 
 
 client_mail = ClientMail()

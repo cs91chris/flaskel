@@ -16,7 +16,7 @@ def model_to_uml(module):
     models = importlib.import_module(module)
 
     for attr in dir(models):
-        if attr[0] == '_':
+        if attr[0] == "_":
             continue
         try:
             cls = getattr(models, attr)
@@ -24,10 +24,7 @@ def model_to_uml(module):
         except SQLAlchemyError:
             pass
 
-    return create_uml_graph(
-        mappers,
-        show_operations=False
-    )
+    return create_uml_graph(mappers, show_operations=False)
 
 
 def db_to_schema(url):
@@ -40,6 +37,6 @@ def db_to_schema(url):
         metadata=MetaData(url),
         show_datatypes=False,
         show_indexes=False,
-        rankdir='LR',
-        concentrate=False
+        rankdir="LR",
+        concentrate=False,
     )

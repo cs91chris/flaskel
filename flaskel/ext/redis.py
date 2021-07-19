@@ -68,13 +68,12 @@ class FlaskRedis:
 
         if not self._client:
             self._client = redis_class.from_url(
-                app.config["REDIS_URL"],
-                **app.config["REDIS_OPTS"]
+                app.config["REDIS_URL"], **app.config["REDIS_OPTS"]
             )
 
         if not hasattr(app, "extensions"):
             app.extensions = {}  # pragma: no cover
-        app.extensions['redis'] = self
+        app.extensions["redis"] = self
 
     def __getattr__(self, name):
         return getattr(self._client, name)

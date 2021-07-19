@@ -11,7 +11,7 @@ APP_CONFIG = dict(
         middle.RequestID,
         middle.HTTPMethodOverride,
         middle.ReverseProxied,
-    )
+    ),
 )
 
 factory = AppBuilder(**APP_CONFIG)
@@ -31,5 +31,5 @@ def cli():
     Server(factory).run_from_cli()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

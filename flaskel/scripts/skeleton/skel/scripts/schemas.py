@@ -8,7 +8,7 @@ SCHEMAS = dict(
     ApiProblem=default.SCHEMAS.API_PROBLEM,
 )
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     import json
 
     print(json.dumps(SCHEMAS))

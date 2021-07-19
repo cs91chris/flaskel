@@ -23,7 +23,7 @@ class RPCError(Exception):
 
 
 class RPCParseError(RPCError):
-    def __init__(self, message='Invalid JSON was received by the server', data=None):
+    def __init__(self, message="Invalid JSON was received by the server", data=None):
         """
 
         :param message:
@@ -33,7 +33,12 @@ class RPCParseError(RPCError):
 
 
 class RPCInvalidRequest(RPCError):
-    def __init__(self, message='The JSON sent is not a valid Request object', data=None, req_id=None):
+    def __init__(
+        self,
+        message="The JSON sent is not a valid Request object",
+        data=None,
+        req_id=None,
+    ):
         """
 
         :param message:
@@ -44,7 +49,9 @@ class RPCInvalidRequest(RPCError):
 
 
 class RPCMethodNotFound(RPCError):
-    def __init__(self, message='The method does not exist or is not available', data=None):
+    def __init__(
+        self, message="The method does not exist or is not available", data=None
+    ):
         """
 
         :param message:
@@ -54,7 +61,7 @@ class RPCMethodNotFound(RPCError):
 
 
 class RPCInvalidParams(RPCError):
-    def __init__(self, message='Invalid method parameter(s)', data=None):
+    def __init__(self, message="Invalid method parameter(s)", data=None):
         """
 
         :param message:
@@ -64,7 +71,7 @@ class RPCInvalidParams(RPCError):
 
 
 class RPCInternalError(RPCError):
-    def __init__(self, message='Internal JSON-RPC error', data=None):
+    def __init__(self, message="Internal JSON-RPC error", data=None):
         """
 
         :param message:

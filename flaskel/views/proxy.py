@@ -7,9 +7,17 @@ from .base import BaseView
 
 
 class ProxyView(BaseView):
-    def __init__(self, host=None, url=None, method=None,
-                 proxy_body=False, proxy_headers=False, proxy_params=False,
-                 options=None, **kwargs):
+    def __init__(
+        self,
+        host=None,
+        url=None,
+        method=None,
+        proxy_body=False,
+        proxy_headers=False,
+        proxy_params=False,
+        options=None,
+        **kwargs,
+    ):
         """
 
         :param host:
@@ -49,7 +57,7 @@ class ProxyView(BaseView):
         return flask.Response(
             flask.stream_with_context(response.body),
             headers=response.headers,
-            status=response.status
+            status=response.status,
         )
 
     def proxy(self, data, **kwargs):
@@ -60,7 +68,7 @@ class ProxyView(BaseView):
             headers=data.headers or self.request_headers(),
             params=data.params or self.request_params(),
             data=data.body or self.request_body(),
-            stream=True
+            stream=True,
         )
 
     def service(self):
@@ -74,7 +82,7 @@ class ProxyView(BaseView):
             method=self.request_method(),
             headers=self.request_headers(),
             params=self.request_params(),
-            data=self.request_body()
+            data=self.request_body(),
         )
 
     def upstream_host(self):
@@ -97,7 +105,7 @@ class ProxyView(BaseView):
 
 
 class ConfProxyView(BaseView):
-    sep = '.'
+    sep = "."
     config_key = None
 
     def __init__(self, config_key=None):
@@ -127,19 +135,21 @@ class ConfProxyView(BaseView):
 
 class TransparentProxyView(ProxyView):
     def __init__(self, **kwargs):
-        kwargs.setdefault('proxy_body', True)
-        kwargs.setdefault('proxy_headers', True)
-        kwargs.setdefault('proxy_params', True)
+        kwargs.setdefault("proxy_body", True)
+        kwargs.setdefault("proxy_headers", True)
+        kwargs.setdefault("proxy_params", True)
         super().__init__(**kwargs)
 
 
 class SchemaProxyView(ConfProxyView):
-    default_urls = ['/schema/<path:filepath>']
+    default_urls = ["/schema/<path:filepath>"]
 
     def __init__(
-            self,
-            config_key='SCHEMAS', case_sensitive=False,
-            ext_support=True, ext_name='.json'
+        self,
+        config_key="SCHEMAS",
+        case_sensitive=False,
+        ext_support=True,
+        ext_name=".json",
     ):
         super().__init__(config_key)
         self.ext_name = ext_name
@@ -152,7 +162,7 @@ class SchemaProxyView(ConfProxyView):
         if self.case_sensitive is False:
             filepath = filepath.upper()
 
-        return filepath.replace('/', self.sep)
+        return filepath.replace("/", self.sep)
 
     def dispatch_request(self, filepath, *args, **kwargs):
         schema_path = self.normalize(filepath)

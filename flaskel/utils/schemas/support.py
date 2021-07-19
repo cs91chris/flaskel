@@ -8,7 +8,7 @@ from flask import current_app as cap
 from flaskel.http.client import HTTPClient, httpcode
 from flaskel.utils.datastruct import ConfigProxy, ObjectDict
 
-SCHEMAS = ConfigProxy('SCHEMAS')
+SCHEMAS = ConfigProxy("SCHEMAS")
 
 
 class JSONSchema:
@@ -34,7 +34,7 @@ class JSONSchema:
         :param file:
         :return:
         """
-        if file.startswith('file://'):
+        if file.startswith("file://"):
             file = file[7:]
 
         with open(file) as f:
@@ -55,9 +55,9 @@ class JSONSchema:
             return True
 
         if isinstance(schema, str):
-            if schema.startswith('https://') or schema.startswith('http://'):
+            if schema.startswith("https://") or schema.startswith("http://"):
                 schema = cls.load_from_url(schema)
-            if schema.startswith('file://'):
+            if schema.startswith("file://"):
                 schema = cls.load_from_file(schema)
 
         try:
@@ -116,14 +116,14 @@ class JSONSchema:
         json_error = cls.dumper(json_object)
 
         for lineno, text in enumerate(io.StringIO(json_error)):
-            line_text = "{:4}: {}".format(lineno + 1, '>' * 3 if lineno == err_line else ' ' * 3)
+            line_text = "{:4}: {}".format(
+                lineno + 1, ">" * 3 if lineno == err_line else " " * 3
+            )
             report.append(line_text + text.rstrip("\n"))
 
-        report = report[max(0, err_line - lines_before):err_line + 1 + lines_after]
+        report = report[max(0, err_line - lines_before) : err_line + 1 + lines_after]
         return cls.message_format.format(
-            line=err_line + 1,
-            report="\n".join(report),
-            message=e.message or str(e)
+            line=err_line + 1, report="\n".join(report), message=e.message or str(e)
         )
 
 
@@ -140,7 +140,7 @@ class PayloadValidator:
         :return:
         """
         if strict and not schema:
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR, 'empty schema')
+            flask.abort(httpcode.INTERNAL_SERVER_ERROR, "empty schema")
 
         payload = flask.request.json
         try:
@@ -167,7 +167,9 @@ class Fields:
     boolean = ObjectDict(type="boolean")
     datetime = ObjectDict(type="string", format="date-time")
     any_object = ObjectDict(type="object", additionalProperties=True)
-    any = ObjectDict(type=["integer", "string", "number", "boolean", "array", "object", "null"])
+    any = ObjectDict(
+        type=["integer", "string", "number", "boolean", "array", "object", "null"]
+    )
 
     class Opt:
         integer = ObjectDict(type=["integer", "null"])
@@ -177,17 +179,11 @@ class Fields:
 
     @classmethod
     def oneof(cls, *args, **kwargs):
-        return ObjectDict(
-            oneOf=args if len(args) > 1 else (*args, cls.null),
-            **kwargs
-        )
+        return ObjectDict(oneOf=args if len(args) > 1 else (*args, cls.null), **kwargs)
 
     @classmethod
     def anyof(cls, *args, **kwargs):
-        return ObjectDict(
-            anyOf=args if len(args) > 1 else (*args, cls.null),
-            **kwargs
-        )
+        return ObjectDict(anyOf=args if len(args) > 1 else (*args, cls.null), **kwargs)
 
     @classmethod
     def ref(cls, path, **kwargs):
@@ -203,8 +199,7 @@ class Fields:
 
     @classmethod
     def object(
-            cls, required=(), properties=None,
-            all_required=True, additional=False, **kwargs
+        cls, required=(), properties=None, all_required=True, additional=False, **kwargs
     ):
         properties = properties or {}
         if not required and all_required is True:
@@ -215,22 +210,13 @@ class Fields:
             additionalProperties=additional,
             required=required,
             properties=properties,
-            **kwargs
+            **kwargs,
         )
 
     @classmethod
     def array(cls, items, min_items=0, **kwargs):
-        return ObjectDict(
-            type="array",
-            minItems=min_items,
-            items=items,
-            **kwargs
-        )
+        return ObjectDict(type="array", minItems=min_items, items=items, **kwargs)
 
     @classmethod
     def array_object(cls, min_items=0, **kwargs):
-        return ObjectDict(
-            type="array",
-            minItems=min_items,
-            items=cls.object(**kwargs)
-        )
+        return ObjectDict(type="array", minItems=min_items, items=cls.object(**kwargs))

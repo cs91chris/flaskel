@@ -14,16 +14,16 @@ def cli():
     pass
 
 
-@cli.command(name='init')
-@click.argument('name')
+@cli.command(name="init")
+@click.argument("name")
 def init(name):
     """Create skeleton for new application"""
     from flaskel import scripts as flaskel_scripts  # pylint: disable=C0415
 
     try:
-        source = os.path.join(flaskel_scripts.__path__[0], 'skeleton')
-        shutil.copytree(source, '.', dirs_exist_ok=True)
-        shutil.move('skel', name)
+        source = os.path.join(flaskel_scripts.__path__[0], "skeleton")
+        shutil.copytree(source, ".", dirs_exist_ok=True)
+        shutil.move("skel", name)
     except OSError as e:
         print(f"Unable to create new app. Error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -35,38 +35,38 @@ def init(name):
             text = text.replace(*sd)
         f.write_text(text)
 
-    init_file = Path(os.path.join(name, '__init__.py'))
+    init_file = Path(os.path.join(name, "__init__.py"))
     init_file.write_text("from .version import *\n")
 
-    replace_in_file('setup.py', ('{skeleton}', name))
-    replace_in_file('pytest.ini', ('{skeleton}', name))
-    replace_in_file('.coveragerc', ('{skeleton}', name))
+    replace_in_file("setup.py", ("{skeleton}", name))
+    replace_in_file("pytest.ini", ("{skeleton}", name))
+    replace_in_file(".coveragerc", ("{skeleton}", name))
 
     replace_in_file(
-        os.path.join(name, 'scripts', 'cli.py'),
-        ('from ext', f"from {name}.ext"),
-        ('from blueprint', f"from {name}.blueprint")
+        os.path.join(name, "scripts", "cli.py"),
+        ("from ext", f"from {name}.ext"),
+        ("from blueprint", f"from {name}.blueprint"),
     )
     replace_in_file(
-        os.path.join(name, 'scripts', 'gunicorn.py'),
-        ("from . import config", f"from {name}.scripts import config")
+        os.path.join(name, "scripts", "gunicorn.py"),
+        ("from . import config", f"from {name}.scripts import config"),
     )
     replace_in_file(
-        os.path.join('tests', '__init__.py'),
-        ('from scripts.cli', f'from {name}.scripts.cli')
+        os.path.join("tests", "__init__.py"),
+        ("from scripts.cli", f"from {name}.scripts.cli"),
     )
 
 
-@cli.command(name='tests')
+@cli.command(name="tests")
 def run_tests():
     """Run test suite from package tests in current directory"""
     cli_tester.main()
 
 
-@cli.command(name='schema')
-@click.option('-m', '--from-models', help='module of sqlalchemy models')
-@click.option('-d', '--from-database', help='database url connection')
-@click.option('-f', '--file', required=True, help='output png filename')
+@cli.command(name="schema")
+@click.option("-m", "--from-models", help="module of sqlalchemy models")
+@click.option("-d", "--from-database", help="database url connection")
+@click.option("-f", "--file", required=True, help="output png filename")
 def dump_schema(from_models, from_database, file):
     """Create png schema of database"""
     if from_models:
@@ -79,5 +79,5 @@ def dump_schema(from_models, from_database, file):
     graph.write_png(file)  # pylint: disable=E1101
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

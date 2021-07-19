@@ -27,7 +27,9 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
 
         HTTPBase.__init__(self, **kwargs)
         AsyncBatchExecutor.__init__(self, return_exceptions=not self._raise_on_exc)
-        self._timeout = aiohttp.ClientTimeout(sock_read=read_timeout, sock_connect=conn_timeout)
+        self._timeout = aiohttp.ClientTimeout(
+            sock_read=read_timeout, sock_connect=conn_timeout
+        )
 
     async def http_request(self, dump_body=None, timeout=None, **kwargs):
         """
@@ -48,9 +50,12 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
             timeout = aiohttp.ClientTimeout(sock_read=timeout, sock_connect=timeout)
 
         try:
-            self._logger.info("%s", self.dump_request(ObjectDict(**kwargs), dump_body[0]))
-            async with aiohttp.ClientSession(timeout=timeout) as session, \
-                    session.request(**kwargs) as resp:
+            self._logger.info(
+                "%s", self.dump_request(ObjectDict(**kwargs), dump_body[0])
+            )
+            async with aiohttp.ClientSession(
+                timeout=timeout
+            ) as session, session.request(**kwargs) as resp:
                 try:
                     body = await resp.json()
                 except (aiohttp.ContentTypeError, ValueError, TypeError):
@@ -58,8 +63,9 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
 
                 try:
                     response = ObjectDict(
-                        body=body, status=resp.status,
-                        headers=dict(resp.headers.items())
+                        body=body,
+                        status=resp.status,
+                        headers=dict(resp.headers.items()),
                     )
                     log_resp = response
                     log_resp.text = response.body
@@ -72,14 +78,17 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
                         raise  # pragma: no cover
                     response.exception = exc
                 return response
-        except (aiohttp.ClientError, aiohttp.ServerTimeoutError, asyncio.TimeoutError) as exc:
+        except (
+            aiohttp.ClientError,
+            aiohttp.ServerTimeoutError,
+            asyncio.TimeoutError,
+        ) as exc:
             self._logger.exception(exc)
             if self._raise_on_exc is True:
                 raise  # pragma: no cover
 
             return ObjectDict(
-                body={}, status=httpcode.SERVICE_UNAVAILABLE,
-                headers={}, exception=exc
+                body={}, status=httpcode.SERVICE_UNAVAILABLE, headers={}, exception=exc
             )
 
     def request(self, requests, **kwargs):
@@ -89,7 +98,7 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         :return:
         """
         for r in requests:
-            r.setdefault('method', 'GET')
+            r.setdefault("method", "GET")
             self._tasks.append((self.http_request, r))
 
         return self.run()
@@ -97,18 +106,18 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
 
 class FlaskelHTTPBatch(FlaskelHTTPDumper, HTTPBatch):
     def __init__(self, **kwargs):
-        kwargs.setdefault('logger', cap.logger)
-        kwargs.setdefault('conn_timeout', cap.config.HTTP_TIMEOUT or 10)
-        kwargs.setdefault('read_timeout', cap.config.HTTP_TIMEOUT or 10)
+        kwargs.setdefault("logger", cap.logger)
+        kwargs.setdefault("conn_timeout", cap.config.HTTP_TIMEOUT or 10)
+        kwargs.setdefault("read_timeout", cap.config.HTTP_TIMEOUT or 10)
         super().__init__(**kwargs)
 
     def request(self, requests, **kwargs):
         if flask.request.id:
             for r in requests:
-                if not r.get('headers'):
-                    r['headers'] = {}
+                if not r.get("headers"):
+                    r["headers"] = {}
                 req_id = f"{flask.request.id},{get_uuid()}"
-                r['headers'][cap.config.REQUEST_ID_HEADER] = req_id
+                r["headers"][cap.config.REQUEST_ID_HEADER] = req_id
 
-        kwargs.setdefault('verify', cap.config.HTTP_SSL_VERIFY)
+        kwargs.setdefault("verify", cap.config.HTTP_SSL_VERIFY)
         return super().request(requests, **kwargs)

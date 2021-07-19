@@ -8,10 +8,10 @@ from .helpers import basic_auth_header
 from .mixins import JSONValidatorMixin, RegexMixin
 
 __all__ = [
-    'TestHttpApi',
-    'TestHttpCall',
-    'TestJsonRPC',
-    'TestRestApi',
+    "TestHttpApi",
+    "TestHttpCall",
+    "TestJsonRPC",
+    "TestRestApi",
 ]
 
 
@@ -41,10 +41,8 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
 
         :param url:
         """
-        if not url.startswith('http'):
-            self.endpoint = '/'.join([
-                self.endpoint.rstrip('/'), url.lstrip('/')
-            ])
+        if not url.startswith("http"):
+            self.endpoint = "/".join([self.endpoint.rstrip("/"), url.lstrip("/")])
         else:
             self.endpoint = url
 
@@ -54,10 +52,10 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
         :param config:
         """
         config = config or {}
-        auth_type = config.get('type')
-        if auth_type == 'basic' and config.get('username'):
-            password = config.get('password') or config['username']
-            self.auth = basic_auth_header(config.get('username'), password)
+        auth_type = config.get("type")
+        if auth_type == "basic" and config.get("username"):
+            password = config.get("password") or config["username"]
+            self.auth = basic_auth_header(config.get("username"), password)
 
     def assert_status_code(self, code, in_range=False, is_in=False):
         """
@@ -96,10 +94,16 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
 
         :param kwargs:
         """
-        code = kwargs.get("status") or {"code": self.default_status_code, "in_range": True}
+        code = kwargs.get("status") or {
+            "code": self.default_status_code,
+            "in_range": True,
+        }
         headers = kwargs.get("headers") or {}
-        if 'Content-Type' not in headers:
-            headers['Content-Type'] = {"value": rf"{self.default_content_type}*", "regex": True}
+        if "Content-Type" not in headers:
+            headers["Content-Type"] = {
+                "value": rf"{self.default_content_type}*",
+                "regex": True,
+            }
 
         self.assert_status_code(**code)
         for k, v in headers.items():
@@ -115,12 +119,12 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
         :return:
         """
         url = url or self.endpoint
-        if not url.startswith('http'):
+        if not url.startswith("http"):
             url = "{}{}".format(self.endpoint, url)
 
-        self.set_auth(kwargs.pop('auth', None))
+        self.set_auth(kwargs.pop("auth", None))
         if self.auth is not None:
-            kwargs['auth'] = self.auth
+            kwargs["auth"] = self.auth
 
         self.response = self.test_client.open(method=method, path=url, **kwargs)
         self.dump_response(self.response, dump_body=True)
@@ -141,8 +145,9 @@ class TestHttpApi(TestHttpCall):
     @property
     def json(self):
         try:
-            if self.response.status_code != httpcode.NO_CONTENT and \
-                    "json" in (self.response.headers.get("Content-Type") or ""):
+            if self.response.status_code != httpcode.NO_CONTENT and "json" in (
+                self.response.headers.get("Content-Type") or ""
+            ):
                 return self.response.get_json()
         except json.decoder.JSONDecodeError as exc:
             assert False, "Test that json is valid failed, got: {}".format(exc)
@@ -154,8 +159,8 @@ class TestHttpApi(TestHttpCall):
         :param kwargs:
         """
         super().assert_response(**kwargs)
-        if kwargs.get('schema') is not None:
-            self.assert_schema(self.json, kwargs.get('schema'))
+        if kwargs.get("schema") is not None:
+            self.assert_schema(self.json, kwargs.get("schema"))
 
 
 class TestJsonRPC(TestHttpApi):
@@ -164,7 +169,9 @@ class TestJsonRPC(TestHttpApi):
 
     # noinspection PyShadowingBuiltins
     @classmethod
-    def prepare_payload(cls, id=False, method=None, params=None):  # pylint: disable=W0622
+    def prepare_payload(
+        cls, id=False, method=None, params=None
+    ):  # pylint: disable=W0622
         """
 
         :param id:
@@ -174,9 +181,9 @@ class TestJsonRPC(TestHttpApi):
         """
         data = dict(jsonrpc=cls.version, method=method)
         if id is not False:
-            data['id'] = id
+            data["id"] = id
         if params:
-            data['params'] = params
+            data["params"] = params
         return data
 
     def perform(self, request, response=None, **__):
@@ -185,14 +192,14 @@ class TestJsonRPC(TestHttpApi):
         :param request:
         :param response:
         """
-        req = {'method': 'POST'}
+        req = {"method": "POST"}
         res = response or {}
-        res.setdefault('schema', self.default_schema)
+        res.setdefault("schema", self.default_schema)
 
         if type(request) in (list, tuple):
-            req['json'] = [self.prepare_payload(*a) for a in request]
+            req["json"] = [self.prepare_payload(*a) for a in request]
         else:
-            req['json'] = self.prepare_payload(**request)
+            req["json"] = self.prepare_payload(**request)
 
         super().perform(request=req, response=res)
 
@@ -237,18 +244,21 @@ class TestRestApi(TestHttpApi):
         """
         request = request or {}
         response = response or {}
-        request['method'] = method
-        request['url'] = url or self.endpoint
+        request["method"] = method
+        request["url"] = url or self.endpoint
         return request, response
 
     def test_collection(self, request=None, response=None):
         req, res = self._normalize(request, response)
-        res.setdefault('status', dict(code=(httpcode.SUCCESS, httpcode.PARTIAL_CONTENT), is_in=True))
+        res.setdefault(
+            "status",
+            dict(code=(httpcode.SUCCESS, httpcode.PARTIAL_CONTENT), is_in=True),
+        )
         self.perform(req, res)
 
     def test_post(self, request=None, response=None):
-        req, res = self._normalize(request, response, 'POST')
-        res.setdefault('status', dict(code=httpcode.CREATED))
+        req, res = self._normalize(request, response, "POST")
+        res.setdefault("status", dict(code=httpcode.CREATED))
         self.perform(req, res)
 
     def test_get(self, res_id, request=None, response=None):
@@ -256,12 +266,14 @@ class TestRestApi(TestHttpApi):
         self.perform(req, res)
 
     def test_put(self, res_id, request=None, response=None):
-        req, res = self._normalize(request, response, 'PUT', self.resource_url(res_id))
+        req, res = self._normalize(request, response, "PUT", self.resource_url(res_id))
         self.perform(req, res)
 
     def test_delete(self, res_id, request=None, response=None):
-        req, res = self._normalize(request, response, 'DELETE', self.resource_url(res_id))
-        res.setdefault('status', dict(code=httpcode.NO_CONTENT))
-        res.setdefault('headers', {})
-        res['headers']['Content-Type'] = None
+        req, res = self._normalize(
+            request, response, "DELETE", self.resource_url(res_id)
+        )
+        res.setdefault("status", dict(code=httpcode.NO_CONTENT))
+        res.setdefault("headers", {})
+        res["headers"]["Content-Type"] = None
         self.perform(req, res)

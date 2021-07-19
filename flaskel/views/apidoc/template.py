@@ -6,9 +6,9 @@ from flaskel.views.template import RenderTemplateString
 
 
 class ApiDocTemplate(RenderTemplateString):
-    apispec_view = 'api.apispec'
-    default_view_name = 'apidocs'
-    default_urls = ['/apidocs']
+    apispec_view = "api.apispec"
+    default_view_name = "apidocs"
+    default_urls = ["/apidocs"]
 
     template = """<!doctype html>
 <html>
@@ -28,18 +28,18 @@ class ApiDocTemplate(RenderTemplateString):
 
         proto = cap.config.PREFERRED_URL_SCHEME
         return dict(
-            rapidoc_version=cap.config.RAPIDOC_VERSION or '8.4.3',
-            rapidoc_theme=cap.config.RAPIDOC_THEME or 'dark',
+            rapidoc_version=cap.config.RAPIDOC_VERSION or "8.4.3",
+            rapidoc_theme=cap.config.RAPIDOC_THEME or "dark",
             page_title=f"{cap.config.APP_NAME} - API DOCS",
-            spec_url=flask.url_for(self.apispec_view, _external=True, _scheme=proto)
+            spec_url=flask.url_for(self.apispec_view, _external=True, _scheme=proto),
         )
 
 
 class ApiSpecTemplate(BaseView):
-    default_view_name = 'apispec'
-    default_urls = ['/apidoc.json']
+    default_view_name = "apispec"
+    default_urls = ["/apidoc.json"]
 
-    def __init__(self, version='1.0.0', context_path=''):
+    def __init__(self, version="1.0.0", context_path=""):
         """
 
         :param version:
@@ -63,9 +63,14 @@ class ApiSpecTemplate(BaseView):
         try:
             apispec.info.version = self._api_version
             variables = apispec.servers[0].variables
-            variables['context']['default'] = self._context_path
-            scheme = cap.config.PREFERRED_URL_SCHEME or 'http'
-            variables['host']['default'] = f"{scheme}://{cap.config.SERVER_NAME}"
-        except (AttributeError, IndexError, KeyError, TypeError) as exc:  # pragma: no cover
+            variables["context"]["default"] = self._context_path
+            scheme = cap.config.PREFERRED_URL_SCHEME or "http"
+            variables["host"]["default"] = f"{scheme}://{cap.config.SERVER_NAME}"
+        except (
+            AttributeError,
+            IndexError,
+            KeyError,
+            TypeError,
+        ) as exc:  # pragma: no cover
             cap.logger.exception(exc)
         return apispec

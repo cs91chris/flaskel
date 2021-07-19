@@ -38,8 +38,8 @@ class ForceHttps(BaseMiddleware):
         :return:
         """
         conf = self.get_config()
-        url_scheme = conf.PREFERRED_URL_SCHEME or 'https'
-        environ['wsgi.url_scheme'] = url_scheme
+        url_scheme = conf.PREFERRED_URL_SCHEME or "https"
+        environ["wsgi.url_scheme"] = url_scheme
         return self.app(environ, start_response)
 
 
@@ -109,15 +109,15 @@ class HTTPMethodOverride(BaseMiddleware):
         :return:
         """
         conf = self.get_config()
-        methods = conf.OVERRIDE_METHODS or ('POST',)
-        method = environ.get('HTTP_X_HTTP_METHOD_OVERRIDE', None)
+        methods = conf.OVERRIDE_METHODS or ("POST",)
+        method = environ.get("HTTP_X_HTTP_METHOD_OVERRIDE", None)
 
-        if '_method_override' in environ.get('QUERY_STRING', ''):
-            args = url_decode(environ['QUERY_STRING'])
-            method = args.get('_method_override')
+        if "_method_override" in environ.get("QUERY_STRING", ""):
+            args = url_decode(environ["QUERY_STRING"])
+            method = args.get("_method_override")
 
-        if method and environ['REQUEST_METHOD'] in methods:
-            environ['REQUEST_METHOD'] = method.upper()
+        if method and environ["REQUEST_METHOD"] in methods:
+            environ["REQUEST_METHOD"] = method.upper()
 
         return self.app(environ, start_response)
 
@@ -148,7 +148,7 @@ class RequestID(BaseMiddleware):
     """
 
     # the http header name, overridden via flask app config
-    header_name = 'X-Request-ID'
+    header_name = "X-Request-ID"
 
     # the request id value prefix used to trust uniqueness
     request_id_prefix = None
@@ -170,7 +170,9 @@ class RequestID(BaseMiddleware):
         conf = self.get_config()
         header_name = conf.REQUEST_ID_HEADER or self.header_name
         flask_header_name = f"HTTP_{header_name.upper().replace('-', '_')}"
-        request_id_header = self._compute_request_id_header(environ.get(flask_header_name))
+        request_id_header = self._compute_request_id_header(
+            environ.get(flask_header_name)
+        )
         environ[flask_header_name] = request_id_header
 
         def new_start_response(status, headers, exc_info=None):
@@ -189,7 +191,7 @@ class RequestID(BaseMiddleware):
         if header_value is None:
             return uuid.get_uuid()
 
-        for request_id in header_value.split(','):
+        for request_id in header_value.split(","):
             if self._is_unique(request_id):
                 return header_value
 
@@ -205,8 +207,7 @@ class RequestID(BaseMiddleware):
         """
         conf = self.get_config()
         request_id_prefix = conf.REQUEST_ID_PREFIX or self.request_id_prefix
-        if request_id_prefix is not None and \
-                request_id.startswith(request_id_prefix):
+        if request_id_prefix is not None and request_id.startswith(request_id_prefix):
             return True  # pragma: no cover
 
         try:

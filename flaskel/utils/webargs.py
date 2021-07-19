@@ -14,13 +14,13 @@ class Field:
     integer = partial(fields.Integer)
     string = partial(fields.String)
     decimal = partial(fields.Decimal)
-    boolean = partial(fields.Boolean, truthy={'true', 1}, falsy={'false', 0})
+    boolean = partial(fields.Boolean, truthy={"true", 1}, falsy={"false", 0})
     positive = partial(integer, validate=lambda x: x > 0)
     not_negative = partial(integer, validate=lambda x: x >= 0)
     not_positive = partial(integer, validate=lambda x: x <= 0)
     negative = partial(integer, validate=lambda x: x < 0)
     isodate = partial(fields.DateTime, format=config.DATE_ISO_FORMAT)
-    list_of = partial(fields.DelimitedList, cls_or_instance=string(), delimiter='+')
+    list_of = partial(fields.DelimitedList, cls_or_instance=string(), delimiter="+")
 
 
 class OptField:
@@ -55,11 +55,14 @@ def handle_error(error, *_, **__):
     flask.abort(httpcode.BAD_REQUEST, response=error.messages)
 
 
-query_paginate = partial(query, dict(
-    page=OptField.positive(),
-    page_size=OptField.positive(),
-    related=OptField.boolean(missing=False),
-))
+query_paginate = partial(
+    query,
+    dict(
+        page=OptField.positive(),
+        page_size=OptField.positive(),
+        related=OptField.boolean(missing=False),
+    ),
+)
 
 
 def paginate(f=None):

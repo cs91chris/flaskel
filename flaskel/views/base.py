@@ -6,7 +6,7 @@ from flaskel.flaskel import httpcode
 
 
 class BaseView(View):
-    methods = ['GET']
+    methods = ["GET"]
 
     def dispatch_request(self, *_, **__):
         """
@@ -34,16 +34,16 @@ class BaseView(View):
 
 
 class Resource(MethodView):
-    methods_collection = ['GET', 'POST']
-    methods_subresource = ['GET', 'POST']
-    methods_resource = ['GET', 'PUT', 'DELETE']
+    methods_collection = ["GET", "POST"]
+    methods_subresource = ["GET", "POST"]
+    methods_resource = ["GET", "PUT", "DELETE"]
 
     @staticmethod
     def normalize_url(url):
         return f"/{url.lstrip('/')}"
 
     @classmethod
-    def register(cls, app, name=None, url=None, view=None, pk_type='int', **kwargs):
+    def register(cls, app, name=None, url=None, view=None, pk_type="int", **kwargs):
         """
 
         :param app: Flask or Blueprint instance
@@ -58,21 +58,18 @@ class Resource(MethodView):
         view_func = _class.as_view(name, **kwargs)
 
         if cls.methods_collection:
-            app.add_url_rule(
-                url, view_func=view_func,
-                methods=cls.methods_collection
-            )
+            app.add_url_rule(url, view_func=view_func, methods=cls.methods_collection)
         if cls.methods_resource:
             app.add_url_rule(
                 f"{url}/<{pk_type}:res_id>",
                 view_func=view_func,
-                methods=cls.methods_resource
+                methods=cls.methods_resource,
             )
         if cls.methods_subresource:
             app.add_url_rule(
                 f"{url}/<{pk_type}:res_id>/<sub_resource>",
                 view_func=view_func,
-                methods=cls.methods_subresource
+                methods=cls.methods_subresource,
             )
         return view_func
 
@@ -86,7 +83,7 @@ class Resource(MethodView):
             return self.on_collection(*args, **kwargs)
         if sub_resource is None:
             return self.on_get(res_id, *args, **kwargs)
-        if self.methods_subresource and 'GET' not in self.methods_subresource:
+        if self.methods_subresource and "GET" not in self.methods_subresource:
             flask.abort(httpcode.METHOD_NOT_ALLOWED)
 
         _sub_resource = getattr(self, f"sub_{sub_resource}", None)
@@ -98,7 +95,7 @@ class Resource(MethodView):
     def post(self, *args, res_id=None, sub_resource=None, **kwargs):
         if res_id is None:
             return self.on_post(*args, **kwargs)
-        if self.methods_subresource and 'POST' not in self.methods_subresource:
+        if self.methods_subresource and "POST" not in self.methods_subresource:
             flask.abort(httpcode.METHOD_NOT_ALLOWED)
 
         _sub_resource = getattr(self, f"sub_{sub_resource}_post", None)

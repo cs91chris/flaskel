@@ -2,7 +2,7 @@ from werkzeug.routing import BaseConverter, FloatConverter, UnicodeConverter
 
 
 class ListConverter(BaseConverter):
-    default_separator = '+'
+    default_separator = "+"
 
     def __init__(self, map_name=None, sep=None):
         """
@@ -31,7 +31,7 @@ class ListConverter(BaseConverter):
 
 
 CONVERTERS = {
-    'list': ListConverter,
-    'str': UnicodeConverter,
-    'decimal': FloatConverter,
+    "list": ListConverter,
+    "str": UnicodeConverter,
+    "decimal": FloatConverter,
 }

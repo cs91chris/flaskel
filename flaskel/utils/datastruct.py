@@ -11,7 +11,7 @@ class ConfigProxy:
         obj = self._proxy() or {}
         if not isinstance(item, str):
             return obj.get(item)
-        for _ in item.split('.'):
+        for _ in item.split("."):
             obj = obj.get(item) or {}
         return obj if obj != {} else None
 
@@ -30,7 +30,7 @@ class ConfigProxy:
 
         if self.key is None:
             return cap.config
-        for c in self.key.split('.'):
+        for c in self.key.split("."):
             res = res.get(c) or {}
         return res if res != {} else None
 
@@ -44,7 +44,7 @@ class ExtProxy:
 
     @property
     def extension(self):
-        attrs = self._name.split('.')
+        attrs = self._name.split(".")
         ret = cap.extensions[attrs[0]]
         for a in attrs[1:]:
             ret = getattr(ret, a, None)
@@ -80,7 +80,7 @@ class ObjectDict(dict):
             elif isinstance(v, list):
                 data[k] = []
                 for i in v:
-                    data[k].append(i.__dict__() if hasattr(i, '__dict__') else i)
+                    data[k].append(i.__dict__() if hasattr(i, "__dict__") else i)
             else:
                 data[k] = v
 
@@ -124,10 +124,7 @@ class ObjectDict(dict):
         """
         try:
             if isinstance(data, (list, tuple, set)):
-                return [
-                    ObjectDict(**r) if isinstance(r, dict) else r
-                    for r in data
-                ]
+                return [ObjectDict(**r) if isinstance(r, dict) else r for r in data]
             return ObjectDict(**data)
         except (TypeError, ValueError, AttributeError):
             return data
@@ -144,7 +141,7 @@ class ObjectDict(dict):
         res = {}
         for k, v in self.items():
             if k.startswith(prefix):
-                key = k[len(prefix):] if trim else k
+                key = k[len(prefix) :] if trim else k
                 res[key.lower() if lowercase else key] = v
         return res
 

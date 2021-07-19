@@ -16,8 +16,10 @@ basic_auth = HTTPBasicAuth()
 
 @basic_auth.verify_password
 def simple_basic_auth(username, password):
-    if username == cap.config.BASIC_AUTH_USERNAME \
-            and password == cap.config.BASIC_AUTH_PASSWORD:
+    if (
+        username == cap.config.BASIC_AUTH_USERNAME
+        and password == cap.config.BASIC_AUTH_PASSWORD
+    ):
         return dict(username=username, password=password)
     return None
 
@@ -104,7 +106,7 @@ class BaseTokenHandler:
         """
         return jwt.create_access_token(
             identity=identity or self.identity(),
-            expires_delta=timedelta(expires) if expires else None
+            expires_delta=timedelta(expires) if expires else None,
         )
 
     def get_refresh(self, identity=None, expires=None):
@@ -116,7 +118,7 @@ class BaseTokenHandler:
         """
         return jwt.create_refresh_token(
             identity=identity or self.identity(),
-            expires_delta=timedelta(expires) if expires else None
+            expires_delta=timedelta(expires) if expires else None,
         )
 
     def refresh(self, expires=None):
@@ -132,10 +134,17 @@ class BaseTokenHandler:
             expires_in=decoded.exp,
             issued_at=decoded.iat,
             token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
-            scope=cap.config.JWT_DEFAULT_SCOPE
+            scope=cap.config.JWT_DEFAULT_SCOPE,
         )
 
-    def create(self, identity, refresh=True, expires_access=None, expires_refresh=None, scope=None):
+    def create(
+        self,
+        identity,
+        refresh=True,
+        expires_access=None,
+        expires_refresh=None,
+        scope=None,
+    ):
         """
 
         :param identity: user identifier, generally the username
@@ -153,11 +162,13 @@ class BaseTokenHandler:
             expires_in=decoded.exp,
             issued_at=decoded.iat,
             token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
-            scope=scope or cap.config.JWT_DEFAULT_SCOPE
+            scope=scope or cap.config.JWT_DEFAULT_SCOPE,
         )
 
         if refresh:
-            resp.refresh_token = self.get_refresh(identity=identity, expires=expires_refresh)
+            resp.refresh_token = self.get_refresh(
+                identity=identity, expires=expires_refresh
+            )
 
         return resp
 
@@ -171,7 +182,7 @@ class BaseTokenHandler:
         return ObjectDict(
             token_type=token_type or cap.config.JWT_DEFAULT_TOKEN_TYPE,
             scope=scope or cap.config.JWT_DEFAULT_SCOPE,
-            **self.get_raw()
+            **self.get_raw(),
         )
 
 
@@ -192,7 +203,7 @@ class DBTokenHandler(BaseTokenHandler):
         :param jwt_data:
         :return:
         """
-        return self.model.is_block_listed(jwt_data['jti'])
+        return self.model.is_block_listed(jwt_data["jti"])
 
     def revoke(self, token=None):
         """
@@ -206,8 +217,8 @@ class DBTokenHandler(BaseTokenHandler):
 
 
 class RedisTokenHandler(BaseTokenHandler):
-    entry_value = 'true'
-    key_prefix = 'token_revoked::'
+    entry_value = "true"
+    key_prefix = "token_revoked::"
 
     def __init__(self, redis, blocklist_loader=None):
         """

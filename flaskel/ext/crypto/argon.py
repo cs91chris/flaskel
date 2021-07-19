@@ -25,11 +25,11 @@ class Argon2:
         app.config.setdefault("ARGON2_PARALLELISM", _argon2.DEFAULT_PARALLELISM)
         app.config.setdefault("ARGON2_SALT_LEN", _argon2.DEFAULT_RANDOM_SALT_LENGTH)
 
-        self._ph = _argon2.PasswordHasher(**app.config.get_namespace('ARGON2_'))
+        self._ph = _argon2.PasswordHasher(**app.config.get_namespace("ARGON2_"))
 
-        if not hasattr(app, 'extensions'):
+        if not hasattr(app, "extensions"):
             app.extensions = dict()  # pragma: no cover
-        app.extensions['argon2'] = self
+        app.extensions["argon2"] = self
 
     def generate_hash(self, password):
         """

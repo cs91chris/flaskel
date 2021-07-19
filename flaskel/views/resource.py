@@ -7,9 +7,9 @@ from .base import Resource
 
 
 class CatalogResource(Resource):
-    methods_collection = ['GET']
-    methods_resource = ['GET']
-    methods_subresource = ['GET']
+    methods_collection = ["GET"]
+    methods_resource = ["GET"]
+    methods_subresource = ["GET"]
 
     def __init__(self, model):
         """
@@ -44,17 +44,22 @@ class CatalogResource(Resource):
 
         model = model or self._model
         max_size = cap.config.MAX_PAGE_SIZE
-        page = params.get('page')
-        size = params.get('page_size')
+        page = params.get("page")
+        size = params.get("page_size")
         size = max(size, max_size or 0) if size else max_size
-        order_by = getattr(model, 'order_by', None)
+        order_by = getattr(model, "order_by", None)
 
         return self.response_paginated(
             model.get_list(
-                to_dict=False, order_by=order_by, page=page, page_size=size,
-                max_per_page=max_size, params=params, **kwargs
+                to_dict=False,
+                order_by=order_by,
+                page=page,
+                page_size=size,
+                max_per_page=max_size,
+                params=params,
+                **kwargs,
             ),
-            restricted=not params.get('related', False)
+            restricted=not params.get("related", False),
         )
 
     def response_paginated(self, res, **kwargs):
@@ -70,16 +75,16 @@ class CatalogResource(Resource):
         return (
             [r.to_dict(**kwargs) for r in res.items],
             httpcode.PARTIAL_CONTENT if res.has_next else httpcode.SUCCESS,
-            self.pagination_headers(res)
+            self.pagination_headers(res),
         )
 
     @staticmethod
     def pagination_headers(data):
         return {
-            'X-Pagination-Count': data.total,
-            'X-Pagination-Page': data.page,
-            'X-Pagination-Num-Pages': data.pages,
-            'X-Pagination-Page-Size': data.per_page,
+            "X-Pagination-Count": data.total,
+            "X-Pagination-Page": data.page,
+            "X-Pagination-Num-Pages": data.pages,
+            "X-Pagination-Page-Size": data.per_page,
         }
 
 
@@ -87,9 +92,9 @@ class Restful(CatalogResource):
     post_schema = None
     put_schema = None
     validator = PayloadValidator
-    methods_collection = ['GET', 'POST']
-    methods_subresource = ['GET', 'POST']
-    methods_resource = ['GET', 'PUT', 'DELETE']
+    methods_collection = ["GET", "POST"]
+    methods_subresource = ["GET", "POST"]
+    methods_resource = ["GET", "PUT", "DELETE"]
 
     def __init__(self, session, model):
         """
