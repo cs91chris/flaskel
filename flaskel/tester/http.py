@@ -20,7 +20,7 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
     default_status_code = (httpcode.SUCCESS, 299)
     default_content_type = "text/html"
 
-    def __init__(self, test_client, endpoint=None, auth=None, **kwargs):
+    def __init__(self, test_client, endpoint=None, auth=None, **__):
         """
 
         :param endpoint:
@@ -125,7 +125,7 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
         self.response = self.test_client.open(method=method, path=url, **kwargs)
         self.dump_response(self.response, dump_body=True)
 
-    def perform(self, request, response=None, **kwargs):
+    def perform(self, request, response=None, **__):
         """
 
         :param request:
@@ -142,10 +142,11 @@ class TestHttpApi(TestHttpCall):
     def json(self):
         try:
             if self.response.status_code != httpcode.NO_CONTENT and \
-                    "json" in self.response.headers.get("Content-Type") or "":
+                    "json" in (self.response.headers.get("Content-Type") or ""):
                 return self.response.get_json()
         except json.decoder.JSONDecodeError as exc:
             assert False, "Test that json is valid failed, got: {}".format(exc)
+        return None
 
     def assert_response(self, **kwargs):
         """
@@ -163,7 +164,7 @@ class TestJsonRPC(TestHttpApi):
 
     # noinspection PyShadowingBuiltins
     @classmethod
-    def prepare_payload(cls, id=False, method=None, params=None):
+    def prepare_payload(cls, id=False, method=None, params=None):  # pylint: disable=W0622
         """
 
         :param id:
@@ -178,7 +179,7 @@ class TestJsonRPC(TestHttpApi):
             data['params'] = params
         return data
 
-    def perform(self, request, response=None, **kwargs):
+    def perform(self, request, response=None, **__):
         """
 
         :param request:

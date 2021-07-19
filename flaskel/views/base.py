@@ -8,7 +8,7 @@ from flaskel.flaskel import httpcode
 class BaseView(View):
     methods = ['GET']
 
-    def dispatch_request(self, *args, **kwargs):
+    def dispatch_request(self, *_, **__):
         """
         Must be implemented in every subclass
         """
@@ -114,19 +114,19 @@ class Resource(MethodView):
     def put(self, res_id, *args, **kwargs):
         return self.on_put(res_id, *args, **kwargs)
 
-    def on_get(self, res_id, *args, **kwargs):
+    def on_get(self, *_, **__):
         return self._not_implemented()  # pragma: no cover
 
-    def on_post(self, *args, **kwargs):
+    def on_post(self, *_, **__):
         return self._not_implemented()  # pragma: no cover
 
-    def on_put(self, res_id, *args, **kwargs):
+    def on_put(self, *_, **__):
         return self._not_implemented()  # pragma: no cover
 
-    def on_delete(self, res_id, *args, **kwargs):
+    def on_delete(self, *_, **__):
         return self._not_implemented()  # pragma: no cover
 
-    def on_collection(self, *args, **kwargs):
+    def on_collection(self, *_, **__):
         return self._not_implemented()  # pragma: no cover
 
     # noinspection PyMethodMayBeStatic

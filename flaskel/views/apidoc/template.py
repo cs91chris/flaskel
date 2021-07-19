@@ -22,7 +22,7 @@ class ApiDocTemplate(RenderTemplateString):
     <body><rapi-doc theme="{rapidoc_theme}" spec-url="{spec_url}"></rapi-doc></body>
 </html>"""
 
-    def service(self):
+    def service(self, *_, **__):
         if not cap.config.APIDOCS_ENABLED:
             flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
 
@@ -48,7 +48,7 @@ class ApiSpecTemplate(BaseView):
         self._api_version = version
         self._context_path = f"{flask.request.environ['SCRIPT_NAME']}/{context_path}"
 
-    def dispatch_request(self):
+    def dispatch_request(self, *_, **__):
         if not cap.config.APIDOCS_ENABLED:
             flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
 

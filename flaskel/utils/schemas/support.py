@@ -54,7 +54,7 @@ class JSONSchema:
         if not schema:
             return True
 
-        if type(schema) is str:
+        if isinstance(schema, str):
             if schema.startswith('https://') or schema.startswith('http://'):
                 schema = cls.load_from_url(schema)
             if schema.startswith('file://'):
@@ -144,7 +144,7 @@ class PayloadValidator:
 
         payload = flask.request.json
         try:
-            schema = cls.schemas.get(schema) if type(schema) is str else schema
+            schema = cls.schemas.get(schema) if isinstance(schema, str) else schema
             cls.validator.validate(payload, schema, raise_exc=True)
             return payload
         except jsonschema.SchemaError as exc:
@@ -154,6 +154,7 @@ class PayloadValidator:
             cap.logger.error(cls.validator.error_report(exc, payload))
             reason = dict(cause=exc.cause, message=exc.message, path=exc.path)
             flask.abort(httpcode.UNPROCESSABLE_ENTITY, response=dict(reason=reason))
+        return None
 
 
 class Fields:

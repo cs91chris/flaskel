@@ -9,6 +9,7 @@ class RPCError(Exception):
         :param message:
         :param data:
         """
+        super().__init__(code, message)
         self.code = code
         self.message = message
         self.data = data

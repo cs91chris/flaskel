@@ -1,6 +1,9 @@
 from multiprocessing import cpu_count
 
-from waitress import serve
+try:
+    from waitress import serve
+except ImportError:
+    serve = None
 
 from .base import BaseApplication
 
@@ -12,6 +15,7 @@ class WSGIWaitress(BaseApplication):
         :return:
         """
         self.options.setdefault('threads', cpu_count())
+        assert serve is not None, "You must install 'waitress'"
 
         serve(
             self.application,

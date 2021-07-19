@@ -17,7 +17,7 @@ def health_sqlalchemy(db, app, stm='SELECT 1'):
         with app.app_context():
             with db.engine.connect() as connection:
                 connection.execute(stm)
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:  # pragma: no cover pylint: disable=W0703
         return False, str(exc)
     return True, None
 
@@ -33,7 +33,7 @@ def health_mongo(db, app, cmd='ping'):
     try:
         with app.app_context():
             db.db.command(cmd)
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=W0703
         return False, str(exc)
     return True, None  # pragma: no cover
 
@@ -48,13 +48,13 @@ def health_redis(db, app):
     try:
         with app.app_context():
             db.ping()
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=W0703
         return False, str(exc)
     return True, None  # pragma: no cover
 
 
 # noinspection PyUnusedLocal
-def health_glances(conf=None, **kwargs):
+def health_glances(conf=None, **__):
     """
 
     :param conf:
@@ -104,7 +104,7 @@ def health_glances(conf=None, **kwargs):
 
 
 # noinspection PyProtectedMember,PyUnusedLocal
-def health_system(conf=None, **kwargs):
+def health_system(conf=None, **__):
     """
 
     :param conf:
@@ -148,7 +148,7 @@ def health_system(conf=None, **kwargs):
     return bool(not resp.errors), dict(messages=output)
 
 
-def health_services(app, conf_key='SERVICES', *args, **kwargs):
+def health_services(app, *_, conf_key='SERVICES', **__):
     status = True
     response = {}
     services = app.config.get(conf_key) or {}

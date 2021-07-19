@@ -22,7 +22,7 @@ class FetchMail(HTTPClient):
         self.retry = retry
         self.wait = wait
 
-    def get(self, recipient, subject=None):
+    def get(self, recipient, subject=None, **__):
         """
 
         :param recipient:
@@ -56,3 +56,4 @@ class FetchMail(HTTPClient):
                 return res
 
             time.sleep(self.wait)
+            return None

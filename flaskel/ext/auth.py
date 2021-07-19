@@ -19,6 +19,7 @@ def simple_basic_auth(username, password):
     if username == cap.config.BASIC_AUTH_USERNAME \
             and password == cap.config.BASIC_AUTH_PASSWORD:
         return dict(username=username, password=password)
+    return None
 
 
 @jwtm.invalid_token_loader
@@ -57,7 +58,7 @@ class BaseTokenHandler:
         return None  # pragma: no cover
 
     # noinspection PyMethodMayBeStatic
-    def prepare_identity(self, data):
+    def prepare_identity(self, data):  # pylint: disable=R0201
         return data
 
     @classmethod
@@ -67,13 +68,13 @@ class BaseTokenHandler:
 
     @classmethod
     def auth_required(cls, perm=None, **kwargs):
-        def wrapper(f):
-            @functools.wraps(f)
+        def wrapper(fun):
+            @functools.wraps(fun)
             @jwt.jwt_required(**kwargs)
             def check_optional_permission(*args, **kw):
                 if perm is not None:
                     cls.check_permission(perm)
-                return f(*args, **kw)
+                return fun(*args, **kw)
 
             return check_optional_permission
 
@@ -82,7 +83,7 @@ class BaseTokenHandler:
     @classmethod
     def identity(cls):
         identity = jwt.get_jwt_identity()
-        if type(identity) is dict:
+        if isinstance(identity, dict):
             identity = ObjectDict(**identity)
         return identity
 

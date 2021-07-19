@@ -11,8 +11,6 @@ from .utils import misc, ObjectDict
 
 
 class AppBuilder:
-    """Flask app builder"""
-
     """
     default app name
     """
@@ -64,7 +62,7 @@ class AppBuilder:
         self._extensions = extensions or {}
         self._middlewares = middlewares or ()
         self._folders = folders or ()
-        self._options = options or ()
+        self._options = options or {}
         self._views = views or ()
         self._after_request = after_request or ()
         self._before_request = before_request or ()
@@ -213,7 +211,7 @@ class AppBuilder:
             file = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
             self._app.wsgi_app = ProfilerMiddleware(
                 self._app.wsgi_app,
-                stream=open(file, 'w') if file else sys.stdout,
+                stream=open(file, 'w') if file else sys.stdout,  # pylint: disable=R1732
                 restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION
             )
             self._app.logger.debug("Registered middleware: '%s'", ProfilerMiddleware.__name__)

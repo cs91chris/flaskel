@@ -48,12 +48,9 @@ class SQLASupport:
             query = self.session.query(self.model).filter_by(**lookup)
             if lock:
                 query = query.with_for_update()
-            try:
-                obj = query.one()
-            except NoResultError:
-                raise
-            else:
-                return obj, False
+
+            obj = query.one()
+            return obj, False
         else:
             return obj, True
 

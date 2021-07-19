@@ -1,3 +1,4 @@
+# pylint: disable=all
 class FakeLogger:
     def debug(self, *args, **kwargs):
         pass

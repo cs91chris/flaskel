@@ -11,7 +11,7 @@ from .wsgi.factory import WSGIFactory
 
 
 # noinspection PyUnusedLocal
-def option_as_dict(ctx, param, value):
+def option_as_dict(ctx, param, value):  # pylint: disable=W0613
     """
 
     :param ctx:

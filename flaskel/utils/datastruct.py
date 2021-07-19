@@ -11,11 +11,11 @@ class ConfigProxy:
         obj = self._proxy() or {}
         if not isinstance(item, str):
             return obj.get(item)
-        for i in item.split('.'):
+        for _ in item.split('.'):
             obj = obj.get(item) or {}
         return obj if obj != {} else None
 
-    def __call__(self, item=None, *args, **kwargs):
+    def __call__(self, *args, item=None, **kwargs):
         if item is None:
             return self._proxy()
         return self.__getattr__(item)
@@ -96,6 +96,7 @@ class ObjectDict(dict):
     def __getattr__(self, name):
         if name in self:
             return self[name]
+        return None
 
     def __setattr__(self, name, value):
         self[name] = self.normalize(value)
@@ -167,7 +168,7 @@ class IntEnum(enum.IntEnum):
 
 
 class Dumper:
-    def __init__(self, data, callback=None, *args, **kwargs):
+    def __init__(self, data, *args, callback=None, **kwargs):
         """
 
         :param data:

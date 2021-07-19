@@ -1,8 +1,8 @@
 import flask
-from flaskel.flaskel import cap, httpcode
-from flaskel.utils import PayloadValidator, webargs
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from flaskel.flaskel import cap, httpcode
+from flaskel.utils import PayloadValidator, webargs
 from .base import Resource
 
 
@@ -18,7 +18,7 @@ class CatalogResource(Resource):
         """
         self._model = model
 
-    def on_get(self, res_id, model=None, *args, **kwargs):
+    def on_get(self, res_id, *_, model=None, **kwargs):
         """
         Get resource info
 
@@ -30,7 +30,7 @@ class CatalogResource(Resource):
         model = model or self._model
         return model.get_one(id=res_id, **kwargs)
 
-    def on_collection(self, params=None, model=None, *args, **kwargs):
+    def on_collection(self, *_, params=None, model=None, **kwargs):
         """
         Resource collection paginated and sorted
 
@@ -64,7 +64,7 @@ class CatalogResource(Resource):
         :param res: list of sqlalchemy models
         :return:
         """
-        if type(res) is list:
+        if isinstance(res, list):
             return [r.to_dict(**kwargs) for r in res]
 
         return (
@@ -76,8 +76,8 @@ class CatalogResource(Resource):
     @staticmethod
     def pagination_headers(data):
         return {
-            'X-Pagination-Count':     data.total,
-            'X-Pagination-Page':      data.page,
+            'X-Pagination-Count': data.total,
+            'X-Pagination-Page': data.page,
             'X-Pagination-Num-Pages': data.pages,
             'X-Pagination-Page-Size': data.per_page,
         }
@@ -140,7 +140,7 @@ class Restful(CatalogResource):
             self._session.rollback()
             flask.abort(httpcode.INTERNAL_SERVER_ERROR)
 
-    def on_post(self, *args, **kwargs):
+    def on_post(self, *_, **__):
         """
 
         :return:
@@ -150,7 +150,7 @@ class Restful(CatalogResource):
         self._create(res)
         return res.to_dict(), httpcode.CREATED
 
-    def on_delete(self, res_id, *args, **kwargs):
+    def on_delete(self, res_id, *_, **__):
         """
 
         :param res_id: resource identifier (primary key value)
@@ -174,7 +174,7 @@ class Restful(CatalogResource):
             self._session.rollback()
             flask.abort(httpcode.INTERNAL_SERVER_ERROR)
 
-    def on_put(self, res_id, *args, **kwargs):
+    def on_put(self, res_id, *_, **__):
         """
 
         :param res_id: resource identifier (primary key value)

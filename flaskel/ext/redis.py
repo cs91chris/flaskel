@@ -12,7 +12,7 @@ except (ImportError, ModuleNotFoundError):  # pragma: no cover
 
 
 class JSONRedisClient(Client):
-    def __init__(self, encoder=None, *args, **kwargs):
+    def __init__(self, *args, encoder=None, **kwargs):
         super().__init__(encoder or JsonEncoder(), *args, **kwargs)
 
     @staticmethod
@@ -25,7 +25,7 @@ class JSONRedisClient(Client):
     def json_get(self, key, path=None):
         return self.jsonget(key, self.json_path(path))
 
-    def json_array_add(self, key, data, path=None, **kwargs):
+    def json_array_add(self, key, data, path=None, **__):
         path = self.json_path(path)
         pipe = self.pipeline()
         pipe.jsonset(key, path, [], nx=True)

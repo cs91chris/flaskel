@@ -30,7 +30,7 @@ class CatalogMixin:
 
     @declared_attr
     def __table_args__(self):
-        return db.UniqueConstraint('label', 'type_id'),
+        return (db.UniqueConstraint('label', 'type_id'),)
 
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(100))
@@ -38,7 +38,7 @@ class CatalogMixin:
     description = db.Column(db.String(250))
 
     def __str__(self):
-        return self.label
+        return str(self.label)
 
     def to_dict(self, **kwargs):
         return ObjectDict(
@@ -53,7 +53,7 @@ class CatalogMixin:
 class CatalogXMixin(CatalogMixin):
     @declared_attr
     def __table_args__(self):
-        return db.UniqueConstraint('code', 'type_id'),
+        return (db.UniqueConstraint('code', 'type_id'),)
 
     code = db.Column(db.String(20))
     order_id = db.Column(db.Integer, index=True)
@@ -82,7 +82,7 @@ class LoaderMixin:
         """
 
     @classmethod
-    def load_values(cls, *args, **kwargs):
+    def load_values(cls, *_, **__):
         for d in cls.values:
             db.session.add(cls(**d))
         db.session.commit()

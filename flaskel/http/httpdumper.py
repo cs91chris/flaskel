@@ -42,8 +42,7 @@ class BaseHTTPDumper:
 
         if len(tmp) > 1:
             return tmp[1].strip('"').lstrip('<').rstrip('>')
-        else:
-            return None
+        return None
 
     @classmethod
     def dump_request(cls, req, dump_body=None, only_hdr=()):
@@ -112,11 +111,11 @@ class LazyHTTPDumper(BaseHTTPDumper):
 
 class FlaskelHTTPDumper(LazyHTTPDumper):
     @classmethod
-    def dump_request(cls, req, dump_body=None, **kwargs):
+    def dump_request(cls, req, *_, dump_body=None, **kwargs):
         h = cap.config.LOG_REQ_HEADERS
         return super().dump_request(req, dump_body, only_hdr=h, **kwargs)
 
     @classmethod
-    def dump_response(cls, resp, dump_body=None, **kwargs):
+    def dump_response(cls, resp, *_, dump_body=None, **kwargs):
         h = cap.config.LOG_RESP_HEADERS
         return super().dump_response(resp, dump_body, only_hdr=h, **kwargs)

@@ -9,21 +9,20 @@ from .utils.datastruct import ObjectDict
 
 class Request(flask.Request):
     @property
-    def id(self):
+    def id(self):  # pylint: disable=C0103
         hdr = cap.config.REQUEST_ID_HEADER
         if hasattr(flask.g, 'request_id'):
             return flask.g.request_id
-        elif hdr in flask.request.headers:
+        if hdr in flask.request.headers:
             return flask.request.headers[hdr]
 
         flask_header_name = f"HTTP_{hdr.upper().replace('-', '_')}"
         return flask.request.environ.get(flask_header_name)
 
-    def get_json(self, allow_empty=False, **kwargs):
+    def get_json(self, allow_empty=False, **__):
         """
 
         :param allow_empty:
-        :param kwargs:
         :return:
         """
         payload = super().get_json()
@@ -81,7 +80,7 @@ class Response(flask.Response):
 
         return resp
 
-    def get_json(self, **kwargs):
+    def get_json(self, **__):
         return ObjectDict.normalize(super().get_json())
 
 

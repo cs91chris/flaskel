@@ -21,15 +21,13 @@ class ListConverter(BaseConverter):
         """
         return value.split(self._sep)
 
-    def to_url(self, values):
+    def to_url(self, value):
         """
 
-        :param values:
+        :param value:
         :return:
         """
-        return self._sep.join(
-            BaseConverter.to_url(self, v) for v in values
-        )
+        return self._sep.join(BaseConverter.to_url(self, v) for v in value)
 
 
 CONVERTERS = {

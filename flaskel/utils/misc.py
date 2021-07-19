@@ -39,8 +39,7 @@ def get_from_dict(d, k, default=None):
     """
     if isinstance(d, dict):
         return d.get(k, default)
-    else:
-        return default
+    return default
 
 
 def to_int(n):

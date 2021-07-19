@@ -52,7 +52,7 @@ class BaseAssert:
             return a == e
 
         cls.assert_that(
-            lambda a, e: _equals(a, e),
+            _equals,
             error=error, that=f"'{actual}' is equals to '{expected}'",
             actual=actual, expected=expected
         )
@@ -65,7 +65,7 @@ class BaseAssert:
             return a != e
 
         cls.assert_that(
-            lambda a, e: _different(a, e),
+            _different,
             error=error, that=f"'{actual}' is different to '{expected}'",
             actual=actual, expected=expected
         )
@@ -102,7 +102,7 @@ class BaseAssert:
             return a > e
 
         cls.assert_that(
-            lambda a, e: _greater(a, e),
+            _greater,
             error=error, that=f"'{actual}' is greater than '{expected}'",
             actual=actual, expected=expected
         )
@@ -115,7 +115,7 @@ class BaseAssert:
             return a < e
 
         cls.assert_that(
-            lambda a, e: _less(a, e),
+            _less,
             error=error, that=f"'{actual}' is less than '{expected}'",
             actual=actual, expected=expected
         )
@@ -126,7 +126,7 @@ class BaseAssert:
             return all(i in a for i in e)
 
         cls.assert_that(
-            lambda a, e: _allin(a, e),
+            _allin,
             error=error, that=f"'{actual}' are all in '{expected}'",
             actual=actual, expected=expected
         )
@@ -134,7 +134,7 @@ class BaseAssert:
     @classmethod
     def assert_type(cls, actual, expected, error=None):
         cls.assert_that(
-            lambda a, e: type(a) is e,
+            isinstance,
             error=error, that=f"type of '{actual}' is '{expected}'",
             actual=actual, expected=expected
         )
@@ -203,7 +203,7 @@ class RegexMixin(BaseAssert):
         :param error:
         """
         cls.assert_that(
-            lambda a, e: cls.regex_match(a, e),
+            cls.regex_match,
             error=error, that=f"'{actual}' matches '{expected}'",
             actual=actual, expected=expected
         )
@@ -225,10 +225,9 @@ class RegexMixin(BaseAssert):
             tmp = len(cls.regex_find(a, e))
             if greater:
                 return tmp > occurrence
-            elif less:
+            if less:
                 return tmp < occurrence
-            else:
-                return tmp == occurrence
+            return tmp == occurrence
 
         operator = "equals to"
         if greater:
@@ -238,8 +237,7 @@ class RegexMixin(BaseAssert):
 
         that = f"occurrences of '{expected}' in '{actual}' are {operator} '{occurrence}'"
         cls.assert_that(
-            lambda a, e: find_all(a, e),
-            error=error, that=that, actual=actual, expected=expected
+            find_all, error=error, that=that, actual=actual, expected=expected
         )
 
 

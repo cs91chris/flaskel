@@ -71,7 +71,7 @@ class HealthCheck:
             try:
                 func = ex.pop('func')
                 self.register(**ex)(func)
-            except Exception as exc:
+            except Exception as exc:  # pylint: disable=W0703
                 app.logger.exception(exc)
                 app.logger.error("invalid healthcheck extension: %s", ex)
 
@@ -92,7 +92,7 @@ class HealthCheck:
             params = set(params).intersection(all_checks)
 
         # noinspection PyProtectedMember,PyUnresolvedReferences
-        app = cap._get_current_object()
+        app = cap._get_current_object()  # pylint: disable=W0212
         params = list(params)
         tasks = [(self._health_checks.get(p), dict(app=app)) for p in params]
         resp = self._executor(tasks=tasks).run()

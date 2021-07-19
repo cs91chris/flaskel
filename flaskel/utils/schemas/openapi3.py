@@ -1,3 +1,4 @@
+#pylint: disable=C0302
 SCHEMA = {
     "id":                   "https://spec.openapis.org/oas/3.0/schema/2019-04-02",
     "$schema":              "http://json-schema.org/draft-04/schema#",

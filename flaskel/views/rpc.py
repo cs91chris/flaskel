@@ -4,7 +4,7 @@ import inspect
 import flask
 from flask.views import View
 
-import flaskel.http.rpc as rpc
+from flaskel.http import rpc
 from flaskel.ext.default import builder
 from flaskel.flaskel import cap, httpcode, Response
 from flaskel.utils.batch import DaemonThread, ThreadBatchExecutor
@@ -66,7 +66,7 @@ class JSONRPCView(View):
         if not payload:
             raise rpc.RPCParseError() from None
 
-        if type(payload) is list:
+        if isinstance(payload, (list, tuple)):
             max_requests = cap.config.JSONRPC_BATCH_MAX_REQUEST
             if max_requests and len(payload) > max_requests:
                 mess = f"Operations in a single http request must be less than {max_requests}"
@@ -113,7 +113,7 @@ class JSONRPCView(View):
                 error=ex.as_dict()
             ), httpcode.BAD_REQUEST
 
-        for d in (payload if type(payload) is list else [payload]):
+        for d in payload if isinstance(payload, list) else [payload]:
             resp = ObjectDict(jsonrpc=self.version, id=None)
             try:
                 if 'id' not in d:
@@ -124,7 +124,7 @@ class JSONRPCView(View):
                     resp.result = action(**(d.get('params') or {}))
             except rpc.RPCError as ex:
                 resp.error = ex.as_dict()
-            except Exception as ex:
+            except Exception as ex:  # pylint: disable=W0703
                 cap.logger.exception(ex)
                 mess = str(ex) if cap.debug is True else None
                 resp.error = rpc.RPCInternalError(message=mess).as_dict()
@@ -138,7 +138,7 @@ class JSONRPCView(View):
             res = Response.no_content()
             return None, res.status_code, res.headers
 
-        if type(payload) is list:
+        if isinstance(payload, (list, tuple)):
             if len(responses) > 1:
                 return responses, httpcode.MULTI_STATUS
             return responses

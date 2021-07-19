@@ -34,8 +34,8 @@ class ClientMail(Mail):
         if attachments:
             try:
                 for attach in attachments:
-                    with open(attach['filename']) as f:
-                        mail_message.attach(data=f.read(), **(attach or {}))
+                    with open(attach['filename']) as file:
+                        mail_message.attach(data=file.read(), **(attach or {}))
             except (OSError, IOError) as exc:
                 app.logger.warning(str(exc))
 

@@ -22,8 +22,7 @@ class BatchExecutor:
         try:
             if len(task) > 1:
                 return task[0], task[1] or {}
-            else:
-                return task[0], {}
+            return task[0], {}
         except TypeError:
             return task, {}
 
@@ -76,7 +75,7 @@ class AsyncBatchExecutor(BatchExecutor):
 
 
 class Thread(threading.Thread):
-    def __init__(self, runnable, params=None, daemon=False, *args, **kwargs):
+    def __init__(self, runnable, *args, params=None, daemon=False, **kwargs):
         """
 
         :param fun:
@@ -94,7 +93,7 @@ class Thread(threading.Thread):
 
 
 class DaemonThread(threading.Thread):
-    def __init__(self, runnable, params=None, *args, **kwargs):
+    def __init__(self, runnable, *args, params=None, **kwargs):
         """
 
         :param runnable:
@@ -140,7 +139,7 @@ class ThreadBatchExecutor(BatchExecutor):
             if t.daemon is False:
                 t.join()
             else:
-                return
+                return None
 
         if self._single_thread:
             return self._tasks[0].response

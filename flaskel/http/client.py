@@ -66,7 +66,7 @@ class HTTPBase(LazyHTTPDumper):
 
     @staticmethod
     def _normalize_dump_flag(dump_body):
-        if type(dump_body) is bool:
+        if isinstance(dump_body, bool):
             return dump_body, dump_body
         if not dump_body:
             return False, False
@@ -104,9 +104,9 @@ class HTTPClient(HTTPBase):
         """
         if self._username and self._password:
             return auth.HTTPBasicAuth(self._username, self._password)
-
         if self._token:
             return HTTPTokenAuth(self._token)
+        return None
 
     def normalize_url(self, url):
         if url.startswith('http'):
@@ -284,5 +284,4 @@ class FlaskelHttp(FlaskelHTTPDumper, HTTPClient):
 
 
 class FlaskelJsonRPC(FlaskelHttp, JsonRPCClient):
-    """
-    """
+    pass

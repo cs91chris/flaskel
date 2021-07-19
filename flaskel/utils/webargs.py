@@ -51,7 +51,7 @@ class ReqField:
 
 # noinspection PyUnusedLocal
 @parser.error_handler
-def handle_error(error, *args, **kwargs):
+def handle_error(error, *_, **__):
     flask.abort(httpcode.BAD_REQUEST, response=error.messages)
 
 

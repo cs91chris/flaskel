@@ -7,7 +7,7 @@ from flaskel import ObjectDict
 
 
 class FlaskMongoDB(PyMongo):
-    def init_app(self, app, uri=None, ext_name='default', *args, **kwargs):
+    def init_app(self, app, *args, uri=None, ext_name='default', **kwargs):
         """
 
         :param app:

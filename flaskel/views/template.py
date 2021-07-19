@@ -18,7 +18,7 @@ class RenderTemplate(BaseView):
         self._template = template or self.template
 
     # noinspection PyUnusedLocal
-    def service(self, *args, **kwargs):
+    def service(self, *_, **kwargs):
         """
 
         :param args:
@@ -30,14 +30,14 @@ class RenderTemplate(BaseView):
     def response(self, data, **kwargs):
         return flask.Response(data, mimetype=self._content_type, **kwargs)
 
-    def dispatch_request(self):
+    def dispatch_request(self, *_, **__):
         params = self.service()
         template = flask.render_template(self._template, **params)
         return self.response(template)
 
 
 class RenderTemplateString(RenderTemplate):
-    def dispatch_request(self):
+    def dispatch_request(self, *_, **__):
         params = self.service()
         template = flask.render_template_string(self._template, **params)
         return self.response(template)

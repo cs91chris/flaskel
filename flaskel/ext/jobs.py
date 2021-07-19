@@ -82,7 +82,7 @@ class APJobs(APScheduler):
                 pass
 
         try:
-            f = open(lock_file, "wb")
+            f = open(lock_file, "wb")  # pylint: disable=R1732
             fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
             atexit.register(unlock)
             return True

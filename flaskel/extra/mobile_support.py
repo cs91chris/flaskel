@@ -24,6 +24,7 @@ class RedisStore:
     def release(self, key, v, u=False):
         if self.client.lpush(key, f'{v}{self.sep}{int(u)}'):
             return version.parse(v), u
+        return None
 
     def latest(self, key):
         ver = self.retrieve(key)
@@ -33,8 +34,7 @@ class RedisStore:
 
     def pop(self, key):
         res = self.client.lpop(key)
-        if res:
-            return self._normalize(res)
+        return self._normalize(res) if res else None
 
     def clear(self, key):
         return self.client.delete(key)
@@ -65,7 +65,7 @@ class MobileVersionCompatibility:
         if app.config.VERSION_CHECK_ENABLED:
             try:
                 self.load_from_storage()
-            except Exception as exc:  # pragma: no cover
+            except Exception as exc:  # pragma: no cover pylint: disable=W0703
                 app.logger.exception(exc)
 
             app.before_request_funcs.setdefault(None, []).append(self._set_mobile_version)
@@ -105,7 +105,7 @@ class MobileVersionCompatibility:
 
     @staticmethod
     def _set_mobile_version():
-        flask.g.mobile_version = flask.request.headers.get(cap.config.VERSION_HEADER_KEY)
+        flask.g.mobile_version = flask.request.headers.get(cap.config.VERSION_HEADER_KEY)  # pylint: disable=E0237
 
     @staticmethod
     def agent_identity():
@@ -178,7 +178,7 @@ class MobileVersionCompatibility:
                     return True
                 if v <= mv:
                     return False
-        except Exception as exc:  # pragma: no cover
+        except Exception as exc:  # pragma: no cover pylint: disable=W0703
             cap.logger.exception(exc)
             return False
         return len(versions) >= cap.config.VERSION_STORE_MAX
@@ -199,7 +199,7 @@ class MobileReleaseView(BaseView):
         critical=webargs.OptField.boolean(),
         agent=webargs.Field.string(required=True),
     ))
-    def dispatch_request(self, params=None, ver=None, *args, **kwargs):
+    def dispatch_request(self, params, *_, ver=None, **__):
         agent = params['agent']
         if agent not in cap.config.VERSION_AGENTS:
             flask.abort(httpcode.BAD_REQUEST, response=dict(
@@ -253,7 +253,7 @@ class MobileLoggerView(BaseView):
     def dump_key(self, data, key):
         return data.get(key) or self.unavailable
 
-    def get_user_info(self, *args, **kwargs):
+    def get_user_info(self, *_, **__):
         return self.unavailable
 
     def dump_message(self, payload, *args, **kwargs):
@@ -287,6 +287,6 @@ class MobileLoggerView(BaseView):
 
         if 'debug' in flask.request.args:
             return payload, httpcode.SUCCESS
-
+        return None
 
 mobile_version = MobileVersionCompatibility()

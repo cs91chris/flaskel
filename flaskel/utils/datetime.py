@@ -46,7 +46,7 @@ class DateHelper:
         return self._holidays  # pragma: no cover
 
     def all_holidays(self):
-        return [d for d in self._holidays.items()]
+        return list(self._holidays.items())
 
     @staticmethod
     def country_holidays(*args, **kwargs):
@@ -87,6 +87,7 @@ class DateHelper:
         except (ValueError, TypeError):
             if raise_exc is True:
                 raise  # pragma: no cover
+        return None
 
 
 # for backwards compatibility

@@ -11,13 +11,13 @@ from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.datetime import Day
 
 
-def response_ok(r):
-    return httpcode.is_ok(r.status_code)
+def response_ok(res):
+    return httpcode.is_ok(res.status_code)
 
 
-def response_ko(r):
-    return r.status_code != httpcode.TOO_MANY_REQUESTS \
-           and httpcode.is_ko(r.status_code)
+def response_ko(res):
+    return res.status_code != httpcode.TOO_MANY_REQUESTS \
+           and httpcode.is_ko(res.status_code)
 
 
 limiter = Limiter(
@@ -156,10 +156,10 @@ class FlaskIPBan:
             if item.match_type == 'regex' and item.pattern.match(query_path):
                 cap.logger.warning('url %s matches block pattern %s', url, pattern)
                 return True
-            elif item.match_type == 'string' and pattern == query_path:
+            if item.match_type == 'string' and pattern == query_path:
                 cap.logger.warning('url %s matches block string %s', url, pattern)
                 return True
-            elif ip and item.match_type == 'ip' and pattern == ip:
+            if ip and item.match_type == 'ip' and pattern == ip:
                 cap.logger.warning('ip %s blocked by pattern %s', ip, pattern)
                 return True
 
@@ -305,7 +305,7 @@ class FlaskIPBan:
                 try:
                     self.add_url_block(v, match_type)
                     count += 1
-                except Exception as e:
+                except (ValueError, TypeError) as e:
                     cap.logger.error("an error occurred while adding pattern '%s'", v)
                     cap.logger.exception(e)
 

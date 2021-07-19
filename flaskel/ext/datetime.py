@@ -14,7 +14,7 @@ class FlaskDateHelper:
         if app is not None:
             self.init_app(app, **kwargs)  # pragma: no cover
 
-    def init_app(self, app, helper=None, helper_class=DateHelper, **kwargs):
+    def init_app(self, app, helper=None, helper_class=DateHelper, **__):
         """
 
         :param app:

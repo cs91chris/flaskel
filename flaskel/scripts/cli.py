@@ -18,7 +18,7 @@ def cli():
 @click.argument('name')
 def init(name):
     """Create skeleton for new application"""
-    from flaskel import scripts as flaskel_scripts
+    from flaskel import scripts as flaskel_scripts  # pylint: disable=C0415
 
     try:
         source = os.path.join(flaskel_scripts.__path__[0], 'skeleton')
@@ -26,7 +26,7 @@ def init(name):
         shutil.move('skel', name)
     except OSError as e:
         print(f"Unable to create new app. Error: {e}", file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     def replace_in_file(file, *args):
         f = Path(file)
@@ -76,7 +76,7 @@ def dump_schema(from_models, from_database, file):
     else:
         raise click.UsageError("One of -m or -d are required")
 
-    graph.write_png(file)
+    graph.write_png(file)  # pylint: disable=E1101
 
 
 if __name__ == '__main__':

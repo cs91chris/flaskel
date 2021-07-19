@@ -44,7 +44,7 @@ def check_uuid(u: str, ver=4, exc=False):
 
         _uuid = uuid.UUID(u, version=ver)
         return u == (str(_uuid) if '-' in u else _uuid.hex)
-    except (ValueError, TypeError, AttributeError):
+    except (ValueError, TypeError, AttributeError) as e:
         if exc:
-            raise ValueError(f"'{u}' is an invalid UUID{ver}")
+            raise ValueError(f"'{u}' is an invalid UUID{ver}") from e
         return False

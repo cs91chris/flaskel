@@ -36,7 +36,7 @@ class ProxyView(BaseView):
     def _filter_kwargs(self, data):
         return data or {}
 
-    def dispatch_request(self, *args, **kwargs):
+    def dispatch_request(self, *_, **kwargs):
         """
 
         :param args:
@@ -87,16 +87,13 @@ class ProxyView(BaseView):
         return self._method or flask.request.method
 
     def request_body(self):
-        if self._proxy_body:
-            return flask.request.get_data()
+        return flask.request.get_data() if self._proxy_body else None
 
     def request_headers(self):
-        if self._proxy_headers:
-            return flask.request.headers
+        return flask.request.headers if self._proxy_headers else None
 
     def request_params(self):
-        if self._proxy_params:
-            return flask.request.args
+        return flask.request.args if self._proxy_params else None
 
 
 class ConfProxyView(BaseView):
@@ -110,7 +107,7 @@ class ConfProxyView(BaseView):
     def dispatch_request(self, *args, **kwargs):
         return self.perform(*args, **kwargs)
 
-    def perform(self, *_, item=None, **kwargs):
+    def perform(self, *_, item=None, **__):
         """
 
         :param item:

@@ -4,12 +4,14 @@ from flaskel.utils.datastruct import ObjectDict
 
 
 class SQLAModel(Model):
+    __table__ = None
+
     def columns(self):
         # noinspection PyUnresolvedReferences
         return self.__table__.columns
 
     @classmethod
-    def get_one(cls, raise_not_found=True, to_dict=True, *args, **kwargs):
+    def get_one(cls, *args, raise_not_found=True, to_dict=True, **kwargs):
         """
 
         :param raise_not_found:
@@ -23,20 +25,19 @@ class SQLAModel(Model):
         else:
             res = res.first()
             if res is None:
-                return
+                return None
 
         if to_dict is True:
             return res.to_dict()
-        else:
-            return res
+        return res
 
     @classmethod
-    def query_collection(cls, params=None, *args, **kwargs):
+    def query_collection(cls, *args, params=None, **kwargs):  # pylint: disable=W0613
         return cls.query.filter(*args).filter_by(**kwargs)
 
     @classmethod
-    def get_list(cls, to_dict=True, restricted=False, order_by=None,
-                 page=None, page_size=None, max_per_page=None, *args, **kwargs):
+    def get_list(cls, *args, to_dict=True, restricted=False, order_by=None,
+                 page=None, page_size=None, max_per_page=None, **kwargs):
         """
 
         :param to_dict:
@@ -76,7 +77,7 @@ class SQLAModel(Model):
 
         return self
 
-    def to_dict(self, restricted=False):
+    def to_dict(self, restricted=False):  # pylint: disable=W0613
         """
 
         :param restricted:

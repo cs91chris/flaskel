@@ -22,7 +22,7 @@ class PaymentHandler:
             self.init_app(app, **kwargs)
 
     @staticmethod
-    def _not_registered(*args, **kwargs):
+    def _not_registered(*_, **__):
         cap.logger.warning('no callback registered')
 
     def init_app(self, app, name=None, **kwargs):
@@ -59,17 +59,19 @@ class PaymentHandler:
             cap.logger.exception(exc)
             if raise_exc:
                 raise
+        return None
 
     def webhook_handler(self):
         data = self.create_event(flask.request.data)
         event_type = data.get('type')
         if event_type == self.payment_intent_ok:
             return self._success(data)
-        elif event_type == self.payment_intent_ko:
+        if event_type == self.payment_intent_ko:
             return self._error(data)
 
         cap.logger.warning("unhandled event type received: %s\n%s", event_type, data)
         flask.abort(httpcode.NOT_FOUND)
+        return None
 
     def on_success(self, callback):
         self._success = callback

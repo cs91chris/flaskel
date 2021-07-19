@@ -14,7 +14,7 @@ class HTTPExceptionMixin:
     lang_key = ConfigProxy('HTTP_EXCEPTIONS.LANG_KEY')
     lang_default = ConfigProxy('HTTP_EXCEPTIONS.LANG_DEFAULT')
 
-    def get_description(self, environ=None):
+    def get_description(self, environ=None):  # pylint: disable=W0613
         lang = self.config.get(flask.g.get(self.lang_key.get() or 'lang'))
         lang = lang or self.config.get(self.lang_default.get()) or {}
         desc = lang.get(self.description)
@@ -174,7 +174,7 @@ class InternalServerError(HTTPExceptionMixin, exceptions.InternalServerError):
 
 
 # noinspection PyShadowingBuiltins
-class NotImplemented(HTTPExceptionMixin, exceptions.NotImplemented):
+class NotImplemented(HTTPExceptionMixin, exceptions.NotImplemented):  # pylint: disable=W0622
     code = httpcode.NOT_IMPLEMENTED
     description = "NOT_IMPLEMENTED"
 
