@@ -1,4 +1,4 @@
-from . import *
+from .helpers import h
 
 
 def test_app_runs(test_client):

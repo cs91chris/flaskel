@@ -273,7 +273,7 @@ class FlaskIPBan:
             count = 1
             self._ip_banned[ip] = ObjectDict(timestamp=timestamp, count=count, url=url)
 
-        cap.logger.info(f"%s %s added/updated ban list. Count: %d", ip, url, count)
+        cap.logger.info("%s %s added/updated ban list. Count: %d", ip, url, count)
         return True
 
     def remove(self, ip):
@@ -306,7 +306,7 @@ class FlaskIPBan:
                     self.add_url_block(v, match_type)
                     count += 1
                 except Exception as e:
-                    cap.logger.error(f"an error occurred while adding pattern '%s'", v)
+                    cap.logger.error("an error occurred while adding pattern '%s'", v)
                     cap.logger.exception(e)
 
         return count

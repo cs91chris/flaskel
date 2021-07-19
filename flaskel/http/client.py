@@ -79,7 +79,7 @@ class HTTPBase(LazyHTTPDumper):
         :param dump_body:
         :param kwargs:
         """
-        raise NotImplemented  # pragma: no cover
+        raise NotImplementedError  # pragma: no cover
 
 
 class HTTPClient(HTTPBase):

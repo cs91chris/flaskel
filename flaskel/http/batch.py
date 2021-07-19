@@ -88,7 +88,6 @@ class HTTPBatch(HTTPBase, AsyncBatchExecutor):
         :param requests:
         :return:
         """
-        _requests = []
         for r in requests:
             r.setdefault('method', 'GET')
             self._tasks.append((self.http_request, r))
