@@ -112,9 +112,10 @@ class MobileVersionCompatibility:
 
     @staticmethod
     def _set_mobile_version():
+        # pylint: disable=E0237
         flask.g.mobile_version = flask.request.headers.get(
             cap.config.VERSION_HEADER_KEY
-        )  # pylint: disable=E0237
+        )
 
     @staticmethod
     def agent_identity():

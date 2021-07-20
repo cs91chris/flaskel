@@ -1,7 +1,7 @@
 from flaskel import ObjectDict
 
 # noinspection PyUnresolvedReferences
-from flaskel.tester import helpers as h
+from flaskel.tester import helpers as h  # noqa
 
 VIEWS = ObjectDict(
     access_token="auth.access_token",

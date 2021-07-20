@@ -377,7 +377,7 @@ def test_useragent(testapp):
     Asserter.assert_equals(res.raw, ua_string)
 
 
-def test_utils_date_conversion():
+def test_utils_date_conversion(app_dev):
     exc = False
     fmt = "%d %B %Y %I:%M %p"
     iso_date = '2020-12-28T19:53:00'

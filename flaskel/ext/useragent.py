@@ -30,9 +30,8 @@ class UserAgent:
 
         @app.before_request
         def before_request():
-            flask.g.user_agent = self._parser(
-                flask.request.user_agent.string
-            )  # pylint: disable=E0237
+            # pylint: disable=E0237
+            flask.g.user_agent = self._parser(flask.request.user_agent.string)
             if app.config["USER_AGENT_AUTO_PARSE"]:
                 flask.g.user_agent.parse()
 

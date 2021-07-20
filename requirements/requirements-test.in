@@ -1,0 +1,9 @@
+-c requirements.txt
+# -c requirements-extra.txt
+
+coverage==5.5.*
+pytest
+pytest-cov
+
+
+stripe
