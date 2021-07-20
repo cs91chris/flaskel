@@ -5,9 +5,10 @@ Flaskel
 import os
 import re
 import sys
-from pkg_resources import parse_requirements
 
-from setuptools import find_packages as base_find_packages, setup
+from pkg_resources import parse_requirements
+from setuptools import find_packages as base_find_packages
+from setuptools import setup
 from setuptools.command.test import test
 
 LICENSE = "MIT"
@@ -30,7 +31,7 @@ REQUIRES_TEST = os.path.join(BASE_PATH, "requirements", "requirements-test.txt")
 ENTRY_POINTS = dict(
     console_scripts=[
         f"{PKG_NAME}={PKG_SCRIPTS}.cli:cli",
-    ],
+    ]
 )
 
 try:

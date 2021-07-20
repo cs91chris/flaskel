@@ -2,22 +2,22 @@ PACKAGES=flaskel
 REQ_PATH=requirements
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
 
-requires:
+compile-deps:
 	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
 	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
 	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
 
-update-requires:
+update-deps:
 	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
 	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
 	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
 
-update-libs:
+install-deps:
 	pip install -r ${REQ_PATH}/requirements-dev.txt
 	pip install -r ${REQ_PATH}/requirements-test.txt
 	pip install -r ${REQ_PATH}/requirements.txt
 
-install-dev:
+clean-install-deps:
 	pip-sync ${REQ_PATH}/requirements*.txt
 
 clean:
@@ -38,3 +38,18 @@ test:
 	date
 
 all: clean lint test
+
+version-build:
+	bumpversion build --verbose
+
+version-release:
+	bumpversion release --verbose
+
+version-major:
+	bumpversion major --verbose
+
+version-minor:
+	bumpversion minor --verbose
+
+version-patch:
+	bumpversion patch --verbose

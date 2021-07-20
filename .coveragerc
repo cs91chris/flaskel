@@ -1,10 +1,18 @@
 [run]
 omit =
-	flaskel/wsgi/*
-	flaskel/tester/plugins/*
-	flaskel/scripts/cli.py
-	flaskel/standalone.py
-	flaskel/ext/sqlalchemy/schema.py
-	flaskel/tester/cli.py
-	flaskel/tester/fetchmail.py
-	flaskel/utils/faker/logger.py
+    flaskel/wsgi/*
+    flaskel/tester/plugins/*
+    flaskel/scripts/cli.py
+    flaskel/standalone.py
+    flaskel/ext/sqlalchemy/schema.py
+    flaskel/tester/cli.py
+    flaskel/tester/fetchmail.py
+    flaskel/utils/faker/logger.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise AssertionError
+    raise NotImplementedError
+    def __repr__
+    if __name__ == .__main__.:
