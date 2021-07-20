@@ -7,3 +7,4 @@ black
 flake8
 pip-tools<5.5
 pylint
+tox
