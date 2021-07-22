@@ -30,18 +30,17 @@ def init(name):
         sys.exit(1)
 
     def replace_in_file(file, *args):
-        f = Path(file)
-        text = f.read_text()
+        _f = Path(file)
+        text = _f.read_text()
         for sd in args:
             text = text.replace(*sd)
-        f.write_text(text)
+        _f.write_text(text)
 
     init_file = Path(os.path.join(name, "__init__.py"))
     init_file.write_text("from .version import *\n")
 
-    replace_in_file("setup.py", ("{skeleton}", name))
-    replace_in_file("pytest.ini", ("{skeleton}", name))
-    replace_in_file(".coveragerc", ("{skeleton}", name))
+    for f in ("setup.py", "pytest.ini", ".coveragerc", "Makefile", ".bumpversion.cfg"):
+        replace_in_file(f, ("{skeleton}", name))
 
     replace_in_file(
         os.path.join(name, "scripts", "cli.py"),

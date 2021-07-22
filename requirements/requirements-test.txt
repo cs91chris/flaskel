@@ -5,10 +5,7 @@
 #    pip-compile --no-emit-index-url --no-emit-trusted-host --output-file=requirements/requirements-test.txt requirements/requirements-test.in
 #
 attrs==21.2.0             # via -c requirements/requirements.txt, pytest
-certifi==2021.5.30        # via -c requirements/requirements.txt, requests
-charset-normalizer==2.0.3  # via -c requirements/requirements.txt, requests
 coverage==5.5             # via -r requirements/requirements-test.in, pytest-cov
-idna==3.2                 # via -c requirements/requirements.txt, requests
 iniconfig==1.1.1          # via pytest
 packaging==21.0           # via pytest
 pluggy==0.13.1            # via pytest
@@ -16,7 +13,4 @@ py==1.10.0                # via pytest
 pyparsing==2.4.7          # via -c requirements/requirements.txt, packaging
 pytest-cov==2.12.1        # via -r requirements/requirements-test.in
 pytest==6.2.4             # via -r requirements/requirements-test.in, pytest-cov
-requests==2.26.0          # via -c requirements/requirements.txt, stripe
-stripe==2.60.0            # via -r requirements/requirements-test.in
 toml==0.10.2              # via pytest, pytest-cov
-urllib3==1.26.6           # via -c requirements/requirements.txt, requests
