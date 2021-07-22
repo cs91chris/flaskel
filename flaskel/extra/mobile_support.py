@@ -5,8 +5,10 @@ import flask
 from flask import current_app as cap
 from packaging import version
 
-from flaskel import ExtProxy, Response
-from flaskel.ext import builder, limit
+from flaskel import ExtProxy
+from flaskel import Response
+from flaskel.ext import builder
+from flaskel.ext import limit
 from flaskel.http import httpcode
 from flaskel.utils import webargs
 from flaskel.views import BaseView
@@ -246,11 +248,11 @@ class MobileLoggerView(BaseView):
     intro = "An exception occurred on mobile app:"
     default_view_name = "mobile_logger"
     default_urls = ("/mobile/logger",)
-    decorators = (
+    decorators = [
         builder.no_content,
         limit.RateLimit.medium(),
         limit.RateLimit.fail(),
-    )
+    ]
 
     def __init__(self, logger_name=None):
         """

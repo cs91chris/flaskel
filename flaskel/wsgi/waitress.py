@@ -3,7 +3,7 @@ from multiprocessing import cpu_count
 try:
     from waitress import serve
 except ImportError:
-    serve = None
+    serve = None  # type: ignore
 
 from .base import BaseApplication
 

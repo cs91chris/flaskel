@@ -3,23 +3,23 @@ from .base import WSGIBuiltin
 try:
     from .gevent import WSGIGevent
 except ImportError:
-    WSGIGevent = None
+    WSGIGevent = None  # type: ignore
 try:
     from .gunicorn import WSGIGunicorn
 except ImportError:
-    WSGIGunicorn = None
+    WSGIGunicorn = None  # type: ignore
 try:
     from .tornado import WSGITornado
 except ImportError:
-    WSGITornado = None
+    WSGITornado = None  # type: ignore
 try:
     from .twisted import WSGITwisted
 except ImportError:
-    WSGITwisted = None
+    WSGITwisted = None  # type: ignore
 try:
     from .waitress import WSGIWaitress
 except ImportError:
-    WSGIWaitress = None
+    WSGIWaitress = None  # type: ignore
 
 
 class WSGIFactory:

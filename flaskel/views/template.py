@@ -1,3 +1,5 @@
+import typing as t
+
 import flask
 
 from .base import BaseView
@@ -5,7 +7,7 @@ from .base import BaseView
 
 class RenderTemplate(BaseView):
     methods = ["GET", "POST"]
-    template = None
+    template: t.Union[str, None] = None
 
     def __init__(self, template=None, content_type=None, **kwargs):
         """

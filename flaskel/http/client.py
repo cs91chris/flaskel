@@ -1,19 +1,22 @@
 import flask
-from requests import auth, exceptions as http_exc, request as send_request
+from requests import auth
+from requests import exceptions as http_exc
+from requests import request as send_request
 
+from . import httpcode
+from .httpdumper import FlaskelHTTPDumper
+from .httpdumper import LazyHTTPDumper
 from flaskel import flaskel
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker.logger import FakeLogger
 from flaskel.utils.uuid import get_uuid
-from . import httpcode
-from .httpdumper import FlaskelHTTPDumper, LazyHTTPDumper
 
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
 all_errors = (*HTTPStatusError, *NetworkError)
 
 cap = flaskel.cap
-request: "flaskel.Request" = flask.request
+request: "flaskel.Request" = flask.request  # type: ignore
 
 
 class HTTPTokenAuth(auth.AuthBase):
@@ -290,5 +293,5 @@ class FlaskelHttp(FlaskelHTTPDumper, HTTPClient):
         return super().request(uri, **kwargs)
 
 
-class FlaskelJsonRPC(FlaskelHttp, JsonRPCClient):
+class FlaskelJsonRPC(FlaskelHttp, JsonRPCClient):  # type: ignore
     pass

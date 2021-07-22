@@ -5,7 +5,8 @@ from pathlib import Path
 
 import click
 
-from flaskel.ext.sqlalchemy.schema import db_to_schema, model_to_uml
+from flaskel.ext.sqlalchemy.schema import db_to_schema
+from flaskel.ext.sqlalchemy.schema import model_to_uml
 from flaskel.tester import cli as cli_tester
 
 
@@ -76,7 +77,11 @@ def dump_schema(from_models, from_database, file):
     else:
         raise click.UsageError("One of -m or -d are required")
 
-    graph.write_png(file)  # pylint: disable=E1101
+    try:
+        graph.write_png(file)  # pylint: disable=E1101
+    except OSError as exc:
+        print(str(exc), file=sys.stderr)
+        print("try to install 'graphviz'", file=sys.stderr)
 
 
 if __name__ == "__main__":

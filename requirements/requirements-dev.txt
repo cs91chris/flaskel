@@ -5,31 +5,42 @@
 #    pip-compile --no-emit-index-url --no-emit-trusted-host --output-file=requirements/requirements-dev.txt requirements/requirements-dev.in
 #
 appdirs==1.4.4            # via black
-astroid==2.6.4            # via pylint
+aspy.refactor-imports==2.2.0  # via reorder-python-imports
+astroid==2.6.4            # via pylint, pylint-flask
 backports.entry-points-selectable==1.1.0  # via virtualenv
 black==21.7b0             # via -r requirements/requirements-dev.in
 bleach==3.3.1             # via readme-renderer
+bump2version==1.0.1       # via -r requirements/requirements-dev.in
+cached-property==1.5.2    # via aspy.refactor-imports
 certifi==2021.5.30        # via -c requirements/requirements-test.txt, -c requirements/requirements.txt, requests
 cffi==1.14.6              # via -c requirements/requirements.txt, cryptography
 charset-normalizer==2.0.3  # via -c requirements/requirements-test.txt, -c requirements/requirements.txt, requests
-click==8.0.1              # via -c requirements/requirements.txt, black, pip-tools
+click==8.0.1              # via -c requirements/requirements.txt, black, flask, pip-tools
 colorama==0.4.4           # via twine
 cryptography==3.4.7       # via secretstorage
 distlib==0.3.2            # via virtualenv
 docutils==0.17.1          # via readme-renderer
 filelock==3.0.12          # via tox, virtualenv
 flake8==3.9.2             # via -r requirements/requirements-dev.in
+flask-sqlalchemy==2.5.1   # via -c requirements/requirements.txt, pylint-flask-sqlalchemy
+flask==2.0.1              # via -c requirements/requirements.txt, flask-sqlalchemy
+greenlet==1.1.0           # via -c requirements/requirements.txt, sqlalchemy
 idna==3.2                 # via -c requirements/requirements-test.txt, -c requirements/requirements.txt, requests
 importlib-metadata==4.6.1  # via keyring, twine
 isort==5.9.2              # via pylint
+itsdangerous==2.0.1       # via -c requirements/requirements.txt, flask
 jeepney==0.7.0            # via keyring, secretstorage
+jinja2==3.0.1             # via -c requirements/requirements.txt, flask
 keyring==23.0.1           # via twine
 lazy-object-proxy==1.6.0  # via astroid
+markupsafe==2.0.1         # via -c requirements/requirements.txt, jinja2
 mccabe==0.6.1             # via flake8, pylint
-mypy-extensions==0.4.3    # via black
+mypy-extensions==0.4.3    # via black, mypy
+mypy==0.910               # via -r requirements/requirements-dev.in, sqlalchemy-stubs
 packaging==21.0           # via -c requirements/requirements-test.txt, bleach, tox
 pathspec==0.9.0           # via black
 pip-tools==5.4.0          # via -r requirements/requirements-dev.in
+pipdeptree==2.0.0         # via -r requirements/requirements-dev.in
 pkginfo==1.7.1            # via twine
 platformdirs==2.0.2       # via virtualenv
 pluggy==0.13.1            # via -c requirements/requirements-test.txt, tox
@@ -38,23 +49,31 @@ pycodestyle==2.7.0        # via flake8
 pycparser==2.20           # via -c requirements/requirements.txt, cffi
 pyflakes==2.3.1           # via flake8
 pygments==2.9.0           # via readme-renderer
-pylint==2.9.3             # via -r requirements/requirements-dev.in
+pylint-flask-sqlalchemy==0.2.0  # via -r requirements/requirements-dev.in
+pylint-flask==0.6         # via -r requirements/requirements-dev.in
+pylint-plugin-utils==0.6  # via pylint-flask
+pylint==2.9.4             # via -r requirements/requirements-dev.in, pylint-flask, pylint-flask-sqlalchemy, pylint-plugin-utils
 pyparsing==2.4.7          # via -c requirements/requirements-test.txt, -c requirements/requirements.txt, packaging
 readme-renderer==29.0     # via twine
 regex==2021.7.6           # via black
+reorder-python-imports==2.5.0  # via -r requirements/requirements-dev.in
 requests-toolbelt==0.9.1  # via twine
 requests==2.26.0          # via -c requirements/requirements-test.txt, -c requirements/requirements.txt, requests-toolbelt, twine
 rfc3986==1.5.0            # via twine
 secretstorage==3.3.1      # via keyring
 six==1.16.0               # via -c requirements/requirements.txt, bleach, pip-tools, readme-renderer, tox, virtualenv
-toml==0.10.2              # via -c requirements/requirements-test.txt, pylint, tox
+sqlalchemy-stubs==0.4     # via -r requirements/requirements-dev.in
+sqlalchemy==1.4.21        # via -c requirements/requirements.txt, flask-sqlalchemy
+toml==0.10.2              # via -c requirements/requirements-test.txt, mypy, pylint, tox
 tomli==1.0.4              # via black
 tox==3.24.0               # via -r requirements/requirements-dev.in
 tqdm==4.61.2              # via twine
-twine==3.4.1              # via -r requirements/requirements-dev.in
+twine==3.4.2              # via -r requirements/requirements-dev.in
+typing-extensions==3.10.0.0  # via -c requirements/requirements.txt, mypy, sqlalchemy-stubs
 urllib3==1.26.6           # via -c requirements/requirements-test.txt, -c requirements/requirements.txt, requests
 virtualenv==20.6.0        # via tox
 webencodings==0.5.1       # via bleach
+werkzeug==2.0.1           # via -c requirements/requirements.txt, flask
 wheel==0.36.2             # via -r requirements/requirements-dev.in
 wrapt==1.12.1             # via astroid
 zipp==3.5.0               # via importlib-metadata

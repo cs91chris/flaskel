@@ -4,7 +4,8 @@ import click
 import decouple
 
 from .builder import AppBuilder
-from .utils import misc, yaml
+from .utils import misc
+from .utils import yaml
 from .utils.datastruct import ObjectDict
 from .wsgi.base import BaseApplication
 from .wsgi.factory import WSGIFactory
@@ -39,7 +40,7 @@ class Server:
     )
     opt_wsgi_server_attr = dict(
         default=None,
-        type=click.Choice(WSGIFactory.WSGI_SERVERS.keys(), case_sensitive=False),
+        type=click.Choice(list(WSGIFactory.WSGI_SERVERS.keys()), case_sensitive=False),
         help="name of wsgi server to use",
     )
     option_wsgi_config_attr = dict(

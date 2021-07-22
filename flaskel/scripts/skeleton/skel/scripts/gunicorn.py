@@ -18,7 +18,7 @@ pidfile = AutoConfig("PID_FILE", default=".gunicorn.pid")
 # This requires that you install the setproctitle module
 proc_name = AutoConfig("PROC_NAME", default=None)
 app_config_file = inspect.getmodule(AppConfigFile)
-app_config_file = os.path.abspath(app_config_file.__file__)
+app_config_file = os.path.abspath(app_config_file.__file__)  # type: ignore
 app_config = AutoConfig("APP_CONFIG_FILE", default=app_config_file)
 
 timeout = AutoConfig("TIMEOUT", default=30, cast=int)

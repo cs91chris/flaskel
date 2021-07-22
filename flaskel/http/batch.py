@@ -3,7 +3,7 @@ import asyncio
 try:
     import aiohttp
 except ImportError:
-    aiohttp = None
+    aiohttp = None  # type: ignore
 
 import flask
 

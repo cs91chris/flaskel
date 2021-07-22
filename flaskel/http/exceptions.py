@@ -4,8 +4,8 @@ import sys
 import flask
 from werkzeug import exceptions
 
-from flaskel.utils.datastruct import ConfigProxy
 from . import httpcode
+from flaskel.utils.datastruct import ConfigProxy
 
 
 class HTTPExceptionMixin:
@@ -14,7 +14,8 @@ class HTTPExceptionMixin:
     lang_key = ConfigProxy("HTTP_EXCEPTIONS.LANG_KEY")
     lang_default = ConfigProxy("HTTP_EXCEPTIONS.LANG_DEFAULT")
 
-    def get_description(self, environ=None):  # pylint: disable=W0613
+    # noinspection PyUnusedLocal
+    def get_description(self, environ=None, scope=None) -> str:  # pylint: disable=W0613
         lang = self.config.get(flask.g.get(self.lang_key.get() or "lang"))
         lang = lang or self.config.get(self.lang_default.get()) or {}
         desc = lang.get(self.description)

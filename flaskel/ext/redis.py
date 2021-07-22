@@ -3,7 +3,7 @@ from flask_response_builder.builders.encoders import JsonEncoder
 try:
     import redis
 except ImportError:  # pragma: no cover
-    redis = None
+    redis = None  # type: ignore
 
 try:
     from rejson import Client, Path

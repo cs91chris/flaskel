@@ -12,7 +12,7 @@ from flaskel.utils.uuid import get_uuid
 try:
     import fcntl
 except ImportError:
-    fcntl = None
+    fcntl = None  # type: ignore
 
 
 class APJobs(APScheduler):

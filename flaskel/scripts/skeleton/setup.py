@@ -3,7 +3,8 @@ import os
 import re
 import sys
 
-from setuptools import find_packages as base_find_packages, setup
+from setuptools import find_packages as base_find_packages
+from setuptools import setup
 from setuptools.command.test import test
 
 LICENSE = "MIT"
@@ -17,7 +18,7 @@ PKG_NAME = "{skeleton}"
 PKG_TEST = "tests"
 PKG_SCRIPTS = f"{PKG_NAME}.scripts"
 
-EXCLUDE_FILES = []
+EXCLUDE_FILES = []  # type: ignore
 
 REQUIRES = ["flaskel"]
 

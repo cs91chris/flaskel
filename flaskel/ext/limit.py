@@ -23,7 +23,7 @@ def response_ko(res):
 
 limiter = Limiter(
     key_func=cfremote.get_remote,
-    default_limits=[lambda: cap.config.LIMITER.FAIL],
+    default_limits=[lambda: cap.config["LIMITER"]["FAIL"]],
     default_limits_deduct_when=response_ko,
 )
 

@@ -3,8 +3,8 @@ try:
     from pyfcm.errors import FCMError
     from sqlalchemy.exc import SQLAlchemyError
 except ImportError:
-    FCMNotification = FCMError = None
-    SQLAlchemyError = None
+    FCMNotification = FCMError = None  # type: ignore
+    SQLAlchemyError = None  # type: ignore
 
 
 class NotificationHandler:

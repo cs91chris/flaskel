@@ -1,10 +1,16 @@
+from typing import TYPE_CHECKING
+
 from flask_sqlalchemy import event
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.hybrid import hybrid_property
 
 from flaskel import ObjectDict
 from flaskel.ext.crypto import argon2
 from flaskel.ext.sqlalchemy import db
+
+if TYPE_CHECKING:
+    hybrid_property = property  # pylint: disable=C0103
+else:
+    from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class StandardMixin:
