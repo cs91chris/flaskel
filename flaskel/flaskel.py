@@ -19,13 +19,13 @@ class Request(flask.Request):
         flask_header_name = f"HTTP_{hdr.upper().replace('-', '_')}"
         return flask.request.environ.get(flask_header_name)
 
-    def get_json(self, allow_empty=False, **__):
+    def get_json(self, *args, allow_empty=False, **kwargs):
         """
 
         :param allow_empty:
         :return:
         """
-        payload = super().get_json()
+        payload = super().get_json(*args, **kwargs)
         if payload is None:
             if not allow_empty:
                 flask.abort(httpcode.BAD_REQUEST, "No JSON in request")
@@ -66,7 +66,7 @@ class Response(flask.Response):
         except IOError as exc:
             cap.logger.warning(str(exc))
             flask.abort(httpcode.NOT_FOUND)
-            return  # only to prevent warning # pragma: no cover
+            return None  # only to prevent warning # pragma: no cover
 
         # following headers works with nginx compatible proxy
         if cap.use_x_sendfile is True and cap.config.ENABLE_ACCEL is True:
@@ -82,8 +82,8 @@ class Response(flask.Response):
 
         return resp
 
-    def get_json(self, **__):
-        return ObjectDict.normalize(super().get_json())
+    def get_json(self, *args, **kwargs):
+        return ObjectDict.normalize(super().get_json(*args, **kwargs))
 
 
 class Flaskel(flask.Flask):

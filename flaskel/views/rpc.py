@@ -163,7 +163,7 @@ class JSONRPCView(View):
                 cls.method(obj.__class__.__name__, m[0])(m[1])
 
     @classmethod
-    def method(cls, name=None, operation=None):
+    def method(cls, name=None, operation=None):  # pylint: disable=W0613
         """
 
         :param name:

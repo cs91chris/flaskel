@@ -3,13 +3,13 @@ from requests import auth
 from requests import exceptions as http_exc
 from requests import request as send_request
 
-from . import httpcode
-from .httpdumper import FlaskelHTTPDumper
-from .httpdumper import LazyHTTPDumper
 from flaskel import flaskel
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.faker.logger import FakeLogger
 from flaskel.utils.uuid import get_uuid
+from . import httpcode
+from .httpdumper import FlaskelHTTPDumper
+from .httpdumper import LazyHTTPDumper
 
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)

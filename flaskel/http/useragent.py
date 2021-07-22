@@ -4,7 +4,7 @@ from flaskel.utils.datastruct import ObjectDict
 
 
 class UserAgent(parsers.UserAgent):
-    def __init__(self, ua_string=None):
+    def __init__(self, ua_string=None):  # pylint: disable=W0231
         """
 
         :param ua_string:

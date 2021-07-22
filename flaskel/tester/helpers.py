@@ -3,7 +3,8 @@ from functools import partial
 
 import flask
 
-from flaskel import ConfigProxy, httpcode
+from flaskel import ConfigProxy
+from flaskel import httpcode
 from flaskel.ext.sqlalchemy.support import SQLASupport
 from flaskel.tester import FetchMail
 from flaskel.tester.mixins import Asserter
@@ -67,7 +68,7 @@ def restful_tester(
     schema_collection=None,
     methods=("GET", "POST", "PUT", "DELETE"),
     **params,
-):
+):  # pylint: disable=R0913
     args = "&".join([f"{k}={v}" for k, v in params.items()])
     url_collection = f"{url_for(view)}?{args}"
 

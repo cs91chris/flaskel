@@ -3,8 +3,10 @@ import functools
 import flask
 
 from flaskel.ext.default import builder
-from flaskel.flaskel import cap, httpcode
-from flaskel.utils.batch import BatchExecutor, ThreadBatchExecutor
+from flaskel.flaskel import cap
+from flaskel.flaskel import httpcode
+from flaskel.utils.batch import BatchExecutor
+from flaskel.utils.batch import ThreadBatchExecutor
 
 
 class HealthCheck:
@@ -117,7 +119,7 @@ class HealthCheck:
             {"Content-Type": cap.config["HEALTHCHECK_CONTENT_TYPE"]},
         )
 
-    def register(self, name=None, **kwargs):
+    def register(self, name=None, **kwargs):  # pylint: disable=W0613
         """
 
         :param name:

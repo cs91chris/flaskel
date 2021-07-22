@@ -4,8 +4,8 @@ import sys
 import flask
 from werkzeug import exceptions
 
-from . import httpcode
 from flaskel.utils.datastruct import ConfigProxy
+from . import httpcode
 
 
 class HTTPExceptionMixin:

@@ -5,8 +5,10 @@ import flask
 import jsonschema
 from flask import current_app as cap
 
-from flaskel.http.client import HTTPClient, httpcode
-from flaskel.utils.datastruct import ConfigProxy, ObjectDict
+from flaskel.http.client import HTTPClient
+from flaskel.http.client import httpcode
+from flaskel.utils.datastruct import ConfigProxy
+from flaskel.utils.datastruct import ObjectDict
 
 SCHEMAS = ConfigProxy("SCHEMAS")
 
@@ -51,9 +53,6 @@ class JSONSchema:
         :param checker:
         :return:
         """
-        if not schema:
-            return True
-
         if isinstance(schema, str):
             if schema.startswith("https://") or schema.startswith("http://"):
                 schema = cls.load_from_url(schema)
@@ -139,7 +138,7 @@ class PayloadValidator:
         :param strict:
         :return:
         """
-        if strict and not schema:
+        if strict and schema is None:
             flask.abort(httpcode.INTERNAL_SERVER_ERROR, "empty schema")
 
         payload = flask.request.json

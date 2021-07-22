@@ -1,16 +1,20 @@
 import os
 import sys
+import typing as t
 
+import flask
 import jinja2
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from flaskel import config, flaskel
+from flaskel import config
+from flaskel import flaskel
 from .converters import CONVERTERS
-from .utils import misc, ObjectDict
+from .utils import ObjectDict
+from .utils import misc
 
 
-class AppBuilder:
+class AppBuilder:  # pylint: disable=E1101
     """
     default app name
     """
@@ -68,7 +72,7 @@ class AppBuilder:
         :param version: app version, may be used by extensions
         :return:
         """
-        self._app = None
+        self._app: t.Optional[flask.Flask] = None
         self._version = version
         self._converters = converters or {}
         self._blueprints = blueprints or ()
@@ -104,10 +108,10 @@ class AppBuilder:
 
     def _set_secret_key(self):
         secret_key = None
-        key_length = self._app.config.SECRET_KEY_MIN_LENGTH
+        key_length = self._app.config["SECRET_KEY_MIN_LENGTH"]
 
         if not self._app.config.get("FLASK_ENV", "").lower().startswith("dev"):
-            secret_file = self._app.config.SECRET_KEY
+            secret_file = self._app.config["SECRET_KEY"]
             if secret_file:
                 secret_key = self._load_secret_key(secret_file) or secret_file
             else:
@@ -120,7 +124,7 @@ class AppBuilder:
             self._app.logger.debug("set secret key in development mode")
             secret_key = "fake_very_complex_string"
 
-        self._app.config.SECRET_KEY = secret_key or self._app.config.SECRET_KEY
+        self._app.config["SECRET_KEY"] = secret_key or self._app.config["SECRET_KEY"]
         if len(secret_key) < key_length:
             self._app.logger.warning("secret key length is less than: %s", key_length)
 
@@ -236,18 +240,18 @@ class AppBuilder:
             )
 
     def _set_linter_and_profiler(self):
-        if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
+        if self._app.config["WSGI_WERKZEUG_LINT_ENABLED"]:
             self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
             self._app.logger.debug(
                 "Registered middleware: '%s'", LintMiddleware.__name__
             )
 
-        if self._app.config.WSGI_WERKZEUG_PROFILER_ENABLED:
-            file = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
+        if self._app.config["WSGI_WERKZEUG_PROFILER_ENABLED"]:
+            file = self._app.config["WSGI_WERKZEUG_PROFILER_FILE"]
             self._app.wsgi_app = ProfilerMiddleware(
                 self._app.wsgi_app,
                 stream=open(file, "w") if file else sys.stdout,  # pylint: disable=R1732
-                restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION,
+                restrictions=self._app.config["WSGI_WERKZEUG_PROFILER_RESTRICTION"],
             )
             self._app.logger.debug(
                 "Registered middleware: '%s'", ProfilerMiddleware.__name__

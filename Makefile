@@ -39,19 +39,18 @@ lint:
 
 test:
 	pytest --cov=${PACKAGES} --cov-report=html --cov-config .coveragerc tests
-	date
 
-version-build:
+bump-build:
 	bumpversion build --verbose
 
-version-release:
+bump-release:
 	bumpversion release --verbose
 
-version-major:
+bump-major:
 	bumpversion major --verbose
 
-version-minor:
+bump-minor:
 	bumpversion minor --verbose
 
-version-patch:
+bump-patch:
 	bumpversion patch --verbose

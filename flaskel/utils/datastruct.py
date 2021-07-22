@@ -11,11 +11,11 @@ class ConfigProxy:
         obj = self._proxy() or {}
         if not isinstance(item, str):
             return obj.get(item)
-        for _ in item.split("."):
-            obj = obj.get(item) or {}
-        return obj if obj != {} else None
+        for i in item.split("."):
+            obj = obj.get(i)
+        return obj
 
-    def __call__(self, *args, item=None, **kwargs):
+    def __call__(self, item=None, **kwargs):
         if item is None:
             return self._proxy()
         return self.__getattr__(item)
@@ -32,7 +32,8 @@ class ConfigProxy:
             return cap.config
         for c in self.key.split("."):
             res = res.get(c) or {}
-        return res if res != {} else None
+
+        return res or None
 
     def get(self, item=None):
         return self.__call__(item)
