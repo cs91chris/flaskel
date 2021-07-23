@@ -72,8 +72,8 @@ def read(file):
 
 
 def grep(file, name):
-    (value,) = re.findall(fr"{name}\W*=\W*'([^']+)'", read(file))
-    return value
+    values = re.findall(rf"{name}\W*=\W*\"([^\"]+)", read(file))
+    return values[0] if values else None
 
 
 def readme(file):
