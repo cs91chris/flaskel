@@ -1,23 +1,25 @@
 PACKAGES=flaskel
 REQ_PATH=requirements
+REQ=requirements
+REQUIREMENTS=${REQ}.in ${REQ}-test.in ${REQ}-dev.in ${REQ}-extra.in
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
 
-all: clean lint test
+all: clean lint clean-install-deps test
 
 compile-deps:
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+	for req in $(REQUIREMENTS); do \
+        out_req=$$(echo $${req} | sed 's/.in/.txt/') ; \
+        pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/$${out_req} ${REQ_PATH}/$${req} ; \
+    done
 
-update-deps:
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+upgrade-deps:
+	for req in $(REQUIREMENTS); do \
+        out_req=$$(echo $${req} | sed 's/.in/.txt/') ; \
+        pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/$${out_req} ${REQ_PATH}/$${req} ; \
+    done
 
 install-deps:
-	pip install -r ${REQ_PATH}/requirements.txt
-	pip install -r ${REQ_PATH}/requirements-test.txt
-	pip install -r ${REQ_PATH}/requirements-dev.txt
+	pip install -r ${REQ_PATH}/requirements*.txt
 
 clean-install-deps:
 	pip-sync ${REQ_PATH}/requirements*.txt
@@ -35,7 +37,7 @@ lint:
 	@echo "---> running pylint ..."
 	pylint --rcfile=.pylintrc ${PACKAGES} setup.py
 	@echo "---> running mypy ..."
-	mypy ${PACKAGES}
+	mypy --install-types --non-interactive ${PACKAGES}
 
 test:
 	pytest --cov=${PACKAGES} --cov-report=html --cov-config .coveragerc tests

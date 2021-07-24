@@ -1,0 +1,10 @@
+-c requirements.txt
+
+pyfcm
+stripe
+redis
+rejson
+hiredis
+Flask-Mail
+Flask-APScheduler
+flask_pymongo

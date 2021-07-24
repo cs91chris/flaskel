@@ -1,5 +1,4 @@
 Flask
-Flask-APScheduler
 Flask-Caching
 Flask-CloudflareRemote
 Flask-Cors
@@ -8,7 +7,6 @@ Flask-HTTPAuth
 Flask-JWT-Extended
 Flask-Limiter
 Flask-Logify
-Flask-Mail
 Flask-ResponseBuilder
 Flask-SQLAlchemy
 Flask-TemplateSupport
@@ -23,9 +21,6 @@ simplejson
 sqlalchemy-schemadisplay
 user-agents
 webargs
-redis
-hiredis
 holidays
-
 aiohttp
 nest-asyncio

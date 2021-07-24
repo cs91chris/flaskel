@@ -2,12 +2,17 @@ import atexit
 import logging
 import os
 
-from apscheduler import events
-from apscheduler.schedulers import SchedulerAlreadyRunningError
-from apscheduler.schedulers.blocking import BlockingScheduler
-from flask_apscheduler import APScheduler
-
 from flaskel.utils.uuid import get_uuid
+
+try:
+    from apscheduler import events
+    from apscheduler.schedulers import SchedulerAlreadyRunningError
+    from apscheduler.schedulers.blocking import BlockingScheduler
+    from flask_apscheduler import APScheduler
+except (ModuleNotFoundError, ImportError):
+    events = None
+    SchedulerAlreadyRunningError = Exception
+    BlockingScheduler = APScheduler = object
 
 try:
     import fcntl
@@ -17,6 +22,8 @@ except ImportError:
 
 class APJobs(APScheduler):
     def init_app(self, app, test_sync=True):
+        assert APScheduler is not object, "you must install 'flask_apscheduler'"
+
         app.config.setdefault("SCHEDULER_AUTO_START", False)
         app.config.setdefault("SCHEDULER_PATCH_MULTIPROCESS", True)
         app.config.setdefault("SCHEDULER_LOCK_FILE", ".scheduler.lock")
@@ -47,6 +54,8 @@ class APJobs(APScheduler):
         if not hasattr(app, "extensions"):
             app.extensions = dict()  # pragma: no cover
         app.extensions["scheduler"] = self
+
+        self.add_listener(self._exception_listener, events.EVENT_ALL)
 
         if app.config.SCHEDULER_AUTO_START is True:
             self.start()
@@ -94,20 +103,27 @@ class APJobs(APScheduler):
                     pass
         return False
 
+    @staticmethod
+    def _exception_listener(event):
+        """
+
+        :param event:
+        """
+        logger = scheduler.app.logger
+        if event.code == events.EVENT_JOB_ERROR:
+            logger.error("An error occurred when executing job: %s", event.job_id)
+            logger.exception(event.exception)
+            logger.error(event.traceback)
+        elif event.code == events.EVENT_JOB_ADDED:
+            logger.info("successfully added job: %s", event.job_id)
+        elif event.code == events.EVENT_JOB_EXECUTED:
+            logger.debug(
+                "successfully executed job: %s, returned value: %s",
+                event.job_id,
+                event.ret_val,
+            )
+        else:
+            logger.debug("received event (%s) for job: %s", event.code, event.job_id)
+
 
 scheduler = APJobs()
-
-
-def exception_listener(event):
-    logger = scheduler.app.logger
-    if event.exception:
-        logger.error("An error occurred when executing job: %s", event.job_id)
-        logger.exception(event.exception)
-        logger.error(event.traceback)
-    else:
-        logger.debug("successfully executed job: %s", event.job_id)
-
-
-scheduler.add_listener(
-    exception_listener, events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR
-)

@@ -25,7 +25,7 @@ BASE_PATH = os.path.dirname(__file__)
 SKEL_DIR = os.path.join(*PKG_SCRIPTS.split("."), "skeleton")
 VERSION_FILE = os.path.join(BASE_PATH, PKG_NAME, "version.py")
 REQUIRES = os.path.join(BASE_PATH, "requirements", "requirements.txt")
-REQUIRES_DEV = os.path.join(BASE_PATH, "requirements", "requirements-dev.txt")
+REQUIRES_EXT = os.path.join(BASE_PATH, "requirements", "requirements-extra.txt")
 REQUIRES_TEST = os.path.join(BASE_PATH, "requirements", "requirements-test.txt")
 
 ENTRY_POINTS = dict(
@@ -139,8 +139,10 @@ setup(
     entry_points=ENTRY_POINTS,
     cmdclass=dict(test=PyTest),
     install_requires=read_requirements(REQUIRES),
-    test_requires=read_requirements(REQUIRES_TEST),
-    dev_requires=read_requirements(REQUIRES_DEV),
+    extras_require={
+        "test": read_requirements(REQUIRES_TEST),
+        "all": read_requirements(REQUIRES_EXT),
+    },
     classifiers=[
         "Environment :: Web Environment",
         "Framework :: Flask",

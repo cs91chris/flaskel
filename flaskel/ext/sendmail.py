@@ -1,12 +1,16 @@
 import socket
 
-from flask_mail import Mail, Message
+try:
+    from flask_mail import Mail, Message
+except (ModuleNotFoundError, ImportError):
+    Mail = Message = object
 
 
 class ClientMail(Mail):
     def init_app(self, app):
-        super().init_app(app)
+        assert Mail is not object, "you must install 'flask_mail'"
 
+        super().init_app(app)
         app.extensions = getattr(app, "extensions", {})
         app.extensions["client_mail"] = self
 
