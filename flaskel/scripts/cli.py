@@ -39,7 +39,14 @@ def init(name):
     init_file = Path(os.path.join(name, "__init__.py"))
     init_file.write_text("from .version import *\n")
 
-    for f in ("setup.py", "pytest.ini", ".coveragerc", "Makefile", ".bumpversion.cfg"):
+    for f in (
+        "setup.py",
+        "Dockerfile",
+        "Makefile",
+        "pytest.ini",
+        ".coveragerc",
+        ".bumpversion.cfg",
+    ):
         replace_in_file(f, ("{skeleton}", name))
 
     replace_in_file(

@@ -26,6 +26,7 @@ clean:
 	find . -name '__pycache__' -prune  -exec rm -rf {} \;
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
 	find . -name '*.pyc' -prune -exec rm -f {} \;
+	find ${PACKAGES} -name '*.c' -prune -exec rm -f {} \;
 
 lint:
 	@echo "---> running black ..."
