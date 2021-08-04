@@ -125,7 +125,7 @@ class Restful(CatalogResource):
         return self._model(**data)
 
     # noinspection PyMethodMayBeStatic
-    def update_resource(self, resource, data):
+    def update_resource(self, resource, data):  # pylint: disable=no-self-use
         """
 
         :param resource: sqlalchemy model instance
