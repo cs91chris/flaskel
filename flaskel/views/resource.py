@@ -1,3 +1,5 @@
+import typing as t
+
 import flask
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
@@ -89,8 +91,8 @@ class CatalogResource(Resource):
 
 
 class Restful(CatalogResource):
-    post_schema = None
-    put_schema = None
+    post_schema: t.Any = None
+    put_schema: t.Any = None
     validator = PayloadValidator
     methods_collection = ["GET", "POST"]
     methods_subresource = ["GET", "POST"]

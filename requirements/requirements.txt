@@ -11,7 +11,7 @@ attrs==21.2.0             # via aiohttp, jsonschema
 certifi==2021.5.30        # via requests
 cffi==1.14.6              # via argon2-cffi
 chardet==4.0.0            # via aiohttp
-charset-normalizer==2.0.3  # via requests
+charset-normalizer==2.0.4  # via requests
 click==8.0.1              # via flask
 convertdate==2.3.2        # via holidays
 flask-caching==1.10.1     # via -r requirements/requirements.in

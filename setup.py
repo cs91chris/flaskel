@@ -24,9 +24,49 @@ PKG_SCRIPTS = f"{PKG_NAME}.scripts"
 BASE_PATH = os.path.dirname(__file__)
 SKEL_DIR = os.path.join(*PKG_SCRIPTS.split("."), "skeleton")
 VERSION_FILE = os.path.join(BASE_PATH, PKG_NAME, "version.py")
-REQUIRES = os.path.join(BASE_PATH, "requirements", "requirements.txt")
-REQUIRES_EXT = os.path.join(BASE_PATH, "requirements", "requirements-extra.txt")
-REQUIRES_TEST = os.path.join(BASE_PATH, "requirements", "requirements-test.txt")
+REQUIRES = [
+    "Flask",
+    "Flask-Caching",
+    "Flask-CloudflareRemote",
+    "Flask-Cors",
+    "Flask-ErrorsHandler",
+    "Flask-HTTPAuth",
+    "Flask-JWT-Extended",
+    "Flask-Limiter",
+    "Flask-Logify",
+    "Flask-ResponseBuilder",
+    "Flask-SQLAlchemy",
+    "Flask-TemplateSupport",
+    "argon2-cffi",
+    "psutil",
+    "python-dateutil",
+    "python-decouple",
+    "PyYAML",
+    "requests",
+    "jsonschema",
+    "simplejson",
+    "sqlalchemy-schemadisplay",
+    "user-agents",
+    "webargs",
+    "holidays",
+    "aiohttp",
+    "nest-asyncio",
+]
+REQUIRES_EXT = REQUIRES + [
+    "pyfcm",
+    "stripe",
+    "redis",
+    "rejson",
+    "hiredis",
+    "Flask-Mail",
+    "Flask-APScheduler",
+    "flask_pymongo",
+]
+REQUIRES_TEST = REQUIRES_EXT + [
+    "coverage==5.5.*",
+    "pytest",
+    "pytest-cov",
+]
 
 ENTRY_POINTS = dict(
     console_scripts=[

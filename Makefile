@@ -1,25 +1,26 @@
 PACKAGES=flaskel
 REQ_PATH=requirements
-REQ=requirements
-REQUIREMENTS=${REQ}.in ${REQ}-test.in ${REQ}-dev.in ${REQ}-extra.in
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
 
 all: clean lint clean-install-deps test
 
 compile-deps:
-	for req in $(REQUIREMENTS); do \
-        out_req=$$(echo $${req} | sed 's/.in/.txt/') ; \
-        pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/$${out_req} ${REQ_PATH}/$${req} ; \
-    done
+	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
+	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-extra.txt ${REQ_PATH}/requirements-extra.in
+	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
 
 upgrade-deps:
-	for req in $(REQUIREMENTS); do \
-        out_req=$$(echo $${req} | sed 's/.in/.txt/') ; \
-        pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/$${out_req} ${REQ_PATH}/$${req} ; \
-    done
+	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
+	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-extra.txt ${REQ_PATH}/requirements-extra.in
+	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
 
 install-deps:
-	pip install -r ${REQ_PATH}/requirements*.txt
+	pip install -r ${REQ_PATH}/requirements.txt
+	pip install -r ${REQ_PATH}/requirements-extra.txt
+	pip install -r ${REQ_PATH}/requirements-dev.txt
+	pip install -r ${REQ_PATH}/requirements-test.txt
 
 clean-install-deps:
 	pip-sync ${REQ_PATH}/requirements*.txt
@@ -37,7 +38,7 @@ lint:
 	@echo "---> running pylint ..."
 	pylint --rcfile=.pylintrc ${PACKAGES} setup.py
 	@echo "---> running mypy ..."
-	mypy --install-types --non-interactive ${PACKAGES}
+	mypy --install-types --non-interactive --no-strict-optional ${PACKAGES}
 
 test:
 	pytest --cov=${PACKAGES} --cov-report=html --cov-config .coveragerc tests

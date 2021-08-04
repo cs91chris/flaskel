@@ -1,5 +1,6 @@
 from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
-from flaskel.views import apidoc, rpc
+from flaskel.views import rpc
+from flaskel.extra import apidoc
 
 bp_api = None  # import blueprint here
 rpc_service = object  # import rpc_service here

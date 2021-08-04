@@ -7,7 +7,7 @@
 apscheduler==3.7.0        # via flask-apscheduler
 blinker==1.4              # via flask-mail
 certifi==2021.5.30        # via -c requirements/requirements.txt, requests
-charset-normalizer==2.0.3  # via -c requirements/requirements.txt, requests
+charset-normalizer==2.0.4  # via -c requirements/requirements.txt, requests
 click==8.0.1              # via -c requirements/requirements.txt, flask
 flask-apscheduler==1.12.2  # via -r requirements/requirements-extra.in
 flask-mail==0.9.1         # via -r requirements/requirements-extra.in
