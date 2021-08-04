@@ -2,6 +2,7 @@ PACKAGES={skeleton}
 REQ_PATH=requirements
 REQ=requirements
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
+CONFIRM=@( read -p "Are you sure?!? [Y/n]: " sure && case "$$sure" in [nN]) false;; *) true;; esac )
 
 all: clean lint clean-install-deps test
 
@@ -42,17 +43,30 @@ lint:
 test:
 	pytest --cov=${PACKAGES} --cov-report=html --cov-config .coveragerc tests
 
+build-dist:
+	python setup.py sdist bdist_wheel
+
 bump-build:
+	bumpversion -n build --verbose
+	${CONFIRM}
 	bumpversion build --verbose
 
-bump-release:
-	bumpversion release --verbose
+bump-beta:
+	bumpversion -n prerelease --verbose
+	${CONFIRM}
+	bumpversion prerelease --verbose
 
 bump-major:
+	bumpversion -n major --verbose
+	${CONFIRM}
 	bumpversion major --verbose
 
 bump-minor:
+	bumpversion -n minor --verbose
+	${CONFIRM}
 	bumpversion minor --verbose
 
 bump-patch:
+	bumpversion -n patch --verbose
+	${CONFIRM}
 	bumpversion patch --verbose

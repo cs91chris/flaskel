@@ -178,10 +178,10 @@ setup(
     test_suite=PKG_TEST,
     entry_points=ENTRY_POINTS,
     cmdclass=dict(test=PyTest),
-    install_requires=read_requirements(REQUIRES),
+    install_requires=REQUIRES,
     extras_require={
-        "test": read_requirements(REQUIRES_TEST),
-        "all": read_requirements(REQUIRES_EXT),
+        "test": REQUIRES_TEST,
+        "all": REQUIRES_EXT,
     },
     classifiers=[
         "Environment :: Web Environment",
