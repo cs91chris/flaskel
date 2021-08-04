@@ -16,10 +16,10 @@ class ApiDocTemplate(RenderTemplateString):
         <meta charset="utf-8"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
         <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
-        <title>{page_title}</title>
-        <script type="module" src="https://unpkg.com/rapidoc@{rapidoc_version}/dist/rapidoc-min.js"></script>
+        <title>{{page_title}}</title>
+        <script type="module" src="https://unpkg.com/rapidoc@{{rapidoc_version}}/dist/rapidoc-min.js"></script>
     </head>
-    <body><rapi-doc theme="{rapidoc_theme}" spec-url="{spec_url}"></rapi-doc></body>
+    <body><rapi-doc theme="{{rapidoc_theme}}" spec-url="{{spec_url}}"></rapi-doc></body>
 </html>"""
 
     def service(self, *_, **__):
