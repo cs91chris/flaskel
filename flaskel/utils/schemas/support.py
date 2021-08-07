@@ -198,11 +198,17 @@ class Fields:
 
     @classmethod
     def object(
-        cls, required=(), properties=None, all_required=True, additional=False, **kwargs
+        cls,
+        required=(),
+        not_required=(),
+        properties=None,
+        all_required=True,
+        additional=False,
+        **kwargs,
     ):
         properties = properties or {}
         if not required and all_required is True:
-            required = list(properties.keys())
+            required = [i for i in properties.keys() if i not in not_required]
 
         return ObjectDict(
             type="object",

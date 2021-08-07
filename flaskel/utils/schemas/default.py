@@ -75,7 +75,7 @@ SCHEMAS = ObjectDict(
         properties={
             "access_token": Fields.string,
             "refresh_token": Fields.string,
-            "expires_in": Fields.integer,
+            "expires_in": Fields.Opt.integer,
             "issued_at": Fields.integer,
             "token_type": Fields.string,
             "scope": Fields.Opt.string,
@@ -85,7 +85,7 @@ SCHEMAS = ObjectDict(
         required=["access_token", "expires_in", "issued_at"],
         properties={
             "access_token": Fields.string,
-            "expires_in": Fields.integer,
+            "expires_in": Fields.Opt.integer,
             "issued_at": Fields.integer,
             "token_type": Fields.string,
             "scope": Fields.Opt.string,
@@ -98,7 +98,7 @@ SCHEMAS = ObjectDict(
             "detail": Fields.string,
             "instance": Fields.string,
             "status": Fields.integer,
-            "response": Fields.type("object", "array", "string", "null"),
+            "response": Fields.any,
         }
     ),
     HEALTH_CHECK=Fields.object(
