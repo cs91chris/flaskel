@@ -134,7 +134,7 @@ class Server:
         wsgi_server=None,
         wsgi_config=None,
         app_config=None,
-    ):
+    ):  # pylint: disable=too-many-arguments
         """
 
         :param config: app and wsgi configuration file

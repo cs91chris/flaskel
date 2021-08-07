@@ -55,7 +55,7 @@ class AppBuilder:  # pylint: disable=E1101
         callback=None,
         version=None,
         **options,
-    ):
+    ):  # pylint: disable=too-many-arguments
         """
 
         :param conf_module: python module file
