@@ -202,7 +202,7 @@ paths:
       security:
         - basicAuth: [ ]
       parameters:
-        $ref: '#/components/parameters/agent'
+        - $ref: '#/components/parameters/agent'
       responses:
         '200':
           description: latest registered release
@@ -251,6 +251,23 @@ components:
       type: apiKey
       in: header
       name: Authorization
+  headers:
+    paginationCount:
+      description: numero elementi totali
+      schema:
+        type: integer
+    paginationNumPages:
+      description: numero totale delle pagine
+      schema:
+        type: integer
+    paginationPage:
+      description: pagina corrente
+      schema:
+        type: integer
+    paginationPageSize:
+      description: dimensione della pagina
+      schema:
+        type: integer
   parameters:
     page:
       in: query

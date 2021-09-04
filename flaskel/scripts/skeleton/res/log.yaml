@@ -5,57 +5,80 @@ objects:
     class: queue.Queue
     maxsize: 10000
 formatters:
+  simple:
+    format: "[%(asctime)s][%(levelname)s]: %(message)s"
+  consoleDebug:
+    class: flask_logify.formatters.RequestFormatter
+    format: "[%(asctime)s][%(levelname)s][%(request_id)s][%(name)s:%(module)s.%(funcName)s:%(lineno)d]:
+      %(message)s"
   console:
     class: flask_logify.formatters.RequestFormatter
-    format: >
-      "[%(asctime)s][%(levelname)s][%(request_id)s][%(name)s:%(module)s.%(funcName)s:%(lineno)d]: %(message)s"
+    format: "[%(asctime)s][%(levelname)s][%(request_id)s]: %(message)s"
   syslog:
     class: flask_logify.formatters.RequestFormatter
-    format: >
-      "%(ident)s[%(levelname)s][%(request_id)s][%(name)s:%(module)s.%(funcName)s:%(lineno)d]: %(message)s"
+    format: "%(ident)s%(message)s"
+  json:
+    class: flask_logify.formatters.RequestFormatter
+    format: '{"requestId":"%(request_id)s","level":"%(levelname)s","datetime":"%(asctime)s","message":%(message)s}'
 handlers:
+  simple:
+    class: logging.StreamHandler
+    formatter: simple
+    stream: ext://sys.stderr
   console:
     class: logging.StreamHandler
     formatter: console
     stream: ext://sys.stderr
-  queue:
-    class: flask_logify.handlers.QueueHandler
+  consoleDebug:
+    class: logging.StreamHandler
+    formatter: consoleDebug
+    stream: ext://sys.stderr
+  syslog:
+    class: flask_logify.handlers.FlaskSysLogHandler
+    address:
+      - localhost
+      - 514
+    formatter: syslog
+    facility: user
+  queueConsole:
     respect_handler_level: true
+    class: flask_logify.handlers.QueueHandler
     queue: cfg://objects.queue
     handlers:
       - cfg://handlers.console
-  syslog:
-    class: flask_logify.handlers.FlaskSysLogHandler
-    address: [ localhost, 514 ]
-    formatter: syslog
-    facility: user
+  queueSyslog:
+    respect_handler_level: true
+    class: flask_logify.handlers.QueueHandler
+    queue: cfg://objects.queue
+    handlers:
+      - cfg://handlers.syslog
 root:
   level: WARN
   handlers:
-    - console
+    - simple
 loggers:
   development:
-    level: DEBUG
-    propogate: false
+    level: ${LOG_LEVEL:DEBUG}
+    propagate: false
     handlers:
-      - console
+      - ${LOG_HANDLER:consoleDebug}
   production:
-    level: INFO
-    propogate: false
+    level: ${LOG_LEVEL:INFO}
+    propagate: false
     handlers:
-      - syslog
+      - ${LOG_HANDLER:queueConsole}
   flask-limiter:
     level: DEBUG
-    propogate: false
+    propagate: false
     handlers:
       - console
   gunicorn.error:
     level: INFO
-    propogate: false
+    propagate: false
     handlers:
-      - console
+      - queueSyslog
   gunicorn.access:
     level: INFO
-    propogate: false
+    propagate: false
     handlers:
-      - console
+      - queueSyslog
