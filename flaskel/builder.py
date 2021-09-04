@@ -128,6 +128,9 @@ class AppBuilder:  # pylint: disable=E1101
         if len(secret_key) < key_length:
             self._app.logger.warning("secret key length is less than: %s", key_length)
 
+        if not self._app.config.get("JWT_SECRET_KEY") is None:
+            self._app.config["JWT_SECRET_KEY"] = self._app.config["SECRET_KEY"]
+
     def _register_extensions(self):
         with self._app.app_context():
             for name, e in self._extensions.items():
