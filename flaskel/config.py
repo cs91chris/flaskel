@@ -2,7 +2,7 @@ import os
 
 from decouple import Choices, config, Csv
 
-from flaskel.utils import logger, yaml
+from flaskel.utils import logger, yaml, Seconds
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 TESTING = config("TESTING", default=DEBUG, cast=bool)
@@ -26,7 +26,16 @@ CONF_PATH = config(
     "CONF_PATH", default=os.path.join("flaskel", "scripts", "skeleton", "res")
 )
 
+JWT_TOKEN_LOCATION = ["headers", "query_string"]
+JWT_ACCESS_TOKEN_EXPIRES = config(
+    "JWT_ACCESS_TOKEN_EXPIRES", default=Seconds.day, cast=int
+)
+JWT_REFRESH_TOKEN_EXPIRES = config(
+    "JWT_REFRESH_TOKEN_EXPIRES", default=Seconds.day * 14, cast=int
+)
+
 SQLALCHEMY_DATABASE_URI = config("DATABASE_URL", default="sqlite:///db.sqlite")
+MONGO_URI = config("MONGO_URI", default="mongodb://localhost:27017")
 REDIS_URL = config("REDIS_URL", default="redis://127.0.0.1:6379")
 REDIS_OPTS = {
     "decode_responses": True,
@@ -49,7 +58,7 @@ PREFERRED_URL_SCHEME = config(
 )
 
 IPBAN_COUNT = config("IPBAN_COUNT", default=5, cast=int)
-IPBAN_SECONDS = config("IPBAN_SECONDS", default=3600, cast=int)
+IPBAN_SECONDS = config("IPBAN_SECONDS", default=Seconds.hour, cast=int)
 
 LOG_BUILDER = config("LOG_BUILDER", default="text")
 LOG_APP_NAME = config("LOG_APP_NAME", default=APP_NAME)
@@ -69,7 +78,7 @@ LOG_RESP_FORMAT = config(
 
 CF_STRICT_ACCESS = config("CF_STRICT_ACCESS", default=False, cast=bool)
 VERSION_STORE_MAX = config("VERSION_STORE_MAX", default=6, cast=int)
-VERSION_CACHE_EXPIRE = config("VERSION_CACHE_EXPIRE", default=60, cast=int)
+VERSION_CACHE_EXPIRE = config("VERSION_CACHE_EXPIRE", default=Seconds.hour, cast=int)
 
 HTTP_PROTECT_BODY = config("HTTP_PROTECT_BODY", default=False, cast=bool)
 HTTP_DUMP_BODY = [
@@ -114,7 +123,7 @@ JWT_DEFAULT_SCOPE = None
 JWT_DEFAULT_TOKEN_TYPE = "bearer"
 PRETTY_DATE = "%d %B %Y %I:%M %p"
 DATE_ISO_FORMAT = "%Y-%m-%dT%H:%M:%S"
-SEND_FILE_MAX_AGE_DEFAULT = 86400
+SEND_FILE_MAX_AGE_DEFAULT = Seconds.day
 
 RATELIMIT_STORAGE_URL = REDIS_URL
 RATELIMIT_KEY_PREFIX = APP_NAME
@@ -145,7 +154,7 @@ SCHEDULER_EXECUTORS = {"default": {"type": "threadpool", "max_workers": 20}}
 SCHEDULER_JOB_DEFAULTS = {"coalesce": False, "max_instances": 10}
 
 CACHE_REDIS_URL = REDIS_URL
-CACHE_DEFAULT_TIMEOUT = 3600
+CACHE_DEFAULT_TIMEOUT = Seconds.hour
 CACHE_TYPE = "flask_caching.backends.redis"
 CACHE_KEY_PREFIX = config("CACHE_KEY_PREFIX", default=APP_NAME)
 CACHE_OPTIONS = {
@@ -162,3 +171,6 @@ IPBAN_NUISANCES = yaml.load_optional_yaml_file(
 LOGGING = yaml.load_optional_yaml_file(
     os.path.join(CONF_PATH, "log.yaml"), default=logger.LOGGING
 )
+
+
+__all__ = [s for s in dir() if s.isupper()]

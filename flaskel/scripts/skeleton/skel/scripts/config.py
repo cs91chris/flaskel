@@ -1,7 +1,6 @@
+# noinspection PyUnresolvedReferences
+from flaskel.config import *  # noqa: F403,F401,E0401 pylint: disable=unused-wildcard-import,wildcard-import
+
 LOCALE = "it_IT.utf8"
-PREFERRED_URL_SCHEME = "http"
-HTTP_DUMP_BODY = [True, True]
 ERROR_PAGE = "errors.html"
 ERROR_HANDLER = "web"
-IPBAN_COUNT = 5
-IPBAN_SECONDS = 3600

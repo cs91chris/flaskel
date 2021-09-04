@@ -20,8 +20,8 @@ from flaskel.tester.http import TestHttpApi, TestHttpCall, TestJsonRPC, TestRest
 from flaskel.utils import datetime, ExtProxy, schemas
 from flaskel.utils.faker import DummyLogger
 
-# noinspection PyUnresolvedReferences pytest: disable=unused-variable
-from . import app_dev, app_prod, CTS, HOSTS, testapp
+# noinspection PyUnresolvedReferences
+from . import app_dev, app_prod, CTS, HOSTS, testapp  # pytest: disable=unused-variable
 
 
 def test_app_dev(app_dev):
@@ -34,7 +34,7 @@ def test_app_dev(app_dev):
     client = TestHttpApi(app_dev.test_client())
     client.perform(request={"url": h.url_for("test.test_https")})
     h.Asserter.assert_equals(client.json.scheme, "https")
-    h.Asserter.assert_true(client.json.h.url_for.startswith("https"))
+    h.Asserter.assert_true(client.json.url_for.startswith("https"))
 
 
 def test_api_resources(testapp):
@@ -121,7 +121,7 @@ def test_force_https(testapp):
     client = TestHttpApi(testapp)
     client.perform(request={"url": h.url_for("test.test_https")})
     h.Asserter.assert_equals(client.json.scheme, "https")
-    h.Asserter.assert_true(client.json.h.url_for.startswith("https"))
+    h.Asserter.assert_true(client.json.url_for.startswith("https"))
 
 
 def test_reverse_proxy(testapp):
