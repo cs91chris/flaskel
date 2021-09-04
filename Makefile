@@ -33,11 +33,11 @@ clean:
 
 lint:
 	@echo "---> running black ..."
-	black -t py38 ${PACKAGES} setup.py
+	black -t py38 ${PACKAGES} tests setup.py
 	@echo "---> running flake8 ..."
-	flake8 --config=.flake8 ${PACKAGES} setup.py
+	flake8 --config=.flake8 ${PACKAGES} tests setup.py
 	@echo "---> running pylint ..."
-	pylint --rcfile=.pylintrc ${PACKAGES} setup.py
+	pylint --rcfile=.pylintrc ${PACKAGES} tests setup.py
 	@echo "---> running mypy ..."
 	mypy --install-types --non-interactive --no-strict-optional ${PACKAGES}
 

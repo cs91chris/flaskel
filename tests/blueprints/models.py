@@ -2,7 +2,7 @@ from flaskel.ext.sqlalchemy.mixins import db, StandardMixin
 
 
 class Dummy(db.Model, StandardMixin):
-    __tablename__ = 'items'
+    __tablename__ = "items"
 
     item = db.Column(db.String(200), nullable=False)
 

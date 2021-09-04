@@ -4,7 +4,5 @@ from flaskel.views.resource import Restful
 
 
 class ApiItem(Restful):
-    post_schema = ConfigProxy('SCHEMAS.ITEM_POST')
-    decorators = [
-        basic_auth.login_required
-    ]
+    post_schema = ConfigProxy("SCHEMAS.ITEM_POST")
+    decorators = [basic_auth.login_required]

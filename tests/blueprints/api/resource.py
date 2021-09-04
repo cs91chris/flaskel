@@ -5,34 +5,34 @@ from flaskel.utils.schemas import PayloadValidator
 from flaskel.views import Resource
 
 resources = [
-    {'item': 1},
-    {'item': 2},
-    {'item': 3},
+    {"item": 1},
+    {"item": 2},
+    {"item": 3},
 ]
 
-sub_resources = [
-    {'sub': 1}
-]
+sub_resources = [{"sub": 1}]
 
 
+# pylint: disable=no-self-use
 class APIResource(Resource):
-    def on_get(self, res_id, **kwargs):
+    def on_get(self, res_id, *_, **__):
         try:
             return resources[res_id - 1]
         except IndexError:
             flask.abort(httpcode.NOT_FOUND)
+            return None
 
     def on_collection(self):
         return resources
 
     def on_post(self):
-        payload = PayloadValidator.validate('ITEM_POST')
+        payload = PayloadValidator.validate("ITEM_POST")
         return payload, httpcode.CREATED
 
-    def on_delete(self, res_id, **kwargs):
+    def on_delete(self, res_id, *_, **__):
         resources.pop(res_id)
 
-    def on_put(self, res_id, **kwargs):
+    def on_put(self, res_id, *_, **__):
         resources[res_id - 1] = flask.request.json
         return resources[res_id - 1]
 
