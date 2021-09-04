@@ -5,7 +5,7 @@ import nest_asyncio
 
 
 class BatchExecutor:
-    def __init__(self, tasks=None):
+    def __init__(self, tasks=None, **__):
         """
 
         :param tasks:

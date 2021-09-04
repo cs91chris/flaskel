@@ -16,6 +16,7 @@ class ProxyView(BaseView):
         proxy_headers=False,
         proxy_params=False,
         options=None,
+        skip_args=(),
         **kwargs,
     ):
         """
@@ -26,6 +27,8 @@ class ProxyView(BaseView):
         :param proxy_body:
         :param proxy_headers:
         :param proxy_params:
+        :param skip_args: a tuple o arguments name to remove from kwargs
+                         it is necessary because flask pass url params to dispatch_request
         :param options: callable that returns dict to pass to http client instance
                         It overrides kwargs
         """
@@ -36,18 +39,19 @@ class ProxyView(BaseView):
         self._proxy_headers = proxy_headers
         self._proxy_params = proxy_params
         self._options = kwargs
+        self._skip_args = skip_args
 
         if callable(options):
             self._options = {**kwargs, **options()}  # pragma: no cover
 
-    # noinspection PyMethodMayBeStatic
     def _filter_kwargs(self, data):
-        return data or {}
+        for arg in self._skip_args:
+            data.pop(arg, None)
+        return data
 
     def dispatch_request(self, *_, **kwargs):
         """
 
-        :param args:
         :param kwargs:
         :return:
         """
@@ -134,6 +138,13 @@ class ConfProxyView(BaseView):
 
 
 class TransparentProxyView(ProxyView):
+    methods = [
+        "POST",
+        "PUT",
+        "GET",
+        "DELETE",
+    ]
+
     def __init__(self, **kwargs):
         kwargs.setdefault("proxy_body", True)
         kwargs.setdefault("proxy_headers", True)
@@ -142,7 +153,9 @@ class TransparentProxyView(ProxyView):
 
 
 class SchemaProxyView(ConfProxyView):
-    default_urls = ["/schema/<path:filepath>"]
+    default_urls = [
+        "/schema/<path:filepath>",
+    ]
 
     def __init__(
         self,

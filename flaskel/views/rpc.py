@@ -1,23 +1,26 @@
 import functools
 import inspect
+import typing as t
 
 import flask
 from flask.views import View
 
 from flaskel.ext.default import builder
+from flaskel.flaskel import Response
 from flaskel.flaskel import cap
 from flaskel.flaskel import httpcode
-from flaskel.flaskel import Response
 from flaskel.http import rpc
-from flaskel.utils.batch import DaemonThread
-from flaskel.utils.batch import ThreadBatchExecutor
+from flaskel.utils.batch import BatchExecutor
 from flaskel.utils.datastruct import ObjectDict
+
+RPCPayloadType = t.Union[t.List[dict], dict]
+OperationsType = t.Dict[t.Optional[str], t.Dict[str, t.Callable]]
 
 
 class JSONRPCView(View):
     version = "2.0"
     separator = "."
-    operations = {}  # type: ignore
+    operations: OperationsType = {}
     default_view_name = "jsonrpc"
     default_url = "/jsonrpc"
     methods = ["POST"]
@@ -30,7 +33,12 @@ class JSONRPCView(View):
     def normalize_url(url):
         return f"/{url.lstrip('/')}"
 
-    def __init__(self, operations=None, batch_executor=None, **kwargs):
+    def __init__(
+        self,
+        operations: t.Optional[dict] = None,
+        batch_executor: t.Type[BatchExecutor] = BatchExecutor,
+        **kwargs,
+    ):
         """
 
         :param batch_executor
@@ -50,11 +58,10 @@ class JSONRPCView(View):
             }
         """
         self.operations = operations or {}
-        self._batch_executor = batch_executor or ThreadBatchExecutor
-        kwargs.setdefault("thread_class", DaemonThread)
+        self._batch_executor = batch_executor
         self._batch_args = kwargs
 
-    def _validate_request(self, data):
+    def _validate_request(self, data: dict):
         if "jsonrpc" not in data or "method" not in data:
             raise rpc.RPCInvalidRequest() from None
 
@@ -63,13 +70,13 @@ class JSONRPCView(View):
                 f"jsonrpc version is {self.version}", req_id=data.get("id")
             ) from None
 
-    def _validate_payload(self):
-        payload = flask.request.get_json(True)
+    def _validate_payload(self) -> RPCPayloadType:
+        payload: RPCPayloadType = flask.request.get_json(True)
         if not payload:
             raise rpc.RPCParseError() from None
 
         if isinstance(payload, (list, tuple)):
-            max_requests = cap.config.JSONRPC_BATCH_MAX_REQUEST
+            max_requests = cap.config.JSONRPC_BATCH_MAX_REQUEST  # type: ignore
             if max_requests and len(payload) > max_requests:
                 mess = f"Operations in a single http request must be less than {max_requests}"
                 flask.abort(httpcode.REQUEST_ENTITY_TOO_LARGE, mess)
@@ -80,7 +87,7 @@ class JSONRPCView(View):
 
         return payload
 
-    def _get_action(self, method):
+    def _get_action(self, method: str):
         """
 
         :param method:
@@ -158,9 +165,9 @@ class JSONRPCView(View):
 
         :param obj:
         """
-        for m in inspect.getmembers(obj, predicate=inspect.isroutine):
-            if not m[0].startswith("_"):
-                cls.method(obj.__class__.__name__, m[0])(m[1])
+        for name, member in inspect.getmembers(obj, predicate=inspect.isroutine):
+            if not name.startswith("_"):
+                cls.method(obj.__class__.__name__, name)(member)
 
     @classmethod
     def method(cls, name=None, operation=None):  # pylint: disable=W0613

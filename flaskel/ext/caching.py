@@ -13,6 +13,7 @@ class Cache:
 
     cached = partial(
         cache.cached,
+        query_string=True,
         unless=lambda: "no-store" in (request.headers.get("Cache-Control") or ""),
         response_filter=lambda r: httpcode.is_ok(r.status_code),
     )
