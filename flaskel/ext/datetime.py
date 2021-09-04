@@ -24,8 +24,8 @@ class FlaskDateHelper:
         app.config.setdefault("DATE_HELPER_COUNTRY", "IT")
         app.config.setdefault("DATE_HELPER_PROV", None)
         app.config.setdefault("DATE_HELPER_STATE", None)
-        app.config.setdefault("DATE_PRETTY", "%d %B %Y %I:%M %p")
-        app.config.setdefault("DATE_ISO_FORMAT", "%Y-%m-%dT%H:%M:%S")
+        app.config.setdefault("DATE_PRETTY", helper_class.DATE_PRETTY_FORMAT)
+        app.config.setdefault("DATE_ISO_FORMAT", helper_class.DATE_ISO_FORMAT)
 
         if helper is not None:
             self._helper = helper
