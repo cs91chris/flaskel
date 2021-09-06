@@ -1,17 +1,22 @@
 # example spa blueprint
 #
-import os
 
+# pylint: disable=import-error
+
+from decouple import config
 from flask import Blueprint
 
 from flaskel import cap
 from flaskel.ext import error_handler
 
-static_folder = os.environ.get("SPA_STATIC_FOLDER") or "webapp"
-static_url_path = os.environ.get("SPA_STATIC_URL_PATH") or "/assets/"
+static_folder = config("SPA_STATIC_FOLDER", default="webapp")
+static_url_path = config("SPA_STATIC_URL_PATH", default="webapp")
 
 bp_spa = Blueprint(
-    "spa", __name__, static_folder=static_folder, static_url_path=static_url_path
+    "spa",
+    __name__,
+    static_folder=static_folder,
+    static_url_path=static_url_path,
 )
 
 error_handler.web_register(bp_spa)
@@ -25,4 +30,5 @@ def catch_all(path):
     :param path:
     :return:
     """
+    _ = path
     return cap.send_static_file("index.html")
