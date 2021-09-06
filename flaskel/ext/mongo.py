@@ -4,6 +4,7 @@ except (ModuleNotFoundError, ImportError):
     PyMongo = object
 
 from flaskel import ObjectDict
+from flaskel.utils.datetime import Seconds
 
 
 class FlaskMongoDB(PyMongo):
@@ -18,9 +19,10 @@ class FlaskMongoDB(PyMongo):
         """
         assert PyMongo is not object, "you must install 'flask_pymongo'"
 
+        app.config.setdefault("MONGO_URI", "mongodb://localhost")
         app.config.setdefault("MONGO_OPTS", {})
-        app.config["MONGO_OPTS"].setdefault("connectTimeoutMS", 1000)
-        app.config["MONGO_OPTS"].setdefault("serverSelectionTimeoutMS", 1000)
+        app.config["MONGO_OPTS"].setdefault("connectTimeoutMS", Seconds.millis)
+        app.config["MONGO_OPTS"].setdefault("serverSelectionTimeoutMS", Seconds.millis)
         app.config["MONGO_OPTS"].update(**kwargs)
 
         # noinspection PyUnresolvedReferences

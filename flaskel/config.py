@@ -23,7 +23,7 @@ TEMPLATES_AUTO_RELOAD = config("TEMPLATES_AUTO_RELOAD", default=DEBUG, cast=bool
 EXPLAIN_TEMPLATE_LOADING = config("EXPLAIN_TEMPLATE_LOADING", default=False, cast=bool)
 APIDOCS_ENABLED = config("APIDOCS_ENABLED", default=True, cast=bool)
 CONF_PATH = config(
-    "CONF_PATH", default=os.path.join("flaskel", "scripts", "skeleton", "res")
+    "CONF_PATH", default=os.path.join("flaskel", "scripts", "skeleton", "resources")
 )
 
 JWT_TOKEN_LOCATION = ["headers", "query_string"]
@@ -35,7 +35,15 @@ JWT_REFRESH_TOKEN_EXPIRES = config(
 )
 
 SQLALCHEMY_DATABASE_URI = config("DATABASE_URL", default="sqlite:///db.sqlite")
+
 MONGO_URI = config("MONGO_URI", default="mongodb://localhost:27017")
+MONGO_OPTS = {
+    "connectTimeoutMS": config("MONGO_CONN_TIMEOUT_MS", default=100, cast=int),
+    "serverSelectionTimeoutMS": config(
+        "MONGO_SERVER_SELECTION_TIMEOUT_MS", default=100, cast=int
+    ),
+}
+
 REDIS_URL = config("REDIS_URL", default="redis://127.0.0.1:6379")
 REDIS_OPTS = {
     "decode_responses": True,

@@ -1,5 +1,7 @@
 from flask_response_builder.builders.encoders import JsonEncoder
 
+from flaskel.utils import Seconds
+
 try:
     import redis
 except ImportError:  # pragma: no cover
@@ -64,7 +66,11 @@ class FlaskRedis:
                 redis_class = JSONRedisClient
 
         app.config.setdefault("REDIS_URL", "redis://localhost:6379/0")
-        app.config.setdefault("REDIS_OPTS", **kwargs)
+
+        app.config.setdefault("REDIS_OPTS", {})
+        app.config["REDIS_OPTS"].setdefault("decode_responses", True)
+        app.config["REDIS_OPTS"].setdefault("socket_connect_timeout", Seconds.millis)
+        app.config["REDIS_OPTS"].update(**kwargs)
 
         if not self._client:
             self._client = redis_class.from_url(
