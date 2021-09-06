@@ -9,8 +9,9 @@ except ImportError:  # pragma: no cover
 
 try:
     from rejson import Client, Path
+    from rejson.client import Pipeline as BasePipeline
 except (ImportError, ModuleNotFoundError):  # pragma: no cover
-    Client = Path = object
+    Client = Path = BasePipeline = object  # type: ignore
 
 
 class JSONRedisClient(Client):
@@ -33,6 +34,19 @@ class JSONRedisClient(Client):
         pipe.jsonset(key, path, [], nx=True)
         pipe.jsonarrappend(key, path, data)
         return pipe.execute()[1]
+
+    def pipeline(self, transaction=True, shard_hint=None):
+        pipe = Pipeline(
+            connection_pool=self.connection_pool,
+            response_callbacks=self.response_callbacks,
+            transaction=transaction,
+            shard_hint=shard_hint,
+        )
+        return pipe
+
+
+class Pipeline(BasePipeline, JSONRedisClient):
+    """Pipeline for JSONRedisClient"""
 
 
 class FlaskRedis:
