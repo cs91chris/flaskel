@@ -1,7 +1,12 @@
+# flake8: noqa F405
+# pylint: disable=redefined-outer-name
+
 import os
 
 import pytest
-from scripts.cli import APP_CONFIG
+
+# pylint: disable=import-error
+from scripts.cli import APP_CONFIG  # type: ignore
 
 from flaskel import ObjectDict, TestClient
 from flaskel.ext.sqlalchemy.support import SQLASupport
@@ -12,11 +17,12 @@ __all__ = [
     "testapp",
     "test_client",
     "auth_token",
+    "BASE_DIR",
 ]
 
 DB_TEST = "test.sqlite"
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-SAMPLE_DATA = os.path.join(BASE_DIR, "..", "res", "sample.sql")
+SAMPLE_DATA = os.path.join(BASE_DIR, "..", "resources", "sample.sql")
 CONFIG = ObjectDict()
 
 CONFIG.MAIL_DEBUG = True

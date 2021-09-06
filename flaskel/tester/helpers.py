@@ -46,6 +46,13 @@ def basic_auth_header(username=None, password=None):
     return dict(Authorization=f"Basic {token}")
 
 
+def build_url(url=None, view=None, params=None, **kwargs):
+    args = "&".join([f"{k}={v}" for k, v in params.items()])
+    if view is not None:
+        return f"{view}?{args}", args  # noqa F405
+    return f"{url_for(url, **kwargs)}?{args}", args  # noqa F405
+
+
 def api_tester(
     client, url=None, view=None, schema=None, status=httpcode.SUCCESS, **kwargs
 ):
@@ -69,8 +76,7 @@ def restful_tester(
     methods=("GET", "POST", "PUT", "DELETE"),
     **params,
 ):  # pylint: disable=R0913
-    args = "&".join([f"{k}={v}" for k, v in params.items()])
-    url_collection = f"{url_for(view)}?{args}"
+    url_collection, args = build_url(view=view, params=params)
 
     if "POST" in methods:
         res = client.post(url_collection, json=body_create, headers=headers)
