@@ -14,7 +14,7 @@ class BaseTokenAuth(BaseView):
 
     methods = ["GET", "POST"]
 
-    """endpoint should not be change otherwise implementation logic fails"""
+    """endpoint should not be change otherwise dispatch_request must change"""
     default_urls = [
         {"url": "/token/access", "endpoint": "token_access"},
         {"url": "/token/refresh", "endpoint": "token_refresh"},
@@ -30,6 +30,7 @@ class BaseTokenAuth(BaseView):
             and data.password == cap.config.BASIC_AUTH_PASSWORD
         ):
             return data
+        return None
 
     @classmethod
     @webargs.query(
@@ -42,7 +43,7 @@ class BaseTokenAuth(BaseView):
         credentials = cls.check_credential()
         if credentials:
             return cls.handler.create(credentials.email, **args)
-        flask.abort(httpcode.UNAUTHORIZED)
+        return flask.abort(httpcode.UNAUTHORIZED)
 
     @classmethod
     def refresh_token(cls):
@@ -75,10 +76,10 @@ class BaseTokenAuth(BaseView):
 
         view_name = flask.request.endpoint
         if view_name.endswith("token_access"):
-            return self.access_token()
+            return self.access_token()  # pylint: disable=no-value-for-parameter
         if view_name.endswith("token_refresh"):
             return self.refresh_token()
         if view_name.endswith("token_revoke"):
             return self.revoke_token()
 
-        flask.abort(httpcode.BAD_REQUEST)
+        return flask.abort(httpcode.BAD_REQUEST)
