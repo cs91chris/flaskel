@@ -15,6 +15,8 @@ session = ExtProxy("sqlalchemy.db.session")
 
 class CustomProxy(proxy.TransparentProxyView):
     methods = ["POST"]
+    default_view_name = "proxyview"
+    default_urls = ["/proxy"]
 
 
 BLUEPRINTS = (
@@ -24,11 +26,14 @@ BLUEPRINTS = (
 )
 
 VIEWS = (
-    (
-        RenderTemplate,
-        bp_web,
-        dict(name="index", urls=["/"], template="index.html"),
-    ),
+    (TokenAuthView, bp_api),
+    (apidoc.ApiDocTemplate, bp_api),
+    (apidoc.ApiSpecTemplate, bp_api),
+    (MobileReleaseView, bp_api),
+    (MobileLoggerView, bp_api),
+    (proxy.SchemaProxyView, bp_api),
+    (jsonRPCView, bp_api),
+    (RenderTemplate, bp_web),
     (
         proxy.ConfProxyView,
         bp_api,
@@ -38,8 +43,6 @@ VIEWS = (
         CustomProxy,
         bp_api,
         dict(
-            name="proxyview",
-            urls=["/proxy"],
             method="POST",
             host="https://httpbin.org",
             url="/anything",
@@ -51,55 +54,8 @@ VIEWS = (
         dict(name="resource_api", url="/resources"),
     ),
     (
-        jsonRPCView,
-        bp_api,
-        dict(name=jsonRPCView.default_view_name, url=jsonRPCView.default_url),
-    ),
-    (
-        apidoc.ApiDocTemplate,
-        bp_api,
-        dict(
-            name=apidoc.ApiDocTemplate.default_view_name,
-            urls=apidoc.ApiDocTemplate.default_urls,
-        ),
-    ),
-    (
-        apidoc.ApiSpecTemplate,
-        bp_api,
-        dict(
-            name=apidoc.ApiSpecTemplate.default_view_name,
-            urls=apidoc.ApiSpecTemplate.default_urls,
-        ),
-    ),
-    (
-        MobileReleaseView,
-        bp_api,
-        dict(
-            name=MobileReleaseView.default_view_name,
-            urls=MobileReleaseView.default_urls,
-        ),
-    ),
-    (
-        MobileLoggerView,
-        bp_api,
-        dict(
-            name=MobileLoggerView.default_view_name,
-            urls=MobileLoggerView.default_urls,
-        ),
-    ),
-    (
         views.ApiItem,
         bp_api,
         dict(name="items", model=models.Dummy, session=session),
-    ),
-    (
-        proxy.SchemaProxyView,
-        bp_api,
-        dict(name="schema_proxy", urls=proxy.SchemaProxyView.default_urls),
-    ),
-    (
-        TokenAuthView,
-        bp_api,
-        dict(name="token_auth", urls=TokenAuthView.default_urls),
     ),
 )

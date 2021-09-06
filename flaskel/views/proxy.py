@@ -153,6 +153,7 @@ class TransparentProxyView(ProxyView):
 
 
 class SchemaProxyView(ConfProxyView):
+    default_view_name = "schema_proxy"
     default_urls = [
         "/schema/<path:filepath>",
     ]

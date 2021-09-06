@@ -8,45 +8,10 @@ rpc_service = object  # import rpc_service here
 rpc.JSONRPCView.load_from_object(rpc_service())
 
 VIEWS = (
-    (
-        TokenAuthView,
-        bp_api,
-        dict(name="token_auth", urls=TokenAuthView.default_urls),
-    ),
-    (
-        rpc.JSONRPCView,
-        dict(name=rpc.JSONRPCView.default_view_name, url=rpc.JSONRPCView.default_url),
-    ),
-    (
-        apidoc.ApiDocTemplate,
-        bp_api,
-        dict(
-            name=apidoc.ApiDocTemplate.default_view_name,
-            urls=apidoc.ApiDocTemplate.default_urls,
-        ),
-    ),
-    (
-        apidoc.ApiSpecTemplate,
-        bp_api,
-        dict(
-            name=apidoc.ApiSpecTemplate.default_view_name,
-            urls=apidoc.ApiSpecTemplate.default_urls,
-        ),
-    ),
-    (
-        MobileReleaseView,
-        bp_api,
-        dict(
-            name=MobileReleaseView.default_view_name,
-            urls=MobileReleaseView.default_urls,
-        ),
-    ),
-    (
-        MobileLoggerView,
-        bp_api,
-        dict(
-            name=MobileLoggerView.default_view_name,
-            urls=MobileLoggerView.default_urls,
-        ),
-    ),
+    (TokenAuthView, bp_api),
+    (rpc.JSONRPCView, bp_api),
+    (apidoc.ApiDocTemplate, bp_api),
+    (apidoc.ApiSpecTemplate, bp_api),
+    (MobileReleaseView, bp_api),
+    (MobileLoggerView, bp_api),
 )

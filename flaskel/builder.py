@@ -214,15 +214,24 @@ class AppBuilder:  # pylint: disable=E1101
             self._app.logger.debug("Registered middleware: '%s'", m.__name__)
 
     def _register_views(self):
-        def normalize(data):
+        def normalize_args(data):
             d = data + (None,) * (3 - len(data))
             if isinstance(d[1], dict):
                 return d[0], d[2], d[1]
             return d[0], d[1], d[2] or {}
 
+        def normalize_params(_v, _p):
+            if hasattr(v, "default_view_name"):
+                _p.setdefault("name", _v.default_view_name)
+            if hasattr(v, "default_urls"):
+                _p.setdefault("urls", _v.default_urls)
+            if hasattr(v, "default_url"):
+                _p.setdefault("url", _v.default_url)
+            return _p
+
         for view in self._views:
-            v, b, p = normalize(view)
-            v.register(b or self._app, **p)
+            v, b, p = normalize_args(view)
+            v.register(b or self._app, **normalize_params(v, p))
             mess = f"on blueprint '{b.name}'" if b else ""
             self._app.logger.debug(
                 "Registered view: '%s' %s with params: %s", v.__name__, mess, p

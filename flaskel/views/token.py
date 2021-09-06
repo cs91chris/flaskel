@@ -12,6 +12,7 @@ class BaseTokenAuth(BaseView):
     jwt = flask_jwt_extended
     handler: BaseTokenHandler = None
 
+    default_view_name = "token_auth"
     methods = ["GET", "POST"]
 
     """endpoint should not be change otherwise dispatch_request must change"""

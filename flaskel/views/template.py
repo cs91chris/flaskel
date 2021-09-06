@@ -6,8 +6,11 @@ from .base import BaseView
 
 
 class RenderTemplate(BaseView):
-    methods = ["GET", "POST"]
-    template: t.Union[str, None] = None
+    methods: t.List[str] = ["GET", "POST"]
+    template: str = "index.html"
+
+    default_view_name = "index"
+    default_urls = ["/"]
 
     def __init__(self, template=None, content_type=None, **kwargs):
         """
