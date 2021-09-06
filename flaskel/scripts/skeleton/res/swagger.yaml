@@ -19,8 +19,9 @@ paths:
       tags:
         - Auth
       parameters:
-        - $ref: '#/components/parameters/expire_access'
-        - $ref: '#/components/parameters/expire_refresh'
+        - $ref: '#/components/parameters/expires_access'
+        - $ref: '#/components/parameters/expires_refresh'
+        - $ref: '#/components/parameters/never_expire'
       requestBody:
         content:
           application/json:
@@ -49,7 +50,7 @@ paths:
       security:
         - token: [ ]
       parameters:
-        - $ref: '#/components/parameters/expire_access'
+        - $ref: '#/components/parameters/expires_access'
       responses:
         '200':
           description: refresh eseguito con successo
@@ -287,18 +288,24 @@ components:
       description: con dettaglio
       schema:
         type: boolean
-    expire_access:
+    expires_access:
       in: query
-      name: expire_access
+      name: expires_access
       schema:
         type: integer
       description: espresso in secondi
-    expire_refresh:
+    expires_refresh:
       in: query
-      name: expire_refresh
+      name: expires_refresh
       schema:
         type: integer
       description: espresso in secondi
+    never_expire:
+      in: query
+      name: never_expire
+      schema:
+        type: boolean
+      description: non fa scadere l'access token
     agent:
       description: os family
       in: query

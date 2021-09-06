@@ -487,11 +487,32 @@ def test_correlation_id(testapp):
     h.Asserter.assert_different(res.headers[request_id_header], req_id)
 
 
-def test_jwt(testapp):
+def test_jwt(app_dev):
+    testapp = app_dev.test_client()
     conf = testapp.application.config
     bypass = {conf.LIMITER.BYPASS_KEY: conf.LIMITER.BYPASS_VALUE}
+
     tokens = testapp.post(
-        h.url_for("auth.access_token"), json=dict(email="email", password="password")
+        f"{h.url_for('api.token_access')}?expires_access=1",
+        json=dict(email=conf.BASIC_AUTH_USERNAME, password=conf.BASIC_AUTH_PASSWORD),
+    )
+    h.Asserter.assert_status_code(tokens)
+    check = testapp.get(
+        h.url_for("api.token_check"),
+        headers={"Authorization": f"Bearer {tokens.json.access_token}", **bypass},
+    )
+    h.Asserter.assert_status_code(check)
+    time.sleep(2)
+    check = testapp.get(
+        h.url_for("api.token_check"),
+        headers={"Authorization": f"Bearer {tokens.json.access_token}", **bypass},
+    )
+    h.Asserter.assert_status_code(check, h.httpcode.UNAUTHORIZED)
+
+    tokens = testapp.post(
+        h.url_for("api.token_access"),
+        json=dict(email=conf.BASIC_AUTH_USERNAME, password=conf.BASIC_AUTH_PASSWORD),
+        headers=bypass,
     )
     h.Asserter.assert_status_code(tokens)
     h.Asserter.assert_allin(
@@ -507,7 +528,7 @@ def test_jwt(testapp):
     )
 
     res = testapp.post(
-        h.url_for("auth.refresh_token"),
+        h.url_for("api.token_refresh"),
         headers={"Authorization": f"Bearer {tokens.json.refresh_token}", **bypass},
     )
     h.Asserter.assert_status_code(res)
@@ -517,19 +538,19 @@ def test_jwt(testapp):
     )
 
     check = testapp.get(
-        h.url_for("auth.check_token"),
+        h.url_for("api.token_check"),
         headers={"Authorization": f"Bearer {res.json.access_token}", **bypass},
     )
     h.Asserter.assert_status_code(check)
 
     unauth = testapp.get(
-        h.url_for("auth.check_token"),
+        h.url_for("api.token_check"),
         headers={"Authorization": "Bearer invalid-token", **bypass},
     )
     h.Asserter.assert_status_code(unauth, h.httpcode.UNAUTHORIZED)
 
     revoked = testapp.post(
-        h.url_for("auth.revoke_token"),
+        h.url_for("api.token_revoke"),
         headers={"Authorization": f"Bearer {tokens.json.access_token}", **bypass},
         json={
             "access_token": tokens.json.access_token,
@@ -539,7 +560,7 @@ def test_jwt(testapp):
     h.Asserter.assert_status_code(revoked, h.httpcode.NO_CONTENT)
 
     res = testapp.get(
-        h.url_for("auth.check_token"),
+        h.url_for("api.token_check"),
         headers={"Authorization": f"Bearer {tokens.json.access_token}", **bypass},
     )
     h.Asserter.assert_status_code(res, h.httpcode.UNAUTHORIZED)

@@ -106,7 +106,7 @@ class BaseTokenHandler:
         """
         return jwt.create_access_token(
             identity=identity or self.identity(),
-            expires_delta=timedelta(expires) if expires else None,
+            expires_delta=timedelta(seconds=expires) if expires else None,
         )
 
     def get_refresh(self, identity=None, expires=None):
@@ -118,7 +118,7 @@ class BaseTokenHandler:
         """
         return jwt.create_refresh_token(
             identity=identity or self.identity(),
-            expires_delta=timedelta(expires) if expires else None,
+            expires_delta=timedelta(seconds=expires) if expires else None,
         )
 
     def refresh(self, expires=None):

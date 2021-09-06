@@ -1,11 +1,11 @@
 from flaskel import ExtProxy
+from flaskel.extra import apidoc
 from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
 from flaskel.views import proxy, RenderTemplate, rpc
-from flaskel.extra import apidoc
 from . import models, views
 from .api import bp_api, resource, rpc as rpc_service
-from .auth import bp_auth
 from .test import bp_test
+from .views import TokenAuthView
 from .web import bp_web
 
 jsonRPCView = rpc.JSONRPCView
@@ -21,11 +21,14 @@ BLUEPRINTS = (
     (bp_api,),
     (bp_test,),
     (bp_web, {"url_prefix": "/"}),
-    (bp_auth, {"url_prefix": "/auth"}),
 )
 
 VIEWS = (
-    (RenderTemplate, bp_web, dict(name="index", urls=["/"], template="index.html")),
+    (
+        RenderTemplate,
+        bp_web,
+        dict(name="index", urls=["/"], template="index.html"),
+    ),
     (
         proxy.ConfProxyView,
         bp_api,
@@ -42,7 +45,11 @@ VIEWS = (
             url="/anything",
         ),
     ),
-    (resource.APIResource, bp_api, dict(name="resource_api", url="/resources")),
+    (
+        resource.APIResource,
+        bp_api,
+        dict(name="resource_api", url="/resources"),
+    ),
     (
         jsonRPCView,
         bp_api,
@@ -80,10 +87,19 @@ VIEWS = (
             urls=MobileLoggerView.default_urls,
         ),
     ),
-    (views.ApiItem, bp_api, dict(name="items", model=models.Dummy, session=session)),
+    (
+        views.ApiItem,
+        bp_api,
+        dict(name="items", model=models.Dummy, session=session),
+    ),
     (
         proxy.SchemaProxyView,
         bp_api,
         dict(name="schema_proxy", urls=proxy.SchemaProxyView.default_urls),
+    ),
+    (
+        TokenAuthView,
+        bp_api,
+        dict(name="token_auth", urls=TokenAuthView.default_urls),
     ),
 )

@@ -30,7 +30,11 @@ class BaseView(View):
         name = name or cls.__name__
         view = cls.as_view(name, **kwargs)
         for u in urls or (f"/{name}",):
-            app.add_url_rule(u, view_func=view, methods=cls.methods)
+            if isinstance(u, dict):
+                url = u.pop("url")
+                app.add_url_rule(url, view_func=view, methods=cls.methods, **u)
+            else:
+                app.add_url_rule(u, view_func=view, methods=cls.methods)
 
 
 class Resource(MethodView):
