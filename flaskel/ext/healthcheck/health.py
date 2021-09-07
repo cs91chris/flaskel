@@ -37,8 +37,7 @@ class HealthCheck:
         self.register_route(bp or app, decorators)
         self.register_extensions(app, extensions)
 
-        if not hasattr(app, "extensions"):
-            app.extensions = dict()  # pragma: no cover
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["healthcheck"] = self
 
     @staticmethod

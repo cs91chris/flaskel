@@ -51,8 +51,7 @@ class APJobs(APScheduler):
             logger = logging.getLogger("flask_apscheduler")
             logger.setLevel(logging.DEBUG)
 
-        if not hasattr(app, "extensions"):
-            app.extensions = dict()  # pragma: no cover
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["scheduler"] = self
 
         self.add_listener(self._exception_listener, events.EVENT_ALL)

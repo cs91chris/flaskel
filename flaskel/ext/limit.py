@@ -111,8 +111,7 @@ class FlaskIPBan:
             self.add_whitelist(whitelist or [])
             self.load_nuisances(conf=cap.config.IPBAN_NUISANCES)
 
-        if not hasattr(app, "extensions"):
-            app.extensions = dict()  # pragma: no cover
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["ipban"] = self
 
     @staticmethod

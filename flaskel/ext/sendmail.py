@@ -11,7 +11,7 @@ class ClientMail(Mail):
         assert Mail is not object, "you must install 'flask_mail'"
 
         super().init_app(app)
-        app.extensions = getattr(app, "extensions", {})
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["client_mail"] = self
 
     def sendmail(

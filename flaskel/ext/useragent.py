@@ -24,8 +24,7 @@ class UserAgent:
         self._parser = parser_class
         app.config.setdefault("USER_AGENT_AUTO_PARSE", False)
 
-        if not hasattr(app, "extensions"):
-            app.extensions = {}  # pragma: no cover
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["useragent"] = self
 
         @app.before_request

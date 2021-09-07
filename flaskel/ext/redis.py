@@ -19,23 +19,23 @@ class JSONRedisClient(Client):
         super().__init__(encoder or JsonEncoder(), *args, **kwargs)
 
     @staticmethod
-    def json_path(path=None):
+    def json_path(path: str = None):
         return Path(path) if path else Path.rootPath()
 
-    def json_set(self, key, data, path=None):
+    def json_set(self, key: str, data, path: str = None):
         return self.jsonset(key, self.json_path(path), data)
 
-    def json_get(self, key, path=None):
+    def json_get(self, key: str, path: str = None):
         return self.jsonget(key, self.json_path(path))
 
-    def json_array_add(self, key, data, path=None, **__):
+    def json_array_add(self, key: str, data, path: str = None, **__):
         path = self.json_path(path)
         pipe = self.pipeline()
         pipe.jsonset(key, path, [], nx=True)
         pipe.jsonarrappend(key, path, data)
         return pipe.execute()[1]
 
-    def pipeline(self, transaction=True, shard_hint=None):
+    def pipeline(self, transaction: bool = True, shard_hint: bool = None):
         pipe = Pipeline(
             connection_pool=self.connection_pool,
             response_callbacks=self.response_callbacks,
@@ -91,8 +91,7 @@ class FlaskRedis:
                 app.config["REDIS_URL"], **app.config["REDIS_OPTS"]
             )
 
-        if not hasattr(app, "extensions"):
-            app.extensions = {}  # pragma: no cover
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["redis"] = self
 
     def __getattr__(self, name):

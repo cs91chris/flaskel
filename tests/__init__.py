@@ -18,6 +18,7 @@ from flaskel.ext import (
     sendmail,
     template,
     useragent,
+    mongodb,
 )
 from flaskel.ext.crypto import argon2
 from flaskel.ext.healthcheck import checks, health_checks
@@ -82,6 +83,7 @@ BASE_EXTENSIONS = {
     "scheduler": (scheduler,),
     "sendmail": (sendmail.client_mail,),
     "redis": (client_redis,),
+    "mongo": (mongodb,),
     "health_checks": (health_checks,),
     "jwt": (auth.jwtm,),
     "ipban": (limit.ip_ban,),

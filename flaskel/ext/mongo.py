@@ -27,5 +27,9 @@ class FlaskMongoDB(PyMongo):
 
         # noinspection PyUnresolvedReferences
         super().init_app(app, uri, *args, **kwargs)
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["mongo"] = ObjectDict()
         app.extensions["mongo"][ext_name] = self
+
+
+mongodb = FlaskMongoDB()

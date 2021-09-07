@@ -27,8 +27,7 @@ class Argon2:
 
         self._ph = _argon2.PasswordHasher(**app.config.get_namespace("ARGON2_"))
 
-        if not hasattr(app, "extensions"):
-            app.extensions = dict()  # pragma: no cover
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["argon2"] = self
 
     def generate_hash(self, password):

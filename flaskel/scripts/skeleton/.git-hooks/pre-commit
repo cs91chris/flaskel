@@ -1,6 +1,5 @@
 #!/bin/bash
 
-EXIT_CODE=0
 DIFF_OPTS="--cached --name-only --diff-filter=ACM --no-color"
 SRC=$(git diff ${DIFF_OPTS} | grep --color=never -e '\.py$')
 
