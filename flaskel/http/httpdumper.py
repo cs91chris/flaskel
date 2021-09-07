@@ -102,11 +102,11 @@ class BaseHTTPDumper:
 class LazyHTTPDumper(BaseHTTPDumper):
     @classmethod
     def dump_request(cls, req, *args, **kwargs):
-        return Dumper(req, super().dump_request, *args, **kwargs)
+        return Dumper(req, *args, callback=super().dump_request, **kwargs)
 
     @classmethod
     def dump_response(cls, resp, *args, **kwargs):
-        return Dumper(resp, super().dump_response, *args, **kwargs)
+        return Dumper(resp, *args, callback=super().dump_response, **kwargs)
 
 
 class FlaskelHTTPDumper(LazyHTTPDumper):
