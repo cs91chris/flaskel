@@ -24,16 +24,16 @@ class Field:
 
 
 class OptField:
-    integer = partial(Field.integer, missing=None)
-    string = partial(Field.string, missing=None)
-    decimal = partial(Field.decimal, missing=None)
-    boolean = partial(Field.boolean, missing=False)
-    positive = partial(Field.positive, missing=None)
-    not_negative = partial(Field.not_negative, missing=None)
-    not_positive = partial(Field.not_positive, missing=None)
-    negative = partial(Field.negative, missing=None)
-    isodate = partial(Field.isodate, missing=None)
-    list_of = partial(Field.list_of, missing=())
+    integer = partial(Field.integer, load_default=None)
+    string = partial(Field.string, load_default=None)
+    decimal = partial(Field.decimal, load_default=None)
+    boolean = partial(Field.boolean, load_default=False)
+    positive = partial(Field.positive, load_default=None)
+    not_negative = partial(Field.not_negative, load_default=None)
+    not_positive = partial(Field.not_positive, load_default=None)
+    negative = partial(Field.negative, load_default=None)
+    isodate = partial(Field.isodate, load_default=None)
+    list_of = partial(Field.list_of, load_default=())
 
 
 class ReqField:
@@ -60,7 +60,7 @@ query_paginate = partial(
     dict(
         page=OptField.positive(),
         page_size=OptField.positive(),
-        related=OptField.boolean(missing=False),
+        related=OptField.boolean(load_default=False),
     ),
 )
 
