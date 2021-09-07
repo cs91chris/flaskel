@@ -47,17 +47,25 @@ def basic_auth_header(username=None, password=None):
 
 
 def build_url(url=None, view=None, params=None, **kwargs):
+    params = params or {}
     args = "&".join([f"{k}={v}" for k, v in params.items()])
     if view is not None:
-        return f"{view}?{args}", args  # noqa F405
-    return f"{url_for(url, **kwargs)}?{args}", args  # noqa F405
+        return f"{url_for(view, **kwargs)}?{args}", args  # noqa F405
+    return f"{url}?{args}", args  # noqa F405
 
 
 def api_tester(
-    client, url=None, view=None, schema=None, status=httpcode.SUCCESS, **kwargs
+    client,
+    url=None,
+    view=None,
+    schema=None,
+    status=httpcode.SUCCESS,
+    params=None,
+    **kwargs,
 ):
     kwargs.setdefault("method", "GET")
-    res = client.open(url_for(view) if view else url, **kwargs)
+    url, _ = build_url(url, url_for(view) if view else None, params)
+    res = client.open(url, **kwargs)
     Asserter.assert_status_code(res, status)
     if schema:
         Asserter.assert_schema(res.json, schema)
