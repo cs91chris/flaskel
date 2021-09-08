@@ -10,4 +10,5 @@ from .client import (
     NetworkError,
 )
 from .httpdumper import BaseHTTPDumper, FlaskelHTTPDumper, LazyHTTPDumper
+from .methods import HttpMethod, WebDavMethod
 from .useragent import UserAgent

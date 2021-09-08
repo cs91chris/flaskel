@@ -143,7 +143,7 @@ def test_secret_key_prod(testapp):
 def test_method_override(testapp):
     res = testapp.post(
         h.url_for("test.method_override_post"),
-        headers={"X-HTTP-Method-Override": "PUT"},
+        headers={"X-HTTP-Method-Override": h.HttpMethod.PUT},
     )
     h.Asserter.assert_status_code(res)
 
@@ -215,7 +215,7 @@ def test_utils_http_client_exception(testapp):
     res = fake_api.put("/", timeout=0.1)
     h.Asserter.assert_equals(res.status, h.httpcode.SERVICE_UNAVAILABLE)
     try:
-        api.request("/status/500", "PUT")
+        api.request("/status/500", h.HttpMethod.PUT)
     except HTTPStatusError as exc:
         h.Asserter.assert_equals(
             exc.response.status_code, h.httpcode.INTERNAL_SERVER_ERROR
@@ -256,13 +256,14 @@ def test_http_client_batch(testapp):
             [
                 dict(
                     url=f"{HOSTS.apitester}/anything",
-                    method="GET",
+                    method=h.HttpMethod.GET,
                     headers={"HDR1": "HDR1"},
                 ),
                 dict(
-                    url=f"{HOSTS.apitester}/status/{h.httpcode.NOT_FOUND}", method="GET"
+                    url=f"{HOSTS.apitester}/status/{h.httpcode.NOT_FOUND}",
+                    method=h.HttpMethod.GET,
                 ),
-                dict(url=HOSTS.fake, method="GET", timeout=0.1),
+                dict(url=HOSTS.fake, method=h.HttpMethod.GET, timeout=0.1),
             ]
         )
     h.Asserter.assert_equals(responses[0].body.headers.Hdr1, "HDR1")

@@ -8,6 +8,7 @@ from flaskel import httpcode
 from flaskel.ext.sqlalchemy.support import SQLASupport
 from flaskel.tester import FetchMail
 from flaskel.tester.mixins import Asserter
+from flaskel.http import HttpMethod
 
 __all__ = [
     "ConfigProxy",
@@ -21,6 +22,9 @@ __all__ = [
     "api_tester",
     "fetch_emails",
     "load_sample_data",
+    "FetchMail",
+    "build_url",
+    "HttpMethod",
 ]
 
 config = ConfigProxy()
@@ -63,13 +67,33 @@ def api_tester(
     params=None,
     **kwargs,
 ):
-    kwargs.setdefault("method", "GET")
+    kwargs.setdefault("method", HttpMethod.GET)
     url, _ = build_url(url, url_for(view) if view else None, params)
     res = client.open(url, **kwargs)
     Asserter.assert_status_code(res, status)
     if schema:
         Asserter.assert_schema(res.json, schema)
     return res
+
+
+def post_api_tester(client, **kwargs):
+    api_tester(client, method=HttpMethod.POST, **kwargs)
+
+
+def put_api_tester(client, **kwargs):
+    api_tester(client, method=HttpMethod.PUT, **kwargs)
+
+
+def get_api_tester(client, **kwargs):
+    api_tester(client, method=HttpMethod.GET, **kwargs)
+
+
+def delete_api_tester(client, **kwargs):
+    api_tester(client, method=HttpMethod.DELETE, **kwargs)
+
+
+def patch_api_tester(client, **kwargs):
+    api_tester(client, method=HttpMethod.PATCH, **kwargs)
 
 
 def restful_tester(
@@ -81,19 +105,19 @@ def restful_tester(
     body_update=None,
     schema_read=None,
     schema_collection=None,
-    methods=("GET", "POST", "PUT", "DELETE"),
+    methods=(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE),
     **params,
 ):  # pylint: disable=R0913
     url_collection, args = build_url(view=view, params=params)
 
-    if "POST" in methods:
+    if HttpMethod.POST in methods:
         res = client.post(url_collection, json=body_create, headers=headers)
         Asserter.assert_status_code(res, httpcode.CREATED)
         Asserter.assert_schema(res.json, schema_read)
         res_id = res.json.id
 
     url_resource = f"{url_for(view, res_id=res_id)}?{args}"
-    if "GET" in methods:
+    if HttpMethod.GET in methods:
         res = client.get(url_collection, headers=headers)
         Asserter.assert_status_code(res)
         Asserter.assert_schema(res.json, schema_collection)
@@ -102,13 +126,13 @@ def restful_tester(
         Asserter.assert_status_code(res)
         Asserter.assert_schema(res.json, schema_read)
 
-    if "PUT" in methods:
+    if HttpMethod.PUT in methods:
         body_update = body_update or body_create
         res = client.put(url_resource, headers=headers, json=body_update)
         Asserter.assert_status_code(res)
         Asserter.assert_schema(res.json, schema_read)
 
-    if "DELETE" in methods:
+    if HttpMethod.DELETE in methods:
         res = client.delete(url_resource, headers=headers)
         Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 
