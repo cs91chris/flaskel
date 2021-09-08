@@ -40,19 +40,18 @@ class SQLASupport:
         obj = self.model(**params)
         self.session.add(obj)
 
-        try:
-            with self.session.begin_nested():
+        with self.session.begin_nested():
+            try:
                 self.session.flush()
-        except IntegrityError:
-            self.session.rollback()
-            query = self.session.query(self.model).filter_by(**lookup)
-            if lock:
-                query = query.with_for_update()
-
-            obj = query.one()
-            return obj, False
-        else:
-            return obj, True
+            except IntegrityError:
+                self.session.rollback()
+                query = self.session.query(self.model).filter_by(**lookup)
+                if lock:
+                    query = query.with_for_update()
+                    obj = query.one()
+                return obj, False
+            else:
+                return obj, True
 
     def get_or_create(self, defaults=None, **kwargs):
         """
@@ -88,7 +87,7 @@ class SQLASupport:
             for k, v in defaults.items():
                 setattr(obj, k, v)
 
-            self.session.add(obj)
+            self.session.merge(obj)
             self.session.flush()
 
         return obj, False
