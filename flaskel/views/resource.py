@@ -3,7 +3,7 @@ import typing as t
 import flask
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from flaskel.flaskel import cap, httpcode
+from flaskel import cap, httpcode, ExtProxy
 from flaskel.utils import PayloadValidator, webargs
 from .base import Resource
 
@@ -94,18 +94,19 @@ class Restful(CatalogResource):
     post_schema: t.Any = None
     put_schema: t.Any = None
     validator = PayloadValidator
+
     methods_collection = ["GET", "POST"]
     methods_subresource = ["GET", "POST"]
     methods_resource = ["GET", "PUT", "DELETE"]
 
-    def __init__(self, session, model):
+    def __init__(self, model, session):
         """
 
         :param session: sqlalchemy session instance
         :param model: sqlalchemy model
         """
         super().__init__(model)
-        self._session = session
+        self._session = session or ExtProxy("sqlalchemy.db.session")
 
     def validate(self, schema):
         """
@@ -135,17 +136,33 @@ class Restful(CatalogResource):
         resource.update(data)
         return resource
 
+    def _session_exception_handler(self, exception: SQLAlchemyError):
+        """
+
+        :param exception:
+        """
+        cap.logger.exception(exception)
+        self._session.rollback()
+
+        if isinstance(exception, IntegrityError):
+            cause = exception.orig.diag.message_detail
+            flask.abort(httpcode.CONFLICT, response={"cause": cause})
+
+        flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+
     def _create(self, res):
         try:
             self._session.add(res)
             self._session.commit()
-        except IntegrityError:
-            self._session.rollback()
-            flask.abort(httpcode.CONFLICT)
         except SQLAlchemyError as exc:
-            cap.logger.exception(exc)
-            self._session.rollback()
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            self._session_exception_handler(exc)
+
+    def _update(self, res):
+        try:
+            self._session.merge(res)
+            self._session.commit()
+        except SQLAlchemyError as exc:
+            self._session_exception_handler(exc)
 
     def on_post(self, *_, **__):
         """
@@ -168,18 +185,7 @@ class Restful(CatalogResource):
             self._session.delete(res)
             self._session.commit()
         except SQLAlchemyError as exc:
-            cap.logger.exception(exc)
-            self._session.rollback()
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
-
-    def _update(self, res):
-        try:
-            self._session.merge(res)
-            self._session.commit()
-        except SQLAlchemyError as exc:
-            cap.logger.exception(exc)
-            self._session.rollback()
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            self._session_exception_handler(exc)
 
     def on_put(self, res_id, *_, **__):
         """
