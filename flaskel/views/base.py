@@ -15,7 +15,7 @@ class BaseView(View):
         return self._not_implemented()  # pragma: no cover
 
     # noinspection PyMethodMayBeStatic
-    def _not_implemented(self):  # pragma: no cover
+    def _not_implemented(self):  # pragma: no cover pylint: disable=no-self-use
         flask.abort(httpcode.NOT_IMPLEMENTED)
 
     @classmethod
@@ -112,8 +112,8 @@ class Resource(MethodView):
         return self.on_delete(res_id, *args, **kwargs)
 
     @builder.on_accept()
-    def put(self, res_id, *args, **kwargs):
-        return self.on_put(res_id, *args, **kwargs)
+    def put(self, *args, res_id=None, **kwargs):
+        return self.on_put(*args, res_id=res_id, **kwargs)
 
     def on_get(self, *_, **__):
         return self._not_implemented()  # pragma: no cover
@@ -131,5 +131,5 @@ class Resource(MethodView):
         return self._not_implemented()  # pragma: no cover
 
     # noinspection PyMethodMayBeStatic
-    def _not_implemented(self):  # pragma: no cover
+    def _not_implemented(self):  # pragma: no cover pylint: disable=no-self-use
         flask.abort(httpcode.NOT_IMPLEMENTED)

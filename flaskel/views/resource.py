@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from flaskel import cap, httpcode, ExtProxy
 from flaskel.utils import PayloadValidator, webargs
 from .base import Resource
+from ..ext.sqlalchemy import SQLASupport
 
 
 class CatalogResource(Resource):
@@ -94,9 +95,10 @@ class Restful(CatalogResource):
     post_schema: t.Any = None
     put_schema: t.Any = None
     validator = PayloadValidator
+    support_class: t.Type[SQLASupport] = SQLASupport
 
-    methods_collection = ["GET", "POST"]
     methods_subresource = ["GET", "POST"]
+    methods_collection = ["GET", "POST", "PUT"]
     methods_resource = ["GET", "PUT", "DELETE"]
 
     def __init__(self, model, session):
@@ -107,6 +109,7 @@ class Restful(CatalogResource):
         """
         super().__init__(model)
         self._session = session or ExtProxy("sqlalchemy.db.session")
+        self.support = self.support_class(self._model, self._session)
 
     def validate(self, schema):
         """
@@ -164,6 +167,22 @@ class Restful(CatalogResource):
         except SQLAlchemyError as exc:
             self._session_exception_handler(exc)
 
+    @classmethod
+    def _prepare_upsert_filters(cls, *_, **__):
+        return {}
+
+    def _upsert(self, data):
+        try:
+            res, created = self.support.update_or_create(
+                data, **self._prepare_upsert_filters(data)
+            )
+            self._session.commit()
+        except SQLAlchemyError as exc:
+            cap.logger.exception(exc)
+            return flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+
+        return res, httpcode.CREATED if created else httpcode.SUCCESS
+
     def on_post(self, *_, **__):
         """
 
@@ -187,14 +206,20 @@ class Restful(CatalogResource):
         except SQLAlchemyError as exc:
             self._session_exception_handler(exc)
 
-    def on_put(self, res_id, *_, **__):
+    def on_put(self, *_, res_id=None, **__):
         """
 
         :param res_id: resource identifier (primary key value)
+            it is optional in order to implement upsert
         :return:
         """
         payload = self.validate(self.put_schema or self.post_schema)
-        res = self._model.query.get_or_404(res_id)
-        res = self.update_resource(res, payload)
-        self._update(res)
-        return res.to_dict()
+
+        if res_id is not None:
+            res = self._model.query.get_or_404(res_id)
+            res = self.update_resource(res, payload)
+            self._update(res)
+            return res.to_dict()
+
+        res, status = self._upsert(payload)
+        return res.to_dict(), status
