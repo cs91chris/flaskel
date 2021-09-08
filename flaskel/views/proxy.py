@@ -1,12 +1,17 @@
+import typing as t
+
 import flask
 
-from flaskel import cap, httpcode
-from flaskel.http.client import FlaskelHttp
-from flaskel.utils.datastruct import ObjectDict
+import flaskel
+from flaskel import cap, httpcode, HttpMethod
+from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC, HTTPBase
+from flaskel.utils import ObjectDict, uuid
 from .base import BaseView
 
 
 class ProxyView(BaseView):
+    client_class: t.Type[HTTPBase] = FlaskelHttp
+
     def __init__(
         self,
         host=None,
@@ -50,22 +55,19 @@ class ProxyView(BaseView):
         return data
 
     def dispatch_request(self, *_, **kwargs):
-        """
-
-        :param kwargs:
-        :return:
-        """
         opts = {**self._options, **self._filter_kwargs(kwargs)}
         response = self.proxy(self.service(), **opts)
 
-        return flask.Response(
-            flask.stream_with_context(response.body),
-            headers=response.headers,
-            status=response.status,
-        )
+        if response and response.body and response.status != httpcode.NO_CONTENT:
+            return flask.Response(
+                flask.stream_with_context(response.body),
+                headers=response.headers,
+                status=response.status,
+            )
+        return flaskel.Response.no_content()
 
     def proxy(self, data, **kwargs):
-        client = FlaskelHttp(data.host or self.upstream_host(), **kwargs)
+        client = self.client_class(data.host or self.upstream_host(), **kwargs)
         return client.request(
             data.url or self.request_url(),
             method=data.method or self.request_method(),
@@ -181,3 +183,45 @@ class SchemaProxyView(ConfProxyView):
     def dispatch_request(self, filepath, *args, **kwargs):
         schema_path = self.normalize(filepath)
         return super().perform(item=schema_path)
+
+
+class JsonRPCProxy(ProxyView):
+    client_class: t.Type[HTTPBase] = FlaskelJsonRPC
+
+    methods = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+    ]
+
+    def proxy(self, data, **kwargs):
+        url = self.upstream_host()
+        client = self.client_class(url, url, **kwargs)
+        if flask.request.method == HttpMethod.GET:
+            body = client.request(
+                self.request_method(),
+                request_id=self.get_request_id(),
+                params=self.request_params(),
+                stream=True,
+            )
+        else:
+            body = None
+            client.notification(self.request_method(), params=self.request_params())
+
+        return ObjectDict(
+            body=body,
+            status=httpcode.SUCCESS if body else httpcode.NO_CONTENT,
+            headers={"Content-Type": "application/json"},
+        )
+
+    @staticmethod
+    def get_request_id():
+        header = cap.config.REQUEST_ID_HEADER
+        return flask.request.headers.get(header) or uuid.get_uuid()
+
+    def request_method(self):
+        return flask.request.path.split("/")[-1]
+
+    def request_params(self):
+        if flask.request.method == HttpMethod.GET:
+            return flask.request.args.to_dict()
+        return flask.request.json

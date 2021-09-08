@@ -2,6 +2,7 @@ from flaskel import ExtProxy
 from flaskel.extra import apidoc
 from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
 from flaskel.views import proxy, RenderTemplate, rpc
+from flaskel.views.proxy import JsonRPCProxy
 from . import models, views
 from .api import bp_api, resource, rpc as rpc_service
 from .test import bp_test
@@ -57,5 +58,14 @@ VIEWS = (
         views.ApiItem,
         bp_api,
         dict(name="items", model=models.Dummy, session=session),
+    ),
+    (
+        JsonRPCProxy,
+        bp_api,
+        dict(
+            url="/jsonrpc_method",
+            name="jsonrpc_proxyview",
+            host="https://httpbin.org/anything",
+        ),
     ),
 )

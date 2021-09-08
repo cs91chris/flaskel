@@ -262,6 +262,7 @@ class JsonRPCClient(HTTPClient):
         :param kwargs:
         :return:
         """
+        kwargs.setdefault("raise_on_exc", True)
         resp = super().request(
             self._uri,
             method="POST",

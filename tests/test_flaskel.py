@@ -1,5 +1,6 @@
 # flake8: noqa F405
 # pylint: disable=redefined-outer-name,unused-import,unused-argument
+import json
 import os
 import time
 
@@ -598,17 +599,31 @@ def test_proxy_view(app_dev):
     h.Asserter.assert_equals(res.json.json.test, "test")
     h.Asserter.assert_equals(res.json.args.p, "v1")
 
-    res = testapp.get(f"{h.url_for('api.confproxy')}")
+    res = testapp.get(h.url_for("api.confproxy"))
     h.Asserter.assert_status_code(res)
     h.Asserter.assert_equals(res.json.headers.k, "v")
     h.Asserter.assert_equals(res.json.params.k, "v")
+
+
+def test_jsonrpc_proxy_view(app_dev):
+    testapp = app_dev.test_client()
+    res = testapp.post(h.url_for("api.jsonrpc_proxyview"), json={"test": "test"})
+    h.Asserter.assert_status_code(res, h.httpcode.NO_CONTENT)
+
+    res = testapp.get(h.url_for("api.jsonrpc_proxyview", param1=1, param2=2))
+    h.Asserter.assert_status_code(res)
+    response = json.loads(res.json.data)
+    h.Asserter.assert_schema(response, schemas.SCHEMAS.JSONRPC.REQUEST)
+    h.Asserter.assert_equals(response["method"], "jsonrpc_proxyview")
+    h.Asserter.assert_equals(response["params"]["param1"], "1")
+    h.Asserter.assert_equals(response["params"]["param2"], "2")
 
 
 def test_proxy_schema(app_dev):
     view = "api.schema_proxy"
     testapp = app_dev.test_client()
     bypass = {app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE}
-    res = h.api_tester(
+    _ = h.api_tester(
         testapp,
         h.url_for(view, filepath="pippo"),
         status=h.httpcode.NOT_FOUND,
