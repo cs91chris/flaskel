@@ -52,7 +52,7 @@ def init(name):
     replace_in_file(
         os.path.join(name, "scripts", "cli.py"),
         ("from ext", f"from {name}.ext"),
-        ("from blueprint", f"from {name}.blueprint"),
+        ("from views", f"from {name}.blueprint"),
     )
     replace_in_file(
         os.path.join(name, "scripts", "gunicorn.py"),

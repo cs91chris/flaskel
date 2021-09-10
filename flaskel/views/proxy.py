@@ -196,6 +196,7 @@ class JsonRPCProxy(ProxyView):
     def proxy(self, data, **kwargs):
         url = self.upstream_host()
         client = self.client_class(url, url, **kwargs)
+
         if flask.request.method == HttpMethod.GET:
             body = client.request(
                 self.request_method(),

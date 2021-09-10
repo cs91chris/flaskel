@@ -1,4 +1,4 @@
-from blueprints import BLUEPRINTS, VIEWS
+from views import BLUEPRINTS, VIEWS
 from ext import EXTENSIONS
 from flaskel import AppBuilder, middlewares as middle, Server
 

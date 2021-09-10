@@ -19,7 +19,7 @@ class BaseView(View):
         flask.abort(httpcode.NOT_IMPLEMENTED)
 
     @classmethod
-    def register(cls, app, name, urls=(), **kwargs):
+    def register(cls, app, name=None, urls=(), **kwargs):
         """
 
         :param app: Flask app or blueprint
