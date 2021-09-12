@@ -3,6 +3,7 @@ import shutil
 import sys
 from pathlib import Path
 
+import argon2
 import click
 
 from flaskel.ext.sqlalchemy.schema import db_to_schema
@@ -52,7 +53,7 @@ def init(name):
     replace_in_file(
         os.path.join(name, "scripts", "cli.py"),
         ("from ext", f"from {name}.ext"),
-        ("from views", f"from {name}.blueprint"),
+        ("from views", f"from {name}.views"),
     )
     replace_in_file(
         os.path.join(name, "scripts", "gunicorn.py"),
@@ -68,6 +69,14 @@ def init(name):
 def run_tests():
     """Run test suite from package tests in current directory"""
     cli_tester.main()
+
+
+@cli.command(name="hash")
+@click.argument("password")
+def hash_password(password):
+    """Print the argon2 hash of a given password"""
+    ph = argon2.PasswordHasher()
+    print(ph.hash(password))
 
 
 @cli.command(name="schema")
