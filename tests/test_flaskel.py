@@ -148,7 +148,7 @@ def test_method_override(testapp):
     )
     h.Asserter.assert_status_code(res)
 
-    res = testapp.post(f"{h.url_for('test.method_override_post')}?_method_override=PUT")
+    res = testapp.post(h.url_for("test.method_override_post", _method_override="PUT"))
     h.Asserter.assert_status_code(res)
 
 
@@ -495,7 +495,7 @@ def test_jwt(app_dev):
     bypass = {conf.LIMITER.BYPASS_KEY: conf.LIMITER.BYPASS_VALUE}
 
     tokens = testapp.post(
-        f"{h.url_for('api.token_access')}?expires_access=1",
+        h.url_for("api.token_access", expires_access=1),
         json=dict(email=conf.BASIC_AUTH_USERNAME, password=conf.BASIC_AUTH_PASSWORD),
     )
     h.Asserter.assert_status_code(tokens)
@@ -594,7 +594,7 @@ def test_http_status():
 
 def test_proxy_view(app_dev):
     testapp = app_dev.test_client()
-    res = testapp.post(f"{h.url_for('api.proxyview')}?p=v1", json={"test": "test"})
+    res = testapp.post(h.url_for("api.proxyview", p="v1"), json={"test": "test"})
     h.Asserter.assert_status_code(res)
     h.Asserter.assert_equals(res.json.json.test, "test")
     h.Asserter.assert_equals(res.json.args.p, "v1")
@@ -653,29 +653,29 @@ def test_apidoc(testapp):
 
 
 def test_mobile_release(app_dev):
-    agent = "agent=ios"
+    agent = {"agent": "ios"}
     version = "1.0.0"
     testapp = app_dev.test_client()
-    res = testapp.delete(f"{h.url_for('api.mobile_release')}?{agent}")
+    res = testapp.delete(h.url_for("api.mobile_release", **agent))
     h.Asserter.assert_status_code(res)
-    res = testapp.delete(f"{h.url_for('api.mobile_release')}?{agent}&all=true")
+    res = testapp.delete(h.url_for("api.mobile_release", all="true", **agent))
     h.Asserter.assert_status_code(res, h.httpcode.NO_CONTENT)
 
-    res = testapp.post(f"{h.url_for('api.mobile_release', ver=version)}?{agent}")
+    res = testapp.post(h.url_for("api.mobile_release", ver=version, **agent))
     h.Asserter.assert_status_code(res)
     h.Asserter.assert_equals(res.json, 1)
     h.Asserter.assert_allin(res.json[0], ("critical", "version"))
 
-    res = testapp.get(f"{h.url_for('api.mobile_release')}?{agent}&all=true")
+    res = testapp.get(h.url_for("api.mobile_release", all="true", **agent))
     h.Asserter.assert_status_code(res)
     h.Asserter.assert_allin(res.json[0], ("critical", "version"))
 
-    res = testapp.post(f"{h.url_for('api.mobile_release', ver=version)}?{agent}")
+    res = testapp.post(h.url_for("api.mobile_release", ver=version, **agent))
     h.Asserter.assert_status_code(res, h.httpcode.BAD_REQUEST)
 
     bypass = {app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE}
     res = testapp.get(
-        f"{h.url_for('api.mobile_release', ver='latest')}?{agent}", headers=bypass
+        h.url_for("api.mobile_release", ver="latest", **agent), headers=bypass
     )
     h.Asserter.assert_status_code(res)
     h.Asserter.assert_header(res, "Content-Type", CTS.text)
@@ -699,7 +699,7 @@ def test_mobile_version(app_dev):
     h.Asserter.assert_header(res, upgrade_header, "0")
     h.Asserter.assert_header(res, version_header, "1.0.0")
 
-    url = f"{h.url_for('api.mobile_release', ver='1.0.1')}?agent=ios&critical=true"
+    url = h.url_for("api.mobile_release", ver="1.0.1", critical="true", agent="ios")
     res = testapp.post(url, headers=headers)
     h.Asserter.assert_status_code(res)
     res = testapp.get(

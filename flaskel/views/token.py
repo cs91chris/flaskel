@@ -78,11 +78,11 @@ class BaseTokenAuth(BaseView):
             return self.check_token()
 
         view_name = flask.request.endpoint
-        if view_name == "token_access":
+        if view_name.endswith("token_access"):
             return self.access_token()  # pylint: disable=no-value-for-parameter
-        if view_name == "token_refresh":
+        if view_name.endswith("token_refresh"):
             return self.refresh_token()
-        if view_name == "token_revoke":
+        if view_name.endswith("token_revoke"):
             return self.revoke_token()
 
         return flask.abort(httpcode.BAD_REQUEST)
