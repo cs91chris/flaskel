@@ -41,11 +41,12 @@ def load_yaml_file(filename, **kwargs):
         return loads(f, **kwargs)
 
 
-def load_optional_yaml_file(filename, default=None, **kwargs):
+def load_optional_yaml_file(filename, default=None, debug=False, **kwargs):
     try:
         return load_yaml_file(filename, **kwargs)
     except OSError as exc:
-        print(f"WARN: {exc}", file=sys.stderr)
+        if debug is True:
+            print(f"WARN: {exc}", file=sys.stderr)
         return ObjectDict() if default is None else default
 
 

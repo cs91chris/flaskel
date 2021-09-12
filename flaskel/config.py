@@ -170,11 +170,17 @@ CACHE_OPTIONS = {
     "socket_connect_timeout": REDIS_OPTS["socket_connect_timeout"],
 }
 
-APISPEC = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, "swagger.yaml"))
-SCHEMAS = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, "schemas.yaml"))
-SCHEDULER_JOBS = yaml.load_optional_yaml_file(os.path.join(CONF_PATH, "scheduler.yaml"))
+APISPEC = yaml.load_optional_yaml_file(
+    os.path.join(CONF_PATH, "swagger.yaml"), debug=DEBUG
+)
+SCHEMAS = yaml.load_optional_yaml_file(
+    os.path.join(CONF_PATH, "schemas.yaml"), debug=DEBUG
+)
+SCHEDULER_JOBS = yaml.load_optional_yaml_file(
+    os.path.join(CONF_PATH, "scheduler.yaml"), debug=DEBUG
+)
 IPBAN_NUISANCES = yaml.load_optional_yaml_file(
-    os.path.join(CONF_PATH, "nuisances.yaml")
+    os.path.join(CONF_PATH, "nuisances.yaml"), debug=DEBUG
 )
 LOGGING = yaml.load_optional_yaml_file(
     os.path.join(CONF_PATH, "log.yaml"), default=logger.LOGGING
