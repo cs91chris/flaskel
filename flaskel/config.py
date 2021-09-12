@@ -185,6 +185,3 @@ IPBAN_NUISANCES = yaml.load_optional_yaml_file(
 LOGGING = yaml.load_optional_yaml_file(
     os.path.join(CONF_PATH, "log.yaml"), default=logger.LOGGING
 )
-
-
-__all__ = [s for s in dir() if s.isupper()]
