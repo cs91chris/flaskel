@@ -36,17 +36,16 @@ class JSONRedisClient(Client):
         return pipe.execute()[1]
 
     def pipeline(self, transaction: bool = True, shard_hint: bool = None):
-        pipe = Pipeline(
+        class REJsonPipeline(BasePipeline, JSONRedisClient):
+            """Pipeline for JSONRedisClient"""
+
+        pipe = REJsonPipeline(
             connection_pool=self.connection_pool,
             response_callbacks=self.response_callbacks,
             transaction=transaction,
             shard_hint=shard_hint,
         )
         return pipe
-
-
-class Pipeline(BasePipeline, JSONRedisClient):
-    """Pipeline for JSONRedisClient"""
 
 
 class FlaskRedis:
