@@ -1,7 +1,6 @@
 import os
 
 import click
-import decouple
 
 from .builder import AppBuilder
 from .utils import misc
@@ -9,6 +8,7 @@ from .utils import yaml
 from .utils.datastruct import ObjectDict
 from .wsgi.base import BaseApplication
 from .wsgi.factory import WSGIFactory
+from .config import config as decouple_config
 
 
 # noinspection PyUnusedLocal
@@ -102,7 +102,7 @@ class Server:
         :return:
         """
         default_env = "development" if debug else "production"
-        env = decouple.config("FLASK_ENV", default=default_env)
+        env = decouple_config("FLASK_ENV", default=default_env)
 
         if filename is not None:
             config = yaml.load_yaml_file(filename)

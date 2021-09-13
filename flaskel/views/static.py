@@ -1,7 +1,7 @@
-from decouple import config
 from flask import send_from_directory
 
 from flaskel import cap, Response, httpcode
+from flaskel.config import config
 from flaskel.views import BaseView
 
 

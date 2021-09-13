@@ -1,3 +1,5 @@
+# pylint: disable=C0103
+
 import inspect
 import os
 import sys
@@ -5,8 +7,7 @@ import threading
 import traceback
 from multiprocessing import cpu_count
 
-from decouple import config as AutoConfig
-
+from flaskel.config import config as AutoConfig
 from . import config as AppConfigFile
 
 host = AutoConfig("APP_HOST", default="127.0.0.1")

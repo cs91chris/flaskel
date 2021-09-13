@@ -1,4 +1,4 @@
-from decouple import config
+from flaskel.config import config
 
 try:
     from flask_socketio import SocketIO

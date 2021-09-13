@@ -1,8 +1,10 @@
 import os
 
-from decouple import Choices, config, Csv
+from decouple import Choices, AutoConfig, Csv
 
 from flaskel.utils import logger, yaml, Seconds
+
+config = AutoConfig(search_path=os.environ.get("ENV_PATH") or os.getcwd())
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 TESTING = config("TESTING", default=DEBUG, cast=bool)
