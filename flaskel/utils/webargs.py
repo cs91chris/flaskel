@@ -3,7 +3,7 @@ from functools import partial
 import flask
 from webargs import fields, flaskparser
 
-from flaskel import config, httpcode
+from flaskel import httpcode
 
 parser = flaskparser.FlaskParser()
 query = partial(parser.use_args, location="query")
@@ -16,11 +16,11 @@ class Field:
     decimal = partial(fields.Decimal)
     boolean = partial(fields.Boolean, truthy={"true", 1}, falsy={"false", 0})
     positive = partial(integer, validate=lambda x: x > 0)
-    not_negative = partial(integer, validate=lambda x: x >= 0)
-    not_positive = partial(integer, validate=lambda x: x <= 0)
     negative = partial(integer, validate=lambda x: x < 0)
-    isodate = partial(fields.DateTime, format=config.DATE_ISO_FORMAT)
-    list_of = partial(fields.DelimitedList, cls_or_instance=string(), delimiter="+")
+    not_positive = partial(integer, validate=lambda x: x <= 0)
+    not_negative = partial(integer, validate=lambda x: x >= 0)
+    isodate = partial(fields.DateTime)
+    list_of = partial(fields.DelimitedTuple, cls_or_instance=string(), delimiter="+")
 
 
 class OptField:
@@ -29,9 +29,9 @@ class OptField:
     decimal = partial(Field.decimal, load_default=None)
     boolean = partial(Field.boolean, load_default=False)
     positive = partial(Field.positive, load_default=None)
-    not_negative = partial(Field.not_negative, load_default=None)
-    not_positive = partial(Field.not_positive, load_default=None)
     negative = partial(Field.negative, load_default=None)
+    not_positive = partial(Field.not_positive, load_default=None)
+    not_negative = partial(Field.not_negative, load_default=None)
     isodate = partial(Field.isodate, load_default=None)
     list_of = partial(Field.list_of, load_default=())
 
@@ -42,14 +42,13 @@ class ReqField:
     decimal = partial(Field.decimal, required=True)
     boolean = partial(Field.boolean, required=True)
     positive = partial(Field.positive, required=True)
-    not_negative = partial(Field.not_negative, required=True)
-    not_positive = partial(Field.not_positive, required=True)
     negative = partial(Field.negative, required=True)
+    not_positive = partial(Field.not_positive, required=True)
+    not_negative = partial(Field.not_negative, required=True)
     isodate = partial(Field.isodate, required=True)
     list_of = partial(Field.list_of, required=True)
 
 
-# noinspection PyUnusedLocal
 @parser.error_handler
 def handle_error(error, *_, **__):
     flask.abort(httpcode.BAD_REQUEST, response=error.messages)
