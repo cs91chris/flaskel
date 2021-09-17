@@ -148,8 +148,8 @@ class Restful(CatalogResource):
         self._session.rollback()
 
         if isinstance(exception, IntegrityError):
-            cause = exception.orig.diag.message_detail
-            flask.abort(httpcode.CONFLICT, response={"cause": cause})
+            response = {"cause": str(exception)} if cap.debug else None
+            flask.abort(httpcode.CONFLICT, response=response)
 
         flask.abort(httpcode.INTERNAL_SERVER_ERROR)
 
