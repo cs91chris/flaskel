@@ -86,11 +86,14 @@ class SQLAModel(Model):
 
         return self
 
+
+class DictableMixin:
     def to_dict(self, restricted=False):  # pylint: disable=W0613
         """
 
         :param restricted:
         :return:
         """
+        # noinspection PyUnresolvedReferences
         columns = self.columns().keys()
         return ObjectDict(**{col: getattr(self, col, None) for col in columns})
