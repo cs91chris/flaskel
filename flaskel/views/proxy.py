@@ -12,6 +12,7 @@ from .base import BaseView
 class ProxyView(BaseView):
     client_class: t.Type[HTTPBase] = FlaskelHttp
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         host=None,
@@ -141,10 +142,10 @@ class ConfProxyView(BaseView):
 
 class TransparentProxyView(ProxyView):
     methods = [
-        "POST",
-        "PUT",
-        "GET",
-        "DELETE",
+        HttpMethod.POST,
+        HttpMethod.PUT,
+        HttpMethod.GET,
+        HttpMethod.DELETE,
     ]
 
     def __init__(self, **kwargs):

@@ -5,6 +5,7 @@ import typing as t
 import flask
 from flask.views import View
 
+from flaskel import HttpMethod
 from flaskel.ext.default import builder
 from flaskel.flaskel import Response
 from flaskel.flaskel import cap
@@ -23,7 +24,10 @@ class JSONRPCView(View):
     operations: OperationsType = {}
     default_view_name = "jsonrpc"
     default_url = "/jsonrpc"
-    methods = ["POST"]
+
+    methods = [
+        HttpMethod.POST,
+    ]
 
     decorators = [
         builder.response("json"),

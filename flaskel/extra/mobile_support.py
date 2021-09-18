@@ -5,7 +5,7 @@ import flask
 from flask import current_app as cap
 from packaging import version
 
-from flaskel import ExtProxy
+from flaskel import ExtProxy, HttpMethod
 from flaskel import Response
 from flaskel.ext import builder
 from flaskel.ext import limit
@@ -199,7 +199,12 @@ class MobileVersionCompatibility:
 class MobileReleaseView(BaseView):
     builder = builder
     ext = ExtProxy("mobile_version")
-    methods = ["POST", "GET", "DELETE"]
+    methods = [
+        HttpMethod.POST,
+        HttpMethod.GET,
+        HttpMethod.DELETE,
+    ]
+
     default_view_name = "mobile_release"
     default_urls = [
         "/mobile/release",
