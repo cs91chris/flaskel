@@ -1,9 +1,9 @@
 import base64
 
-from flask import request
+from flask import request, current_app as cap
 from flask_caching import Cache as FlaskCache
 
-from flaskel import httpcode, cap
+from flaskel.http import httpcode
 
 caching = FlaskCache()
 

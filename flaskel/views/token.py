@@ -3,7 +3,7 @@ import flask_jwt_extended
 
 from flaskel.ext import builder
 from flaskel.ext.auth import BaseTokenHandler
-from flaskel import httpcode, cap
+from flaskel import httpcode, cap, HttpMethod
 from flaskel.utils import webargs
 from flaskel.views import BaseView
 
@@ -13,7 +13,10 @@ class BaseTokenAuth(BaseView):
     handler: BaseTokenHandler = None
 
     default_view_name = "token_auth"
-    methods = ["GET", "POST"]
+    methods = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+    ]
 
     """
         endpoint should not be change otherwise dispatch_request must change

@@ -3,7 +3,7 @@ try:
 except (ModuleNotFoundError, ImportError):
     PyMongo = object
 
-from flaskel import ObjectDict
+from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.datetime import Seconds
 
 

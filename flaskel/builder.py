@@ -10,6 +10,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 from flaskel import config
 from flaskel import flaskel
 from .converters import CONVERTERS
+from .ext.sqlalchemy import register_engine_events
 from .utils import ObjectDict
 from .utils import misc
 
@@ -295,6 +296,7 @@ class AppBuilder:  # pylint: disable=E1101
         with self._app.app_context():
             sqlalchemy = self._app.extensions.get("sqlalchemy")
             if sqlalchemy is not None:
+                register_engine_events(sqlalchemy.db.engine)
                 sqlalchemy.db.create_all()
 
             self._callback()

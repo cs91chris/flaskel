@@ -14,4 +14,4 @@ try:
         cors_allowed_origins=IO_CORS_ORIGINS,
     )
 except (ModuleNotFoundError, ImportError):
-    socketio = None
+    socketio = None  # pylint: disable=invalid-name

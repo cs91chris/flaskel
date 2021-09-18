@@ -1,12 +1,14 @@
 import flask
 from flask.views import MethodView, View
 
+from flaskel import httpcode, HttpMethod
 from flaskel.ext.default import builder
-from flaskel.flaskel import httpcode
 
 
 class BaseView(View):
-    methods = ["GET"]
+    methods = [
+        HttpMethod.GET,
+    ]
 
     def dispatch_request(self, *_, **__):
         """
@@ -38,9 +40,19 @@ class BaseView(View):
 
 
 class Resource(MethodView):
-    methods_collection = ["GET", "POST"]
-    methods_subresource = ["GET", "POST"]
-    methods_resource = ["GET", "PUT", "DELETE"]
+    methods_collection = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+    ]
+    methods_subresource = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+    ]
+    methods_resource = [
+        HttpMethod.GET,
+        HttpMethod.PUT,
+        HttpMethod.DELETE,
+    ]
 
     @staticmethod
     def normalize_url(url):

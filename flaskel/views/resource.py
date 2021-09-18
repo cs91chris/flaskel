@@ -1,18 +1,25 @@
 import typing as t
 
 import flask
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 
-from flaskel import cap, httpcode, ExtProxy
+from flaskel import cap, httpcode, ExtProxy, HttpMethod
+from flaskel.ext.sqlalchemy import SQLASupport
+from flaskel.ext.sqlalchemy.exceptions import DBDuplicateEntry
 from flaskel.utils import PayloadValidator, webargs
 from .base import Resource
-from ..ext.sqlalchemy import SQLASupport
 
 
 class CatalogResource(Resource):
-    methods_collection = ["GET"]
-    methods_resource = ["GET"]
-    methods_subresource = ["GET"]
+    methods_collection = [
+        HttpMethod.GET,
+    ]
+    methods_resource = [
+        HttpMethod.GET,
+    ]
+    methods_subresource = [
+        HttpMethod.GET,
+    ]
 
     def __init__(self, model):
         """
@@ -97,9 +104,20 @@ class Restful(CatalogResource):
     validator = PayloadValidator
     support_class: t.Type[SQLASupport] = SQLASupport
 
-    methods_subresource = ["GET", "POST"]
-    methods_collection = ["GET", "POST", "PUT"]
-    methods_resource = ["GET", "PUT", "DELETE"]
+    methods_subresource = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+    ]
+    methods_collection = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+        HttpMethod.PUT,
+    ]
+    methods_resource = [
+        HttpMethod.GET,
+        HttpMethod.PUT,
+        HttpMethod.DELETE,
+    ]
 
     def __init__(self, model, session):
         """
@@ -147,8 +165,8 @@ class Restful(CatalogResource):
         cap.logger.exception(exception)
         self._session.rollback()
 
-        if isinstance(exception, IntegrityError):
-            response = {"cause": str(exception)} if cap.debug else None
+        if isinstance(exception, DBDuplicateEntry):
+            response = {"cause": {"field": exception.columns, "value": exception.value}}
             flask.abort(httpcode.CONFLICT, response=response)
 
         flask.abort(httpcode.INTERNAL_SERVER_ERROR)
@@ -178,8 +196,7 @@ class Restful(CatalogResource):
             )
             self._session.commit()
         except SQLAlchemyError as exc:
-            cap.logger.exception(exc)
-            return flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            return self._session_exception_handler(exc)
 
         return res, httpcode.CREATED if created else httpcode.SUCCESS
 

@@ -2,15 +2,19 @@ import typing as t
 
 import flask
 
+from flaskel import HttpMethod
 from .base import BaseView
 
 
 class RenderTemplate(BaseView):
-    methods: t.List[str] = ["GET", "POST"]
-    template: str = "index.html"
+    methods: t.List[str] = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+    ]
 
-    default_view_name = "index"
-    default_urls = ["/"]
+    template: str = "index.html"
+    default_view_name: str = "index"
+    default_urls: t.List[str] = ["/"]
 
     def __init__(self, template=None, content_type=None, **kwargs):
         """
