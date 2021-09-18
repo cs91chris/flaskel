@@ -1,5 +1,4 @@
-# taken from:
-# https://github.com/openstack/oslo.db/blob/1b48a34bd11f40fc516995ed693d193f28c80b25/oslo_db
+# taken from: https://github.com/openstack/oslo.db
 
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -13,10 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Define exception redefinitions for SQLAlchemy DBAPI exceptions
-"""
-
 import collections
 import logging
 import re
@@ -26,171 +21,7 @@ from typing import Dict
 from sqlalchemy import event
 from sqlalchemy import exc as sqla_exc
 
-
-class DBError(Exception):
-    """
-    Base exception for all custom database exceptions.
-
-    :kwarg inner_exception: an original exception which was wrapped with
-        DBError or its subclasses.
-    """
-
-    def __init__(self, inner_exception=None, cause=None):
-        self.cause = cause
-        self.inner_exception = inner_exception
-        super().__init__(str(inner_exception))
-
-
-class DBDuplicateEntry(DBError):
-    """
-    Duplicate entry at unique column error.
-    Raised when made an attempt to write to a unique column the same entry as
-    existing one. :attr: `columns` available on an instance of the exception
-    and could be used at error handling::
-       try:
-           instance_type_ref.save()
-       except DBDuplicateEntry as e:
-           if 'colname' in e.columns:
-               # Handle error.
-
-    :kwarg columns: a list of unique columns have been attempted to write a
-        duplicate entry.
-    :type columns: list
-    :kwarg value: a value which has been attempted to write. The value will
-        be None, if we can't extract it for a particular database backend. Only
-        MySQL and PostgreSQL 9.x are supported right now.
-    """
-
-    def __init__(self, columns=None, inner_exception=None, value=None):
-        self.columns = columns or []
-        self.value = value
-        super().__init__(inner_exception)
-
-
-class DBConstraintError(DBError):
-    """
-    Check constraint fails for column error.
-    Raised when made an attempt to write to a column a value that does not
-    satisfy a CHECK constraint.
-
-    :kwarg table: the table name for which the check fails
-    :type table: str
-    :kwarg check_name: the table of the check that failed to be satisfied
-    :type check_name: str
-    """
-
-    def __init__(self, table, check_name, inner_exception=None):
-        self.table = table
-        self.check_name = check_name
-        super().__init__(inner_exception)
-
-
-class DBReferenceError(DBError):
-    """
-    Foreign key violation error.
-
-    :param table: a table name in which the reference is directed.
-    :type table: str
-    :param constraint: a problematic constraint name.
-    :type constraint: str
-    :param key: a broken reference key name.
-    :type key: str
-    :param key_table: a table name which contains the key.
-    :type key_table: str
-    """
-
-    def __init__(self, table, constraint, key, key_table, inner_exception=None):
-        self.table = table
-        self.key = key
-        self.key_table = key_table
-        self.constraint = constraint
-        super().__init__(inner_exception)
-
-
-class DBNonExistentConstraint(DBError):
-    """
-    Constraint does not exist.
-
-    :param table: table name
-    :type table: str
-    :param constraint: constraint name
-    :type table: str
-    """
-
-    def __init__(self, table, constraint, inner_exception=None):
-        self.table = table
-        self.constraint = constraint
-        super().__init__(inner_exception)
-
-
-class DBNonExistentTable(DBError):
-    """
-    Table does not exist.
-
-    :param table: table name
-    :type table: str
-    """
-
-    def __init__(self, table, inner_exception=None):
-        self.table = table
-        super().__init__(inner_exception)
-
-
-class DBNonExistentDatabase(DBError):
-    """
-    Database does not exist.
-
-    :param database: database name
-    :type database: str
-    """
-
-    def __init__(self, database, inner_exception=None):
-        self.database = database
-        super().__init__(inner_exception)
-
-
-class DBDeadlock(DBError):
-    """
-    Database dead lock error.
-    Deadlock is a situation that occurs when two or more different database
-    sessions have some data locked, and each database session requests a lock
-    on the data that another, different, session has already locked.
-    """
-
-    def __init__(self, inner_exception=None):
-        super().__init__(inner_exception)
-
-
-class DBInvalidUnicodeParameter(Exception):
-    """
-    Database unicode error.
-    Raised when unicode parameter is passed to a database
-    without encoding directive.
-    """
-
-    def __init__(self):
-        super().__init__("Invalid Parameter: Encoding directive wasn't provided.")
-
-
-class DBConnectionError(DBError):
-    """
-    Wrapped connection specific exception.
-    Raised when database connection is failed.
-    """
-
-
-class DBDataError(DBError):
-    """
-    Raised for errors that are due to problems with the processed data.
-    E.g. division by zero, numeric value out of range, incorrect data type, etc
-    """
-
-
-class DBNotSupportedError(DBError):
-    """
-    Raised when a database backend has raised sqla.exc.NotSupportedError
-    """
-
+from . import exceptions
 
 LOG = logging.getLogger(__name__)
 _registry: Dict = collections.defaultdict(lambda: collections.defaultdict(list))
@@ -245,7 +76,7 @@ def _deadlock_error(operational_error, match, engine_name, is_disconnect):
         (TransactionRollbackError) deadlock detected <deadlock_details>
     """
     _ = match, engine_name, is_disconnect
-    raise DBDeadlock(operational_error)
+    raise exceptions.DBDeadlock(operational_error)
 
 
 @filters(
@@ -304,22 +135,30 @@ def _default_dupe_key_error(integrity_error, match, engine_name, is_disconnect):
     # note(vsergeyev): UniqueConstraint name convention: "uniq_t0c10c2"
     #                  where `t` it is table name and columns `c1`, `c2`
     #                  are in UniqueConstraint.
-    uniqbase = "uniq_"
-    if not columns.startswith(uniqbase):
+    unique_base = "uniq_"
+    if not columns.startswith(unique_base):
         if engine_name == "postgresql":
             columns = [columns[columns.index("_") + 1 : columns.rindex("_")]]
-        elif (engine_name == "mysql") and (uniqbase in str(columns.split("0")[:1])):
+        elif (engine_name == "mysql") and (unique_base in str(columns.split("0")[:1])):
             columns = columns.split("0")[1:]
         else:
             columns = [columns]
     else:
-        columns = columns[len(uniqbase) :].split("0")[1:]
+        columns = columns[len(unique_base) :].split("0")[1:]
 
     value = match.groupdict().get("value")
+    raise exceptions.DBDuplicateEntry(columns, integrity_error, value)
 
-    raise DBDuplicateEntry(columns, integrity_error, value)
 
-
+@filters(
+    "sqlite",
+    sqla_exc.IntegrityError,
+    (
+        r"^.*columns?(?P<columns>[^)]+)(is|are)\s+not\s+unique$",
+        r"^.*UNIQUE\s+constraint\s+failed:\s+(?P<columns>.+)$",
+        r"^.*PRIMARY\s+KEY\s+must\s+be\s+unique.*$",
+    ),
+)
 @filters(
     "sqlite",
     sqla_exc.IntegrityError,
@@ -356,7 +195,7 @@ def _sqlite_dupe_key_error(integrity_error, match, engine_name, is_disconnect):
     except IndexError:
         pass
 
-    raise DBDuplicateEntry(columns, integrity_error)
+    raise exceptions.DBDuplicateEntry(columns, integrity_error)
 
 
 @filters("sqlite", sqla_exc.IntegrityError, r"(?i).*foreign key constraint failed")
@@ -399,7 +238,9 @@ def _foreign_key_error(integrity_error, match, engine_name, is_disconnect):
     except IndexError:
         key_table = None
 
-    raise DBReferenceError(table, constraint, key, key_table, integrity_error)
+    raise exceptions.DBReferenceError(
+        table, constraint, key, key_table, integrity_error
+    )
 
 
 @filters(
@@ -423,7 +264,7 @@ def _check_constraint_error(integrity_error, match, engine_name, is_disconnect):
     except IndexError:
         check_name = None
 
-    raise DBConstraintError(table, check_name, integrity_error)
+    raise exceptions.DBConstraintError(table, check_name, integrity_error)
 
 
 @filters(
@@ -467,7 +308,7 @@ def _check_constraint_non_existing(
     except IndexError:
         constraint = None
 
-    raise DBNonExistentConstraint(relation, constraint, programming_error)
+    raise exceptions.DBNonExistentConstraint(relation, constraint, programming_error)
 
 
 @filters("sqlite", sqla_exc.OperationalError, r".* no such table: (?P<table>.+)")
@@ -489,7 +330,7 @@ def _check_table_non_existing(programming_error, match, engine_name, is_disconne
     Filter for table non existing errors
     """
     _ = engine_name, is_disconnect
-    raise DBNonExistentTable(match.group("table"), programming_error)
+    raise exceptions.DBNonExistentTable(match.group("table"), programming_error)
 
 
 @filters(
@@ -513,7 +354,7 @@ def _check_database_non_existing(error, match, engine_name, is_disconnect):
     except IndexError:
         database = None
 
-    raise DBNonExistentDatabase(database, error)
+    raise exceptions.DBNonExistentDatabase(database, error)
 
 
 @filters("mysql", sqla_exc.DBAPIError, r".*\b1146\b")
@@ -540,7 +381,7 @@ def _raise_data_error(error, match, engine_name, is_disconnect):
     Raise DBDataError exception for different data errors
     """
     _ = match, engine_name, is_disconnect
-    raise DBDataError(error)
+    raise exceptions.DBDataError(error)
 
 
 @filters(
@@ -552,7 +393,7 @@ def _raise_savepoints_as_dberrors(error, match, engine_name, is_disconnect):
     # NOTE(rpodolyaka): this is a special case of an OperationalError that used
     # to be an InternalError. It's expected to be wrapped into oslo.db error.
     _ = match, engine_name, is_disconnect
-    raise DBError(error)
+    raise exceptions.DBError(error)
 
 
 @filters("*", sqla_exc.OperationalError, r".*")
@@ -568,70 +409,64 @@ def _raise_operational_errors_directly_filter(
     if is_disconnect:
         # operational errors that represent disconnect
         # should be wrapped
-        raise DBConnectionError(operational_error)
+        raise exceptions.DBConnectionError(operational_error)
     # NOTE(comstud): A lot of code is checking for OperationalError
     # so let's not wrap it for now.
     raise operational_error
 
 
-@filters(
-    "mysql", sqla_exc.OperationalError, r".*\(.*(?:2002|2003|2006|2013|1047)"
-)  # noqa
-@filters("mysql", sqla_exc.InternalError, r".*\(.*(?:1927)")  # noqa
-@filters("mysql", sqla_exc.InternalError, r".*Packet sequence number wrong")  # noqa
-@filters(
-    "postgresql", sqla_exc.OperationalError, r".*could not connect to server"
-)  # noqa
+@filters("mysql", sqla_exc.OperationalError, r".*\(.*(?:2002|2003|2006|2013|1047)")
+@filters("mysql", sqla_exc.InternalError, r".*\(.*(?:1927)")
+@filters("mysql", sqla_exc.InternalError, r".*Packet sequence number wrong")
+@filters("postgresql", sqla_exc.OperationalError, r".*could not connect to server")
 def _is_db_connection_error(operational_error, match, engine_name, is_disconnect):
     """
     Detect the exception as indicating a recoverable error on connect
     """
     _ = match, engine_name, is_disconnect
-    raise DBConnectionError(operational_error)
+    raise exceptions.DBConnectionError(operational_error)
 
 
 @filters("*", sqla_exc.NotSupportedError, r".*")
 def _raise_for_not_supported_error(error, match, engine_name, is_disconnect):
     _ = match, engine_name, is_disconnect
-    raise DBNotSupportedError(error)
+    raise exceptions.DBNotSupportedError(error)
 
 
 @filters("*", sqla_exc.DBAPIError, r".*")
 def _raise_for_remaining_db_api_error(error, match, engine_name, is_disconnect):
     """
     Filter for remaining DBAPIErrors.
-    Filter for remaining DBAPIErrors and wrap if they represent
-    a disconnect error.
+    Filter for remaining DBAPIErrors and wrap if they represent a disconnect error
     """
     _ = match, engine_name
     if is_disconnect:
-        raise DBConnectionError(error)
+        raise exceptions.DBConnectionError(error)
     LOG.warning("DBAPIError exception wrapped.", exc_info=True)
-    raise DBError(error)
+    raise exceptions.DBError(error)
 
 
 @filters("*", UnicodeEncodeError, r".*")
 def _raise_for_unicode_encode(error, match, engine_name, is_disconnect):
     _ = error, match, engine_name, is_disconnect
-    raise DBInvalidUnicodeParameter()
+    raise exceptions.DBInvalidUnicodeParameter()
 
 
 @filters("*", Exception, r".*")
 def _raise_for_all_others(error, match, engine_name, is_disconnect):
     _ = match, engine_name, is_disconnect
     LOG.warning("DB exception wrapped.", exc_info=True)
-    raise DBError(error)
+    raise exceptions.DBError(error)
 
 
-ROLLBACK_CAUSE_KEY = "oslo.db.sp_rollback_cause"
+ROLLBACK_CAUSE_KEY = "sqlalchemy.db.sp_rollback_cause"
 
 
 def handler(context):
     """
     Iterate through available filters and invoke those which match.
-    The first one which raises wins.   The order in which the filters
-    are attempted is sorted by specificity - dialect name or "*",
-    exception class per method resolution order (``__mro__``).
+    The first one which raises wins. The order in which the filters are attempted is sorted
+    by specificity - dialect name or "*", exception class per method resolution order (``__mro__``).
     Method resolution order is used so that filter rules indicating a
     more specific exception class are attempted first.
     """
@@ -659,7 +494,7 @@ def handler(context):
                                     context.engine.dialect.name,
                                     context.is_disconnect,
                                 )
-                            except DBError as dbe:
+                            except exceptions.DBError as dbe:
                                 if (
                                     context.connection is not None
                                     and not context.connection.closed
@@ -670,12 +505,13 @@ def handler(context):
                                         ROLLBACK_CAUSE_KEY
                                     )
 
-                                if isinstance(dbe, DBConnectionError):
+                                if isinstance(dbe, exceptions.DBConnectionError):
                                     context.is_disconnect = True
                                 return dbe
+    return None
 
 
-def register_engine(engine):
+def register_engine_events(engine):
     event.listen(engine, "handle_error", handler, retval=True)
 
     @event.listens_for(engine, "rollback_savepoint")
