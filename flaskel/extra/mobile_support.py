@@ -15,7 +15,7 @@ from flaskel.views import BaseView
 
 
 class RedisStore:
-    def __init__(self, redis=None, sep="::"):
+    def __init__(self, redis=None, sep="/"):
         self.sep = sep
         self.client = redis
 
@@ -248,11 +248,16 @@ class MobileReleaseView(BaseView):
 
 
 class MobileLoggerView(BaseView):
-    methods = ["POST"]
     unavailable = "N/A"
     intro = "An exception occurred on mobile app:"
     default_view_name = "mobile_logger"
-    default_urls = ("/mobile/logger",)
+    default_urls = [
+        "/mobile/logger",
+    ]
+
+    methods = [
+        HttpMethod.POST,
+    ]
     decorators = [
         builder.no_content,
         limit.RateLimit.medium(),
@@ -269,8 +274,18 @@ class MobileLoggerView(BaseView):
         else:
             self._log = cap.logger
 
+    @staticmethod
+    def _dump_dict(data):
+        return "\n\t".join(f"{k}: {v}" for k, v in data.items())
+
     def dump_key(self, data, key):
-        return data.get(key) or self.unavailable
+        if key not in data:
+            return self.unavailable
+
+        data = data.get(key)
+        if isinstance(data, dict):
+            return self._dump_dict(data)
+        return data
 
     def get_user_info(self, *_, **__):
         return self.unavailable
