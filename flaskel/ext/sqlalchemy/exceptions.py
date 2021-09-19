@@ -30,9 +30,13 @@ class DBError(SQLAlchemyError):
         self.inner_exception = inner_exception
         super().__init__(str(inner_exception))
 
+    @property
+    def error_type(self):
+        return self.__class__.__name__
+
     def as_dict(self):
         return {
-            "error": self.__class__.__name__,
+            "error": self.error_type,
         }
 
 
@@ -63,7 +67,7 @@ class DBDuplicateEntry(DBError):
 
     def as_dict(self):
         return {
-            "error": self.__class__.__name__,
+            "error": self.error_type,
             "columns": self.columns,
             "value": self.value,
         }
@@ -88,7 +92,7 @@ class DBConstraintError(DBError):
 
     def as_dict(self):
         return {
-            "error": self.__class__.__name__,
+            "error": self.error_type,
             "table": self.table,
             "check_name": self.check_name,
         }
@@ -117,7 +121,7 @@ class DBReferenceError(DBError):
 
     def as_dict(self):
         return {
-            "error": self.__class__.__name__,
+            "error": self.error_type,
             "table": self.table,
             "key_table": self.key_table,
             "key": self.key,
@@ -142,7 +146,7 @@ class DBNonExistentConstraint(DBError):
 
     def as_dict(self):
         return {
-            "error": self.__class__.__name__,
+            "error": self.error_type,
             "table": self.table,
             "constraint": self.constraint,
         }
@@ -162,7 +166,7 @@ class DBNonExistentTable(DBError):
 
     def as_dict(self):
         return {
-            "error": self.__class__.__name__,
+            "error": self.error_type,
             "table": self.table,
         }
 
@@ -181,7 +185,7 @@ class DBNonExistentDatabase(DBError):
 
     def as_dict(self):
         return {
-            "error": self.__class__.__name__,
+            "error": self.error_type,
             "database": self.database,
         }
 
@@ -193,9 +197,6 @@ class DBDeadlock(DBError):
     sessions have some data locked, and each database session requests a lock
     on the data that another, different, session has already locked.
     """
-
-    def __init__(self, inner_exception=None):
-        super().__init__(inner_exception)
 
 
 class DBInvalidUnicodeParameter(Exception):
