@@ -13,8 +13,6 @@ class RenderTemplate(BaseView):
     ]
 
     template: str = "index.html"
-    default_view_name: str = "index"
-    default_urls: t.List[str] = ["/"]
 
     def __init__(self, template=None, content_type=None, **kwargs):
         """
@@ -30,7 +28,6 @@ class RenderTemplate(BaseView):
     def service(self, *_, **kwargs):
         """
 
-        :param args:
         :param kwargs:
         :return:
         """

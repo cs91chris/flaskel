@@ -222,12 +222,8 @@ class AppBuilder:  # pylint: disable=E1101
             return d[0], d[1], d[2] or {}
 
         def normalize_params(_v, _p):
-            if hasattr(v, "default_view_name"):
-                _p.setdefault("name", _v.default_view_name)
-            if hasattr(v, "default_urls"):
-                _p.setdefault("urls", _v.default_urls)
-            if hasattr(v, "default_url"):
-                _p.setdefault("url", _v.default_url)
+            _p.setdefault("name", _v.default_view_name)
+            _p.setdefault("urls", _v.default_urls)
             return _p
 
         for view in self._views:

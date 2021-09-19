@@ -1,14 +1,24 @@
+import typing as t
+
 import flask
 from flask.views import MethodView, View
 
 from flaskel import httpcode, HttpMethod
 from flaskel.ext.default import builder
 
+DefaultUrlsType = t.Tuple[t.Union[t.Dict[str, str], str], ...]
+
 
 class BaseView(View):
     methods = [
         HttpMethod.GET,
     ]
+    default_view_name: str = "index"
+    default_urls: DefaultUrlsType = ("/",)
+
+    @staticmethod
+    def normalize_url(url):
+        return f"/{url.lstrip('/')}"
 
     def dispatch_request(self, *_, **__):
         """
@@ -37,9 +47,13 @@ class BaseView(View):
                 app.add_url_rule(url, view_func=view, methods=cls.methods, **u)
             else:
                 app.add_url_rule(u, view_func=view, methods=cls.methods)
+        return view
 
 
 class Resource(MethodView):
+    default_view_name: str = "resource"
+    default_urls: DefaultUrlsType = ()
+
     methods_collection = [
         HttpMethod.GET,
         HttpMethod.POST,
@@ -59,20 +73,8 @@ class Resource(MethodView):
         return f"/{url.lstrip('/')}"
 
     @classmethod
-    def register(cls, app, name=None, url=None, view=None, pk_type="int", **kwargs):
-        """
-
-        :param app: Flask or Blueprint instance
-        :param name: view name
-        :param url: url to bind if missing, name is used
-        :param view: view class, subclass che call this must pass its reference
-        :param pk_type: type of res_id
-        """
-        _class = view or cls
-        name = name or _class.__name__
-        url = cls.normalize_url(url or name)
-        view_func = _class.as_view(name, **kwargs)
-
+    def _register_urls(cls, app, view_func, pk_type, url):
+        url = cls.normalize_url(url)
         if cls.methods_collection:
             app.add_url_rule(url, view_func=view_func, methods=cls.methods_collection)
         if cls.methods_resource:
@@ -87,6 +89,22 @@ class Resource(MethodView):
                 view_func=view_func,
                 methods=cls.methods_subresource,
             )
+
+    @classmethod
+    def register(cls, app, name=None, urls=(), view=None, pk_type="int", **kwargs):
+        """
+
+        :param app: Flask or Blueprint instance
+        :param name: view name
+        :param urls: url to bind if missing, name is used
+        :param view: view class, subclass che call this must pass its reference
+        :param pk_type: type of res_id
+        """
+        _class = view or cls
+        name = name or _class.__name__
+        view_func = _class.as_view(name, **kwargs)
+        for url in urls or (name,):
+            cls._register_urls(app, view_func, pk_type, url)
         return view_func
 
     @builder.no_content

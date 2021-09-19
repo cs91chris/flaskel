@@ -21,12 +21,12 @@ class BaseTokenAuth(BaseView):
     """
         endpoint should not be change otherwise dispatch_request must change
     """
-    default_urls = [
+    default_urls = (
         {"url": "/token/access", "endpoint": "token_access"},
         {"url": "/token/refresh", "endpoint": "token_refresh"},
         {"url": "/token/revoke", "endpoint": "token_revoke"},
         {"url": "/token/check", "endpoint": "token_check"},
-    ]
+    )
 
     @classmethod
     def check_credential(cls):

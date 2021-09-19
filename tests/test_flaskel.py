@@ -614,7 +614,7 @@ def test_jsonrpc_proxy_view(app_dev):
     h.Asserter.assert_status_code(res)
     response = json.loads(res.json.data)
     h.Asserter.assert_schema(response, schemas.SCHEMAS.JSONRPC.REQUEST)
-    h.Asserter.assert_equals(response["method"], "jsonrpc_proxyview")
+    h.Asserter.assert_equals(response["method"], "jsonrpc_method")
     h.Asserter.assert_equals(response["params"]["param1"], "1")
     h.Asserter.assert_equals(response["params"]["param2"], "2")
 

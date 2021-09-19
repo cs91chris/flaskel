@@ -101,7 +101,7 @@ class CatalogResource(Resource):
 class Restful(CatalogResource):
     post_schema: t.Any = None
     put_schema: t.Any = None
-    validator = PayloadValidator
+    validator: t.Type[PayloadValidator] = PayloadValidator
     support_class: t.Type[SQLASupport] = SQLASupport
 
     methods_subresource = [
@@ -119,7 +119,7 @@ class Restful(CatalogResource):
         HttpMethod.DELETE,
     ]
 
-    def __init__(self, model, session):
+    def __init__(self, model, session=None):
         """
 
         :param session: sqlalchemy session instance

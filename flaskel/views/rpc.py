@@ -3,7 +3,6 @@ import inspect
 import typing as t
 
 import flask
-from flask.views import View
 
 from flaskel import HttpMethod
 from flaskel.ext.default import builder
@@ -13,33 +12,30 @@ from flaskel.flaskel import httpcode
 from flaskel.http import rpc
 from flaskel.utils.batch import BatchExecutor
 from flaskel.utils.datastruct import ObjectDict
+from .base import BaseView
 
 RPCPayloadType = t.Union[t.List[dict], dict]
 OperationsType = t.Dict[t.Optional[str], t.Dict[str, t.Callable]]
 
 
-class JSONRPCView(View):
+class JSONRPCView(BaseView):
     version = "2.0"
     separator = "."
     operations: OperationsType = {}
+
     default_view_name = "jsonrpc"
-    default_url = "/jsonrpc"
+    default_urls = ("/jsonrpc",)
 
     methods = [
         HttpMethod.POST,
     ]
-
     decorators = [
         builder.response("json"),
     ]
 
-    @staticmethod
-    def normalize_url(url):
-        return f"/{url.lstrip('/')}"
-
     def __init__(
         self,
-        operations: t.Optional[dict] = None,
+        operations: OperationsType = None,
         batch_executor: t.Type[BatchExecutor] = BatchExecutor,
         **kwargs,
     ):
@@ -199,14 +195,6 @@ class JSONRPCView(View):
         return _method
 
     @classmethod
-    def register(cls, app, name=None, url=None, **kwargs):
-        """
-
-        :param app: Flask or Blueprint instance
-        :param name: view name
-        :param url: url to bind if missing, name is used
-        """
-        name = name or cls.__name__
-        url = cls.normalize_url(url or name)
-        view_func = cls.as_view(name, cls.operations, **kwargs)
-        app.add_url_rule(url, view_func=view_func, methods=cls.methods)
+    def register(cls, app, name=None, urls=(), **kwargs):
+        kwargs.setdefault("operations", cls.operations)
+        return super().register(app, name, urls, **kwargs)

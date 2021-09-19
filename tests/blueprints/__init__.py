@@ -17,7 +17,7 @@ session = ExtProxy("sqlalchemy.db.session")
 class CustomProxy(proxy.TransparentProxyView):
     methods = ["POST"]
     default_view_name = "proxyview"
-    default_urls = ["/proxy"]
+    default_urls = ("/proxy",)
 
 
 BLUEPRINTS = (
@@ -38,7 +38,7 @@ VIEWS = (
     (
         proxy.ConfProxyView,
         bp_api,
-        dict(name="confproxy", urls=["/confproxy"], config_key="PROXIES.CONF"),
+        dict(name="confproxy", config_key="PROXIES.CONF"),
     ),
     (
         CustomProxy,
@@ -52,7 +52,7 @@ VIEWS = (
     (
         resource.APIResource,
         bp_api,
-        dict(name="resource_api", url="/resources"),
+        dict(name="resource_api", urls=("/resources",)),
     ),
     (
         views.ApiItem,
@@ -63,7 +63,7 @@ VIEWS = (
         JsonRPCProxy,
         bp_api,
         dict(
-            url="/jsonrpc_method",
+            urls=("/jsonrpc_method",),
             name="jsonrpc_proxyview",
             host="https://httpbin.org/anything",
         ),

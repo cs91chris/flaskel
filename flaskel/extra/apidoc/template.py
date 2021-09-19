@@ -8,7 +8,7 @@ from flaskel.views.template import RenderTemplateString
 class ApiDocTemplate(RenderTemplateString):
     apispec_view = "api.apispec"
     default_view_name = "apidocs"
-    default_urls = ["/apidocs"]
+    default_urls = ("/apidocs",)
 
     template = """<!doctype html>
 <html>
@@ -38,7 +38,7 @@ class ApiDocTemplate(RenderTemplateString):
 
 class ApiSpecTemplate(BaseView):
     default_view_name = "apispec"
-    default_urls = ["/apidoc.json"]
+    default_urls = ("/apidoc.json",)
 
     def __init__(self, version="1.0.0", context_path=""):
         """

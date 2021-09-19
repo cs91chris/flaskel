@@ -206,10 +206,10 @@ class MobileReleaseView(BaseView):
     ]
 
     default_view_name = "mobile_release"
-    default_urls = [
+    default_urls = (
         "/mobile/release",
         "/mobile/release/<ver>",
-    ]
+    )
 
     @webargs.query(
         dict(
@@ -251,9 +251,7 @@ class MobileLoggerView(BaseView):
     unavailable = "N/A"
     intro = "An exception occurred on mobile app:"
     default_view_name = "mobile_logger"
-    default_urls = [
-        "/mobile/logger",
-    ]
+    default_urls = ("/mobile/logger",)
 
     methods = [
         HttpMethod.POST,
