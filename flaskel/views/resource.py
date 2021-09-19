@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from flaskel import cap, httpcode, ExtProxy, HttpMethod
 from flaskel.ext.sqlalchemy import SQLASupport
-from flaskel.ext.sqlalchemy.exceptions import DBDuplicateEntry
+from flaskel.ext.sqlalchemy.exceptions import DBError
 from flaskel.utils import PayloadValidator, webargs
 from .base import Resource
 
@@ -165,10 +165,8 @@ class Restful(CatalogResource):
         cap.logger.exception(exception)
         self._session.rollback()
 
-        if isinstance(exception, DBDuplicateEntry):
-            response = {"cause": {"field": exception.columns, "value": exception.value}}
-            flask.abort(httpcode.CONFLICT, response=response)
-
+        if isinstance(exception, DBError):
+            flask.abort(httpcode.CONFLICT, response={"cause": exception.as_dict()})
         flask.abort(httpcode.INTERNAL_SERVER_ERROR)
 
     def _create(self, res):

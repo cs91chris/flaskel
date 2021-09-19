@@ -26,14 +26,14 @@ class DBError(SQLAlchemyError):
         DBError or its subclasses.
     """
 
-    def __init__(self, inner_exception=None, cause=None):
-        self.cause = cause
+    def __init__(self, inner_exception=None):
         self.inner_exception = inner_exception
+        super().__init__(str(inner_exception))
 
-        if cause is not None:
-            super().__init__(f"{inner_exception}\nCause: {cause}")
-        else:
-            super().__init__(str(inner_exception))
+    def as_dict(self):
+        return {
+            "error": self.__class__.__name__,
+        }
 
 
 class DBDuplicateEntry(DBError):
@@ -61,6 +61,13 @@ class DBDuplicateEntry(DBError):
         self.columns = columns or []
         super().__init__(inner_exception)
 
+    def as_dict(self):
+        return {
+            "error": self.__class__.__name__,
+            "columns": self.columns,
+            "value": self.value,
+        }
+
 
 class DBConstraintError(DBError):
     """
@@ -78,6 +85,13 @@ class DBConstraintError(DBError):
         self.table = table
         self.check_name = check_name
         super().__init__(inner_exception)
+
+    def as_dict(self):
+        return {
+            "error": self.__class__.__name__,
+            "table": self.table,
+            "check_name": self.check_name,
+        }
 
 
 class DBReferenceError(DBError):
@@ -101,6 +115,15 @@ class DBReferenceError(DBError):
         self.constraint = constraint
         super().__init__(inner_exception)
 
+    def as_dict(self):
+        return {
+            "error": self.__class__.__name__,
+            "table": self.table,
+            "key_table": self.key_table,
+            "key": self.key,
+            "constraint": self.constraint,
+        }
+
 
 class DBNonExistentConstraint(DBError):
     """
@@ -117,6 +140,13 @@ class DBNonExistentConstraint(DBError):
         self.constraint = constraint
         super().__init__(inner_exception)
 
+    def as_dict(self):
+        return {
+            "error": self.__class__.__name__,
+            "table": self.table,
+            "constraint": self.constraint,
+        }
+
 
 class DBNonExistentTable(DBError):
     """
@@ -130,6 +160,12 @@ class DBNonExistentTable(DBError):
         self.table = table
         super().__init__(inner_exception)
 
+    def as_dict(self):
+        return {
+            "error": self.__class__.__name__,
+            "table": self.table,
+        }
+
 
 class DBNonExistentDatabase(DBError):
     """
@@ -142,6 +178,12 @@ class DBNonExistentDatabase(DBError):
     def __init__(self, database, inner_exception=None):
         self.database = database
         super().__init__(inner_exception)
+
+    def as_dict(self):
+        return {
+            "error": self.__class__.__name__,
+            "database": self.database,
+        }
 
 
 class DBDeadlock(DBError):

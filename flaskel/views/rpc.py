@@ -133,7 +133,7 @@ class JSONRPCView(BaseView):
                         (self._get_action(d["method"]), {**(d.get("params") or {})})
                     )
                 else:
-                    resp.id = d.get("id")
+                    resp.id = d.get("id")  # pylint: disable=invalid-name
                     action = self._get_action(d["method"])
                     resp.result = action(**(d.get("params") or {}))
             except rpc.RPCError as ex:
