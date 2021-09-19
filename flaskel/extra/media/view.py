@@ -1,10 +1,10 @@
 import flask
-from flask import send_from_directory
 
 from flaskel import HttpMethod
 from flaskel.http import httpcode
 from flaskel.http.client import cap
 from flaskel.views import BaseView
+from flaskel.views.static import StaticFileView
 from .exceptions import BadMediaError
 from .service import MediaService
 
@@ -31,9 +31,7 @@ class ApiMedia(BaseView):
             return flask.abort(httpcode.BAD_REQUEST, str(exc))
 
 
-class GetMedia(BaseView):
+class GetMedia(StaticFileView):
+    default_static_path = "static"
     default_view_name = "serve_media"
     default_urls = ("/static/media/<path:filename>",)
-
-    def dispatch_request(self, filename, *_, **__):
-        return send_from_directory(cap.config.MEDIA.UPLOAD_FOLDER, filename)

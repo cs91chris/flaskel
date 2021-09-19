@@ -17,6 +17,7 @@ class StaticFileView(BaseView):
 class SPAView(BaseView):
     template = "index.html"
     default_view_name = "spa"
+    default_template_folder = config("SPA_TEMPLATE_FOLDER", default="templates")
     default_static_folder = config("SPA_STATIC_FOLDER", default="webapp")
     default_static_url_path = config("SPA_STATIC_URL_PATH", default="webapp")
 

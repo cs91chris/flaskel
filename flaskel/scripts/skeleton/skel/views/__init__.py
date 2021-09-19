@@ -1,15 +1,17 @@
 from flaskel.extra import apidoc
 from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
 from flaskel.views import rpc
-from .blueprints import bp_auth, bp_api
+from .blueprints import bp_auth, bp_api, bp_spa, bp_web
 from .token import TokenAuthView
 
 rpc_service = object  # import rpc_service here
 rpc.JSONRPCView.load_from_object(rpc_service())
 
 BLUEPRINTS = (
-    (bp_api,),
-    (bp_auth, {"url_prefix": "/auth"}),
+    (bp_spa,),
+    (bp_api, {"subdomain": bp_api.subdomain}),
+    (bp_web, {"url_prefix": bp_web.url_prefix}),
+    (bp_auth, {"url_prefix": bp_auth.url_prefix}),
 )
 
 VIEWS = (

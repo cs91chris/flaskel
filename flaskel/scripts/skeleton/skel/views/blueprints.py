@@ -24,6 +24,7 @@ bp_auth = Blueprint(
 bp_spa = Blueprint(
     "spa",
     __name__,
+    template_folder=SPAView.default_template_folder,
     static_folder=SPAView.default_static_folder,
     static_url_path=SPAView.default_static_url_path,
 )

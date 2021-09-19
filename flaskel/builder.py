@@ -132,6 +132,12 @@ class AppBuilder:  # pylint: disable=E1101
         if not self._app.config.get("JWT_SECRET_KEY") is None:
             self._app.config["JWT_SECRET_KEY"] = self._app.config["SECRET_KEY"]
 
+    def _set_config(self, conf):
+        self._app.config.from_object(self._conf_module)
+        self._app.config.from_mapping(**(conf or {}))
+        self._app.config.from_envvar("APP_CONFIG_FILE", silent=True)
+        self._app.config = ObjectDict(**self._app.config)
+
     def _register_extensions(self):
         with self._app.app_context():
             for name, e in self._extensions.items():
@@ -170,12 +176,6 @@ class AppBuilder:  # pylint: disable=E1101
             self._app.logger.debug(
                 "Registered blueprint '%s' with options: %s", bp.name, opt
             )
-
-    def _set_config(self, conf):
-        self._app.config.from_object(self._conf_module)
-        self._app.config.from_mapping(**(conf or {}))
-        self._app.config.from_envvar("APP_CONFIG_FILE", silent=True)
-        self._app.config = ObjectDict(**self._app.config)
 
     def _register_converters(self):
         self._app.url_map.converters.update({**self.url_converters, **self._converters})
