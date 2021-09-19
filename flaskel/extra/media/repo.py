@@ -18,8 +18,8 @@ class MediaMixin(StandardMixin):
 
 class MediaRepo:
     session = ExtProxy("sqlalchemy.db.session")
-    media_model = None
     entity_model = None
+    media_model = None
 
     @classmethod
     def entity_name(cls):
@@ -31,7 +31,7 @@ class MediaRepo:
 
     @classmethod
     def update(cls, emodel, **kwargs):
-        res = cls.media_model(**kwargs)
+        res = cls.media_model(**kwargs)  # pylint: disable=not-callable
         emodel.images.append(res)
         return res
 

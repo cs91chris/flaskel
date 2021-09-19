@@ -88,7 +88,7 @@ class ObjectDict(dict):
         return data
 
     def __getstate__(self):
-        return self.__dict__()
+        return self.__dict__()  # pylint: disable=not-callable
 
     def __setstate__(self, state):
         for k, v in state.items():

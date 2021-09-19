@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from flask_sqlalchemy import event
+from sqlalchemy import func, asc
 from sqlalchemy.ext.declarative import declared_attr
 
 from flaskel import ObjectDict
@@ -22,8 +23,8 @@ class StandardMixin:
         """
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+    created_at = db.Column(db.DateTime, server_default=func.now())
+    updated_at = db.Column(db.DateTime, onupdate=func.now())
 
 
 class CatalogMixin:
@@ -64,7 +65,7 @@ class CatalogXMixin(CatalogMixin):
     code = db.Column(db.String(20))
     order_id = db.Column(db.Integer, index=True)
 
-    order_by = order_id.asc()
+    order_by = asc(order_id)
 
     def __str__(self):
         return f"<{self.code} - {self.label}>"

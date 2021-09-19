@@ -9,7 +9,7 @@ from .test import bp_test
 from .views import TokenAuthView
 from .web import bp_web
 
-jsonRPCView = rpc.JSONRPCView
+JsonRPCView = rpc.JSONRPCView
 rpc.JSONRPCView.load_from_object(rpc_service.MyJsonRPC())
 session = ExtProxy("sqlalchemy.db.session")
 
@@ -33,7 +33,7 @@ VIEWS = (
     (MobileReleaseView, bp_api),
     (MobileLoggerView, bp_api),
     (proxy.SchemaProxyView, bp_api),
-    (jsonRPCView, bp_api),
+    (JsonRPCView, bp_api),
     (RenderTemplate, bp_web),
     (
         proxy.ConfProxyView,

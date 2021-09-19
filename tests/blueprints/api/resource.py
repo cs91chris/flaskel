@@ -22,10 +22,10 @@ class APIResource(Resource):
             flask.abort(httpcode.NOT_FOUND)
             return None
 
-    def on_collection(self):
+    def on_collection(self, *_, **__):
         return resources
 
-    def on_post(self):
+    def on_post(self, *_, **__):
         payload = PayloadValidator.validate("ITEM_POST")
         return payload, httpcode.CREATED
 

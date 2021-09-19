@@ -105,7 +105,7 @@ class JSONRPCView(BaseView):
             cap.logger.debug(exc)
             raise rpc.RPCMethodNotFound()
 
-    def dispatch_request(self):
+    def dispatch_request(self, *_, **__):
         """
 
         :return:
