@@ -9,26 +9,35 @@ from flaskel.ext.default import builder
 DefaultUrlsType = t.Tuple[t.Union[t.Dict[str, str], str], ...]
 
 
-class BaseView(View):
+class ViewSupportMixin:
+    default_view_name: str = None
+    default_urls: DefaultUrlsType = ()
+
+    @staticmethod
+    def normalize_url(url):
+        return f"/{url.lstrip('/')}"
+
+    @staticmethod
+    def not_implemented():  # pragma: no cover
+        flask.abort(httpcode.NOT_IMPLEMENTED)
+
+    @classmethod
+    def register(cls, app, name=None, urls=(), **kwargs):
+        raise NotImplementedError
+
+
+class BaseView(View, ViewSupportMixin):
     methods = [
         HttpMethod.GET,
     ]
     default_view_name: str = "index"
     default_urls: DefaultUrlsType = ("/",)
 
-    @staticmethod
-    def normalize_url(url):
-        return f"/{url.lstrip('/')}"
-
     def dispatch_request(self, *_, **__):
         """
         Must be implemented in every subclass
         """
-        return self._not_implemented()  # pragma: no cover
-
-    # noinspection PyMethodMayBeStatic
-    def _not_implemented(self):  # pragma: no cover pylint: disable=no-self-use
-        flask.abort(httpcode.NOT_IMPLEMENTED)
+        return self.not_implemented()  # pragma: no cover
 
     @classmethod
     def register(cls, app, name=None, urls=(), **kwargs):
@@ -50,7 +59,7 @@ class BaseView(View):
         return view
 
 
-class Resource(MethodView):
+class Resource(MethodView, ViewSupportMixin):
     default_view_name: str = "resource"
     default_urls: DefaultUrlsType = ()
 
@@ -67,10 +76,6 @@ class Resource(MethodView):
         HttpMethod.PUT,
         HttpMethod.DELETE,
     ]
-
-    @staticmethod
-    def normalize_url(url):
-        return f"/{url.lstrip('/')}"
 
     @classmethod
     def _register_urls(cls, app, view_func, pk_type, url):
@@ -146,20 +151,16 @@ class Resource(MethodView):
         return self.on_put(*args, res_id=res_id, **kwargs)
 
     def on_get(self, *_, **__):
-        return self._not_implemented()  # pragma: no cover
+        return self.not_implemented()  # pragma: no cover
 
     def on_post(self, *_, **__):
-        return self._not_implemented()  # pragma: no cover
+        return self.not_implemented()  # pragma: no cover
 
     def on_put(self, *_, **__):
-        return self._not_implemented()  # pragma: no cover
+        return self.not_implemented()  # pragma: no cover
 
     def on_delete(self, *_, **__):
-        return self._not_implemented()  # pragma: no cover
+        return self.not_implemented()  # pragma: no cover
 
     def on_collection(self, *_, **__):
-        return self._not_implemented()  # pragma: no cover
-
-    # noinspection PyMethodMayBeStatic
-    def _not_implemented(self):  # pragma: no cover pylint: disable=no-self-use
-        flask.abort(httpcode.NOT_IMPLEMENTED)
+        return self.not_implemented()  # pragma: no cover

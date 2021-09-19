@@ -4,6 +4,7 @@ import flask
 from sqlalchemy.exc import SQLAlchemyError
 
 from flaskel import cap, httpcode, ExtProxy, HttpMethod
+from flaskel.ext.default import builder
 from flaskel.ext.sqlalchemy import SQLASupport
 from flaskel.ext.sqlalchemy.exceptions import DBError
 from flaskel.utils import PayloadValidator, webargs
@@ -238,3 +239,27 @@ class Restful(CatalogResource):
 
         res, status = self._upsert(payload)
         return res.to_dict(), status
+
+
+class PatchApiView(Restful):
+    methods_subresource = None
+    methods_collection = None
+    methods_resource = None
+    methods = [
+        HttpMethod.PATCH,
+    ]
+
+    @classmethod
+    def register(cls, app, name=None, urls=(), **kwargs):
+        view_func = cls.as_view(name, **kwargs)
+        for url in urls:
+            cls.normalize_url(url)
+            app.add_url_rule(url, view_func=view_func, methods=cls.methods)
+        return view_func
+
+    @builder.no_content
+    def patch(self, *args, **kwargs):
+        return self.on_patch(*args, **kwargs)
+
+    def on_patch(self, *_, **__):
+        return self.not_implemented()
