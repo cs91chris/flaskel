@@ -122,7 +122,7 @@ WSGI_WERKZEUG_PROFILER_FILE = config(
     "WSGI_WERKZEUG_PROFILER_FILE", default="profiler.txt"
 )
 WSGI_WERKZEUG_PROFILER_RESTRICTION = config(
-    "WSGI_WERKZEUG_PROFILER_RESTRICTION", default=(0.1,), cast=Csv
+    "WSGI_WERKZEUG_PROFILER_RESTRICTION", default="0.1", cast=Csv(post_process=tuple)
 )
 WSGI_WERKZEUG_LINT_ENABLED = config(
     "WSGI_WERKZEUG_LINT_ENABLED", default=TESTING, cast=bool
