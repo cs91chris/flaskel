@@ -118,8 +118,12 @@ ACCEL_BUFFERING = True
 ACCEL_CHARSET = "utf-8"
 ACCEL_LIMIT_RATE = "off"
 
-WSGI_WERKZEUG_PROFILER_FILE = "profiler.txt"
-WSGI_WERKZEUG_PROFILER_RESTRICTION = (0.1,)
+WSGI_WERKZEUG_PROFILER_FILE = config(
+    "WSGI_WERKZEUG_PROFILER_FILE", default="profiler.txt"
+)
+WSGI_WERKZEUG_PROFILER_RESTRICTION = config(
+    "WSGI_WERKZEUG_PROFILER_RESTRICTION", default=(0.1,), cast=Csv
+)
 WSGI_WERKZEUG_LINT_ENABLED = config(
     "WSGI_WERKZEUG_LINT_ENABLED", default=TESTING, cast=bool
 )
@@ -149,10 +153,12 @@ JWT_DEFAULT_SCOPE = None
 JWT_DEFAULT_TOKEN_TYPE = "bearer"
 PRETTY_DATE = "%d %B %Y %I:%M %p"
 DATE_ISO_FORMAT = "%Y-%m-%dT%H:%M:%S"
-SEND_FILE_MAX_AGE_DEFAULT = Seconds.day
+SEND_FILE_MAX_AGE_DEFAULT = config(
+    "SEND_FILE_MAX_AGE_DEFAULT", default=Seconds.day, cast=int
+)
 
-RATELIMIT_STORAGE_URL = REDIS_URL
-RATELIMIT_KEY_PREFIX = APP_NAME
+RATELIMIT_STORAGE_URL = config("RATELIMIT_STORAGE_URL", default=REDIS_URL)
+RATELIMIT_KEY_PREFIX = config("RATELIMIT_KEY_PREFIX", default=APP_NAME)
 RATELIMIT_STORAGE_OPTIONS = {
     "socket_timeout": REDIS_OPTS["socket_connect_timeout"],
     "socket_connect_timeout": REDIS_OPTS["socket_connect_timeout"],
@@ -169,6 +175,8 @@ LIMITER = {
 
 SCHEDULER_AUTO_START = config("SCHEDULER_AUTO_START", default=True, cast=bool)
 SCHEDULER_API_ENABLED = config("SCHEDULER_API_ENABLED", default=False, cast=bool)
+SCHEDULER_EXECUTORS = {"default": {"type": "threadpool", "max_workers": 20}}
+SCHEDULER_JOB_DEFAULTS = {"coalesce": False, "max_instances": 10}
 SCHEDULER_JOBSTORES = {
     "default": {
         "class": "apscheduler.jobstores.sqlalchemy:SQLAlchemyJobStore",
@@ -176,12 +184,10 @@ SCHEDULER_JOBSTORES = {
         "url": DATABASE_URL,
     }
 }
-SCHEDULER_EXECUTORS = {"default": {"type": "threadpool", "max_workers": 20}}
-SCHEDULER_JOB_DEFAULTS = {"coalesce": False, "max_instances": 10}
 
-CACHE_REDIS_URL = REDIS_URL
-CACHE_DEFAULT_TIMEOUT = Seconds.hour
 CACHE_TYPE = "flask_caching.backends.redis"
+CACHE_REDIS_URL = config("CACHE_REDIS_URL", default=REDIS_URL)
+CACHE_DEFAULT_TIMEOUT = config("CACHE_DEFAULT_TIMEOUT", default=Seconds.hour, cast=int)
 CACHE_KEY_PREFIX = config("CACHE_KEY_PREFIX", default=APP_NAME)
 CACHE_OPTIONS = {
     "socket_timeout": REDIS_OPTS["socket_connect_timeout"],
