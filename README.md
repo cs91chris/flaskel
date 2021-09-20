@@ -32,6 +32,7 @@ Third parties extensions:
 - Flask-Limiter
 - Flask-Mail
 - Flask-SQLAlchemy
+- Flask-PyMongo
 
 My own external extensions:
 
@@ -48,9 +49,11 @@ Internal extensions:
 - ``flaskel.ext.limit.FlaskIPBan`` (ipban)
 - ``flaskel.ext.redis.FlaskRedis`` (redis)
 - ``flaskel.ext.useragent.UserAgent`` (useragent)
+- ``flaskel.ext.redis.FlaskRedis`` (redis) 
 - ``flaskel.ext.sendmail.ClientMail`` (client_mail) extends Flask-Mail
 - ``flaskel.ext.jobs.APJobs`` (scheduler) extends Flask-APScheduler
-- ``flaskel.ext.healthcheck.health.HealthCheck`` (healthcheck), default checks: glances, mongo, redis, sqlalchemy, system
+- ``flaskel.ext.mongo.FlaskMongoDB`` (mongo) extends Flask-PyMongo
+- ``flaskel.ext.healthcheck.health.HealthCheck`` (healthcheck), default checks: glances, mongo, redis, sqlalchemy, system, services (http api)
 
 Wrapper extensions:
 
@@ -75,9 +78,25 @@ Flaskel comes with useful views for most common apis or simple web controllers:
 - ``flaskel.views.base.Resource``
 - ``flaskel.views.resource.CatalogResource``
 - ``flaskel.views.resource.Restful``
+- ``flaskel.views.resource.PatchApiView``
 - ``flaskel.views.proxy.ProxyView``
 - ``flaskel.views.proxy.ConfProxyView``
 - ``flaskel.views.proxy.TransparentProxyView``
+- ``flaskel.views.proxy.JsonRPCProxy``
+- ``flaskel.views.proxy.SchemaProxyView``
+- ``flaskel.views.static.StaticFileView``
+- ``flaskel.views.static.SPAView``
+- ``flaskel.views.token.BaseTokenAuth``
+
+
+Extra views:
+
+- ``flaskel.extra.apidoc.ApiDocTemplate``
+- ``flaskel.extra.apidoc.ApiSpecTemplate``
+- ``flaskel.extra.media.ApiMedia``
+- ``flaskel.extra.media.GetMedia``
+- ``flaskel.extra.mobile_support.MobileReleaseView``
+
 
 ## SQLAlchemy support
 
@@ -94,7 +113,6 @@ Flaskel comes with auxiliaries components from sqlalchemy:
 ```python
 class SQLAModel(Model):
     def columns(self): ...
-    def to_dict(self, restricted=False): ...
     def get_one(cls, raise_not_found=True, to_dict=True, *args, **kwargs): ...
     def get_list(cls, to_dict=True, restricted=False, order_by=None, page=None, page_size=None, max_per_page=None, *args, **kwargs): ...
     def query_collection(cls, params=None, *args, **kwargs): ...
@@ -109,6 +127,8 @@ class CatalogMixin: ...
 class CatalogXMixin(CatalogMixin): ...
 class LoaderMixin: ...
 class UserMixin(StandardMixin): ...
+class DictableMixin:
+    def to_dict(self, restricted=False): ...
 ```
 
 - Support class for common problems
@@ -130,7 +150,13 @@ class SQLASupport:
         :param kwargs: filters used to fetch record or create
         :return: obj, created (bool)
         """
-
+    @staticmethod
+    def exec_from_file(db_uri, filename, echo=False):
+        """
+        :param db_uri: database url connection
+        :param filename: sql file name
+        :param echo: enable sqlalchemy echo
+        """
 ```
 
 
@@ -151,6 +177,7 @@ class Dumper:
     def __init__(self, data, callback=None, *args, **kwargs): ...
     def dump(self): ...
 ```
+
 
 ## Webargs support
 
@@ -202,13 +229,80 @@ webargs.ReqField.isodate()
 webargs.ReqField.list_of()
 ```
 
+
+## JSON schema support
+
+```python
+class JSONSchema:
+    @classmethod
+    def load_from_url(cls, url): ...
+
+    @classmethod
+    def load_from_file(cls, file): ...
+
+    @classmethod
+    def validate(cls, data, schema, raise_exc=False, pretty_error=True, checker=None): ...
+```
+
+```python
+class PayloadValidator:
+    schemas = SCHEMAS
+    validator = JSONSchema
+
+    @classmethod
+    def validate(cls, schema, strict=True): ...
+```
+
+```python
+Fields.schema
+Fields.null
+Fields.integer
+Fields.string
+Fields.number
+Fields.boolean
+Fields.datetime
+Fields.any_object
+Fields.any
+Fields.Opt.integer
+Fields.Opt.string
+Fields.Opt.number
+Fields.Opt.boolean
+
+class Fields:
+    @classmethod
+    def oneof(cls, *args, **kwargs): ...
+
+    @classmethod
+    def anyof(cls, *args, **kwargs): ...
+
+    @classmethod
+    def ref(cls, path, **kwargs): ...
+
+    @classmethod
+    def enum(cls, *args, **kwargs): ...
+
+    @classmethod
+    def type(cls, *args, **kwargs): ...
+
+    @classmethod
+    def object(cls, required=(), not_required=(), properties=None, all_required=True, additional=False, **kwargs): ...
+
+    @classmethod
+    def array(cls, items, min_items=0, **kwargs): ...
+
+    @classmethod
+    def array_object(cls, min_items=0, **kwargs): ...
+```
+
+
 ## Configuration
 
 There are many configuration keys provided by many sources, the same key in different source are overridden.
-Source priorities:
+Source priorities (low to high):
 
-- python module: default ``flaskel.config``
+- python module: all defaults [flaskel.config](flaskel/config.py)
 - mapping (dict): via cli from yaml or json file
+- python module: via environment variable ``APP_CONFIG_FILE``
 - environment variables: handled via ``python-decouple``, so can be stored in .env or settings.ini file
 
 Configuration via env:
@@ -222,13 +316,19 @@ Configuration via env:
 - ``SERVER_NAME``: *(default = APP_HOST:APP_PORT)*
 - ``FLASK_ENV``: *(default = development)*
 - ``LOCALE``: *(default = "en_EN.utf8")*
+- ``JWT_ACCESS_TOKEN_EXPIRES``: *(default: 1 day)*
+- ``JWT_REFRESH_TOKEN_EXPIRES``: *(default: 14 day)*
 - ``TEMPLATES_AUTO_RELOAD``: *(default: bool = DEBUG)*
 - ``EXPLAIN_TEMPLATE_LOADING``: *(default: bool = False)*
+- ``SEND_FILE_MAX_AGE_DEFAULT``: *(default: 1 day)*
 - ``APIDOCS_ENABLED``: *(default: bool = True)*
 - ``CONF_PATH``: *(default = flaskel/scripts/skeleton/res)*
 - ``SQLALCHEMY_DATABASE_URI``: *(default = sqlite:///db.sqlite)*
-- ``REDIS_URL``: *(default = redis://127.0.0.1:6379)*
+- ``REDIS_URL``: *(default = mongodb://localhost)*
 - ``REDIS_CONN_TIMEOUT``: *(default: float = 0.05)*
+- ``MONGO_URI``: *(default = redis://127.0.0.1:6379)*
+- ``MONGO_CONN_TIMEOUT_MS``: *(default: int = 100)*
+- ``MONGO_SERVER_SELECTION_TIMEOUT_MS``: *(default: int = 100)*
 - ``BASIC_AUTH_USERNAME``: *(default = admin)*
 - ``BASIC_AUTH_PASSWORD``: *(default = admin)*
 - ``MAIL_DEBUG``: *(default: bool = DEBUG)*
@@ -258,13 +358,51 @@ Configuration via env:
 - ``ENABLE_ACCEL``: *(default = True)*
 - ``WSGI_WERKZEUG_LINT_ENABLED``: *(default = TESTING)*
 - ``WSGI_WERKZEUG_PROFILER_ENABLED``: *(default = TESTING)*
+- ``WSGI_WERKZEUG_PROFILER_FILE``: *(default = "profiler.txt")*
+- ``WSGI_WERKZEUG_PROFILER_RESTRICTION``: *(default: list = [0.1])
 - ``SQLALCHEMY_ECHO``: *(default = TESTING)*
 - ``RATELIMIT_ENABLED``: *(default = not DEBUG)*
 - ``RATELIMIT_HEADERS_ENABLED``: *(default = True)*
 - ``RATELIMIT_IN_MEMORY_FALLBACK_ENABLED``: *(default = True)*
+- ``RATELIMIT_STORAGE_URL``: *(default = REDIS_URL)*
+- ``RATELIMIT_KEY_PREFIX``: *(default = APP_NAME)*
 - ``SCHEDULER_AUTO_START``: *(default = True)*
 - ``SCHEDULER_API_ENABLED``: *(default = False)*
 - ``CACHE_KEY_PREFIX``: *(default = APP_NAME)*
+- ``CACHE_REDIS_URL``: *(default = REDIS_URL)*
+- ``CACHE_DEFAULT_TIMEOUT``: *(default = 1 hour)*
+
+Static application configuration:
+
+- ``ERROR_PAGE``: *(default = "core/error.html")*
+- ``DATABASE_URL``: *(default = SQLALCHEMY_DATABASE_URI)*
+- ``SECRET_KEY_MIN_LENGTH``: *(default: int = 256)*
+- ``PRETTY_DATE``: *(default = "%d %B %Y %I:%M %p")*
+- ``DATE_ISO_FORMAT``: *(default = "%Y-%m-%dT%H:%M:%S")*
+- ``JWT_DEFAULT_SCOPE``: *(default = None)*
+- ``JWT_DEFAULT_TOKEN_TYPE``: *(default = "bearer")*
+- ``JWT_TOKEN_LOCATION``: *(default = ["headers", "query_string"])*
+- ``HTTP_DUMP_BODY``: *(default: [False, False])*
+- ``ACCEL_BUFFERING``: *(default = True)*
+- ``ACCEL_CHARSET``: *(default = "utf-8")*
+- ``ACCEL_LIMIT_RATE``: *(default = "off")*
+- ``RB_DEFAULT_ACCEPTABLE_MIMETYPES``: *(default = ["application/json", "application/xml"])*
+- ``REQUEST_ID_HEADER``: *(default = "X-Request-ID")*
+- ``CACHE_TYPE``: *(default = "flask_caching.backends.redis")*
+- ``CACHE_OPTIONS``: *(dict)*
+- ``CORS_EXPOSE_HEADERS``: *(list)*
+- ``RATELIMIT_STORAGE_OPTIONS``: *(dict)*
+- ``SCHEDULER_JOBSTORES``: *(dict)*
+- ``SCHEDULER_EXECUTORS``: *(dict)*
+- ``SCHEDULER_JOB_DEFAULTS``: *(dict)*
+- ``LIMITER``: *(dict)*
+   - ``FAIL``: *(default = "1/second")*
+   - ``FAST``: *(default = "30/minute")*
+   - ``MEDIUM``: *(default = "20/minute")*
+   - ``SLOW``: *(default = "10/minute")*
+   - ``BYPASS_KEY``: *(default = "X-Limiter-Bypass")*
+   - ``BYPASS_VALUE``: *(default = "bypass-rate-limit")*
+
 
 Extra configurations are optionally loaded via files in folder ``CONF_PATH``:
 
@@ -277,6 +415,7 @@ Extra configurations are optionally loaded via files in folder ``CONF_PATH``:
 
 Configuration specific for internal extensions:
 
+
 - flaskel.ext.crypto.argon.Argon2
  - ``ARGON2_ENCODING``
  - ``ARGON2_TIME_COST``
@@ -284,6 +423,7 @@ Configuration specific for internal extensions:
  - ``ARGON2_MEMORY_COST``
  - ``ARGON2_PARALLELISM``
  - ``ARGON2_SALT_LEN``
+
 
 - flaskel.ext.healthcheck.health.HealthCheck
  - ``HEALTHCHECK_ABOUT_LINK``: *(default = None)*
@@ -293,6 +433,7 @@ Configuration specific for internal extensions:
  - ``HEALTHCHECK_PARAM_SEP``: *(default = +)*
  - ``HEALTHCHECK_CONTENT_TYPE``: *(default = application/health+json)*
 
+
 - flaskel.ext.datetime.FlaskDateHelper
  - ``DATE_HELPER_COUNTRY``: *(default = IT)*
  - ``DATE_HELPER_PROV``: *(default = None)*
@@ -300,10 +441,12 @@ Configuration specific for internal extensions:
  - ``DATE_ISO_FORMAT``: *(default = "%Y-%m-%dT%H:%M:%S")*
  - ``DATE_PRETTY``: *(default = "%d %B %Y %I:%M %p")*
 
+
 - flaskel.ext.jobs.APJobs
  - ``SCHEDULER_AUTO_START``: *(default = False)*
  - ``SCHEDULER_PATCH_MULTIPROCESS``: *(default = True)*
  - ``SCHEDULER_LOCK_FILE``: *(default = .scheduler.lock)*
+
 
 - flaskel.ext.limit.FlaskIPBan
  - ``IPBAN_ENABLED``: *(default = True)*
@@ -313,12 +456,28 @@ Configuration specific for internal extensions:
  - ``IPBAN_STATUS_CODE``: *(default = FORBIDDEN)*
  - ``IPBAN_CHECK_CODES``: *(default = (NOT_FOUND, METHOD_NOT_ALLOWED, NOT_IMPLEMENTED))*
 
+
+- flaskel.ext.caching.caching
+ - ``CACHE_TYPE``: *(default = "flask_caching.backends.redis")*
+ - ``CACHE_REDIS_URL``: *(default = REDIS_URL)*
+ - ``CACHE_DEFAULT_TIMEOUT``: *(default = Seconds.hour)*
+ - ``CACHE_KEY_PREFIX``: *(default = APP_NAME)*
+ - ``CACHE_OPTIONS``: *(dict)* passed to redis client instance
+
+
 - flaskel.ext.redis.FlaskRedis
  - ``REDIS_URL``: *(default = redis://localhost:6379/0)*
- - ``REDIS_OPTS``: passed to redis client instance
+ - ``REDIS_OPTS``: *(dict)* passed to redis client instance
+
+
+- flaskel.ext.mongo.FlaskMongoDB
+ - ``MONGO_URI``: *(default = mongodb://localhost)*
+ - ``MONGO_OPTS``: *(dict)* passed to mongodb client instance
+
 
 - flaskel.ext.useragent.UserAgent
  - ``USER_AGENT_AUTO_PARSE``: *(default = False)*
+
 
 - flaskel.extra.stripe.PaymentHandler (stripe)
  - ``STRIPE_SECRET_KEY``:
@@ -327,6 +486,7 @@ Configuration specific for internal extensions:
  - ``STRIPE_DEBUG``: *(default = False)*
  - ``STRIPE_DEFAULT_CURRENCY``: *(default = eur)*
  - ``STRIPE_API_VERSION``: *(default = 2020-08-27)*
+
 
 - flaskel.extra.mobile_support.MobileVersionCompatibility (mobile_version)
  - ``VERSION_STORE_MAX``: *(default = 6)*
@@ -339,3 +499,15 @@ Configuration specific for internal extensions:
  - ``VERSION_UPGRADE_HEADER``: *(default = X-Upgrade-Needed)*
  - ``VERSION_AGENTS``: *(default = (android, ios))*
  - ``VERSION_SKIP_STATUSES``: *(default = (FORBIDDEN, NOT_FOUND, METHOD_NOT_ALLOWED, TOO_MANY_REQUESTS))*
+
+
+- flaskel.extra.notification.NotificationHandler
+ - ``FCM_API_KEY``: mandatory if used
+
+
+- flaskel.extra.media.service.MediaService
+- ``MEDIA``: *(dict)*
+  - ``ALLOWED_EXTENSIONS``: *(default: [png,jpg])*
+  - ``UPLOAD_FOLDER``:
+  - ``EXTERNAL_URL``:
+
