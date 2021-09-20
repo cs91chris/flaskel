@@ -52,6 +52,22 @@ REDIS_OPTS = {
     "socket_connect_timeout": config("REDIS_CONN_TIMEOUT", default=0.05, cast=float),
 }
 
+_CORS_EXPOSE_HEADERS_DEFAULT = [
+    "X-Pagination-Count",
+    "X-Pagination-Num-Pages",
+    "X-Pagination-Page",
+    "X-Pagination-Page-Size",
+    "X-Request-ID",
+    "X-Api-Version",
+    "X-RateLimit-Reset",
+    "X-RateLimit-Remaining",
+    "X-RateLimit-Limit",
+    "Retry-After",
+]
+CORS_EXPOSE_HEADERS = config(
+    "CORS_EXPOSE_HEADERS", default=",".join(_CORS_EXPOSE_HEADERS_DEFAULT), cast=Csv()
+)
+
 BASIC_AUTH_USERNAME = config("BASIC_AUTH_USERNAME", default="admin")
 BASIC_AUTH_PASSWORD = config("BASIC_AUTH_PASSWORD", default="admin")
 
