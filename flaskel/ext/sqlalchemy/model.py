@@ -32,7 +32,8 @@ class SQLAModel(Model):
         return res
 
     @classmethod
-    def query_collection(cls, *args, params=None, **kwargs):  # pylint: disable=W0613
+    def query_collection(cls, *args, params=None, **kwargs):
+        _ = params
         return cls.query.filter(*args).filter_by(**kwargs)
 
     @classmethod
@@ -71,7 +72,7 @@ class SQLAModel(Model):
             res = q.all()
 
         if to_dict is True:
-            return [r.to_dict(restricted) for r in res]
+            return (r.to_dict(restricted) for r in res)
         return res
 
     def update(self, attributes):

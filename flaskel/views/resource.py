@@ -12,6 +12,8 @@ from .base import Resource
 
 
 class CatalogResource(Resource):
+    pagination_enabled: bool = True
+
     methods_collection = [
         HttpMethod.GET,
     ]
@@ -50,28 +52,35 @@ class CatalogResource(Resource):
         :param kwargs: extra query filters
         :return:
         """
+        page = size = None
+        model = model or self._model
+        max_size = cap.config.MAX_PAGE_SIZE
+        order_by = getattr(model, "order_by", None)
+
         if params is None:
             params = webargs.paginate()
 
-        model = model or self._model
-        max_size = cap.config.MAX_PAGE_SIZE
-        page = params.get("page")
-        size = params.get("page_size")
-        size = max(size, max_size or 0) if size else max_size
-        order_by = getattr(model, "order_by", None)
+        if self.pagination_enabled is True:
+            page = params.get("page")
+            size = params.get("page_size")
+            size = max(size, max_size or 0) if size else max_size
 
-        return self.response_paginated(
-            model.get_list(
-                to_dict=False,
-                order_by=order_by,
-                page=page,
-                page_size=size,
-                max_per_page=max_size,
-                params=params,
-                **kwargs,
-            ),
-            restricted=not params.get("related", False),
+        response = model.get_list(
+            to_dict=not self.pagination_enabled,
+            order_by=order_by,
+            page=page,
+            page_size=size,
+            max_per_page=max_size,
+            params=params,
+            **kwargs,
         )
+
+        if self.pagination_enabled is True:
+            return self.response_paginated(
+                response,
+                restricted=not params.get("related", False),
+            )
+        return response
 
     def response_paginated(self, res, **kwargs):
         """
