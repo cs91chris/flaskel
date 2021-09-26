@@ -29,6 +29,15 @@ paths:
               $ref: '#/components/schemas/PostAccessToken'
       responses:
         '200':
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
           content:
             application/json:
               schema:
@@ -40,6 +49,8 @@ paths:
           $ref: '#/components/responses/401'
         '422':
           $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
         '500':
           $ref: '#/components/responses/500'
   '/token/refresh':
@@ -62,6 +73,8 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
         '500':
           $ref: '#/components/responses/500'
   '/token/revoke':
@@ -79,10 +92,21 @@ paths:
       responses:
         '204':
           description: logout eseguito con successo
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
         '400':
           $ref: '#/components/responses/400'
         '422':
           $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
         '500':
           $ref: '#/components/responses/500'
   /healthcheck:
@@ -91,6 +115,15 @@ paths:
         - basicAuth: [ ]
       responses:
         '200':
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
           content:
             application/json:
               schema:
@@ -98,6 +131,8 @@ paths:
           description: platform is healthy
         '401':
           $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
         '500':
           $ref: '#/components/responses/500'
         '503':
@@ -120,12 +155,23 @@ paths:
       responses:
         '204':
           description: device registrato con successo
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
         '400':
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '422':
           $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
         '500':
           $ref: '#/components/responses/500'
         '502':
@@ -269,6 +315,22 @@ components:
       description: dimensione della pagina
       schema:
         type: integer
+    rateLimitReset:
+      description: TUTC seconds since epoch when the window will be reset
+      schema:
+        type: integer
+    rateLimitRemaining:
+      description: The number of requests remaining in the active window
+      schema:
+        type: integer
+    rateLimitLimit:
+      description: The total number of requests allowed for the active window
+      schema:
+        type: integer
+    rateLimitRetryAfter:
+      description: Seconds to retry after
+      schema:
+        type: integer
   parameters:
     page:
       in: query
@@ -358,6 +420,15 @@ components:
             $ref: '#/components/schemas/ApiProblem'
     '429':
       description: Too Many Requests
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/rateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/rateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/rateLimitReset'
+        X-RateLimit-Retry-After:
+          $ref: '#/components/headers/rateLimitRetryAfter'
       content:
         application/json:
           schema:
@@ -371,6 +442,11 @@ components:
     '502':
       description: Bad Gateway
       content:
+        text/html:
+          schema:
+            type: string
+            example:
+              <html></html>
         application/json:
           schema:
             $ref: '#/components/schemas/ApiProblem'

@@ -6,7 +6,7 @@ class HttpMethod:
     PATCH: str = "PATCH"
     FETCH: str = "FETCH"
     HEAD: str = "HEAD"
-    OPTION: str = "OPTION"
+    OPTIONS: str = "OPTIONS"
 
 
 class WebDavMethod:

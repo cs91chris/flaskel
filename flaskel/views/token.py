@@ -77,7 +77,7 @@ class BaseTokenAuth(BaseView):
             cls.handler.revoke(data.refresh_token)
 
     def dispatch_request(self, *_, **__):
-        if flask.request.method == "GET":
+        if flask.request.method == HttpMethod.GET:
             return self.check_token()
 
         view_name = flask.request.endpoint

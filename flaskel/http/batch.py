@@ -11,8 +11,7 @@ from flaskel.flaskel import cap
 from flaskel.utils.batch import AsyncBatchExecutor
 from flaskel.utils.datastruct import ObjectDict
 from flaskel.utils.uuid import get_uuid
-from .client import HTTPBase, httpcode
-from .httpdumper import FlaskelHTTPDumper
+from .client import HTTPBase, httpcode, FlaskelHTTPDumper
 
 
 class HTTPBatch(HTTPBase, AsyncBatchExecutor):

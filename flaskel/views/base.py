@@ -122,7 +122,7 @@ class Resource(MethodView, ViewSupportMixin):
             return self.on_collection(*args, **kwargs)
         if sub_resource is None:
             return self.on_get(res_id, *args, **kwargs)
-        if self.methods_subresource and "GET" not in self.methods_subresource:
+        if self.methods_subresource and HttpMethod.GET not in self.methods_subresource:
             flask.abort(httpcode.METHOD_NOT_ALLOWED)
 
         _sub_resource = getattr(self, f"sub_{sub_resource}", None)
@@ -134,7 +134,7 @@ class Resource(MethodView, ViewSupportMixin):
     def post(self, *args, res_id=None, sub_resource=None, **kwargs):
         if res_id is None:
             return self.on_post(*args, **kwargs)
-        if self.methods_subresource and "POST" not in self.methods_subresource:
+        if self.methods_subresource and HttpMethod.POST not in self.methods_subresource:
             flask.abort(httpcode.METHOD_NOT_ALLOWED)
 
         _sub_resource = getattr(self, f"sub_{sub_resource}_post", None)

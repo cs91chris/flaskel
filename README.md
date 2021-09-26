@@ -354,6 +354,8 @@ Configuration via env:
 - ``HTTP_PROTECT_BODY``: *(default = False)*
 - ``HTTP_DUMP_REQ_BODY``: *(default = False)*
 - ``HTTP_DUMP_RESP_BODY``: *(default = False)*
+- ``HTTP_SSL_VERIFY``: *(default = True)*
+- ``HTTP_TIMEOUT``: *(default = 10)*
 - ``USE_X_SENDFILE``: *(default = not DEBUG)*
 - ``ENABLE_ACCEL``: *(default = True)*
 - ``WSGI_WERKZEUG_LINT_ENABLED``: *(default = TESTING)*

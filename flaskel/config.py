@@ -106,6 +106,8 @@ CF_STRICT_ACCESS = config("CF_STRICT_ACCESS", default=False, cast=bool)
 VERSION_STORE_MAX = config("VERSION_STORE_MAX", default=6, cast=int)
 VERSION_CACHE_EXPIRE = config("VERSION_CACHE_EXPIRE", default=Seconds.hour, cast=int)
 
+HTTP_TIMEOUT = config("HTTP_TIMEOUT", default=10, cast=int)
+HTTP_SSL_VERIFY = config("HTTP_SSL_VERIFY", default=True, cast=bool)
 HTTP_PROTECT_BODY = config("HTTP_PROTECT_BODY", default=False, cast=bool)
 HTTP_DUMP_BODY = [
     config("HTTP_DUMP_REQ_BODY", default=False, cast=bool),

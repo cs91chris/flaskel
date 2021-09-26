@@ -1,8 +1,7 @@
 import json
 import logging
 
-from flaskel import httpcode
-from flaskel.http import FlaskelHTTPDumper
+from flaskel.http import FlaskelHTTPDumper, httpcode, HttpMethod
 from flaskel.utils.schemas.default import SCHEMAS
 from .helpers import basic_auth_header
 from .mixins import JSONValidatorMixin, RegexMixin
@@ -110,7 +109,7 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
             if v is not None:
                 self.assert_header(name=k, **v)
 
-    def request(self, method="GET", url=None, **kwargs):
+    def request(self, method=HttpMethod.GET, url=None, **kwargs):
         """
 
         :param method:
@@ -192,7 +191,7 @@ class TestJsonRPC(TestHttpApi):
         :param request:
         :param response:
         """
-        req = {"method": "POST"}
+        req = {"method": HttpMethod.POST}
         res = response or {}
         res.setdefault("schema", self.default_schema)
 
@@ -233,7 +232,7 @@ class TestRestApi(TestHttpApi):
         """
         return f"{self.endpoint}/{res_id}"
 
-    def _normalize(self, request, response, method="GET", url=None):
+    def _normalize(self, request, response, method=HttpMethod.GET, url=None):
         """
 
         :param request:
@@ -257,7 +256,7 @@ class TestRestApi(TestHttpApi):
         self.perform(req, res)
 
     def test_post(self, request=None, response=None):
-        req, res = self._normalize(request, response, "POST")
+        req, res = self._normalize(request, response, HttpMethod.POST)
         res.setdefault("status", dict(code=httpcode.CREATED))
         self.perform(req, res)
 
@@ -266,12 +265,14 @@ class TestRestApi(TestHttpApi):
         self.perform(req, res)
 
     def test_put(self, res_id, request=None, response=None):
-        req, res = self._normalize(request, response, "PUT", self.resource_url(res_id))
+        req, res = self._normalize(
+            request, response, HttpMethod.PUT, self.resource_url(res_id)
+        )
         self.perform(req, res)
 
     def test_delete(self, res_id, request=None, response=None):
         req, res = self._normalize(
-            request, response, "DELETE", self.resource_url(res_id)
+            request, response, HttpMethod.DELETE, self.resource_url(res_id)
         )
         res.setdefault("status", dict(code=httpcode.NO_CONTENT))
         res.setdefault("headers", {})

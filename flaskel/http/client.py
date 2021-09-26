@@ -10,6 +10,7 @@ from flaskel.utils.uuid import get_uuid
 from . import httpcode
 from .httpdumper import FlaskelHTTPDumper
 from .httpdumper import LazyHTTPDumper
+from .methods import HttpMethod
 
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
@@ -20,12 +21,13 @@ request: "flaskel.Request" = flask.request  # type: ignore
 
 
 class HTTPTokenAuth(auth.AuthBase):
-    def __init__(self, token):
+    def __init__(self, token, token_type=None):
         """
 
         :param token:
         """
         self.token = token
+        self.token_type = "Bearer" if token_type is None else token_type
 
     def __eq__(self, other):
         """
@@ -49,7 +51,7 @@ class HTTPTokenAuth(auth.AuthBase):
         :param r:
         :return:
         """
-        r.headers["Authorization"] = f"Bearer {self.token}"
+        r.headers["Authorization"] = f"{self.token_type} {self.token}"
         return r
 
 
@@ -128,7 +130,7 @@ class HTTPClient(HTTPBase):
     def request(
         self,
         uri,
-        method="GET",
+        method=HttpMethod.GET,
         raise_on_exc=False,
         dump_body=None,
         chunk_size=None,
@@ -194,22 +196,22 @@ class HTTPClient(HTTPBase):
         return self.request(uri, **kwargs)
 
     def post(self, uri, **kwargs):
-        return self.request(uri, method="POST", **kwargs)
+        return self.request(uri, method=HttpMethod.POST, **kwargs)
 
     def put(self, uri, **kwargs):
-        return self.request(uri, method="PUT", **kwargs)
+        return self.request(uri, method=HttpMethod.PUT, **kwargs)
 
     def patch(self, uri, **kwargs):
-        return self.request(uri, method="PATCH", **kwargs)
+        return self.request(uri, method=HttpMethod.PATCH, **kwargs)
 
     def delete(self, uri, **kwargs):
-        return self.request(uri, method="DELETE", **kwargs)
+        return self.request(uri, method=HttpMethod.DELETE, **kwargs)
 
     def options(self, uri, **kwargs):
-        return self.request(uri, method="OPTIONS", **kwargs)
+        return self.request(uri, method=HttpMethod.OPTIONS, **kwargs)
 
     def head(self, uri, **kwargs):
-        return self.request(uri, method="HEAD", **kwargs)
+        return self.request(uri, method=HttpMethod.HEAD, **kwargs)
 
 
 class JsonRPCClient(HTTPClient):
@@ -265,7 +267,7 @@ class JsonRPCClient(HTTPClient):
         kwargs.setdefault("raise_on_exc", True)
         resp = super().request(
             self._uri,
-            method="POST",
+            method=HttpMethod.POST,
             json=dict(
                 jsonrpc=self._version,
                 method=method,
