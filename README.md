@@ -339,8 +339,6 @@ Configuration via env:
 - ``MAIL_DEFAULT_SENDER``: *(default = admin@mail.com)*
 - ``MAIL_DEFAULT_RECEIVER``: *(default = admin@mail.com)*
 - ``PREFERRED_URL_SCHEME``: *(default = http if FLASK_ENV = development else https)*
-- ``IPBAN_COUNT``: *(default = 5)*
-- ``IPBAN_SECONDS``: *(default = 3600)*
 - ``LOG_BUILDER``: *(default = text)*
 - ``LOG_APP_NAME``: *(default = APP_NAME)*
 - ``LOG_LOGGER_NAME``: *(default = FLASK_ENV)*
@@ -363,6 +361,11 @@ Configuration via env:
 - ``WSGI_WERKZEUG_PROFILER_FILE``: *(default = "profiler.txt")*
 - ``WSGI_WERKZEUG_PROFILER_RESTRICTION``: *(default: list = [0.1])
 - ``SQLALCHEMY_ECHO``: *(default = TESTING)*
+- ``IPBAN_ENABLED``: *(default = True)*
+- ``IPBAN_COUNT``: *(default = 5)*
+- ``IPBAN_SECONDS``: *(default = 3600)*
+- ``IPBAN_STATUS_CODE``: *(default = 403)*
+- ``IPBAN_CHECK_CODES``: *(default = 404,405,501)*
 - ``RATELIMIT_ENABLED``: *(default = not DEBUG)*
 - ``RATELIMIT_HEADERS_ENABLED``: *(default = True)*
 - ``RATELIMIT_IN_MEMORY_FALLBACK_ENABLED``: *(default = True)*

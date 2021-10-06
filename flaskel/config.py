@@ -83,9 +83,6 @@ PREFERRED_URL_SCHEME = config(
     "PREFERRED_URL_SCHEME", default="http" if FLASK_ENV == "development" else "https"
 )
 
-IPBAN_COUNT = config("IPBAN_COUNT", default=5, cast=int)
-IPBAN_SECONDS = config("IPBAN_SECONDS", default=Seconds.hour, cast=int)
-
 LOG_BUILDER = config("LOG_BUILDER", default="text")
 LOG_APP_NAME = config("LOG_APP_NAME", default=APP_NAME)
 LOG_LOGGER_NAME = config("LOG_LOGGER_NAME", default=FLASK_ENV)
@@ -165,6 +162,14 @@ RATELIMIT_STORAGE_OPTIONS = {
     "socket_timeout": REDIS_OPTS["socket_connect_timeout"],
     "socket_connect_timeout": REDIS_OPTS["socket_connect_timeout"],
 }
+
+IPBAN_ENABLED = config("IPBAN_ENABLED", default=True, cast=bool)
+IPBAN_COUNT = config("IPBAN_COUNT", default=20, cast=int)
+IPBAN_SECONDS = config("IPBAN_SECONDS", default=Seconds.hour, cast=int)
+IPBAN_STATUS_CODE = config("IPBAN_STATUS_CODE", default=403, cast=int)
+IPBAN_CHECK_CODES = config(
+    "IPBAN_CHECK_CODES", default="404,405,501", cast=Csv(post_process=tuple)
+)
 
 LIMITER = {
     "FAIL": "1/second",
