@@ -1,5 +1,3 @@
-# flake8: noqa F405
-# pylint: disable=redefined-outer-name,unused-import,unused-argument
 import json
 import os
 import time
@@ -21,8 +19,10 @@ from flaskel.tester.http import TestHttpApi, TestHttpCall, TestJsonRPC, TestRest
 from flaskel.utils import datetime, ExtProxy, schemas
 from flaskel.utils.faker import DummyLogger
 
-# noinspection PyUnresolvedReferences
-from . import app_dev, app_prod, CTS, HOSTS, testapp  # pytest: disable=unused-variable
+HOSTS = ObjectDict(
+    apitester="http://httpbin.org",
+    fake="http://localhost",
+)
 
 
 def test_app_dev(app_dev):
@@ -39,21 +39,21 @@ def test_app_dev(app_dev):
 
 
 def test_api_resources(testapp):
-    res = testapp.get(h.url_for("api.resource_api"), headers={"Accept": CTS.xml})
+    res = testapp.get(h.url_for("api.resource_api"), headers={"Accept": h.CTS.xml})
     h.Asserter.assert_status_code(res)
-    h.Asserter.assert_content_type(res, CTS.xml)
+    h.Asserter.assert_content_type(res, h.CTS.xml)
 
     res = testapp.get(h.url_for("api.resource_api", res_id=1))
     h.Asserter.assert_status_code(res)
-    h.Asserter.assert_content_type(res, CTS.json)
+    h.Asserter.assert_content_type(res, h.CTS.json)
 
     res = testapp.get(h.url_for("api.resource_api", res_id=1, sub_resource="items"))
     h.Asserter.assert_status_code(res)
-    h.Asserter.assert_content_type(res, CTS.json)
+    h.Asserter.assert_content_type(res, h.CTS.json)
 
     res = testapp.get(h.url_for("api.resource_api", res_id=1, sub_resource="not-found"))
     h.Asserter.assert_status_code(res, h.httpcode.NOT_FOUND)
-    h.Asserter.assert_content_type(res, CTS.json_problem)
+    h.Asserter.assert_content_type(res, h.CTS.json_problem)
     h.Asserter.assert_schema(res.json, schemas.SCHEMAS.API_PROBLEM)
     h.Asserter.assert_equals(res.json.detail, "not found")
 
@@ -89,7 +89,7 @@ def test_api_cors(testapp):
             "status": {"code": h.httpcode.TOO_MANY_REQUESTS},
             "headers": {
                 "Access-Control-Allow-Origin": {"value": "*"},
-                "Content-Type": {"value": CTS.json_problem},
+                "Content-Type": {"value": h.CTS.json_problem},
             },
         },
     )
@@ -118,7 +118,7 @@ def test_dispatch_error_api(testapp):
         },
         response={
             "status": {"code": h.httpcode.NOT_FOUND},
-            "headers": {"Content-Type": {"value": CTS.json_problem}},
+            "headers": {"Content-Type": {"value": h.CTS.json_problem}},
             "schema": schemas.SCHEMAS.API_PROBLEM,
         },
     )
@@ -185,7 +185,7 @@ def test_utils_send_file(testapp):
 
     res = testapp.get(url.format("nofile.txt"))
     h.Asserter.assert_status_code(res, h.httpcode.NOT_FOUND)
-    h.Asserter.assert_content_type(res, CTS.html)
+    h.Asserter.assert_content_type(res, h.CTS.html)
 
 
 def test_utils_uuid(testapp):
@@ -296,7 +296,7 @@ def test_healthcheck(testapp):
         status=h.httpcode.SERVICE_UNAVAILABLE,
         schema=schemas.SCHEMAS.HEALTHCHECK,
     )
-    h.Asserter.assert_content_type(res, CTS.json_health)
+    h.Asserter.assert_content_type(res, h.CTS.json_health)
     h.Asserter.assert_allin(
         res.json.checks.keys(), ("mongo", "redis", "sqlalchemy", "system", "services")
     )
@@ -442,14 +442,14 @@ def test_useragent(testapp):
     h.Asserter.assert_status_code(res)
     h.Asserter.assert_allin(res.json.keys(), ("browser", "device", "os", "raw"))
     ua_string = """
-        Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) 
+        Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
         Chrome/70.0.3538.77 Safari/537.36
     """
     res = useragent.UserAgent().parse(ua_string)
     h.Asserter.assert_equals(res.raw, ua_string)
 
 
-def test_utils_date_conversion(app_dev):
+def test_utils_date_conversion():
     exc = False
     fmt = "%d %B %Y %I:%M %p"
     iso_date = "2020-12-28T19:53:00"
@@ -647,11 +647,11 @@ def test_proxy_schema(app_dev):
 def test_apidoc(testapp):
     res = testapp.get(h.url_for("api.apidocs"))
     h.Asserter.assert_status_code(res)
-    h.Asserter.assert_content_type(res, CTS.html)
+    h.Asserter.assert_content_type(res, h.CTS.html)
 
     res = testapp.get(h.url_for("api.apispec"))
     h.Asserter.assert_status_code(res)
-    h.Asserter.assert_content_type(res, CTS.json)
+    h.Asserter.assert_content_type(res, h.CTS.json)
     h.Asserter.assert_equals(res.json.info.version, "1.0.0")
     h.Asserter.assert_equals(res.json.servers[0].variables.context.default, "/")
     h.Asserter.assert_equals(
@@ -685,7 +685,7 @@ def test_mobile_release(app_dev):
         h.url_for("api.mobile_release", ver="latest", **agent), headers=bypass
     )
     h.Asserter.assert_status_code(res)
-    h.Asserter.assert_header(res, "Content-Type", CTS.text)
+    h.Asserter.assert_header(res, "Content-Type", h.CTS.text)
     h.Asserter.assert_equals(res.data, version.encode())
 
 

@@ -15,6 +15,16 @@ schemas = ConfigProxy("SCHEMAS")
 url_for = partial(flask.url_for, _external=True)
 
 
+class CTS:
+    text = "text/plain"
+    json = "application/json"
+    xml = "application/xml"
+    html = "text/html"
+    json_problem = "application/problem+json"
+    xml_problem = "application/problem+xml"
+    json_health = "application/health+json"
+
+
 def load_sample_data(filename):
     SQLASupport.exec_from_file(
         config.SQLALCHEMY_DATABASE_URI, filename, echo=config.SQLALCHEMY_ECHO
