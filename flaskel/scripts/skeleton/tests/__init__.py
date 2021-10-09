@@ -1,4 +1,3 @@
-# flake8: noqa F405
 # pylint: disable=redefined-outer-name
 
 import os
@@ -10,15 +9,8 @@ from scripts.cli import APP_CONFIG  # type: ignore
 
 from flaskel import ObjectDict, TestClient
 from flaskel.ext.sqlalchemy.support import SQLASupport
-from . import helpers as h
-
-__all__ = [
-    "h",
-    "testapp",
-    "test_client",
-    "auth_token",
-    "BASE_DIR",
-]
+from flaskel.tester import helpers as h
+from .helpers import Views
 
 DB_TEST = "test.sqlite"
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -79,7 +71,7 @@ def auth_token(test_client):
             email=email or h.config.ADMIN_EMAIL,
             password=password or h.config.ADMIN_PASSWORD,
         )
-        tokens = test_client.post(h.url_for(h.VIEWS.access_token), json=credentials)
+        tokens = test_client.post(h.url_for(Views.access_token), json=credentials)
         if in_query is True:
             return f"jwt={tokens.json.access_token}"
         return dict(Authorization=f"Bearer {tokens.json.access_token}")

@@ -94,6 +94,13 @@ def test_api_cors(testapp):
         },
     )
 
+    headers = testapp.application.config.CORS_EXPOSE_HEADERS
+    res = h.api_tester(testapp, url="/")
+    h.Asserter.assert_header(res, "Access-Control-Allow-Origin", "*")
+    h.Asserter.assert_allin(
+        res.headers["Access-Control-Expose-Headers"].split(", "), headers
+    )
+
 
 def test_dispatch_error_web(testapp):
     client = TestHttpCall(testapp)

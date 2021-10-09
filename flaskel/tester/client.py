@@ -1,4 +1,3 @@
-import flask
 from flask.testing import FlaskClient
 
 from flaskel.builder import AppBuilder
@@ -49,7 +48,5 @@ class TestClient(FlaskClient, JSONRPCMixin):
         app.test_client_class = cls
         app.TESTING = True
 
-        if not flask.has_app_context():
-            app.app_context().push()
-
+        app.app_context().push()
         return app
