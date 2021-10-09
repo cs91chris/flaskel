@@ -1,10 +1,27 @@
 import os
+from collections import OrderedDict
 
-from decouple import Choices, AutoConfig, Csv
+import decouple
 
 from flaskel.utils import logger, yaml, Seconds
 
-config = AutoConfig(search_path=os.environ.get("ENV_PATH") or os.getcwd())
+_conf_search_path = os.environ.get("ENV_PATH")
+_conf_file_name = os.environ.get("ENV_FILE")
+_conf_file_encoding = os.environ.get("ENV_FILE_ENCODING")
+
+
+class AutoConfig(decouple.AutoConfig):
+    encoding = _conf_file_encoding or "UTF-8"
+
+    SUPPORTED = OrderedDict(
+        [
+            (_conf_file_name or "settings.ini", decouple.RepositoryIni),
+            (_conf_file_name or ".env", decouple.RepositoryEnv),
+        ]
+    )
+
+
+config = AutoConfig(search_path=_conf_search_path or os.getcwd())
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 TESTING = config("TESTING", default=DEBUG, cast=bool)
@@ -17,7 +34,7 @@ SERVER_NAME = config("SERVER_NAME", default=f"{APP_HOST}:{APP_PORT}")
 FLASK_ENV = config(
     "FLASK_ENV",
     default="development" if DEBUG else "production",
-    cast=Choices(["development", "production"]),
+    cast=decouple.Choices(["development", "production"]),
 )
 
 LOCALE = config("LOCALE", default="en_EN.utf8")
@@ -65,7 +82,9 @@ _CORS_EXPOSE_HEADERS_DEFAULT = [
     "Retry-After",
 ]
 CORS_EXPOSE_HEADERS = config(
-    "CORS_EXPOSE_HEADERS", default=",".join(_CORS_EXPOSE_HEADERS_DEFAULT), cast=Csv()
+    "CORS_EXPOSE_HEADERS",
+    default=",".join(_CORS_EXPOSE_HEADERS_DEFAULT),
+    cast=decouple.Csv(),
 )
 
 BASIC_AUTH_USERNAME = config("BASIC_AUTH_USERNAME", default="admin")
@@ -86,8 +105,8 @@ PREFERRED_URL_SCHEME = config(
 LOG_BUILDER = config("LOG_BUILDER", default="text")
 LOG_APP_NAME = config("LOG_APP_NAME", default=APP_NAME)
 LOG_LOGGER_NAME = config("LOG_LOGGER_NAME", default=FLASK_ENV)
-LOG_REQ_HEADERS = config("LOG_REQ_HEADERS", default="", cast=Csv())
-LOG_RESP_HEADERS = config("LOG_RESP_HEADERS", default="", cast=Csv())
+LOG_REQ_HEADERS = config("LOG_REQ_HEADERS", default="", cast=decouple.Csv())
+LOG_RESP_HEADERS = config("LOG_RESP_HEADERS", default="", cast=decouple.Csv())
 LOG_REQ_SKIP_DUMP = config("LOG_REQ_SKIP_DUMP", default=not TESTING, cast=bool)
 LOG_RESP_SKIP_DUMP = config("LOG_RESP_SKIP_DUMP", default=not TESTING, cast=bool)
 LOG_REQ_FORMAT = config(
@@ -121,7 +140,9 @@ WSGI_WERKZEUG_PROFILER_FILE = config(
     "WSGI_WERKZEUG_PROFILER_FILE", default="profiler.txt"
 )
 WSGI_WERKZEUG_PROFILER_RESTRICTION = config(
-    "WSGI_WERKZEUG_PROFILER_RESTRICTION", default="0.1", cast=Csv(post_process=tuple)
+    "WSGI_WERKZEUG_PROFILER_RESTRICTION",
+    default="0.1",
+    cast=decouple.Csv(post_process=tuple),
 )
 WSGI_WERKZEUG_LINT_ENABLED = config(
     "WSGI_WERKZEUG_LINT_ENABLED", default=TESTING, cast=bool
@@ -168,7 +189,7 @@ IPBAN_COUNT = config("IPBAN_COUNT", default=20, cast=int)
 IPBAN_SECONDS = config("IPBAN_SECONDS", default=Seconds.hour, cast=int)
 IPBAN_STATUS_CODE = config("IPBAN_STATUS_CODE", default=403, cast=int)
 IPBAN_CHECK_CODES = config(
-    "IPBAN_CHECK_CODES", default="404,405,501", cast=Csv(post_process=tuple)
+    "IPBAN_CHECK_CODES", default="404,405,501", cast=decouple.Csv(post_process=tuple)
 )
 
 LIMITER = {

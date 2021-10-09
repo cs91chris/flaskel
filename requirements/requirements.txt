@@ -21,7 +21,7 @@ flask-errorshandler==4.0.2  # via -r requirements/requirements.in
 flask-httpauth==4.4.0     # via -r requirements/requirements.in
 flask-jwt-extended==4.2.3  # via -r requirements/requirements.in
 flask-limiter==1.4        # via -r requirements/requirements.in
-flask-logify==2.4.3       # via -r requirements/requirements.in
+flask-logify==2.4.4       # via -r requirements/requirements.in
 flask-responsebuilder==2.0.15  # via -r requirements/requirements.in
 flask-sqlalchemy==2.5.1   # via -r requirements/requirements.in
 flask-templatesupport==2.0.1  # via -r requirements/requirements.in
@@ -33,7 +33,7 @@ idna==3.2                 # via requests, yarl
 itsdangerous==2.0.1       # via flask
 jinja2==3.0.1             # via flask
 json2html==1.3.0          # via flask-responsebuilder
-jsonschema==3.2.0         # via -r requirements/requirements.in
+jsonschema==4.0.1         # via -r requirements/requirements.in
 korean-lunar-calendar==0.2.1  # via holidays
 limits==1.5.1             # via flask-limiter
 markupsafe==2.0.1         # via jinja2

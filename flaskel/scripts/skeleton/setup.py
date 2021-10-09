@@ -29,7 +29,7 @@ ENTRY_POINTS = dict(
 )
 
 BASE_PATH = os.path.dirname(__file__)
-VERSION_FILE = os.path.join(PKG_NAME, "skel/version.py")
+VERSION_FILE = os.path.join(PKG_NAME, "skel", "version.py")
 
 try:
     # must be after setuptools
@@ -52,7 +52,7 @@ else:
 
 def ext_paths(root_dir, exclude=()):
     paths = []
-    for root, dirs, files in os.walk(root_dir):
+    for root, _, files in os.walk(root_dir):
         for filename in files:
             file_path = os.path.join(root, filename)
             file_ext = filename.split(".")[-1]
@@ -69,7 +69,7 @@ def read(file):
 
 
 def grep(file, name):
-    (value,) = re.findall(fr"{name}\W*=\W*'([^']+)'", read(file))
+    (value,) = re.findall(fr'{name}\W*=\W*"([^"]+)"', read(file))
     return value
 
 
@@ -78,6 +78,7 @@ def readme(file):
         return read(file)
     except OSError as exc:
         print(str(exc), file=sys.stderr)
+    return None
 
 
 class PyTest(test):
@@ -85,7 +86,7 @@ class PyTest(test):
         test.finalize_options(self)
 
     def run_tests(self):
-        import pytest
+        import pytest  # pylint: disable=import-outside-toplevel
 
         sys.exit(pytest.main([PKG_TEST]))
 
@@ -93,6 +94,7 @@ class PyTest(test):
 def cythonize(paths):
     if base_cythonize is not None:
         return base_cythonize(paths, language_level=3)
+    return None
 
 
 def find_packages():

@@ -11,11 +11,11 @@ from flaskel import config
 from flaskel import flaskel
 from .converters import CONVERTERS
 from .ext.sqlalchemy import register_engine_events
-from .utils import ObjectDict
-from .utils import misc
+from .utils import ObjectDict, misc
 
 
-class AppBuilder:  # pylint: disable=E1101
+# pylint: disable=too-many-instance-attributes,no-member
+class AppBuilder:
     """
     default app name
     """
