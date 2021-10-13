@@ -4,11 +4,14 @@ from flask import current_app as cap
 
 
 class ConfigProxy:
-    def __init__(self, key=None):
-        self.key = key
+    def __init__(self, key=None, default=None):
+        self.__key = key
+        self.__default = default
 
     def __getattr__(self, item):
-        obj = self._proxy() or {}
+        obj = self._proxy()
+        if obj == self.__default:
+            return self.__default
         if not isinstance(item, str):
             return obj.get(item)
         for i in item.split("."):
@@ -28,15 +31,20 @@ class ConfigProxy:
     def _proxy(self):
         res = cap.config
 
-        if self.key is None:
+        if self.__key is None:
             return cap.config
-        for c in self.key.split("."):
-            res = res.get(c) or {}
 
-        return res or None
+        if "." not in self.__key:
+            res = res.get(self.__key, self.__default)
+        else:
+            for key in self.__key.split("."):
+                res = res.get(key, {})
+
+        return res if res is not None else self.__default
 
     def get(self, item=None):
-        return self.__call__(item)
+        res = self.__call__(item)
+        return res if res is not None else self.__default
 
 
 class ExtProxy:
@@ -106,14 +114,14 @@ class ObjectDict(dict):
         if name in self:
             del self[name]
 
-    def patch(self, m, **kwargs):
+    def patch(self, __dict, **kwargs):
         """
 
-        :param m:
+        :param __dict:
         :param kwargs:
         :return:
         """
-        super().update(m, **kwargs)
+        super().update(__dict, **kwargs)
         return self
 
     @staticmethod
