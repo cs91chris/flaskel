@@ -9,20 +9,22 @@ from flaskel.utils import ObjectDict, uuid
 from .base import BaseView
 
 
+# pylint: disable=too-many-instance-attributes
 class ProxyView(BaseView):
     client_class: t.Type[HTTPBase] = FlaskelHttp
 
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        host=None,
-        url=None,
-        method=None,
-        proxy_body=False,
-        proxy_headers=False,
-        proxy_params=False,
-        options=None,
-        skip_args=(),
+        host: str = None,
+        url: str = None,
+        method: str = None,
+        proxy_body: bool = False,
+        proxy_headers: bool = False,
+        proxy_params: bool = False,
+        skip_args: t.Tuple[str, ...] = (),
+        stream: bool = True,
+        options: t.Optional[t.Callable] = None,
         **kwargs,
     ):
         """
@@ -33,6 +35,7 @@ class ProxyView(BaseView):
         :param proxy_body:
         :param proxy_headers:
         :param proxy_params:
+        :param stream: if False streaming response are disabled
         :param skip_args: a tuple o arguments name to remove from kwargs
                          it is necessary because flask pass url params to dispatch_request
         :param options: callable that returns dict to pass to http client instance
@@ -46,11 +49,12 @@ class ProxyView(BaseView):
         self._proxy_params = proxy_params
         self._options = kwargs
         self._skip_args = skip_args
+        self._stream = stream
 
         if callable(options):
             self._options = {**kwargs, **options()}  # pragma: no cover
 
-    def _filter_kwargs(self, data):
+    def _filter_kwargs(self, data: dict) -> dict:
         for arg in self._skip_args:
             data.pop(arg, None)
         return data
@@ -60,14 +64,18 @@ class ProxyView(BaseView):
         response = self.proxy(self.service(), **opts)
 
         if response and response.body and response.status != httpcode.NO_CONTENT:
+            data = response.body
+            if self._stream:
+                data = flask.stream_with_context(response.body)
+
             return flask.Response(
-                flask.stream_with_context(response.body),
+                data,
                 headers=response.headers,
                 status=response.status,
             )
         return flaskel.Response.no_content()
 
-    def proxy(self, data, **kwargs):
+    def proxy(self, data: ObjectDict, **kwargs) -> ObjectDict:
         client = self.client_class(data.host or self.upstream_host(), **kwargs)
         return client.request(
             data.url or self.request_url(),
@@ -75,7 +83,7 @@ class ProxyView(BaseView):
             headers=data.headers or self.request_headers(),
             params=data.params or self.request_params(),
             data=data.body or self.request_body(),
-            stream=True,
+            stream=self._stream,
         )
 
     def service(self):
@@ -105,7 +113,7 @@ class ProxyView(BaseView):
         return flask.request.get_data() if self._proxy_body else None
 
     def request_headers(self):
-        return flask.request.headers if self._proxy_headers else None
+        return dict(flask.request.headers.items()) if self._proxy_headers else None
 
     def request_params(self):
         return flask.request.args if self._proxy_params else None
