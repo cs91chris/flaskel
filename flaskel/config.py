@@ -189,7 +189,9 @@ IPBAN_COUNT = config("IPBAN_COUNT", default=20, cast=int)
 IPBAN_SECONDS = config("IPBAN_SECONDS", default=Seconds.hour, cast=int)
 IPBAN_STATUS_CODE = config("IPBAN_STATUS_CODE", default=403, cast=int)
 IPBAN_CHECK_CODES = config(
-    "IPBAN_CHECK_CODES", default="404,405,501", cast=decouple.Csv(post_process=tuple)
+    "IPBAN_CHECK_CODES",
+    default="404,405,501",
+    cast=decouple.Csv(post_process=lambda items: tuple(int(i) for i in items)),
 )
 
 LIMITER = {

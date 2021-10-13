@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 PKG_NAME=flaskel
-PID_FILE=".${PKG_NAME}.pid"
+
+export PID_FILE=".${PKG_NAME}.pid"
+
 SITE="venv/lib/python3.8/site-packages"
 PKG_APP="${PKG_NAME}.scripts.cli:create_app()"
 
@@ -16,7 +18,7 @@ case ${1} in
     ;;
 "run")
     echo -e "running command: ${BIN}/gunicorn -c ${CONF} ${PKG_APP}"
-    ${BIN}/gunicorn -c ${CONF} ${PKG_APP}
+    exec ${BIN}/gunicorn -c ${CONF} ${PKG_APP}
     ;;
 "clean")
     find ${REPO_DIR}/${PKG_NAME} -type f -name "*.c" -delete

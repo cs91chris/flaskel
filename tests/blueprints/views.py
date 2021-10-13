@@ -16,4 +16,4 @@ class TokenAuthView(BaseTokenAuth):
 
 class ApiItem(Restful):
     post_schema = ConfigProxy("SCHEMAS.ITEM_POST")
-    decorators = [basic_auth.login_required]
+    decorators = [basic_auth.login_required()]

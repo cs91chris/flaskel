@@ -739,7 +739,10 @@ def test_restful(app_dev):
         schema_read=schemas.SCHEMAS.ITEM,
         schema_collection=schemas.SCHEMAS.ITEM_LIST,
         body_create=dict(item="test"),
-        headers=h.basic_auth_header(),
+        headers={
+            app_dev.config.LIMITER.BYPASS_KEY: app_dev.config.LIMITER.BYPASS_VALUE,
+            **h.basic_auth_header(),
+        },
     )
 
     client = TestRestApi(app_dev.test_client(), endpoint=h.url_for("api.items"))
@@ -788,7 +791,7 @@ def test_ipban(app_dev):  # must be last test
     conf = app_dev.config
     ipban = ExtProxy("ipban")
     ipban.remove_whitelist("127.0.0.1")
-    for _ in range(0, conf.IPBAN_COUNT + 2):
+    for _ in range(0, conf.IPBAN_COUNT * 2):
         testapp = app_dev.test_client()
         res = testapp.get("/phpmyadmin")
 

@@ -1,4 +1,6 @@
 # based on https://github.com/enricobarzetti/sqlalchemy_get_or_create
+import typing as t
+
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound as NoResultError
@@ -16,7 +18,7 @@ class SQLASupport:
         self.model = model
 
     @staticmethod
-    def _prepare_params(defaults=None, **kwargs):
+    def _prepare_params(defaults: t.Optional[dict] = None, **kwargs) -> dict:
         """
 
         :param defaults: overrides kwargs
@@ -29,7 +31,9 @@ class SQLASupport:
         ret.update(defaults)
         return ret
 
-    def _create_object(self, lookup, params, lock=False):
+    def _create_object(
+        self, lookup: dict, params: dict, lock: bool = False
+    ) -> t.Tuple[t.Any, bool]:
         """
 
         :param lookup: attributes used to find record
@@ -53,7 +57,9 @@ class SQLASupport:
             else:
                 return obj, True
 
-    def get_or_create(self, defaults=None, **kwargs):
+    def get_or_create(
+        self, defaults: t.Optional[dict] = None, **kwargs
+    ) -> t.Tuple[t.Any, bool]:
         """
 
         :param defaults: attribute used to create record
@@ -66,7 +72,9 @@ class SQLASupport:
             params = self._prepare_params(defaults, **kwargs)
             return self._create_object(kwargs, params)
 
-    def update_or_create(self, defaults=None, **kwargs):
+    def update_or_create(
+        self, defaults: t.Optional[dict] = None, **kwargs
+    ) -> t.Tuple[t.Any, bool]:
         """
 
         :param defaults: attribute used to create record
@@ -93,7 +101,7 @@ class SQLASupport:
         return obj, False
 
     @staticmethod
-    def exec_from_file(db_uri, filename, echo=False):
+    def exec_from_file(db_uri: str, filename: str, echo: bool = False):
         """
 
         :param db_uri:
@@ -103,4 +111,6 @@ class SQLASupport:
         engine = create_engine(db_uri, echo=echo)
         with engine.connect() as conn, open(filename) as f:
             for statement in f.read().split(";"):
-                conn.execute(execute_sql(statement))
+                # skip comment line
+                if not statement.startswith("--"):
+                    conn.execute(execute_sql(statement))

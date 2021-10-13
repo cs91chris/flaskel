@@ -122,8 +122,6 @@ def app_prod():
     return TestClient.get_app(
         conf=dict(
             DEBUG=True,
-            BASIC_AUTH_USERNAME="username",
-            BASIC_AUTH_PASSWORD="password",
             USER_AGENT_AUTO_PARSE=True,
             PREFERRED_URL_SCHEME="https",
             SCHEMAS=SCHEMAS,

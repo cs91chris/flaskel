@@ -218,18 +218,24 @@ class Restful(CatalogResource):
         self._create(res)
         return res.to_dict(), httpcode.CREATED
 
-    def on_delete(self, res_id, *_, **__):
+    def _delete(self, res_id, *_, **__):
         """
 
         :param res_id: resource identifier (primary key value)
         """
         res = self._model.query.get_or_404(res_id)
+        data = res.to_dict()
 
         try:
             self._session.delete(res)
             self._session.commit()
         except SQLAlchemyError as exc:
             self._session_exception_handler(exc)
+
+        return data
+
+    def on_delete(self, res_id, *args, **kwargs):
+        self._delete(res_id, *args, **kwargs)
 
     def on_put(self, *_, res_id=None, **__):
         """
