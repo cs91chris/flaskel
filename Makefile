@@ -1,4 +1,4 @@
-PACKAGES=flaskel
+PACKAGE=flaskel
 REQ_PATH=requirements
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
 CONFIRM=@( read -p "Are you sure?!? [Y/n]: " sure && case "$$sure" in [nN]) false;; *) true;; esac )
@@ -27,22 +27,22 @@ clean-install-deps:
 	pip-sync ${REQ_PATH}/requirements*.txt
 
 clean:
-	find . -name '__pycache__' -prune  -exec rm -rf {} \;
+	find . -name '__pycache__' -prune -exec rm -rf {} \;
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
 	find . -name '*.pyc' -prune -exec rm -f {} \;
 
 lint:
 	@echo "---> running black ..."
-	black -t py38 ${PACKAGES} tests setup.py
+	black -t py38 ${PACKAGE} tests setup.py
 	@echo "---> running flake8 ..."
-	flake8 --config=.flake8 ${PACKAGES} tests setup.py
+	flake8 --config=.flake8 ${PACKAGE} tests setup.py
 	@echo "---> running pylint ..."
-	pylint --rcfile=.pylintrc ${PACKAGES} tests setup.py
+	pylint --rcfile=.pylintrc ${PACKAGE} tests setup.py
 	@echo "---> running mypy ..."
-	mypy --install-types --non-interactive --no-strict-optional ${PACKAGES}
+	mypy --install-types --non-interactive --no-strict-optional ${PACKAGE}
 
 test:
-	pytest --cov=${PACKAGES} --cov-report=html --cov-config .coveragerc tests
+	pytest --cov=${PACKAGE} --cov-report=html --cov-config .coveragerc tests
 
 build-dist:
 	python setup.py sdist bdist_wheel
