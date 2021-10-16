@@ -3,13 +3,15 @@ import typing as t
 import flask
 
 import flaskel
-from flaskel import cap, httpcode, HttpMethod
+from flaskel import cap, httpcode, HttpMethod, ConfigProxy
 from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC, HTTPBase
 from flaskel.utils import ObjectDict, uuid
 from .base import BaseView
 
-
 # pylint: disable=too-many-instance-attributes
+from ..http.rpc import rpc_error_to_httpcode
+
+
 class ProxyView(BaseView):
     client_class: t.Type[HTTPBase] = FlaskelHttp
 
@@ -68,7 +70,7 @@ class ProxyView(BaseView):
             if self._stream:
                 data = flask.stream_with_context(response.body)
 
-            return flask.Response(
+            return flaskel.Response(
                 data,
                 headers=response.headers,
                 status=response.status,
@@ -193,43 +195,61 @@ class SchemaProxyView(ConfProxyView):
 
 
 class JsonRPCProxy(ProxyView):
-    client_class: t.Type[HTTPBase] = FlaskelJsonRPC
+    response_content_type: str = "application/json"
+    request_id_header: t.Callable = ConfigProxy("REQUEST_ID_HEADER")
+    client_class: t.Type[FlaskelJsonRPC] = FlaskelJsonRPC
 
     methods = [
         HttpMethod.GET,
         HttpMethod.POST,
     ]
 
-    def proxy(self, data, **kwargs):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("stream", False)
+        super().__init__(*args, **kwargs)
+
+    def proxy(self, data: ObjectDict, **kwargs) -> ObjectDict:
         url = self.upstream_host()
         client = self.client_class(url, url, **kwargs)
 
         if flask.request.method == HttpMethod.GET:
-            body = client.request(
+            resp = client.request(
                 self.request_method(),
                 request_id=self.get_request_id(),
                 params=self.request_params(),
-                stream=True,
+                stream=self._stream,
             )
-        else:
-            body = None
-            client.notification(self.request_method(), params=self.request_params())
+            return self.prepare_response(resp)
+        client.notification(
+            self.request_method(),
+            params=self.request_params(),
+            stream=self._stream,
+        )
+        return self.prepare_response()
+
+    def prepare_response(
+        self, resp: t.Optional[ObjectDict] = None, **kwargs
+    ) -> ObjectDict:
+        headers = {"Content-Type": self.response_content_type, **kwargs}
+        if resp is None:
+            return ObjectDict(body=None, status=httpcode.NO_CONTENT, headers=headers)
+
+        if resp.error is not None:
+            status = rpc_error_to_httpcode(resp.error.code)
+            flask.abort(status, response=resp.error)
 
         return ObjectDict(
-            body=body,
-            status=httpcode.SUCCESS if body else httpcode.NO_CONTENT,
-            headers={"Content-Type": "application/json"},
+            body=flask.json.dumps(resp), status=httpcode.SUCCESS, headers=headers
         )
 
-    @staticmethod
-    def get_request_id():
-        header = cap.config.REQUEST_ID_HEADER
+    def get_request_id(self) -> str:
+        header = self.request_id_header()
         return flask.request.headers.get(header) or uuid.get_uuid()
 
-    def request_method(self):
+    def request_method(self) -> str:
         return flask.request.path.split("/")[-1]
 
-    def request_params(self):
+    def request_params(self) -> dict:
         if flask.request.method == HttpMethod.GET:
             return flask.request.args.to_dict()
         return flask.request.json

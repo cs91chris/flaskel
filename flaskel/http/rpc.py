@@ -1,4 +1,5 @@
 from flaskel.utils.datastruct import ObjectDict
+from . import httpcode
 
 
 class RPCError(Exception):
@@ -78,3 +79,21 @@ class RPCInternalError(RPCError):
         :param data:
         """
         super().__init__(-32603, message, data)
+
+
+def rpc_error_to_httpcode(error_code: int) -> int:
+    """
+
+    :param error_code:
+    :return:
+    """
+    if error_code == RPCParseError().code:
+        return httpcode.BAD_REQUEST
+    if error_code == RPCInvalidRequest().code:
+        return httpcode.BAD_REQUEST
+    if error_code == RPCMethodNotFound().code:
+        return httpcode.NOT_FOUND
+    if error_code == RPCInvalidParams().code:
+        return httpcode.UNPROCESSABLE_ENTITY
+
+    return httpcode.INTERNAL_SERVER_ERROR
