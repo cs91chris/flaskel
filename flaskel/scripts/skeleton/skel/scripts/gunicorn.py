@@ -86,9 +86,9 @@ def worker_int(worker):
             code = []
             id2name = {th.ident: th.name for th in threading.enumerate()}
             # noinspection PyUnresolvedReferences, PyProtectedMember
-            for threadId, stack in sys._current_frames().items():
-                thread_name = id2name.get(threadId, "")
-                code.append(f"\n# Thread: {thread_name}({threadId})")
+            for thread_id, stack in sys._current_frames().items():
+                thread_name = id2name.get(thread_id, "")
+                code.append(f"\n# Thread: {thread_name}({thread_id})")
                 for filename, lineno, name, line in traceback.extract_stack(stack):
                     code.append(f"File: '{filename}', line {lineno}, in {name}")
                     if line:
