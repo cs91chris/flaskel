@@ -66,15 +66,13 @@ class ProxyView(BaseView):
         response = self.proxy(self.service(), **opts)
 
         if response and response.body and response.status != httpcode.NO_CONTENT:
-            data = response.body
             if self._stream:
-                data = flask.stream_with_context(response.body)
-
-            return flaskel.Response(
-                data,
-                headers=response.headers,
-                status=response.status,
-            )
+                return flaskel.Response(
+                    flask.stream_with_context(response.body),
+                    status=response.status,
+                    headers=response.headers,
+                )
+            return response.body, response.status, response.headers
         return flaskel.Response.no_content()
 
     def proxy(self, data: ObjectDict, **kwargs) -> ObjectDict:
@@ -218,12 +216,15 @@ class JsonRPCProxy(ProxyView):
                 request_id=self.get_request_id(),
                 params=self.request_params(),
                 stream=self._stream,
+                headers=self.request_headers(),
             )
             return self.prepare_response(resp)
+
         client.notification(
             self.request_method(),
             params=self.request_params(),
             stream=self._stream,
+            headers=self.request_headers(),
         )
         return self.prepare_response()
 
@@ -231,16 +232,13 @@ class JsonRPCProxy(ProxyView):
         self, resp: t.Optional[ObjectDict] = None, **kwargs
     ) -> ObjectDict:
         headers = {"Content-Type": self.response_content_type, **kwargs}
-        if resp is None:
-            return ObjectDict(body=None, status=httpcode.NO_CONTENT, headers=headers)
+        status = httpcode.NO_CONTENT if resp is None else httpcode.SUCCESS
 
-        if resp.error is not None:
+        if resp and resp.error is not None:
             status = rpc_error_to_httpcode(resp.error.code)
             flask.abort(status, response=resp.error)
 
-        return ObjectDict(
-            body=flask.json.dumps(resp), status=httpcode.SUCCESS, headers=headers
-        )
+        return ObjectDict(body=resp, status=status, headers=headers)
 
     def get_request_id(self) -> str:
         header = self.request_id_header()
