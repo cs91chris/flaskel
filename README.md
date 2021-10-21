@@ -376,6 +376,7 @@ Configuration via env:
 - ``CACHE_KEY_PREFIX``: *(default = APP_NAME)*
 - ``CACHE_REDIS_URL``: *(default = REDIS_URL)*
 - ``CACHE_DEFAULT_TIMEOUT``: *(default = 1 hour)*
+- ``CACHE_DISABLED``: *(default = False)*
 
 Static application configuration:
 

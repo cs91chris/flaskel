@@ -25,6 +25,9 @@ class Cache:
 
     @classmethod
     def unless(cls, *_, **__):
+        if cap.config.get("CACHE_DISABLED"):
+            return True
+
         bypass = cls.optional_callable(cls.cache_control_bypass)
         return bypass == request.headers.get("Cache-Control")
 
@@ -61,7 +64,7 @@ class Cache:
                 cache_key += f"{separator}{value}"
 
         hashed_key = cls.hash_method(cache_key)
-        return f"{key_prefix}{separator}{request.base_url}{hashed_key}"
+        return f"{key_prefix}{separator}{request.base_url}{separator}{hashed_key}"
 
     @classmethod
     def cached(cls, **kwargs):

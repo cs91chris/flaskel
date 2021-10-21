@@ -217,6 +217,7 @@ SCHEDULER_JOBSTORES = {
 
 CACHE_TYPE = "flask_caching.backends.redis"
 CACHE_REDIS_URL = config("CACHE_REDIS_URL", default=REDIS_URL)
+CACHE_DISABLED = config("CACHE_DISABLED", default=False, cast=bool)
 CACHE_DEFAULT_TIMEOUT = config("CACHE_DEFAULT_TIMEOUT", default=Seconds.hour, cast=int)
 CACHE_KEY_PREFIX = config("CACHE_KEY_PREFIX", default=APP_NAME)
 CACHE_OPTIONS = {
