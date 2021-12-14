@@ -32,7 +32,7 @@ def load_sample_data(filename):
 
 
 def fetch_emails(subject, recipient=None):
-    client = FetchMail(config.SENDRIA)
+    client = FetchMail(**config.SENDRIA)
     return client.perform(recipient=recipient, subject=subject)
 
 

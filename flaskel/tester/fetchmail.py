@@ -9,7 +9,7 @@ class FetchMail(HTTPClient):
     """
 
     def __init__(
-        self, endpoint, username=None, password=None, retry=3, wait=1, timeout=3
+        self, endpoint, username=None, password=None, retry=10, wait=0.1, timeout=3
     ):
         """
 
@@ -60,4 +60,4 @@ class FetchMail(HTTPClient):
                 return res
 
             time.sleep(self.wait)
-            return None
+        return []
