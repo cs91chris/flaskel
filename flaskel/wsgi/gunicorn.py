@@ -1,6 +1,9 @@
 import sys
 import threading
 import traceback
+from multiprocessing import cpu_count
+
+from flaskel.config import config
 
 try:
     from gunicorn.app.base import BaseApplication as WSGIServer
@@ -23,14 +26,43 @@ class WSGIGunicorn(BaseApplication, WSGIServer):
         WSGIServer.run(self)
 
     def set_default_config(self):
+        self.cfg.set("preload_app", True)
         self.cfg.set("post_fork", self.post_fork)
         self.cfg.set("pre_fork", self.pre_fork)
         self.cfg.set("pre_exec", self.pre_exec)
         self.cfg.set("when_ready", self.when_ready)
         self.cfg.set("worker_abort", self.worker_abort)
         self.cfg.set("worker_int", self.worker_int)
+
+        host = config("APP_HOST", default="127.0.0.1")
+        port = config("APP_PORT", default="5000", cast=int)
+        self.cfg.set("bind", config("BIND", default=f"{host}:{port}"))
+        self.cfg.set("pidfile", config("PID_FILE", default=".gunicorn.pid"))
+        self.cfg.set("proc_name", config("PROC_NAME", default=None))
+        self.cfg.set("timeout", config("TIMEOUT", default=30, cast=int))
+        self.cfg.set("backlog", config("BACKLOG", default=2048, cast=int))
+        self.cfg.set("keepalive", config("KEEPALIVE", default=3, cast=int))
+
+        nw = 1 + 2 * cpu_count()
+        worker_class = config("WORKER_CLASS", default="sync")
+        self.cfg.set("worker_class", worker_class)
+
+        self.cfg.set(
+            "workers",
+            config("WORKERS", default=nw if worker_class == "sync" else 1, cast=int),
+        )
+        self.cfg.set(
+            "threads",
+            config("THREADS", default=nw if worker_class == "gthread" else 1, cast=int),
+        )
+
+        self.cfg.set(
+            "worker_connections", config("WORKER_CONNECTIONS", default=1000, cast=int)
+        )
+
         self.cfg.set("errorlog", "-")
         self.cfg.set("accesslog", "-")
+        self.cfg.set("loglevel", config("LOG_LEVEL", default="info").lower())
         self.cfg.set(
             "access_log_format",
             '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"',
