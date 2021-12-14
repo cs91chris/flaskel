@@ -32,9 +32,15 @@ class SQLAModel(Model):
         return res
 
     @classmethod
-    def query_collection(cls, *args, params=None, **kwargs):
+    def prepare_collection_filters(cls, params: dict) -> list:
+        # stub method
         _ = params
-        return cls.query.filter(*args).filter_by(**kwargs)
+        return []
+
+    @classmethod
+    def query_collection(cls, *_, params=None, **kwargs):
+        filters = cls.prepare_collection_filters(params or {})
+        return cls.query.filter(*filters).filter_by(**kwargs)
 
     @classmethod
     def get_list(
