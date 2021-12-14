@@ -91,6 +91,18 @@ SCHEMAS = ObjectDict(
             "scope": Fields.Opt.string,
         },
     ),
+    REGISTER_CONFIRM=Fields.object(properties={"token": Fields.string}),
+    PASSWORD_RESET=Fields.object(
+        properties={
+            "email": Fields.string,
+            "new_password": Fields.string,
+            "old_password": Fields.string,
+        }
+    ),
+    PASSWORD_FORGOT=Fields.object(properties={"email": Fields.string}),
+    PASSWORD_CONFIRM=Fields.object(
+        properties={"token": Fields.string, "password": Fields.string}
+    ),
     API_PROBLEM=Fields.object(
         properties={
             "type": Fields.string,
