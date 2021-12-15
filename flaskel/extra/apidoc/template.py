@@ -17,10 +17,16 @@ class ApiDocTemplate(RenderTemplateString):
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
         <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
         <title>{{page_title}}</title>
-        <script type="module" src="https://unpkg.com/rapidoc@{{rapidoc_version}}/dist/rapidoc-min.js">
+        <script type="module"
+            src="https://unpkg.com/rapidoc@{{rapidoc_version}}/dist/rapidoc-min.js">
         </script>
     </head>
-    <body><rapi-doc theme="{{rapidoc_theme}}" spec-url="{{spec_url}}"></rapi-doc></body>
+    <body>
+        <rapi-doc
+            theme="{{rapidoc_theme}}" spec-url="{{spec_url}}"
+            render-style="view" font-size="large"
+        ></rapi-doc>
+    </body>
 </html>"""
 
     def service(self, *_, **__):
@@ -29,7 +35,7 @@ class ApiDocTemplate(RenderTemplateString):
 
         proto = cap.config.PREFERRED_URL_SCHEME
         return dict(
-            rapidoc_version=cap.config.RAPIDOC_VERSION or "8.4.3",
+            rapidoc_version=cap.config.RAPIDOC_VERSION or "9",
             rapidoc_theme=cap.config.RAPIDOC_THEME or "dark",
             page_title=f"{cap.config.APP_NAME} - API DOCS",
             spec_url=flask.url_for(self.apispec_view, _external=True, _scheme=proto),
@@ -74,4 +80,5 @@ class ApiSpecTemplate(BaseView):
             TypeError,
         ) as exc:  # pragma: no cover
             cap.logger.exception(exc)
+
         return apispec
