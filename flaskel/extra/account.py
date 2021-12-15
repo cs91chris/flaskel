@@ -4,7 +4,7 @@ import typing as t
 import flask
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from flaskel import cap, ConfigProxy, httpcode, ObjectDict, HttpMethod
+from flaskel import cap, httpcode, ObjectDict, ConfigProxy, HttpMethod
 from flaskel.ext import builder
 from flaskel.utils import ExtProxy, misc, PayloadValidator
 from flaskel.views import BaseView
@@ -85,7 +85,7 @@ class AccountHandler:
 
     def prepare_user(self, data):
         self.__check_user_model()
-        return self.user_model(**data)
+        return self.user_model(**data)  # pylint: disable=not-callable
 
     def find_by_email(self, email):
         self.__check_user_model()
@@ -134,12 +134,15 @@ class AccountHandler:
             self.session.rollback()
             flask.abort(httpcode.INTERNAL_SERVER_ERROR)
 
+    def check_user(self, email, password):
+        user = self.find_by_email(email)
+        if not user.check_password(password):
+            flask.abort(httpcode.BAD_REQUEST)  # pragma: no cover
+        return user
+
     def password_reset(self):
         payload = self.get_payload(self.SCHEMAS.password_reset)
-        user = self.find_by_email(payload.email)
-        if not user.check_password(payload.old_password):
-            flask.abort(httpcode.UNAUTHORIZED)  # pragma: no cover
-
+        user = self.check_user(payload.email, payload.old_password)
         try:
             user.password = payload.new_password
             self.session.merge(user)
