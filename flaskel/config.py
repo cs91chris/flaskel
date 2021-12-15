@@ -90,13 +90,20 @@ CORS_EXPOSE_HEADERS = config(
 BASIC_AUTH_USERNAME = config("BASIC_AUTH_USERNAME", default="admin")
 BASIC_AUTH_PASSWORD = config("BASIC_AUTH_PASSWORD", default="admin")
 
+ADMIN_EMAIL = config("ADMIN_EMAIL", default="admin@mail.com")
+ADMIN_PASSWORD = config("ADMIN_PASSWORD", default="admin")
+
 MAIL_DEBUG = config("MAIL_DEBUG", default=DEBUG, cast=bool)
 MAIL_SERVER = config("MAIL_SERVER", default="sendria.local")
 MAIL_PORT = config("MAIL_PORT", default=62000, cast=int)
-ADMIN_EMAIL = config("ADMIN_EMAIL", default="admin@mail.com")
-ADMIN_PASSWORD = config("ADMIN_PASSWORD", default="admin")
+MAIL_USERNAME = config("MAIL_USERNAME", default="")
+MAIL_PASSWORD = config("MAIL_PASSWORD", default="")
+MAIL_USE_SSL = config("MAIL_USE_SSL", default=False, cast=bool)
+MAIL_USE_TLS = config("MAIL_USE_TLS", default=False, cast=bool)
 MAIL_DEFAULT_SENDER = config("MAIL_DEFAULT_SENDER", default="admin@mail.com")
 MAIL_DEFAULT_RECEIVER = config("MAIL_DEFAULT_RECEIVER", default="admin@mail.com")
+MAIL_RECIPIENT = config("MAIL_RECIPIENT", default="admin@mail.com")
+MAIL_TIMEOUT = config("MAIL_TIMEOUT", default=60, cast=int)
 
 PREFERRED_URL_SCHEME = config(
     "PREFERRED_URL_SCHEME", default="http" if FLASK_ENV == "development" else "https"
