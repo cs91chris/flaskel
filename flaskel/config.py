@@ -92,7 +92,7 @@ BASIC_AUTH_PASSWORD = config("BASIC_AUTH_PASSWORD", default="admin")
 
 MAIL_DEBUG = config("MAIL_DEBUG", default=DEBUG, cast=bool)
 MAIL_SERVER = config("MAIL_SERVER", default="sendria.local")
-MAIL_PORT = config("MAIL_SERVER", default=62000, cast=int)
+MAIL_PORT = config("MAIL_PORT", default=62000, cast=int)
 ADMIN_EMAIL = config("ADMIN_EMAIL", default="admin@mail.com")
 ADMIN_PASSWORD = config("ADMIN_PASSWORD", default="admin")
 MAIL_DEFAULT_SENDER = config("MAIL_DEFAULT_SENDER", default="admin@mail.com")
@@ -154,7 +154,7 @@ WSGI_WERKZEUG_PROFILER_ENABLED = config(
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = config("SQLALCHEMY_ECHO", default=TESTING, cast=bool)
 
-REQUEST_ID_HEADER = "X-Request-ID"
+REQUEST_ID_HEADER = "X-Request-Id"
 RATELIMIT_ENABLED = config("RATELIMIT_ENABLED", default=not DEBUG, cast=bool)
 RATELIMIT_HEADERS_ENABLED = config("RATELIMIT_HEADERS_ENABLED", default=True, cast=bool)
 RATELIMIT_IN_MEMORY_FALLBACK_ENABLED = config(
