@@ -1,68 +1,23 @@
-import os
-import shutil
 import sys
-from pathlib import Path
 
 import argon2
 import click
 
-from flaskel.ext.sqlalchemy.schema import db_to_schema
+from flaskel.ext.sqlalchemy.schema import db_to_schema, dump_model_ddl, DIALECTS
 from flaskel.ext.sqlalchemy.schema import model_to_uml
+from flaskel.scripts.init_app import init_app
 from flaskel.tester import cli as cli_tester
 
-
-@click.group()
-def cli():
-    pass
+cli = click.Group()
+main_password = click.Group(name="password", help="tools for password")
+main_database = click.Group(name="database", help="tools for database")
 
 
 @cli.command(name="init")
 @click.argument("name")
 def init(name):
     """Create skeleton for new application"""
-    from flaskel import scripts as flaskel_scripts  # pylint: disable=C0415
-
-    try:
-        source = os.path.join(flaskel_scripts.__path__[0], "skeleton")
-        shutil.copytree(source, ".", dirs_exist_ok=True)
-        shutil.move("skel", name)
-    except OSError as e:
-        print(f"Unable to create new app. Error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    def replace_in_file(file, *args):
-        _f = Path(file)
-        text = _f.read_text()
-        for sd in args:
-            text = text.replace(*sd)
-        _f.write_text(text)
-
-    init_file = Path(os.path.join(name, "__init__.py"))
-    init_file.write_text("from .version import *\n")
-
-    for f in (
-        "setup.py",
-        "Dockerfile",
-        "Makefile",
-        "pytest.ini",
-        ".coveragerc",
-        ".bumpversion.cfg",
-    ):
-        replace_in_file(f, ("{skeleton}", name))
-
-    replace_in_file(
-        os.path.join(name, "scripts", "cli.py"),
-        ("from ext", f"from {name}.ext"),
-        ("from views", f"from {name}.views"),
-    )
-    replace_in_file(
-        os.path.join(name, "scripts", "gunicorn.py"),
-        ("from . import config", f"from {name}.scripts import config"),
-    )
-    replace_in_file(
-        os.path.join("tests", "__init__.py"),
-        ("from scripts.cli", f"from {name}.scripts.cli"),
-    )
+    init_app(name)
 
 
 @cli.command(name="tests")
@@ -71,15 +26,14 @@ def run_tests():
     cli_tester.main()
 
 
-@cli.command(name="hash")
+@main_password.command(name="hash")
 @click.argument("password")
 def hash_password(password):
     """Print the argon2 hash of a given password"""
-    ph = argon2.PasswordHasher()
-    print(ph.hash(password))
+    print(argon2.PasswordHasher().hash(password))
 
 
-@cli.command(name="schema")
+@main_database.command(name="schema")
 @click.option("-m", "--from-models", help="module of sqlalchemy models")
 @click.option("-d", "--from-database", help="database url connection")
 @click.option("-f", "--file", required=True, help="output png filename")
@@ -98,6 +52,17 @@ def dump_schema(from_models, from_database, file):
         print(str(exc), file=sys.stderr)
         print("try to install 'graphviz'", file=sys.stderr)
 
+
+@main_database.command(name="ddl")
+@click.option("--dialect", default="sqlite", type=click.Choice(DIALECTS))
+@click.option("-m", "--metadata", help="metadata module", required=True)
+def dump_ddl(dialect, metadata):
+    """Dumps the create table statements for a given metadata"""
+    dump_model_ddl(dialect, metadata)
+
+
+cli.add_command(main_password)
+cli.add_command(main_database)
 
 if __name__ == "__main__":
     cli()
