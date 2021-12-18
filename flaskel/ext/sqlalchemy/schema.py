@@ -1,9 +1,11 @@
 import importlib
 
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, create_mock_engine  # type: ignore
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import class_mapper
 from sqlalchemy_schemadisplay import create_schema_graph, create_uml_graph
+
+from flaskel.utils.misc import import_from_module
 
 
 def model_to_uml(module):
@@ -40,3 +42,23 @@ def db_to_schema(url):
         rankdir="LR",
         concentrate=False,
     )
+
+
+DIALECTS = ["sqlite", "mysql", "oracle", "postgresql", "mssql"]
+
+
+def dump_model_ddl(dialect: str, metadata: str):
+    """
+
+    :param dialect:
+    :param metadata:
+    """
+    dialect = dialect or "sqlite"
+    _metadata = import_from_module(metadata)
+    engine = create_mock_engine(
+        f"{dialect}://",
+        executor=lambda sql, *_, **__: print(
+            str(sql.compile(dialect=engine.dialect)).replace("\n\n", ";")  # type: ignore
+        ),
+    )
+    _metadata.create_all(engine)
