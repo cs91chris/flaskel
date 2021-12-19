@@ -12,7 +12,7 @@ def replace_in_file(file, *args):
     _f.write_text(text)
 
 
-def init_app(name):
+def copy_skeleton(name):
     from flaskel import scripts as flaskel_scripts  # pylint: disable=C0415
 
     try:
@@ -23,20 +23,52 @@ def init_app(name):
         print(f"Unable to create new app. Error: {e}", file=sys.stderr)
         sys.exit(1)
 
+
+def init_app(name):
+    copy_skeleton(name)
+
     init_file = Path(os.path.join(name, "__init__.py"))
     init_file.write_text("from .version import *\n")
-
-    for f in (
-        "setup.py",
-        "Dockerfile",
-        "Makefile",
-        "pytest.ini",
-        ".coveragerc",
-        ".bumpversion.cfg",
-    ):
-        replace_in_file(f, ("{skeleton}", name))
+    service_dir = os.path.join("devops", "services", name)
+    shutil.move(os.path.join("devops", "services", "skel"), service_dir)
 
     for args in (
+        (
+            "setup.py",
+            ("{skeleton}", name),
+        ),
+        (
+            "Makefile",
+            ("{skeleton}", name),
+        ),
+        (
+            "pytest.ini",
+            ("{skeleton}", name),
+        ),
+        (
+            ".coveragerc",
+            ("{skeleton}", name),
+        ),
+        (
+            ".bumpversion.cfg",
+            ("{skeleton}", name),
+        ),
+        (
+            os.path.join("devops", "Dockerfile"),
+            ("{skeleton}", name),
+        ),
+        (
+            os.path.join("devops", "docker-compose.yaml"),
+            ("{skeleton}", name),
+        ),
+        (
+            os.path.join(service_dir, "settings.ini"),
+            ("{skeleton}", name),
+        ),
+        (
+            os.path.join(service_dir, "env"),
+            ("{skeleton}", name),
+        ),
         (
             os.path.join(name, "scripts", "cli.py"),
             ("from ext", f"from {name}.ext"),
