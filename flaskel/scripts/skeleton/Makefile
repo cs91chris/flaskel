@@ -1,20 +1,47 @@
-PACKAGES={skeleton}
+PACKAGE={skeleton}
+COMPOSE_PATH=devops
 REQ_PATH=requirements
-REQ=requirements
+IMAGES_PATH=dist/images
+SERVICE_PATH=devops/services
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
-CONFIRM=@( read -p "Are you sure?!? [Y/n]: " sure && case "$$sure" in [nN]) false;; *) true;; esac )
+
+define docker_save
+	docker save $(1) | gzip -c > ${IMAGES_PATH}/$(1).tar.gz
+endef
+
+define docker_publish
+	docker tag $(1) ${TTP_REGISTRY}$(1):${TTP_VERSION}
+	docker push ${TTP_REGISTRY}$(1):${TTP_VERSION}
+endef
+
+define bump_version
+	bumpversion -n $(1) --verbose
+	@( read -p "Are you sure?!? [Y/n]: " sure && case "$$sure" in [nN]) false;; *) true;; esac )
+	bumpversion $(1) --verbose
+endef
+
+define copy_requirements
+	cp ${REQ_PATH}/requirements.txt ${SERVICE_PATH}/${PACKAGE}/requirements.txt
+endef
+
+define req_compile
+	pip-compile $(2) ${COMPILE_OPTS} -o ${REQ_PATH}/$(1).txt ${REQ_PATH}/$(1).in
+endef
+
 
 all: clean lint clean-install-deps test
 
 compile-deps:
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+	$(call req_compile,requirements)
+	$(call req_compile,requirements-test)
+	$(call req_compile,requirements-dev)
+	$(call copy_requirements)
 
 upgrade-deps:
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+	$(call req_compile,requirements, --upgrade)
+	$(call req_compile,requirements-test, --upgrade)
+	$(call req_compile,requirements-dev, --upgrade)
+	$(call copy_requirements)
 
 install-deps:
 	pip install -r ${REQ_PATH}/requirements.txt
@@ -25,48 +52,46 @@ clean-install-deps:
 	pip-sync ${REQ_PATH}/requirements*.txt
 
 clean:
-	find . -name '__pycache__' -prune  -exec rm -rf {} \;
+	find . -name '*.pyc' -prune -exec rm -rf {} \;
+	find . -name '__pycache__' -prune -exec rm -rf {} \;
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
-	find . -name '*.pyc' -prune -exec rm -f {} \;
-	find ${PACKAGES} -name '*.c' -prune -exec rm -f {} \;
+	find ${PACKAGE} -name "*.c" -prune -exec rm -rf {} \;
+	find ${PACKAGE} -name ".mypy_cache" -prune -exec rm -rf {} \;
 
 lint:
-	@echo "---> running black ..."
-	black -t py38 ${PACKAGES} setup.py
-	@echo "---> running flake8 ..."
-	flake8 --config=.flake8 ${PACKAGES} setup.py
-	@echo "---> running pylint ..."
-	pylint --rcfile=.pylintrc ${PACKAGES} setup.py
-	@echo "---> running mypy ..."
-	mypy --install-types --non-interactive --no-strict-optional ${PACKAGES}
+	black -t py38 ${PACKAGE} tests setup.py
+	flake8 --config=.flake8 ${PACKAGE} tests setup.py
+	pylint --rcfile=.pylintrc ${PACKAGE} tests setup.py
+	mypy --install-types --non-interactive --no-strict-optional ${PACKAGE} tests
 
 test:
-	pytest --cov=${PACKAGES} --cov-report=html --cov-config .coveragerc tests
+	pytest --cov=${PACKAGE} --cov-report=html --cov-config .coveragerc tests
+
+build-images:
+	mkdir -p ${IMAGES_PATH}
+	docker-compose -p ${PACKAGE} -f ${COMPOSE_PATH}/docker-compose.yaml build
+	$(call docker_save,${PACKAGE})
+
+publish-images:
+	$(call docker_publish,${PACKAGE})
+
+start-all-services:
+	docker-compose -p ${PACKAGE} -f ${COMPOSE_PATH}/docker-compose.yaml up
 
 build-dist:
 	python setup.py sdist bdist_wheel
 
 bump-build:
-	bumpversion -n build --verbose
-	${CONFIRM}
-	bumpversion build --verbose
+	$(call bump_version,build)
 
-bump-beta:
-	bumpversion -n prerelease --verbose
-	${CONFIRM}
-	bumpversion prerelease --verbose
+bump-release:
+	$(call bump_version,release)
 
 bump-major:
-	bumpversion -n major --verbose
-	${CONFIRM}
-	bumpversion major --verbose
+	$(call bump_version,major)
 
 bump-minor:
-	bumpversion -n minor --verbose
-	${CONFIRM}
-	bumpversion minor --verbose
+	$(call bump_version,minor)
 
 bump-patch:
-	bumpversion -n patch --verbose
-	${CONFIRM}
-	bumpversion patch --verbose
+	$(call bump_version,patch)

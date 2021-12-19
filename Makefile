@@ -5,19 +5,30 @@ REQ_PATH=requirements
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
 CONFIRM=@( read -p "Are you sure?!? [Y/n]: " sure && case "$$sure" in [nN]) false;; *) true;; esac )
 
+define bump_version
+	bumpversion -n $(1) --verbose
+	@( read -p "Are you sure?!? [Y/n]: " sure && case "$$sure" in [nN]) false;; *) true;; esac )
+	bumpversion $(1) --verbose
+endef
+
+define req_compile
+	pip-compile $(2) ${COMPILE_OPTS} -o ${REQ_PATH}/$(1).txt ${REQ_PATH}/$(1).in
+endef
+
+
 all: clean lint clean-install-deps test
 
 compile-deps:
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-extra.txt ${REQ_PATH}/requirements-extra.in
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
-	pip-compile ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+	$(call req_compile,requirements)
+	$(call req_compile,requirements-extra)
+	$(call req_compile,requirements-test)
+	$(call req_compile,requirements-dev)
 
 upgrade-deps:
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements.txt ${REQ_PATH}/requirements.in
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-extra.txt ${REQ_PATH}/requirements-extra.in
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-test.txt ${REQ_PATH}/requirements-test.in
-	pip-compile --upgrade ${COMPILE_OPTS} -o ${REQ_PATH}/requirements-dev.txt ${REQ_PATH}/requirements-dev.in
+	$(call req_compile,requirements, --upgrade)
+	$(call req_compile,requirements-extra, --upgrade)
+	$(call req_compile,requirements-test, --upgrade)
+	$(call req_compile,requirements-dev, --upgrade)
 
 install-deps:
 	pip install -r ${REQ_PATH}/requirements.txt
@@ -29,18 +40,16 @@ clean-install-deps:
 	pip-sync ${REQ_PATH}/requirements*.txt
 
 clean:
+	find . -name '*.pyc' -prune -exec rm -rf {} \;
 	find . -name '__pycache__' -prune -exec rm -rf {} \;
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
-	find . -name '*.pyc' -prune -exec rm -f {} \;
+	find ${PACKAGE} -name "*.c" -prune -exec rm -rf {} \;
+	find ${PACKAGE} -name ".mypy_cache" -prune -exec rm -rf {} \;
 
 lint:
-	@echo "---> running black ..."
 	black -t py38 ${PACKAGE} tests setup.py
-	@echo "---> running flake8 ..."
 	flake8 --config=.flake8 ${PACKAGE} tests setup.py
-	@echo "---> running pylint ..."
 	pylint --rcfile=.pylintrc ${PACKAGE} tests setup.py
-	@echo "---> running mypy ..."
 	mypy --install-types --non-interactive --no-strict-optional ${PACKAGE}
 
 test:
@@ -50,26 +59,16 @@ build-dist:
 	python setup.py sdist bdist_wheel
 
 bump-build:
-	bumpversion -n build --verbose
-	${CONFIRM}
-	bumpversion build --verbose
+	$(call bump_version,build)
 
-bump-beta:
-	bumpversion -n prerelease --verbose
-	${CONFIRM}
-	bumpversion prerelease --verbose
+bump-release:
+	$(call bump_version,release)
 
 bump-major:
-	bumpversion -n major --verbose
-	${CONFIRM}
-	bumpversion major --verbose
+	$(call bump_version,major)
 
 bump-minor:
-	bumpversion -n minor --verbose
-	${CONFIRM}
-	bumpversion minor --verbose
+	$(call bump_version,minor)
 
 bump-patch:
-	bumpversion -n patch --verbose
-	${CONFIRM}
-	bumpversion patch --verbose
+	$(call bump_version,patch)
