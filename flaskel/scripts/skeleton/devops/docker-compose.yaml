@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  service-redis:
+    image: redis:6.2-alpine
+    networks:
+      - net-flaskel
+  service-database:
+    image: mariadb:10.6-focal
+    environment:
+      MARIADB_ROOT_PASSWORD: my-secret-pw
+    networks:
+      - net-flaskel
+  service-{skeleton}:
+    image: ${REGISTRY}{skeleton}:${APP_VERSION:-latest}
+    build:
+      context: ..
+      dockerfile: ./devops/Dockerfile
+      target: base-app
+    tty: true
+    stdin_open: true
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./services/catalog/env
+    networks:
+      - net-flaskel
+    depends_on:
+      - service-redis
+      - service-database
+
+networks:
+  net-flaskel:
+    driver: bridge

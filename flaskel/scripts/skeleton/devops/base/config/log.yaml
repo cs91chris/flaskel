@@ -1,0 +1,43 @@
+version: 1
+root:
+  level: ${ROOT_LOG_LEVEL:WARN}
+  handlers:
+    - ${ROOT_LOG_HANDLER:simple}
+formatters:
+  simple:
+    format: "[%(asctime)s][%(levelname)s]: %(message)s"
+  consoleDebug:
+    class: flask_logify.formatters.RequestFormatter
+    format: "[%(asctime)s][%(levelname)s][%(request_id)s][%(name)s:%(module)s.%(funcName)s:%(lineno)d]:
+      %(message)s"
+  console:
+    class: flask_logify.formatters.RequestFormatter
+    format: "[%(asctime)s][%(levelname)s][%(request_id)s]: %(message)s"
+  json:
+    class: flask_logify.formatters.RequestFormatter
+    format: '{"requestId":"%(request_id)s","level":"%(levelname)s","datetime":"%(asctime)s","message":%(message)s}'
+handlers:
+  simple:
+    class: logging.StreamHandler
+    formatter: simple
+    stream: ext://sys.stdout
+  console:
+    class: logging.StreamHandler
+    formatter: ${LOG_FORMATTER:console}
+    stream: ext://sys.stdout
+loggers:
+  flaskel:
+    propagate: false
+    level: ${LOG_LEVEL:INFO}
+    handlers:
+      - ${LOG_HANDLER:console}
+  flask-limiter:
+    propagate: false
+    level: DEBUG
+    handlers:
+      - ${LOG_HANDLER:console}
+  gunicorn:
+    propagate: false
+    level: ${LOG_LEVEL:INFO}
+    handlers:
+      - ${LOG_HANDLER:console}

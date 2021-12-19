@@ -1,0 +1,535 @@
+openapi: 3.0.1
+info:
+  title: API DOCS
+  version: '0.0.0'
+  description: HTTP APIs documentation
+servers:
+  - url: '{host}{context}'
+    variables:
+      context:
+        default: /
+      host:
+        default: 'http://api.flask.local:5000'
+        enum:
+          - 'http://api.flask.local:5000'
+paths:
+  '/token/access':
+    post:
+      summary: Access token
+      tags:
+        - Auth
+      parameters:
+        - $ref: '#/components/parameters/expires_access'
+        - $ref: '#/components/parameters/expires_refresh'
+        - $ref: '#/components/parameters/never_expire'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostAccessToken'
+      responses:
+        '200':
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessToken'
+          description: login eseguito con successo
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  '/token/refresh':
+    post:
+      summary: Refresh token
+      tags:
+        - Auth
+      security:
+        - token: [ ]
+      parameters:
+        - $ref: '#/components/parameters/expires_access'
+      responses:
+        '200':
+          description: refresh eseguito con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshToken'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  '/token/revoke':
+    post:
+      summary: Revoke token
+      tags:
+        - Auth
+      security:
+        - token: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRevokeToken'
+      responses:
+        '204':
+          description: logout eseguito con successo
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
+        '400':
+          $ref: '#/components/responses/400'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  /healthcheck:
+    get:
+      security:
+        - basicAuth: [ ]
+      responses:
+        '200':
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
+          content:
+            application/json:
+              schema:
+                type: object
+          description: platform is healthy
+        '401':
+          $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      summary: health check
+      tags:
+        - Monitoring
+  '/auth/device/register':
+    post:
+      summary: Device register token
+      tags:
+        - Account
+      security:
+        - token: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegister'
+      responses:
+        '204':
+          description: device registrato con successo
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/rateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/rateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/rateLimitReset'
+            X-RateLimit-Retry-After:
+              $ref: '#/components/headers/rateLimitRetryAfter'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        '502':
+          $ref: '#/components/responses/502'
+  /mobile/logger:
+    post:
+      summary: Log recording from the mobile app
+      tags:
+        - Monitoring
+      security:
+        - token: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                debug_info:
+                  type: string
+                device_info:
+                  type: string
+                  example: json string
+                payload:
+                  type: string
+                  example: json string
+                stacktrace:
+                  type: string
+      responses:
+        '204':
+          description: log registrato con successo
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+  /mobile/release:
+    get:
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/agent'
+      responses:
+        '200':
+          description: registered version
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+      summary: registered version
+      tags:
+        - Monitoring
+    delete:
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/agent'
+        - description: delete all version registered
+          in: query
+          name: all
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: new list of registered versions excluding the last one deleted
+        '204':
+          description: all versions have been deleted
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+      summary: delete the latest registered version or all
+      tags:
+        - Monitoring
+  /mobile/release/latest:
+    get:
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/agent'
+      responses:
+        '200':
+          description: latest registered release
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+      summary: latest registered release
+      tags:
+        - Monitoring
+  /mobile/release/{version}:
+    post:
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/agent'
+        - description: version to register
+          in: path
+          name: version
+          required: true
+          schema:
+            type: string
+        - description: determine if this version is critical or not
+          in: query
+          name: critical
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: version successfully registered
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+      summary: Register a release of the mobile app for monitoring critical updates
+      tags:
+        - Monitoring
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    token:
+      type: apiKey
+      in: header
+      name: Authorization
+  headers:
+    paginationCount:
+      description: numero elementi totali
+      schema:
+        type: integer
+    paginationNumPages:
+      description: numero totale delle pagine
+      schema:
+        type: integer
+    paginationPage:
+      description: pagina corrente
+      schema:
+        type: integer
+    paginationPageSize:
+      description: dimensione della pagina
+      schema:
+        type: integer
+    rateLimitReset:
+      description: TUTC seconds since epoch when the window will be reset
+      schema:
+        type: integer
+    rateLimitRemaining:
+      description: The number of requests remaining in the active window
+      schema:
+        type: integer
+    rateLimitLimit:
+      description: The total number of requests allowed for the active window
+      schema:
+        type: integer
+    rateLimitRetryAfter:
+      description: Seconds to retry after
+      schema:
+        type: integer
+  parameters:
+    page:
+      in: query
+      name: page
+      schema:
+        type: integer
+      description: numero pagina
+    page_size:
+      in: query
+      name: page_size
+      description: numero elementi per pagina
+      schema:
+        type: integer
+    related:
+      in: query
+      name: related
+      description: con dettaglio
+      schema:
+        type: boolean
+    expires_access:
+      in: query
+      name: expires_access
+      schema:
+        type: integer
+      description: espresso in secondi
+    expires_refresh:
+      in: query
+      name: expires_refresh
+      schema:
+        type: integer
+      description: espresso in secondi
+    never_expire:
+      in: query
+      name: never_expire
+      schema:
+        type: boolean
+      description: non fa scadere l'access token
+    agent:
+      description: os family
+      in: query
+      required: true
+      name: agent
+      schema:
+        type: string
+  responses:
+    '400':
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '401':
+      description: Not Autenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '402':
+      description: Server require payment
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '403':
+      description: 'Forbidden: insufficient privileges'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '404':
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '409':
+      description: 'Conflict: resource already exists'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '422':
+      description: 'Entity not processable: payload does not match the resource schema'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '429':
+      description: Too Many Requests
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/rateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/rateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/rateLimitReset'
+        X-RateLimit-Retry-After:
+          $ref: '#/components/headers/rateLimitRetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '502':
+      description: Bad Gateway
+      content:
+        text/html:
+          schema:
+            type: string
+            example:
+              <html></html>
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+    '503':
+      description: Service Unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiProblem'
+  schemas:
+    ApiProblem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        instance:
+          type: string
+        status:
+          type: integer
+        response:
+          type: object
+    PostRevokeToken:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+    PostAccessToken:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    AccessToken:
+      type: object
+      required:
+        - access_token
+        - refresh_token
+        - expires_in
+        - issued_at
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        issued_at:
+          type: integer
+        token_type:
+          type: string
+        scope:
+          type: string
+    RefreshToken:
+      type: object
+      required:
+        - access_token
+        - expires_in
+        - issued_at
+      properties:
+        access_token:
+          type: string
+        expires_in:
+          type: integer
+        issued_at:
+          type: integer
+        token_type:
+          type: string
+        scope:
+          type: string
+    DeviceRegister:
+      additionalProperties: false
+      type: object
+      properties:
+        token:
+          type: string
+          example: firebase token

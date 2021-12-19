@@ -111,4 +111,4 @@ migrations
 .secret.key
 test.py
 profiler.txt
-settings.ini
+/settings.ini
