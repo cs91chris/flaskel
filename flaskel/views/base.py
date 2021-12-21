@@ -54,6 +54,7 @@ class BaseView(View, ViewSupportMixin):
             if isinstance(u, dict):
                 url = u.pop("url")
                 app.add_url_rule(url, view_func=view, methods=cls.methods, **u)
+                u["url"] = url
             else:
                 app.add_url_rule(u, view_func=view, methods=cls.methods)
         return view
