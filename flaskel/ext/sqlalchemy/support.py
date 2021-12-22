@@ -4,7 +4,7 @@ import typing as t
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound as NoResultError
-from sqlalchemy.sql import text as execute_sql
+from sqlalchemy.sql import text as text_sql
 
 
 class SQLASupport:
@@ -101,16 +101,26 @@ class SQLASupport:
         return obj, False
 
     @staticmethod
-    def exec_from_file(db_uri: str, filename: str, echo: bool = False):
+    def exec_from_file(
+        url: str,
+        filename: str,
+        echo: bool = False,
+        separator: str = ";\n",
+        skip_line_prefixes: tuple = ("--",),
+    ):
         """
 
-        :param db_uri:
+        :param url:
         :param filename:
         :param echo:
+        :param separator:
+        :param skip_line_prefixes:
         """
-        engine = create_engine(db_uri, echo=echo)
+        engine = create_engine(url, echo=echo)
         with engine.connect() as conn, open(filename) as f:
-            for statement in f.read().split(";"):
-                # skip comment line
-                if not statement.startswith("--"):
-                    conn.execute(execute_sql(statement))
+            for statement in f.read().split(separator):
+                for skip_line in skip_line_prefixes:
+                    if statement.startswith(skip_line):
+                        break
+                else:
+                    conn.execute(text_sql(statement))
