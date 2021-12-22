@@ -92,13 +92,14 @@ class JSONSchema:
         if not e.path:
             return e.message or str(e)
 
-        # Find the object that is erroring, and replace it with the marker.
         for entry in list(e.path)[:-1]:
             json_object = json_object[entry]
 
-        orig, json_object[e.path[-1]] = json_object[e.path[-1]], cls.marker
+        if isinstance(json_object, dict):
+            orig, json_object[e.path[-1]] = json_object[e.path[-1]], cls.marker
+        else:
+            orig = json_object
 
-        # Pretty print the object and search for the marker.
         json_error = cls.dumper(json_object)
         err_line = None
 
