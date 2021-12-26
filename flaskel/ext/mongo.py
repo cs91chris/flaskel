@@ -1,6 +1,6 @@
 try:
     from flask_pymongo import PyMongo
-except (ModuleNotFoundError, ImportError):
+except ImportError:
     PyMongo = object
 
 from flaskel.utils.datastruct import ObjectDict

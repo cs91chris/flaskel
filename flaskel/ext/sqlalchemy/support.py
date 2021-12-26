@@ -1,7 +1,7 @@
 # based on https://github.com/enricobarzetti/sqlalchemy_get_or_create
 import typing as t
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, tuple_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound as NoResultError
 from sqlalchemy.sql import text as text_sql
@@ -99,6 +99,32 @@ class SQLASupport:
             self.session.flush()
 
         return obj, False
+
+    def bulk_load(self, records: t.Iterable, db_model):
+        primary_key = inspect(db_model).primary_key
+
+        def build_key(entity):
+            return tuple(
+                getattr(entity, primary_key_item.name)
+                for primary_key_item in primary_key
+            )
+
+        db_objects = []
+        db_objects_keys = []
+        for record in records:
+            db_object = db_model(**record)
+            db_objects.append(db_object)
+            db_objects_keys.append(build_key(db_object))
+
+        query = self.session.query(db_model).filter(
+            tuple_(*build_key(db_model)).in_(db_objects_keys)
+        )
+        query.delete(synchronize_session="fetch")
+        self.session.flush()
+
+        self.session.add_all(db_objects)
+        self.session.flush()
+        self.session.commit()
 
     @staticmethod
     def exec_from_file(

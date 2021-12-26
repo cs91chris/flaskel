@@ -2,12 +2,12 @@ try:
     from gevent import monkey
 
     monkey.patch_all()
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     try:
         from eventlet import monkey_patch
 
         monkey_patch()
-    except (ImportError, ModuleNotFoundError):
+    except ImportError:
         pass
 
 from typing import Dict

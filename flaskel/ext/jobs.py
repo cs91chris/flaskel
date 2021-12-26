@@ -9,7 +9,7 @@ try:
     from apscheduler.schedulers import SchedulerAlreadyRunningError
     from apscheduler.schedulers.blocking import BlockingScheduler
     from flask_apscheduler import APScheduler
-except (ModuleNotFoundError, ImportError):
+except ImportError:
     events = None
     SchedulerAlreadyRunningError = Exception
     BlockingScheduler = APScheduler = object

@@ -10,7 +10,7 @@ except ImportError:  # pragma: no cover
 try:
     from rejson import Client, Path
     from rejson.client import Pipeline as BasePipeline
-except (ImportError, ModuleNotFoundError):  # pragma: no cover
+except ImportError:  # pragma: no cover
     Client = Path = BasePipeline = object  # type: ignore
 
 

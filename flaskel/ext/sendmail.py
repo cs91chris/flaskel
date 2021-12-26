@@ -2,7 +2,7 @@ import socket
 
 try:
     from flask_mail import Mail, Message
-except (ModuleNotFoundError, ImportError):
+except ImportError:
     Mail = Message = object
 
 

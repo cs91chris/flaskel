@@ -1,3 +1,15 @@
+REQUEST_FORMATTER = "flask_logify.formatters.RequestFormatter"
+
+
+def handler(formatter, **kwargs):
+    return {
+        "class": "logging.StreamHandler",
+        "stream": "ext://sys.stderr",
+        "formatter": formatter,
+        **kwargs,
+    }
+
+
 LOGGING = dict(
     version=1,
     disable_existing_loggers=True,
@@ -5,7 +17,7 @@ LOGGING = dict(
     formatters={
         "simple": {"format": "[%(asctime)s][%(levelname)s]: %(message)s"},
         "consoleDebug": {
-            "class": "flask_logify.formatters.RequestFormatter",
+            "class": REQUEST_FORMATTER,
             "format": "[%(asctime)s]"
             "[%(levelname)s]"
             "[%(request_id)s]"
@@ -13,16 +25,16 @@ LOGGING = dict(
             "%(message)s",
         },
         "console": {
-            "class": "flask_logify.formatters.RequestFormatter",
+            "class": REQUEST_FORMATTER,
             "format": "[%(asctime)s][%(levelname)s][%(request_id)s]: %(message)s",
         },
         "syslog": {
-            "class": "flask_logify.formatters.RequestFormatter",
+            "class": REQUEST_FORMATTER,
             "format": "%(ident)s%(message)s",
         },
         "syslogNoRequest": {"format": "%(ident)s%(message)s"},
         "json": {
-            "class": "flask_logify.formatters.RequestFormatter",
+            "class": REQUEST_FORMATTER,
             "format": "{"
             '"requestId":"%(request_id)s",'
             '"level":"%(levelname)s",'
@@ -32,21 +44,9 @@ LOGGING = dict(
         },
     },
     handlers={
-        "simple": {
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-            "stream": "ext://sys.stderr",
-        },
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "console",
-            "stream": "ext://sys.stderr",
-        },
-        "consoleDebug": {
-            "class": "logging.StreamHandler",
-            "formatter": "consoleDebug",
-            "stream": "ext://sys.stderr",
-        },
+        "simple": handler("simple"),
+        "console": handler("console"),
+        "consoleDebug": handler("consoleDebug"),
         "syslog": {
             "class": "flask_logify.handlers.FlaskSysLogHandler",
             "address": ["localhost", 514],

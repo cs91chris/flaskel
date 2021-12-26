@@ -249,12 +249,6 @@ class AppBuilder:
             )
 
     def _set_linter_and_profiler(self):
-        if self._app.config["WSGI_WERKZEUG_LINT_ENABLED"]:
-            self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
-            self._app.logger.debug(
-                "Registered middleware: '%s'", LintMiddleware.__name__
-            )
-
         if self._app.config["WSGI_WERKZEUG_PROFILER_ENABLED"]:
             file = self._app.config["WSGI_WERKZEUG_PROFILER_FILE"]
             self._app.wsgi_app = ProfilerMiddleware(
@@ -262,9 +256,11 @@ class AppBuilder:
                 stream=open(file, "w") if file else sys.stdout,  # pylint: disable=R1732
                 restrictions=self._app.config["WSGI_WERKZEUG_PROFILER_RESTRICTION"],
             )
-            self._app.logger.debug(
-                "Registered middleware: '%s'", ProfilerMiddleware.__name__
-            )
+            self._app.logger.debug("Registered: '%s'", ProfilerMiddleware.__name__)
+
+        if self._app.config["WSGI_WERKZEUG_LINT_ENABLED"]:
+            self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
+            self._app.logger.debug("Registered: '%s'", LintMiddleware.__name__)
 
     def _dump_urls(self):
         class DumpUrls:

@@ -26,49 +26,22 @@ def copy_skeleton(name):
 
 def init_app(name):
     copy_skeleton(name)
-
+    placeholder = "{skeleton}"
     init_file = Path(os.path.join(name, "__init__.py"))
     init_file.write_text("from .version import *\n")
     service_dir = os.path.join("devops", "services", name)
     shutil.move(os.path.join("devops", "services", "skel"), service_dir)
 
     for args in (
-        (
-            "setup.py",
-            ("{skeleton}", name),
-        ),
-        (
-            "Makefile",
-            ("{skeleton}", name),
-        ),
-        (
-            "pytest.ini",
-            ("{skeleton}", name),
-        ),
-        (
-            ".coveragerc",
-            ("{skeleton}", name),
-        ),
-        (
-            ".bumpversion.cfg",
-            ("{skeleton}", name),
-        ),
-        (
-            os.path.join("devops", "Dockerfile"),
-            ("{skeleton}", name),
-        ),
-        (
-            os.path.join("devops", "docker-compose.yaml"),
-            ("{skeleton}", name),
-        ),
-        (
-            os.path.join(service_dir, "settings.ini"),
-            ("{skeleton}", name),
-        ),
-        (
-            os.path.join(service_dir, "env"),
-            ("{skeleton}", name),
-        ),
+        ("setup.py", (placeholder, name)),
+        ("Makefile", (placeholder, name)),
+        ("pytest.ini", (placeholder, name)),
+        (".coveragerc", (placeholder, name)),
+        (".bumpversion.cfg", (placeholder, name)),
+        (os.path.join("devops", "Dockerfile"), (placeholder, name)),
+        (os.path.join("devops", "docker-compose.yaml"), (placeholder, name)),
+        (os.path.join(service_dir, "settings.ini"), (placeholder, name)),
+        (os.path.join(service_dir, "env"), (placeholder, name)),
         (
             os.path.join(name, "scripts", "cli.py"),
             ("from ext", f"from {name}.ext"),

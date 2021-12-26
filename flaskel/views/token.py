@@ -1,16 +1,16 @@
 import flask
 import flask_jwt_extended
 
+from flaskel import httpcode, cap, HttpMethod
 from flaskel.ext import builder
 from flaskel.ext.auth import BaseTokenHandler
-from flaskel import httpcode, cap, HttpMethod
 from flaskel.utils import webargs
 from flaskel.views import BaseView
 
 
 class BaseTokenAuth(BaseView):
     jwt = flask_jwt_extended
-    handler: BaseTokenHandler = None
+    handler: BaseTokenHandler = BaseTokenHandler()
 
     default_view_name = "token_auth"
     methods = [

@@ -93,11 +93,11 @@ def health_glances(conf=None, **__):
 
     if resp.mem.percent > th_mem:
         resp.errors.append(f"high RAM usage: {resp.mem.percent}, threshold: {th_mem}")
-    if conf.SYSTEM_MEM_INCLUDE_SWAP:
-        if resp.memswap.percent > th_mem:
-            resp.errors.append(
-                f"high SWAP usage: {resp.memswap.percent}, threshold: {th_mem}"
-            )
+
+    if conf.SYSTEM_MEM_INCLUDE_SWAP and resp.memswap.percent > th_mem:
+        resp.errors.append(
+            f"high SWAP usage: {resp.memswap.percent}, threshold: {th_mem}"
+        )
 
     for f in resp.fs:
         if f.mnt_point in conf.SYSTEM_FS_MOUNT_POINTS and f.percent > th_fs:

@@ -1,34 +1,34 @@
 # pylint: disable=all
 class FakeLogger:
     def debug(self, *args, **kwargs):
-        pass
+        """do nothing"""
 
     def info(self, *args, **kwargs):
-        pass
+        """do nothing"""
 
     def warning(self, *args, **kwargs):
-        pass
+        """do nothing"""
 
     def error(self, *args, **kwargs):
-        pass
+        """do nothing"""
 
     def exception(self, *args, **kwargs):
-        pass
+        """do nothing"""
 
 
 # noinspection PyMethodMayBeStatic
 class DummyLogger:
-    def debug(self, *args, **kwargs):
+    def debug(self, *args, **__):
         print("DEBUG:", *args)
 
-    def info(self, *args, **kwargs):
+    def info(self, *args, **__):
         print("INFO:", *args)
 
-    def warning(self, *args, **kwargs):
+    def warning(self, *args, **__):
         print("WARNING:", *args)
 
-    def error(self, *args, **kwargs):
+    def error(self, *args, **__):
         print("ERROR:", *args)
 
-    def exception(self, exc, *args, **kwargs):
+    def exception(self, _, *args, **__):
         print("CRITICAL:", *args)

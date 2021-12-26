@@ -100,9 +100,9 @@ MAIL_USERNAME = config("MAIL_USERNAME", default="")
 MAIL_PASSWORD = config("MAIL_PASSWORD", default="")
 MAIL_USE_SSL = config("MAIL_USE_SSL", default=False, cast=bool)
 MAIL_USE_TLS = config("MAIL_USE_TLS", default=False, cast=bool)
-MAIL_DEFAULT_SENDER = config("MAIL_DEFAULT_SENDER", default="admin@mail.com")
-MAIL_DEFAULT_RECEIVER = config("MAIL_DEFAULT_RECEIVER", default="admin@mail.com")
-MAIL_RECIPIENT = config("MAIL_RECIPIENT", default="admin@mail.com")
+MAIL_DEFAULT_SENDER = config("MAIL_DEFAULT_SENDER", default=ADMIN_EMAIL)
+MAIL_DEFAULT_RECEIVER = config("MAIL_DEFAULT_RECEIVER", default=ADMIN_EMAIL)
+MAIL_RECIPIENT = config("MAIL_RECIPIENT", default=ADMIN_EMAIL)
 MAIL_TIMEOUT = config("MAIL_TIMEOUT", default=60, cast=int)
 
 PREFERRED_URL_SCHEME = config(

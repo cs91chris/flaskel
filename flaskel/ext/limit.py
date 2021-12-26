@@ -263,10 +263,13 @@ class FlaskIPBan:
 
         entry = self._ip_banned.get(ip)
         # check url block list if no existing entry or existing entry has expired
-        if not entry or (entry and (entry.count or 0) < cap.config.IPBAN_COUNT):
-            if self._test_blocked(url, ip=ip):
-                self.block([ip], url=url)
-                return True
+        if (
+            not entry
+            or (entry and (entry.count or 0) < cap.config.IPBAN_COUNT)
+            and self._test_blocked(url, ip=ip)
+        ):
+            self.block([ip], url=url)
+            return True
 
         if not timestamp or (timestamp and timestamp > datetime.now()):
             timestamp = datetime.now()

@@ -10,7 +10,7 @@ DefaultUrlsType = t.Tuple[t.Union[t.Dict[str, str], str], ...]
 
 
 class ViewSupportMixin:
-    default_view_name: str = None
+    default_view_name: str = ""
     default_urls: DefaultUrlsType = ()
 
     @staticmethod

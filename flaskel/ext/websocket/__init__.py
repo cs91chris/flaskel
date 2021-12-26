@@ -13,5 +13,5 @@ try:
         engineio_logger=IO_LOG_ENABLED,
         cors_allowed_origins=IO_CORS_ORIGINS,
     )
-except (ModuleNotFoundError, ImportError):
+except ImportError:
     socketio = None  # pylint: disable=invalid-name

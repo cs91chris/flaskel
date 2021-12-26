@@ -106,10 +106,6 @@ class JSONRPCView(BaseView):
             raise rpc.RPCMethodNotFound()
 
     def dispatch_request(self, *_, **__):
-        """
-
-        :return:
-        """
         tasks = []
         responses = []
 

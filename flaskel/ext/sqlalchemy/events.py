@@ -599,6 +599,16 @@ def _exception_handler(fn, context, exc, regexp):
         return dbe
 
 
+def _per_dialect_handler(context, per_dialect):
+    for exc in (context.sqlalchemy_exception, context.original_exception):
+        for super_ in exc.__class__.__mro__:
+            for fn, regexp in per_dialect.get(super_) or ():
+                handled = _exception_handler(fn, context, exc, regexp)
+                if handled:
+                    return handled
+    return None
+
+
 def handler(context):
     """
     Iterate through available filters and invoke those which match.
@@ -608,12 +618,9 @@ def handler(context):
     more specific exception class are attempted first.
     """
     for per_dialect in _dialect_registries(context.engine):
-        for exc in (context.sqlalchemy_exception, context.original_exception):
-            for super_ in exc.__class__.__mro__:
-                for fn, regexp in per_dialect.get(super_) or ():
-                    handled = _exception_handler(fn, context, exc, regexp)
-                    if handled:
-                        return handled
+        handled = _per_dialect_handler(context, per_dialect)
+        if handled:
+            return handled
     return None
 
 
@@ -624,12 +631,11 @@ def register_engine_events(engine):
     def rollback_savepoint(conn, name, context):
         _ = name, context
         exc_info = sys.exc_info()
-        if exc_info[1]:
+        if exc_info[1] and not conn.invalidated:
             # NOTE(zzzeek) accessing conn.info on an invalidated
             # connection causes it to reconnect, which we don't
             # want to do inside a rollback handler
-            if not conn.invalidated:
-                conn.info[ROLLBACK_CAUSE_KEY] = exc_info[1]
+            conn.info[ROLLBACK_CAUSE_KEY] = exc_info[1]
         # NOTE(zzzeek) this eliminates a reference cycle between tracebacks
         # that would occur in Python 3 only, which has been shown to occur if
         # this function were in fact part of the traceback.  That's not the

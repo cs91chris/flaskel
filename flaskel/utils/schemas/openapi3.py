@@ -1,3 +1,19 @@
+REGEX_OBJECT_KEY = "^[a-zA-Z0-9\\.\\-_]+$"
+
+
+class Definitions:
+    reference = "#/definitions/Reference"
+    schema = "#/definitions/Schema"
+    server = "#/definitions/Server"
+    external_documentation = "#/definitions/ExternalDocumentation"
+    response = "#/definitions/Response"
+    header = "#/definitions/Header"
+    parameter = "#/definitions/Parameter"
+    example = "#/definitions/Example"
+    mediatype = "#/definitions/MediaType"
+    example_xor_examples = "#/definitions/ExampleXORExamples"
+
+
 # pylint: disable=C0302
 SCHEMA = {
     "id": "https://spec.openapis.org/oas/3.0/schema/2019-04-02",
@@ -8,8 +24,8 @@ SCHEMA = {
     "properties": {
         "openapi": {"type": "string", "pattern": "^3\\.0\\.\\d(-.+)?$"},
         "info": {"$ref": "#/definitions/Info"},
-        "externalDocs": {"$ref": "#/definitions/ExternalDocumentation"},
-        "servers": {"type": "array", "items": {"$ref": "#/definitions/Server"}},
+        "externalDocs": {"$ref": Definitions.external_documentation},
+        "servers": {"type": "array", "items": {"$ref": Definitions.server}},
         "security": {
             "type": "array",
             "items": {"$ref": "#/definitions/SecurityRequirement"},
@@ -97,10 +113,10 @@ SCHEMA = {
                 "schemas": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Schema"},
-                                {"$ref": "#/definitions/Reference"},
+                                {"$ref": Definitions.schema},
+                                {"$ref": Definitions.reference},
                             ]
                         }
                     },
@@ -108,10 +124,10 @@ SCHEMA = {
                 "responses": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
-                                {"$ref": "#/definitions/Response"},
+                                {"$ref": Definitions.reference},
+                                {"$ref": Definitions.response},
                             ]
                         }
                     },
@@ -119,10 +135,10 @@ SCHEMA = {
                 "parameters": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
-                                {"$ref": "#/definitions/Parameter"},
+                                {"$ref": Definitions.reference},
+                                {"$ref": Definitions.parameter},
                             ]
                         }
                     },
@@ -130,10 +146,10 @@ SCHEMA = {
                 "examples": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
-                                {"$ref": "#/definitions/Example"},
+                                {"$ref": Definitions.reference},
+                                {"$ref": Definitions.example},
                             ]
                         }
                     },
@@ -141,9 +157,9 @@ SCHEMA = {
                 "requestBodies": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
+                                {"$ref": Definitions.reference},
                                 {"$ref": "#/definitions/RequestBody"},
                             ]
                         }
@@ -152,10 +168,10 @@ SCHEMA = {
                 "headers": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
-                                {"$ref": "#/definitions/Header"},
+                                {"$ref": Definitions.reference},
+                                {"$ref": Definitions.header},
                             ]
                         }
                     },
@@ -163,9 +179,9 @@ SCHEMA = {
                 "securitySchemes": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
+                                {"$ref": Definitions.reference},
                                 {"$ref": "#/definitions/SecurityScheme"},
                             ]
                         }
@@ -174,9 +190,9 @@ SCHEMA = {
                 "links": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
+                                {"$ref": Definitions.reference},
                                 {"$ref": "#/definitions/Link"},
                             ]
                         }
@@ -185,9 +201,9 @@ SCHEMA = {
                 "callbacks": {
                     "type": "object",
                     "patternProperties": {
-                        "^[a-zA-Z0-9\\.\\-_]+$": {
+                        REGEX_OBJECT_KEY: {
                             "oneOf": [
-                                {"$ref": "#/definitions/Reference"},
+                                {"$ref": Definitions.reference},
                                 {"$ref": "#/definitions/Callback"},
                             ]
                         }
@@ -243,16 +259,16 @@ SCHEMA = {
                 },
                 "not": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Schema"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.schema},
+                        {"$ref": Definitions.reference},
                     ]
                 },
                 "allOf": {
                     "type": "array",
                     "items": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Schema"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.schema},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
@@ -260,8 +276,8 @@ SCHEMA = {
                     "type": "array",
                     "items": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Schema"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.schema},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
@@ -269,30 +285,30 @@ SCHEMA = {
                     "type": "array",
                     "items": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Schema"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.schema},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
                 "items": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Schema"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.schema},
+                        {"$ref": Definitions.reference},
                     ]
                 },
                 "properties": {
                     "type": "object",
                     "additionalProperties": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Schema"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.schema},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
                 "additionalProperties": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Schema"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.schema},
+                        {"$ref": Definitions.reference},
                         {"type": "boolean"},
                     ],
                     "default": True,
@@ -305,7 +321,7 @@ SCHEMA = {
                 "readOnly": {"type": "boolean", "default": False},
                 "writeOnly": {"type": "boolean", "default": False},
                 "example": {},
-                "externalDocs": {"$ref": "#/definitions/ExternalDocumentation"},
+                "externalDocs": {"$ref": Definitions.external_documentation},
                 "deprecated": {"type": "boolean", "default": False},
                 "xml": {"$ref": "#/definitions/XML"},
             },
@@ -344,21 +360,21 @@ SCHEMA = {
                     "type": "object",
                     "additionalProperties": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Header"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.header},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
                 "content": {
                     "type": "object",
-                    "additionalProperties": {"$ref": "#/definitions/MediaType"},
+                    "additionalProperties": {"$ref": Definitions.mediatype},
                 },
                 "links": {
                     "type": "object",
                     "additionalProperties": {
                         "oneOf": [
                             {"$ref": "#/definitions/Link"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
@@ -371,8 +387,8 @@ SCHEMA = {
             "properties": {
                 "schema": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Schema"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.schema},
+                        {"$ref": Definitions.reference},
                     ]
                 },
                 "example": {},
@@ -380,8 +396,8 @@ SCHEMA = {
                     "type": "object",
                     "additionalProperties": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Example"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.example},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
@@ -392,7 +408,7 @@ SCHEMA = {
             },
             "patternProperties": {"^x-": {}},
             "additionalProperties": False,
-            "allOf": [{"$ref": "#/definitions/ExampleXORExamples"}],
+            "allOf": [{"$ref": Definitions.example_xor_examples}],
         },
         "Example": {
             "type": "object",
@@ -417,13 +433,13 @@ SCHEMA = {
                 "allowReserved": {"type": "boolean", "default": False},
                 "schema": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Schema"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.schema},
+                        {"$ref": Definitions.reference},
                     ]
                 },
                 "content": {
                     "type": "object",
-                    "additionalProperties": {"$ref": "#/definitions/MediaType"},
+                    "additionalProperties": {"$ref": Definitions.mediatype},
                     "minProperties": 1,
                     "maxProperties": 1,
                 },
@@ -432,8 +448,8 @@ SCHEMA = {
                     "type": "object",
                     "additionalProperties": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Example"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.example},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
@@ -441,7 +457,7 @@ SCHEMA = {
             "patternProperties": {"^x-": {}},
             "additionalProperties": False,
             "allOf": [
-                {"$ref": "#/definitions/ExampleXORExamples"},
+                {"$ref": Definitions.example_xor_examples},
                 {"$ref": "#/definitions/SchemaXORContent"},
             ],
         },
@@ -459,13 +475,13 @@ SCHEMA = {
                 "$ref": {"type": "string"},
                 "summary": {"type": "string"},
                 "description": {"type": "string"},
-                "servers": {"type": "array", "items": {"$ref": "#/definitions/Server"}},
+                "servers": {"type": "array", "items": {"$ref": Definitions.server}},
                 "parameters": {
                     "type": "array",
                     "items": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Parameter"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.parameter},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                     "uniqueItems": True,
@@ -486,14 +502,14 @@ SCHEMA = {
                 "tags": {"type": "array", "items": {"type": "string"}},
                 "summary": {"type": "string"},
                 "description": {"type": "string"},
-                "externalDocs": {"$ref": "#/definitions/ExternalDocumentation"},
+                "externalDocs": {"$ref": Definitions.external_documentation},
                 "operationId": {"type": "string"},
                 "parameters": {
                     "type": "array",
                     "items": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Parameter"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.parameter},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                     "uniqueItems": True,
@@ -501,7 +517,7 @@ SCHEMA = {
                 "requestBody": {
                     "oneOf": [
                         {"$ref": "#/definitions/RequestBody"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.reference},
                     ]
                 },
                 "responses": {"$ref": "#/definitions/Responses"},
@@ -510,7 +526,7 @@ SCHEMA = {
                     "additionalProperties": {
                         "oneOf": [
                             {"$ref": "#/definitions/Callback"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
@@ -519,7 +535,7 @@ SCHEMA = {
                     "type": "array",
                     "items": {"$ref": "#/definitions/SecurityRequirement"},
                 },
-                "servers": {"type": "array", "items": {"$ref": "#/definitions/Server"}},
+                "servers": {"type": "array", "items": {"$ref": Definitions.server}},
             },
             "patternProperties": {"^x-": {}},
             "additionalProperties": False,
@@ -529,16 +545,16 @@ SCHEMA = {
             "properties": {
                 "default": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Response"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.response},
+                        {"$ref": Definitions.reference},
                     ]
                 }
             },
             "patternProperties": {
                 "^[1-5](?:\\d{2}|XX)$": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Response"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.response},
+                        {"$ref": Definitions.reference},
                     ]
                 },
                 "^x-": {},
@@ -556,7 +572,7 @@ SCHEMA = {
             "properties": {
                 "name": {"type": "string"},
                 "description": {"type": "string"},
-                "externalDocs": {"$ref": "#/definitions/ExternalDocumentation"},
+                "externalDocs": {"$ref": Definitions.external_documentation},
             },
             "patternProperties": {"^x-": {}},
             "additionalProperties": False,
@@ -607,13 +623,13 @@ SCHEMA = {
                 "allowReserved": {"type": "boolean", "default": False},
                 "schema": {
                     "oneOf": [
-                        {"$ref": "#/definitions/Schema"},
-                        {"$ref": "#/definitions/Reference"},
+                        {"$ref": Definitions.schema},
+                        {"$ref": Definitions.reference},
                     ]
                 },
                 "content": {
                     "type": "object",
-                    "additionalProperties": {"$ref": "#/definitions/MediaType"},
+                    "additionalProperties": {"$ref": Definitions.mediatype},
                     "minProperties": 1,
                     "maxProperties": 1,
                 },
@@ -622,8 +638,8 @@ SCHEMA = {
                     "type": "object",
                     "additionalProperties": {
                         "oneOf": [
-                            {"$ref": "#/definitions/Example"},
-                            {"$ref": "#/definitions/Reference"},
+                            {"$ref": Definitions.example},
+                            {"$ref": Definitions.reference},
                         ]
                     },
                 },
@@ -632,7 +648,7 @@ SCHEMA = {
             "additionalProperties": False,
             "required": ["name", "in"],
             "allOf": [
-                {"$ref": "#/definitions/ExampleXORExamples"},
+                {"$ref": Definitions.example_xor_examples},
                 {"$ref": "#/definitions/SchemaXORContent"},
                 {"$ref": "#/definitions/ParameterLocation"},
             ],
@@ -690,7 +706,7 @@ SCHEMA = {
                 "description": {"type": "string"},
                 "content": {
                     "type": "object",
-                    "additionalProperties": {"$ref": "#/definitions/MediaType"},
+                    "additionalProperties": {"$ref": Definitions.mediatype},
                 },
                 "required": {"type": "boolean", "default": False},
             },
@@ -840,7 +856,7 @@ SCHEMA = {
                 "parameters": {"type": "object", "additionalProperties": {}},
                 "requestBody": {},
                 "description": {"type": "string"},
-                "server": {"$ref": "#/definitions/Server"},
+                "server": {"$ref": Definitions.server},
             },
             "patternProperties": {"^x-": {}},
             "additionalProperties": False,
@@ -860,7 +876,7 @@ SCHEMA = {
                 "contentType": {"type": "string"},
                 "headers": {
                     "type": "object",
-                    "additionalProperties": {"$ref": "#/definitions/Header"},
+                    "additionalProperties": {"$ref": Definitions.header},
                 },
                 "style": {
                     "type": "string",
@@ -873,3 +889,9 @@ SCHEMA = {
         },
     },
 }
+
+
+if __name__ == "__main__":
+    import json
+
+    print(json.dumps(SCHEMA))

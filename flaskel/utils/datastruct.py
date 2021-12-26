@@ -19,9 +19,7 @@ class ConfigProxy:
         return obj
 
     def __call__(self, item=None, **kwargs):
-        if item is None:
-            return self._proxy()
-        return self.__getattr__(item)
+        return self.__getitem__(item)
 
     def __getitem__(self, item):
         if item is None:
