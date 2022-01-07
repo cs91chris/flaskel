@@ -37,7 +37,7 @@ class APJobs(APScheduler):
 
         try:
             super().init_app(app)
-        except SchedulerAlreadyRunningError as exc:
+        except SchedulerAlreadyRunningError as exc:  # pylint: disable=broad-except
             app.logger.exception(exc)
             return
 

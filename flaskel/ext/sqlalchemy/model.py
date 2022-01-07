@@ -1,3 +1,5 @@
+import typing as t
+
 from flask_sqlalchemy import Model
 
 from flaskel.utils.datastruct import ObjectDict
@@ -6,18 +8,15 @@ from flaskel.utils.datastruct import ObjectDict
 class SQLAModel(Model):
     __table__ = None
 
-    def columns(self):
-        # noinspection PyUnresolvedReferences
-        return self.__table__.columns
+    def columns(self) -> t.List[str]:
+        if self.__table__ is not None:
+            return list(self.__table__.columns.keys())
+        return []
 
     @classmethod
-    def get_one(cls, *args, raise_not_found=True, to_dict=True, **kwargs):
-        """
-
-        :param raise_not_found:
-        :param to_dict:
-        :return:
-        """
+    def get_one(
+        cls, *args, raise_not_found: bool = True, to_dict: bool = True, **kwargs
+    ):
         res = cls.query.filter(*args).filter_by(**kwargs)
 
         if raise_not_found:
@@ -38,7 +37,7 @@ class SQLAModel(Model):
         return []
 
     @classmethod
-    def query_collection(cls, *_, params=None, **kwargs):
+    def query_collection(cls, *_, params: t.Optional[dict] = None, **kwargs):
         filters = cls.prepare_collection_filters(params or {})
         return cls.query.filter(*filters).filter_by(**kwargs)
 
@@ -46,28 +45,18 @@ class SQLAModel(Model):
     def get_list(
         cls,
         *args,
-        to_dict=True,
-        restricted=False,
-        order_by=None,
-        page=None,
-        page_size=None,
-        max_per_page=None,
+        to_dict: bool = True,
+        restricted: bool = False,
+        order_by: t.Optional[t.Tuple] = None,
+        page: t.Optional[int] = None,
+        page_size: t.Optional[int] = None,
+        max_per_page: t.Optional[int] = None,
         **kwargs,
     ):
-        """
-
-        :param to_dict:
-        :param restricted:
-        :param order_by:
-        :param page:
-        :param page_size:
-        :param max_per_page:
-        :return:
-        """
         q = cls.query_collection(*args, **kwargs)
 
         if order_by is not None:
-            q = q.order_by(order_by)
+            q = q.order_by(*order_by)
 
         if page or page_size:
             q = q.paginate(page, page_size, False, max_per_page)
@@ -81,12 +70,7 @@ class SQLAModel(Model):
             return (r.to_dict(restricted) for r in res)
         return res
 
-    def update(self, attributes):
-        """
-
-        :param attributes:
-        :return:
-        """
+    def update(self, attributes: dict):
         for attr, val in attributes.items():
             if attr in self.columns():
                 setattr(self, attr, val)
@@ -95,12 +79,8 @@ class SQLAModel(Model):
 
 
 class DictableMixin:
-    def to_dict(self, restricted=False):  # pylint: disable=W0613
-        """
-
-        :param restricted:
-        :return:
-        """
+    def to_dict(self, restricted: bool = False) -> dict:
+        _ = restricted
         # noinspection PyUnresolvedReferences
-        columns = self.columns().keys()
-        return ObjectDict(**{col: getattr(self, col, None) for col in columns})
+        cols = self.columns()  # type: ignore
+        return ObjectDict(**{c: getattr(self, c, None) for c in cols})

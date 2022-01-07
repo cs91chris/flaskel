@@ -100,10 +100,15 @@ class SQLASupport:
 
         return obj, False
 
-    def bulk_load(self, records: t.Iterable, db_model):
+    def bulk_insert(self, records: t.Iterable):
+        self.session.add_all(records)
+        self.session.flush()
+        self.session.commit()
+
+    def bulk_upsert(self, records: t.Iterable, db_model):
         primary_key = inspect(db_model).primary_key
 
-        def build_key(entity):
+        def build_key(entity) -> t.Tuple:
             return tuple(
                 getattr(entity, primary_key_item.name)
                 for primary_key_item in primary_key
@@ -121,10 +126,7 @@ class SQLASupport:
         )
         query.delete(synchronize_session="fetch")
         self.session.flush()
-
-        self.session.add_all(db_objects)
-        self.session.flush()
-        self.session.commit()
+        self.bulk_insert(db_objects)
 
     @staticmethod
     def exec_from_file(

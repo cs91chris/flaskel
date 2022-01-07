@@ -14,27 +14,18 @@ else:
     from sqlalchemy.ext.hybrid import hybrid_property
 
 
-class StandardMixin:
+class BaseMixin:
     def __init__(self, *args, **kwargs):
-        """
+        """this is here only to remove pycharm warnings"""
 
-        :param args:
-        :param kwargs:
-        """
 
+class StandardMixin(BaseMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     created_at = db.Column(db.DateTime, server_default=func.now())
     updated_at = db.Column(db.DateTime, onupdate=func.now())
 
 
-class CatalogMixin:
-    def __init__(self, *args, **kwargs):
-        """
-
-        :param args:
-        :param kwargs:
-        """
-
+class CatalogMixin(BaseMixin):
     @declared_attr
     def __table_args__(self):
         return (db.UniqueConstraint("label", "type_id"),)
@@ -74,15 +65,8 @@ class CatalogXMixin(CatalogMixin):
         return super().to_dict(code=self.code, orderId=self.order_id, **kwargs)
 
 
-class LoaderMixin:
+class LoaderMixin(BaseMixin):
     values = ()
-
-    def __init__(self, *args, **kwargs):
-        """
-
-        :param args:
-        :param kwargs:
-        """
 
     @classmethod
     def load_values(cls, *_, **__):

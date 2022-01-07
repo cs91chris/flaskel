@@ -87,12 +87,7 @@ class JSONRPCView(BaseView):
 
         return payload
 
-    def _get_action(self, method: str):
-        """
-
-        :param method:
-        :return:
-        """
+    def _get_action(self, method: str) -> t.Callable:
         m = method.split(self.separator)
         if len(m) > 1:
             op, action = m[0], self.separator.join(m[1:])
@@ -157,23 +152,14 @@ class JSONRPCView(BaseView):
 
     @classmethod
     def load_from_object(cls, obj):
-        """
-
-        :param obj:
-        """
         for name, member in inspect.getmembers(obj, predicate=inspect.isroutine):
             if not name.startswith("_"):
                 cls.method(obj.__class__.__name__, name)(member)
 
     @classmethod
-    def method(cls, name=None, operation=None):  # pylint: disable=W0613
-        """
-
-        :param name:
-        :param operation:
-        :return:
-        """
-
+    def method(
+        cls, name: t.Optional[str] = None, operation=None
+    ):  # pylint: disable=W0613
         def _method(func):
             nonlocal name
             name = name or func.__name__
@@ -191,6 +177,6 @@ class JSONRPCView(BaseView):
         return _method
 
     @classmethod
-    def register(cls, app, name=None, urls=(), **kwargs):
+    def register(cls, app, name: t.Optional[str] = None, urls=(), **kwargs):
         kwargs.setdefault("operations", cls.operations)
         return super().register(app, name, urls, **kwargs)
