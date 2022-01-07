@@ -90,7 +90,7 @@ class AppBuilder:
     def _generate_secret_key(self, secret_file, key_length):
         secret_key = misc.random_string(key_length)
 
-        with open(secret_file, "w") as f:
+        with open(secret_file, "w", encoding="utf-8") as f:
             f.write(secret_key)
             abs_file = os.path.abspath(secret_file)
             self._app.logger.warning(
@@ -102,7 +102,7 @@ class AppBuilder:
         if not os.path.isfile(secret_file):
             return None
 
-        with open(secret_file, "r") as f:
+        with open(secret_file, "r", encoding="utf-8") as f:
             secret_key = f.read()
             self._app.logger.info("load secret key from: %s", secret_file)
         return secret_key
@@ -253,7 +253,8 @@ class AppBuilder:
             file = self._app.config["WSGI_WERKZEUG_PROFILER_FILE"]
             self._app.wsgi_app = ProfilerMiddleware(
                 self._app.wsgi_app,
-                stream=open(file, "w") if file else sys.stdout,  # pylint: disable=R1732
+                # pylint: disable=consider-using-with
+                stream=open(file, "w", encoding="utf-8") if file else sys.stdout,
                 restrictions=self._app.config["WSGI_WERKZEUG_PROFILER_RESTRICTION"],
             )
             self._app.logger.debug("Registered: '%s'", ProfilerMiddleware.__name__)
@@ -271,6 +272,7 @@ class AppBuilder:
                 output = []
                 for rule in self._rules:
                     methods = ",".join(rule.methods)
+                    # pylint: disable=consider-using-f-string
                     output.append(
                         "{:30s} {:40s} {}".format(rule.endpoint, methods, rule)
                     )

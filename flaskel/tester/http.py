@@ -119,7 +119,7 @@ class TestHttpCall(FlaskelHTTPDumper, JSONValidatorMixin, RegexMixin):
         """
         url = url or self.endpoint
         if not url.startswith("http"):
-            url = "{}{}".format(self.endpoint, url)
+            url = f"{self.endpoint}{url}"
 
         self.set_auth(kwargs.pop("auth", None))
         if self.auth is not None:
@@ -149,7 +149,7 @@ class TestHttpApi(TestHttpCall):
             ):
                 return self.response.get_json()
         except json.decoder.JSONDecodeError as exc:
-            assert False, "Test that json is valid failed, got: {}".format(exc)
+            assert False, f"Test that json is valid failed, got: {exc}"
         return None
 
     def assert_response(self, **kwargs):

@@ -145,7 +145,7 @@ class SQLASupport:
         :param skip_line_prefixes:
         """
         engine = create_engine(url, echo=echo)
-        with engine.connect() as conn, open(filename) as f:
+        with engine.connect() as conn, open(filename, encoding="utf-8") as f:
             for statement in f.read().split(separator):
                 for skip_line in skip_line_prefixes:
                     if statement.startswith(skip_line):

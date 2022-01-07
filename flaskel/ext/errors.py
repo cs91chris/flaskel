@@ -11,7 +11,7 @@ jwt_errors = (JWTExtendedException, PyJWTError)
 class ErrorNormalizer(DefaultNormalizer):
     def normalize(self, ex, *_, **__):
         if isinstance(ex, jwt_errors):
-            response = dict()
+            response = {}
             if cap.debug:
                 response["message"] = str(ex)
                 response["exception"] = ex.__class__.__name__

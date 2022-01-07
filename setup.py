@@ -107,7 +107,7 @@ def ext_paths(root_dir, exclude=()):
 
 
 def read(file):
-    with open(os.path.join(BASE_PATH, file)) as f:
+    with open(os.path.join(BASE_PATH, file), encoding="utf-8") as f:
         return f.read()
 
 

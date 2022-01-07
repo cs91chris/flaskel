@@ -39,8 +39,7 @@ class PaymentHandler:
         self._stripe.log = "debug" if app.config.STRIPE_DEBUG else "info"
         self._stripe.set_app_info(name or app.config.APP_NAME, **kwargs)
 
-        if not hasattr(app, "extensions"):
-            app.extensions = dict()  # pragma: no cover
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["stripe"] = self
 
     def create_payment_intent(self, amount, currency=None, **kwargs):

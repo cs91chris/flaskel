@@ -6,10 +6,10 @@ from pathlib import Path
 
 def replace_in_file(file, *args):
     _f = Path(file)
-    text = _f.read_text()
+    text = _f.read_text(encoding="utf-8")
     for sd in args:
         text = text.replace(*sd)
-    _f.write_text(text)
+    _f.write_text(text, encoding="utf-8")
 
 
 def copy_skeleton(name):
@@ -28,7 +28,7 @@ def init_app(name):
     copy_skeleton(name)
     placeholder = "{skeleton}"
     init_file = Path(os.path.join(name, "__init__.py"))
-    init_file.write_text("from .version import *\n")
+    init_file.write_text("from .version import *\n", encoding="utf-8")
     service_dir = os.path.join("devops", "services", name)
     shutil.move(os.path.join("devops", "services", "skel"), service_dir)
 

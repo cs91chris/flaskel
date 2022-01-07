@@ -14,4 +14,4 @@ def pytest_configure(config):
     :param config:
     """
     for k, v in MARKERS.items():
-        config.addinivalue_line("markers", "{}: {}".format(k, v["description"]))
+        config.addinivalue_line("markers", f"{k}: {v['description']}")

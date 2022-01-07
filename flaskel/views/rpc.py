@@ -129,7 +129,7 @@ class JSONRPCView(BaseView):
                     resp.result = action(**(d.get("params") or {}))
             except rpc.RPCError as ex:
                 resp.error = ex.as_dict()
-            except Exception as ex:  # pylint: disable=W0703
+            except Exception as ex:  # pylint: disable=broad-except
                 cap.logger.exception(ex)
                 mess = str(ex) if cap.debug is True else None
                 resp.error = rpc.RPCInternalError(message=mess).as_dict()

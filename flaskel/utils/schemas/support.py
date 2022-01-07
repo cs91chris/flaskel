@@ -39,7 +39,7 @@ class JSONSchema:
         if file.startswith("file://"):
             file = file[7:]
 
-        with open(file) as f:
+        with open(file, encoding="utf-8") as f:
             return cls.loader(f.read())
 
     @classmethod
@@ -116,6 +116,7 @@ class JSONSchema:
         json_error = cls.dumper(json_object)
 
         for lineno, text in enumerate(io.StringIO(json_error)):
+            # pylint: disable=consider-using-f-string
             line_text = "{:4}: {}".format(
                 lineno + 1, ">" * 3 if lineno == err_line else " " * 3
             )

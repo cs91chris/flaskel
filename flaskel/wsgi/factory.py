@@ -51,11 +51,11 @@ class WSGIFactory:
         :return:
         """
         if name not in cls.WSGI_SERVERS:
-            raise ValueError("unable to find wsgi server: '{}'".format(name))
+            raise ValueError(f"unable to find wsgi server: '{name}'")
 
         wsgi_class = cls.WSGI_SERVERS.get(name)
 
         if wsgi_class is None:
-            raise ImportError("You must install '{}' dependencies".format(name))
+            raise ImportError(f"You must install '{name}' dependencies")
 
         return wsgi_class
