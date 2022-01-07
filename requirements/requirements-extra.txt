@@ -9,7 +9,7 @@ backports.zoneinfo==0.2.1  # via pytz-deprecation-shim, tzlocal
 bidict==0.21.4            # via python-socketio
 blinker==1.4              # via flask-mail
 certifi==2021.10.8        # via -c requirements/requirements.txt, requests
-charset-normalizer==2.0.9  # via -c requirements/requirements.txt, requests
+charset-normalizer==2.0.10  # via -c requirements/requirements.txt, requests
 click==8.0.3              # via -c requirements/requirements.txt, flask
 flask-apscheduler==1.12.3  # via -r requirements/requirements-extra.in
 flask-mail==0.9.1         # via -r requirements/requirements-extra.in
@@ -34,12 +34,12 @@ pytz-deprecation-shim==0.1.0.post0  # via tzlocal
 pytz==2021.3              # via -c requirements/requirements.txt, apscheduler
 redis==3.5.3              # via -r requirements/requirements-extra.in, rejson
 rejson==0.5.6             # via -r requirements/requirements-extra.in
-requests==2.26.0          # via -c requirements/requirements.txt, pyfcm, stripe
+requests==2.27.1          # via -c requirements/requirements.txt, pyfcm, stripe
 six==1.16.0               # via -c requirements/requirements.txt, apscheduler, python-dateutil, rejson
-stripe==2.63.0            # via -r requirements/requirements-extra.in
+stripe==2.64.0            # via -r requirements/requirements-extra.in
 tzdata==2021.5            # via pytz-deprecation-shim
 tzlocal==4.1              # via apscheduler
-urllib3==1.26.7           # via -c requirements/requirements.txt, pyfcm, requests
+urllib3==1.26.8           # via -c requirements/requirements.txt, pyfcm, requests
 werkzeug==2.0.2           # via -c requirements/requirements.txt, flask
 zope.event==4.5.0         # via gevent
 zope.interface==5.4.0     # via gevent

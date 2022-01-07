@@ -3,7 +3,6 @@ export PIP_CONFIG_FILE=pip.conf
 PACKAGE=flaskel
 REQ_PATH=requirements
 COMPILE_OPTS=--no-emit-trusted-host --no-emit-index-url --build-isolation
-CONFIRM=@( read -p "Are you sure?!? [Y/n]: " sure && case "$$sure" in [nN]) false;; *) true;; esac )
 
 define bump_version
 	bumpversion -n $(1) --verbose
@@ -16,7 +15,7 @@ define req_compile
 endef
 
 
-all: clean lint clean-install-deps test
+all: clean lint test security
 
 compile-deps:
 	$(call req_compile,requirements)
@@ -45,6 +44,17 @@ clean:
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
 	find ${PACKAGE} -name "*.c" -prune -exec rm -rf {} \;
 	find ${PACKAGE} -name ".mypy_cache" -prune -exec rm -rf {} \;
+
+security:
+	liccheck \
+		-r ${REQ_PATH}/requirements.txt \
+		-r ${REQ_PATH}/requirements-extra.txt
+
+	# ignore flask-caching
+	safety check --full-report \
+		--ignore 40459 \
+		-r ${REQ_PATH}/requirements.txt \
+		-r ${REQ_PATH}/requirements-extra.txt
 
 lint:
 	black -t py38 ${PACKAGE} tests setup.py

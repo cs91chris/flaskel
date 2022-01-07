@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --no-emit-trusted-host --output-file=requirements/requirements-test.txt requirements/requirements-test.in
 #
-attrs==21.2.0             # via -c requirements/requirements.txt, pytest
+attrs==21.4.0             # via -c requirements/requirements.txt, pytest
 coverage[toml]==5.5       # via -r requirements/requirements-test.in, pytest-cov
 iniconfig==1.1.1          # via pytest
 packaging==21.3           # via pytest
