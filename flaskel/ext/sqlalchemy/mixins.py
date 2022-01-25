@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING
 
 from flask_sqlalchemy import event
@@ -99,3 +100,18 @@ class UserMixin(StandardMixin):
 
     def to_dict(self, **_):
         return ObjectDict(id=self.id, email=self.email)
+
+
+class ExtraMixin(BaseMixin):
+    _json_class = json
+    _extra = db.Column(db.Text())
+
+    @property
+    def extra(self):
+        return self._json_class.loads(self._extra) if self._extra else {}
+
+    @extra.setter
+    def extra(self, value):
+        self._extra = None
+        if value:
+            self._extra = self._json_class.dumps(value)
