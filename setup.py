@@ -37,20 +37,11 @@ REQUIRES = [
     "Flask-ResponseBuilder",
     "Flask-SQLAlchemy",
     "Flask-TemplateSupport",
-    "argon2-cffi",
     "psutil",
-    "python-dateutil",
-    "python-decouple",
-    "PyYAML",
-    "requests",
-    "jsonschema",
-    "simplejson",
-    "sqlalchemy-schemadisplay",
-    "user-agents",
     "webargs",
-    "holidays",
     "aiohttp",
     "nest-asyncio",
+    "vbcore[all]",
 ]
 REQUIRES_EXT = REQUIRES + [
     "pyfcm",
@@ -63,7 +54,7 @@ REQUIRES_EXT = REQUIRES + [
     "flask_pymongo",
 ]
 REQUIRES_TEST = REQUIRES_EXT + [
-    "coverage==5.5.*",
+    "coverage",
     "pytest",
     "pytest-cov",
 ]

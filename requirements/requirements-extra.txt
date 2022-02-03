@@ -4,45 +4,125 @@
 #
 #    pip-compile --no-emit-index-url --no-emit-trusted-host --output-file=requirements/requirements-extra.txt requirements/requirements-extra.in
 #
-apscheduler==3.8.1        # via flask-apscheduler
-backports.zoneinfo==0.2.1  # via pytz-deprecation-shim, tzlocal
-bidict==0.21.4            # via python-socketio
-blinker==1.4              # via flask-mail
-certifi==2021.10.8        # via -c requirements/requirements.txt, requests
-charset-normalizer==2.0.10  # via -c requirements/requirements.txt, requests
-click==8.0.3              # via -c requirements/requirements.txt, flask
-flask-apscheduler==1.12.3  # via -r requirements/requirements-extra.in
-flask-mail==0.9.1         # via -r requirements/requirements-extra.in
-flask-pymongo==2.3.0      # via -r requirements/requirements-extra.in
-flask-socketio==5.1.1     # via -r requirements/requirements-extra.in
-flask==2.0.2              # via -c requirements/requirements.txt, flask-apscheduler, flask-mail, flask-pymongo, flask-socketio
-gevent-websocket==0.10.1  # via -r requirements/requirements-extra.in
-gevent==21.12.0           # via -r requirements/requirements-extra.in, gevent-websocket
-greenlet==1.1.2           # via -c requirements/requirements.txt, gevent
-gunicorn==20.1.0          # via -r requirements/requirements-extra.in
-hiredis==2.0.0            # via -r requirements/requirements-extra.in
-idna==3.3                 # via -c requirements/requirements.txt, requests
-itsdangerous==2.0.1       # via -c requirements/requirements.txt, flask
-jinja2==3.0.3             # via -c requirements/requirements.txt, flask
-markupsafe==2.0.1         # via -c requirements/requirements.txt, jinja2
-pyfcm==1.5.4              # via -r requirements/requirements-extra.in
-pymongo==4.0.1            # via flask-pymongo
-python-dateutil==2.8.2    # via -c requirements/requirements.txt, flask-apscheduler
-python-engineio==4.3.0    # via python-socketio
-python-socketio==5.5.0    # via flask-socketio
-pytz-deprecation-shim==0.1.0.post0  # via tzlocal
-pytz==2021.3              # via -c requirements/requirements.txt, apscheduler
-redis==3.5.3              # via -r requirements/requirements-extra.in, rejson
-rejson==0.5.6             # via -r requirements/requirements-extra.in
-requests==2.27.1          # via -c requirements/requirements.txt, pyfcm, stripe
-six==1.16.0               # via -c requirements/requirements.txt, apscheduler, python-dateutil, rejson
-stripe==2.64.0            # via -r requirements/requirements-extra.in
-tzdata==2021.5            # via pytz-deprecation-shim
-tzlocal==4.1              # via apscheduler
-urllib3==1.26.8           # via -c requirements/requirements.txt, pyfcm, requests
-werkzeug==2.0.2           # via -c requirements/requirements.txt, flask
-zope.event==4.5.0         # via gevent
-zope.interface==5.4.0     # via gevent
+apscheduler==3.8.1
+    # via flask-apscheduler
+backports.zoneinfo==0.2.1
+    # via
+    #   pytz-deprecation-shim
+    #   tzlocal
+bidict==0.21.4
+    # via python-socketio
+blinker==1.4
+    # via flask-mail
+certifi==2021.10.8
+    # via
+    #   -c requirements/requirements.txt
+    #   requests
+charset-normalizer==2.0.11
+    # via
+    #   -c requirements/requirements.txt
+    #   requests
+click==8.0.3
+    # via
+    #   -c requirements/requirements.txt
+    #   flask
+flask-apscheduler==1.12.3
+    # via -r requirements/requirements-extra.in
+flask-mail==0.9.1
+    # via -r requirements/requirements-extra.in
+flask==2.0.2
+    # via
+    #   -c requirements/requirements.txt
+    #   flask-apscheduler
+    #   flask-mail
+    #   flask-pymongo
+    #   flask-socketio
+flask_pymongo==2.3.0
+    # via -r requirements/requirements-extra.in
+flask_socketio==5.1.1
+    # via -r requirements/requirements-extra.in
+gevent==21.12.0
+    # via
+    #   -r requirements/requirements-extra.in
+    #   gevent-websocket
+gevent_websocket==0.10.1
+    # via -r requirements/requirements-extra.in
+greenlet==1.1.2
+    # via
+    #   -c requirements/requirements.txt
+    #   gevent
+gunicorn==20.1.0
+    # via -r requirements/requirements-extra.in
+hiredis==2.0.0
+    # via -r requirements/requirements-extra.in
+idna==3.3
+    # via
+    #   -c requirements/requirements.txt
+    #   requests
+itsdangerous==2.0.1
+    # via
+    #   -c requirements/requirements.txt
+    #   flask
+jinja2==3.0.3
+    # via
+    #   -c requirements/requirements.txt
+    #   flask
+markupsafe==2.0.1
+    # via
+    #   -c requirements/requirements.txt
+    #   jinja2
+pyfcm==1.5.4
+    # via -r requirements/requirements-extra.in
+pymongo==4.0.1
+    # via flask-pymongo
+python-dateutil==2.8.2
+    # via
+    #   -c requirements/requirements.txt
+    #   flask-apscheduler
+python-engineio==4.3.1
+    # via python-socketio
+python-socketio==5.5.1
+    # via flask-socketio
+pytz-deprecation-shim==0.1.0.post0
+    # via tzlocal
+pytz==2021.3
+    # via apscheduler
+redis==3.5.3
+    # via
+    #   -r requirements/requirements-extra.in
+    #   rejson
+rejson==0.5.6
+    # via -r requirements/requirements-extra.in
+requests==2.27.1
+    # via
+    #   -c requirements/requirements.txt
+    #   pyfcm
+    #   stripe
+six==1.16.0
+    # via
+    #   -c requirements/requirements.txt
+    #   apscheduler
+    #   python-dateutil
+    #   rejson
+stripe==2.65.0
+    # via -r requirements/requirements-extra.in
+tzdata==2021.5
+    # via pytz-deprecation-shim
+tzlocal==4.1
+    # via apscheduler
+urllib3==1.26.8
+    # via
+    #   -c requirements/requirements.txt
+    #   pyfcm
+    #   requests
+werkzeug==2.0.2
+    # via
+    #   -c requirements/requirements.txt
+    #   flask
+zope.event==4.5.0
+    # via gevent
+zope.interface==5.4.0
+    # via gevent
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
