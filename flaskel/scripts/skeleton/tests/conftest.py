@@ -3,6 +3,7 @@
 import os
 
 import pytest
+
 # pylint: disable=import-error
 from vbcore.datastruct import ObjectDict
 from vbcore.db.support import SQLASupport
