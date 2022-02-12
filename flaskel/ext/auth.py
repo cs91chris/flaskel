@@ -4,11 +4,12 @@ from datetime import timedelta
 import flask
 import flask_jwt_extended as jwt
 from flask_httpauth import HTTPBasicAuth
+from vbcore.datastruct import ObjectDict
+from vbcore.db.mixins import StandardMixin
+from vbcore.http import httpcode
 
-from flaskel.flaskel import cap, httpcode
-from flaskel.utils.datastruct import ObjectDict
+from flaskel import cap
 from .sqlalchemy import db
-from .sqlalchemy.mixins import StandardMixin
 
 jwtm = jwt.JWTManager()
 basic_auth = HTTPBasicAuth()

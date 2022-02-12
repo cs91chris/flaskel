@@ -1,7 +1,8 @@
 import flask
 import flask_jwt_extended
+from vbcore.http import HttpMethod, httpcode
 
-from flaskel import httpcode, cap, HttpMethod
+from flaskel import cap
 from flaskel.ext import builder
 from flaskel.ext.auth import BaseTokenHandler
 from flaskel.utils import webargs

@@ -1,4 +1,6 @@
-from flaskel.ext.sqlalchemy.mixins import db, StandardMixin
+from vbcore.db.mixins import StandardMixin
+
+from flaskel.ext.sqlalchemy import db
 
 
 class Dummy(db.Model, StandardMixin):

@@ -1,8 +1,8 @@
 import psutil
-
-from flaskel.http import HTTPClient, httpcode
-from flaskel.http.batch import HTTPBatch
-from flaskel.utils.datastruct import ObjectDict
+from vbcore.datastruct import ObjectDict
+from vbcore.http import httpcode
+from vbcore.http.batch import HTTPBatch
+from vbcore.http.client import HTTPClient
 
 
 def health_sqlalchemy(db, app, stm="SELECT 1"):

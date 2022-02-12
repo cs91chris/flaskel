@@ -1,6 +1,8 @@
 import flask
+from vbcore.datastruct import ObjectDict
+from vbcore.http import httpcode
 
-from flaskel import cap, httpcode, ObjectDict
+from flaskel import cap
 
 try:
     import stripe

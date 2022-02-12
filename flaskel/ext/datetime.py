@@ -1,4 +1,4 @@
-from flaskel.utils.datetime import DateHelper
+from vbcore.date_helper import DateHelper
 
 
 class FlaskDateHelper:
@@ -14,26 +14,21 @@ class FlaskDateHelper:
         if app is not None:
             self.init_app(app, **kwargs)  # pragma: no cover
 
-    def init_app(self, app, helper=None, helper_class=DateHelper, **__):
+    def init_app(self, app, helper=DateHelper, **__):
         """
 
         :param app:
         :param helper:
-        :param helper_class:
         """
         app.config.setdefault("DATE_HELPER_COUNTRY", "IT")
         app.config.setdefault("DATE_HELPER_PROV", None)
         app.config.setdefault("DATE_HELPER_STATE", None)
-        app.config.setdefault("DATE_PRETTY", helper_class.DATE_PRETTY_FORMAT)
-        app.config.setdefault("DATE_ISO_FORMAT", helper_class.DATE_ISO_FORMAT)
+        app.config.setdefault("DATE_PRETTY", helper.DATE_PRETTY_FORMAT)
+        app.config.setdefault("DATE_ISO_FORMAT", helper.DATE_ISO_FORMAT)
 
-        if helper is not None:
-            self._helper = helper
-        else:
-            attrs = app.config.get_namespace("DATE_HELPER_")
-            self._helper = helper_class(**attrs)
-
+        self._helper = helper
         self.iso_format = app.config.DATE_ISO_FORMAT
+
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["date_helper"] = self
 

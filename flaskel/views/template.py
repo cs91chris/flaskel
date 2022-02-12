@@ -1,8 +1,8 @@
 import typing as t
 
 import flask
+from vbcore.http import HttpMethod
 
-from flaskel import HttpMethod
 from .base import BaseView
 
 

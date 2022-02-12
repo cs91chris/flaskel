@@ -1,8 +1,7 @@
+from vbcore import uuid
+from vbcore.datastruct import ObjectDict
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.urls import url_decode
-
-from .utils import uuid
-from .utils.datastruct import ObjectDict
 
 
 class BaseMiddleware:

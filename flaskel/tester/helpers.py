@@ -1,14 +1,12 @@
-from base64 import b64encode
 from functools import partial
 
 import flask
+from vbcore.db.support import SQLASupport
+from vbcore.http import httpcode, HttpMethod
+from vbcore.tester.helpers import build_url
+from vbcore.tester.mixins import Asserter
 
-from flaskel import ConfigProxy
-from flaskel import httpcode
-from flaskel.ext.sqlalchemy.support import SQLASupport
-from flaskel.http import HttpMethod
-from flaskel.tester import FetchMail
-from flaskel.tester.mixins import Asserter
+from flaskel.utils.datastruct import ConfigProxy
 
 config = ConfigProxy()
 schemas = ConfigProxy("SCHEMAS")
@@ -31,26 +29,6 @@ def load_sample_data(filename):
     )
 
 
-def fetch_emails(subject, recipient=None):
-    client = FetchMail(**config.SENDRIA)
-    return client.perform(recipient=recipient, subject=subject)
-
-
-def basic_auth_header(username=None, password=None):
-    username = username or config.BASIC_AUTH_USERNAME
-    password = password or config.BASIC_AUTH_PASSWORD
-    token = b64encode(f"{username}:{password}".encode()).decode()
-    return dict(Authorization=f"Basic {token}")
-
-
-def build_url(url=None, view=None, params=None, **kwargs):
-    params = params or {}
-    args = "&".join([f"{k}={v}" for k, v in params.items()])
-    if view is not None:
-        return f"{url_for(view, **kwargs)}?{args}", args  # noqa F405
-    return f"{url}?{args}", args  # noqa F405
-
-
 def api_tester(
     client,
     url=None,
@@ -61,7 +39,7 @@ def api_tester(
     **kwargs,
 ):
     kwargs.setdefault("method", HttpMethod.GET)
-    url, _ = build_url(url, url_for(view) if view else None, params)
+    url, _ = build_url(url_for(view) if view else url, **(params or {}))
     res = client.open(url, **kwargs)
     Asserter.assert_status_code(res, status)
     if schema:

@@ -4,13 +4,12 @@ from datetime import datetime
 import flask
 from flask import current_app as cap
 from packaging import version
+from vbcore.http import httpcode, HttpMethod
 
-from flaskel import ExtProxy, HttpMethod
 from flaskel import Response
-from flaskel.ext import builder
-from flaskel.ext import limit
-from flaskel.http import httpcode
+from flaskel.ext import builder, limit
 from flaskel.utils import webargs
+from flaskel.utils.datastruct import ExtProxy
 from flaskel.views import BaseView
 
 

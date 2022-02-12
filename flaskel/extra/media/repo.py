@@ -1,9 +1,10 @@
 from sqlalchemy.exc import SQLAlchemyError
+from vbcore.datastruct import ObjectDict
+from vbcore.db.mixins import StandardMixin
 
-from flaskel import ObjectDict, ExtProxy
 from flaskel.ext.sqlalchemy import db
-from flaskel.ext.sqlalchemy.mixins import StandardMixin
 from flaskel.http.client import cap
+from flaskel.utils.datastruct import ExtProxy
 from .exceptions import MediaError
 
 

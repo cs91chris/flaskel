@@ -1,8 +1,7 @@
 import typing as t
 
 from flask_sqlalchemy import Model
-
-from flaskel.utils.datastruct import ObjectDict
+from vbcore.datastruct import ObjectDict
 
 
 class SQLAModel(Model):
@@ -77,8 +76,6 @@ class SQLAModel(Model):
 
         return self
 
-
-class DictableMixin:
     def to_dict(self, restricted: bool = False) -> dict:
         _ = restricted
         # noinspection PyUnresolvedReferences

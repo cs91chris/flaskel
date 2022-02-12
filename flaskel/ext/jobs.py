@@ -2,7 +2,7 @@ import atexit
 import logging
 import os
 
-from flaskel.utils.uuid import get_uuid
+from vbcore.uuid import get_uuid
 
 try:
     from apscheduler import events
@@ -107,10 +107,6 @@ class APJobs(APScheduler):
 
     @staticmethod
     def _exception_listener(event):
-        """
-
-        :param event:
-        """
         logger = scheduler.app.logger
         if event.code == events.EVENT_JOB_ERROR:
             logger.error("An error occurred when executing job: %s", event.job_id)
@@ -124,8 +120,10 @@ class APJobs(APScheduler):
                 event.job_id,
                 event.ret_val,
             )
-        else:
+        elif hasattr(event, "job_id"):
             logger.debug("received event (%s) for job: %s", event.code, event.job_id)
+        else:
+            logger.debug("received event: %s", event.code)
 
 
 scheduler = APJobs()

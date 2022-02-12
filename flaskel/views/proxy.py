@@ -1,17 +1,20 @@
 import typing as t
 
 import flask
+from vbcore import uuid
+from vbcore.datastruct import ObjectDict
+from vbcore.http import httpcode, HttpMethod
+from vbcore.http.client import HTTPBase
+from vbcore.http.rpc import rpc_error_to_httpcode
 
 import flaskel
-from flaskel import cap, httpcode, HttpMethod, ConfigProxy
-from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC, HTTPBase
-from flaskel.utils import ObjectDict, uuid
+from flaskel import cap
+from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC
+from flaskel.utils.datastruct import ConfigProxy
 from .base import BaseView
 
+
 # pylint: disable=too-many-instance-attributes
-from ..http.rpc import rpc_error_to_httpcode
-
-
 class ProxyView(BaseView):
     client_class: t.Type[HTTPBase] = FlaskelHttp
 

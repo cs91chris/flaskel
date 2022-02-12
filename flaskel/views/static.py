@@ -1,6 +1,7 @@
 from flask import send_from_directory
+from vbcore.http import httpcode
 
-from flaskel import cap, Response, httpcode
+from flaskel import cap, Response
 from flaskel.config import config
 from flaskel.views import BaseView
 

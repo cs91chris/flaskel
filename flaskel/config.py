@@ -1,27 +1,11 @@
 import os
-from collections import OrderedDict
 
 import decouple
+from vbcore import yaml
+from vbcore.configurator import config
+from vbcore.date_helper import Seconds
 
-from flaskel.utils import logger, yaml, Seconds
-
-_conf_file_name = os.environ.get("ENV_FILE")
-_conf_file_encoding = os.environ.get("ENV_FILE_ENCODING")
-_conf_search_path = os.environ.get("ENV_PATH") or os.getcwd()
-
-
-class AutoConfig(decouple.AutoConfig):
-    encoding = _conf_file_encoding or "UTF-8"
-
-    SUPPORTED = OrderedDict(
-        [
-            (_conf_file_name or "settings.ini", decouple.RepositoryIni),
-            (_conf_file_name or ".env", decouple.RepositoryEnv),
-        ]
-    )
-
-
-config = AutoConfig(search_path=_conf_search_path)
+from flaskel.utils import logger
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 TESTING = config("TESTING", default=False, cast=bool)
@@ -41,7 +25,7 @@ LOCALE = config("LOCALE", default="en_EN.utf8")
 TEMPLATES_AUTO_RELOAD = config("TEMPLATES_AUTO_RELOAD", default=DEBUG, cast=bool)
 EXPLAIN_TEMPLATE_LOADING = config("EXPLAIN_TEMPLATE_LOADING", default=False, cast=bool)
 APIDOCS_ENABLED = config("APIDOCS_ENABLED", default=True, cast=bool)
-CONF_PATH = config("CONF_PATH", default=os.path.join(_conf_search_path, "resources"))
+CONF_PATH = config("CONF_PATH", default=os.path.join(config.search_path, "resources"))
 
 JWT_TOKEN_LOCATION = ["headers", "query_string"]
 JWT_ACCESS_TOKEN_EXPIRES = config(

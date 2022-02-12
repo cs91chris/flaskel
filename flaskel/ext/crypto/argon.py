@@ -1,22 +1,19 @@
 import argon2 as _argon2
-from argon2.exceptions import Argon2Error, InvalidHash
+from vbcore.crypto.argon import Argon2 as HasherArgon2
 
 
 class Argon2:
-    def __init__(self, app=None):
-        """
-
-        :param app:
-        """
-        self._ph = None
+    def __init__(self, app=None, **kwargs):
+        self._argon = None
 
         if app is not None:
-            self.init_app(app)  # pragma: no cover
+            self.init_app(app, **kwargs)  # pragma: no cover
 
-    def init_app(self, app):
+    def init_app(self, app, argon_class=HasherArgon2):
         """
 
         :param app:
+        :param argon_class:
         """
         app.config.setdefault("ARGON2_ENCODING", "utf-8")
         app.config.setdefault("ARGON2_TIME_COST", _argon2.DEFAULT_TIME_COST)
@@ -25,33 +22,12 @@ class Argon2:
         app.config.setdefault("ARGON2_PARALLELISM", _argon2.DEFAULT_PARALLELISM)
         app.config.setdefault("ARGON2_SALT_LEN", _argon2.DEFAULT_RANDOM_SALT_LENGTH)
 
-        self._ph = _argon2.PasswordHasher(**app.config.get_namespace("ARGON2_"))
-
+        self._argon = argon_class(**app.config.get_namespace("ARGON2_"))
         setattr(app, "extensions", getattr(app, "extensions", {}))
-        app.extensions["argon2"] = self
+        app.extensions["argon2"] = self._argon
 
-    def generate_hash(self, password):
-        """
-
-        :param password:
-        :return:
-        """
-        return self._ph.hash(password)
-
-    def verify_hash(self, pw_hash, password, exc=False):
-        """
-
-        :param pw_hash:
-        :param password:
-        :param exc:
-        :return:
-        """
-        try:
-            return self._ph.verify(pw_hash, password)
-        except (Argon2Error, InvalidHash):
-            if exc is True:
-                raise  # pragma: no cover
-            return False
+    def __getattr__(self, item):
+        return getattr(self._argon, item)
 
 
 argon2 = Argon2()

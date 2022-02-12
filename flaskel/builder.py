@@ -4,14 +4,14 @@ import typing as t
 
 import flask
 import jinja2
+from vbcore.datastruct import ObjectDict
+from vbcore.db.events import register_engine_events
+from vbcore.misc import random_string
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from flaskel import config
-from flaskel import flaskel
+from flaskel import config, flaskel
 from .converters import CONVERTERS
-from .ext.sqlalchemy import register_engine_events
-from .utils import ObjectDict, misc
 
 
 # pylint: disable=too-many-instance-attributes,no-member
@@ -88,7 +88,7 @@ class AppBuilder:
         self._conf_module = conf_module or self.conf_module
 
     def _generate_secret_key(self, secret_file, key_length):
-        secret_key = misc.random_string(key_length)
+        secret_key = random_string(key_length)
 
         with open(secret_file, "w", encoding="utf-8") as f:
             f.write(secret_key)

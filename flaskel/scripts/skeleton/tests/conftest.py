@@ -3,13 +3,12 @@
 import os
 
 import pytest
-
 # pylint: disable=import-error
-from scripts.cli import APP_CONFIG  # type: ignore
+from vbcore.datastruct import ObjectDict
+from vbcore.db.support import SQLASupport
 
-from flaskel import ObjectDict, TestClient
-from flaskel.ext.sqlalchemy.support import SQLASupport
-from flaskel.tester import helpers as h
+from flaskel.tester import helpers as h, TestClient
+from scripts.cli import APP_CONFIG  # type: ignore
 from .helpers import Views
 
 DB_TEST = "test.sqlite"

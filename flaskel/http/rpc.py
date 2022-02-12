@@ -1,5 +1,5 @@
-from flaskel.utils.datastruct import ObjectDict
-from . import httpcode
+from vbcore.datastruct import ObjectDict
+from vbcore.http import httpcode
 
 
 class RPCError(Exception):

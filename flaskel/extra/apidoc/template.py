@@ -1,6 +1,7 @@
 import flask
+from vbcore.http import httpcode
 
-from flaskel.flaskel import cap, httpcode
+from flaskel.flaskel import cap
 from flaskel.views.base import BaseView
 from flaskel.views.template import RenderTemplateString
 

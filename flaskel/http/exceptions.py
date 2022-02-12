@@ -2,10 +2,10 @@ import inspect
 import sys
 
 import flask
+from vbcore.http import httpcode
 from werkzeug import exceptions
 
 from flaskel.utils.datastruct import ConfigProxy
-from . import httpcode
 
 
 class HTTPExceptionMixin:

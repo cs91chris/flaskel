@@ -1,6 +1,5 @@
 from flask_response_builder.builders.encoders import JsonEncoder
-
-from flaskel.utils import Seconds
+from vbcore.date_helper import Seconds
 
 try:
     import redis

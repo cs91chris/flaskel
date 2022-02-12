@@ -3,15 +3,12 @@ import inspect
 import typing as t
 
 import flask
+from vbcore.batch import BatchExecutor
+from vbcore.datastruct import ObjectDict
+from vbcore.http import HttpMethod, httpcode, rpc
 
-from flaskel import HttpMethod
 from flaskel.ext.default import builder
-from flaskel.flaskel import Response
-from flaskel.flaskel import cap
-from flaskel.flaskel import httpcode
-from flaskel.http import rpc
-from flaskel.utils.batch import BatchExecutor
-from flaskel.utils.datastruct import ObjectDict
+from flaskel.flaskel import Response, cap
 from .base import BaseView
 
 RPCPayloadType = t.Union[t.List[dict], dict]

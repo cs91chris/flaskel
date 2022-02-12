@@ -1,12 +1,11 @@
 import functools
 
 import flask
+from vbcore.batch import ThreadBatchExecutor, BatchExecutor
+from vbcore.http import httpcode
 
 from flaskel.ext.default import builder
 from flaskel.flaskel import cap
-from flaskel.flaskel import httpcode
-from flaskel.utils.batch import BatchExecutor
-from flaskel.utils.batch import ThreadBatchExecutor
 
 
 class HealthCheck:

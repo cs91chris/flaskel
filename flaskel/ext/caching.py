@@ -4,8 +4,7 @@ import typing as t
 import flask
 from flask import request, current_app as cap
 from flask_caching import Cache as FlaskCache
-
-from flaskel.http import httpcode, HttpMethod
+from vbcore.http import HttpMethod, httpcode
 
 caching = FlaskCache()
 

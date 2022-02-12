@@ -1,7 +1,10 @@
 import flask
+from flask import Blueprint
+from vbcore.http import httpcode
 
-from flaskel import cap, httpcode, uuid
-from . import bp_test
+from flaskel import cap
+
+bp_test = Blueprint("test", __name__)
 
 
 @bp_test.route("/method_override", methods=["POST", "PUT"])
@@ -48,24 +51,3 @@ def get_invalid_json():
 def download():
     response = cap.response_class
     return response.send_file("./", flask.request.args.get("filename"))
-
-
-@bp_test.route("/uuid")
-def return_uuid():
-    return dict(
-        uuid1=uuid.get_uuid(ver=1),
-        uuid3=uuid.get_uuid(ver=3),
-        uuid4=uuid.get_uuid(),
-        uuid5=uuid.get_uuid(ver=5),
-    )
-
-
-@bp_test.route("/crypt/<passwd>")
-def crypt(passwd):
-    crypto = cap.extensions["argon2"]
-    return crypto.generate_hash(passwd)
-
-
-@bp_test.route("/useragent")
-def useragent():
-    return flask.g.user_agent.to_dict()

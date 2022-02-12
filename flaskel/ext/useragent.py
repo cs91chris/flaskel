@@ -1,6 +1,5 @@
 import flask
-
-from flaskel.http.useragent import UserAgent as UserAgentParser
+from vbcore.http.useragent import UserAgent as UserAgentParser
 
 
 class UserAgent:
@@ -29,10 +28,11 @@ class UserAgent:
 
         @app.before_request
         def before_request():
-            # pylint: disable=E0237
-            flask.g.user_agent = self._parser(flask.request.user_agent.string)
+            flask.g.user_agent = self._parser  # pylint: disable=assigning-non-slot
             if app.config["USER_AGENT_AUTO_PARSE"]:
-                flask.g.user_agent.parse()
+                ua_str = flask.request.user_agent.string
+                # pylint: disable=assigning-non-slot
+                flask.g.user_agent = self._parser.parse(ua_str)
 
 
 useragent = UserAgent()

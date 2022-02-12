@@ -1,10 +1,8 @@
 # pylint: disable=redefined-outer-name
-
-import os
-
 import pytest
+from vbcore.datastruct import ObjectDict
 
-from flaskel import middlewares, ObjectDict, TestClient
+from flaskel import middlewares
 from flaskel.ext import (
     auth,
     builder,
@@ -27,13 +25,10 @@ from flaskel.ext.healthcheck import checks, health_checks
 from flaskel.ext.sqlalchemy import db as sqlalchemy
 from flaskel.extra.mobile_support import mobile_version, RedisStore
 from flaskel.extra.stripe import payment_handler
+from flaskel.tester import TestClient
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS, Fields
 from flaskel.utils.schemas.openapi3 import SCHEMA as OPENAPI_SCHEMA
 from .blueprints import BLUEPRINTS, VIEWS
-
-BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-SKEL_DIR = os.path.join(BASE_DIR, "skeleton")
-CONF_DIR = os.path.join(SKEL_DIR, "res")
 
 HOSTS = ObjectDict(apitester="http://httpbin.org", fake="http://localhost")
 
@@ -134,6 +129,7 @@ def app_prod():
                 "fakeapi": {"endpoint": HOSTS.fake, "uri": "/fake"},
             },
         ),
+        views=VIEWS,
         blueprints=BLUEPRINTS,
         extensions={
             **BASE_EXTENSIONS,
@@ -191,8 +187,8 @@ def app_dev():
         views=VIEWS,
         folders=["skeleton/blueprints/web/templates"],
         static_folder="skeleton/blueprints/web/static",
-        after_request=(lambda x: x, lambda x: x),
-        before_request=(lambda: None, lambda: None),
+        after_request=(lambda x: x, lambda x: x),  # NB: needed to complete coverage
+        before_request=(lambda: None, lambda: None),  # NB: needed to complete coverage
         version="1.0.0",
     )
 

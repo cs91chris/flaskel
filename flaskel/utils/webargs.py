@@ -1,9 +1,8 @@
 from functools import partial
 
 import flask
+from vbcore.http import httpcode
 from webargs import fields, flaskparser
-
-from flaskel import httpcode
 
 parser = flaskparser.FlaskParser()
 query = partial(parser.use_args, location="query")

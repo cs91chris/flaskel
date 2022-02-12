@@ -1,8 +1,10 @@
 import os
 import typing as t
 
-from flaskel import ConfigProxy, uuid
+from vbcore.uuid import get_uuid
+
 from flaskel.http.client import cap
+from flaskel.utils.datastruct import ConfigProxy
 from .exceptions import MediaError
 from .repo import MediaRepo
 
@@ -23,7 +25,7 @@ class MediaService:
         ext = cls.get_ext(filename)
         entity_name = cls.media_repo.entity_name()
         if cls.obfuscate_filename is True:
-            filename = uuid.get_uuid()
+            filename = get_uuid()
 
         filename = f"{eid}-{filename}.{ext}"
         filepath = os.path.join(entity_name, filename)

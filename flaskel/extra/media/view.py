@@ -1,7 +1,6 @@
 import flask
+from vbcore.http import HttpMethod, httpcode
 
-from flaskel import HttpMethod
-from flaskel.http import httpcode
 from flaskel.http.client import cap
 from flaskel.views import BaseView
 from flaskel.views.static import StaticFileView

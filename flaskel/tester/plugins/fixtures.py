@@ -4,14 +4,8 @@ from typing import Optional, Union, Tuple, Dict
 
 import pytest
 
-from flaskel import ExtProxy
 from flaskel.tester.helpers import url_for
-from flaskel.utils import uuid
-
-
-@pytest.fixture(scope="session")
-def session_id():
-    return uuid.get_uuid()
+from flaskel.utils.datastruct import ExtProxy
 
 
 @pytest.fixture()

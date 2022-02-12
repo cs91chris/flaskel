@@ -1,10 +1,10 @@
+from vbcore.datastruct import ObjectDict
+from vbcore.date_helper import Seconds
+
 try:
     from flask_pymongo import PyMongo
 except ImportError:
     PyMongo = object
-
-from flaskel.utils.datastruct import ObjectDict
-from flaskel.utils.datetime import Seconds
 
 
 class FlaskMongoDB(PyMongo):

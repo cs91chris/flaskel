@@ -1,5 +1,5 @@
-from flaskel import ObjectDict
-from flaskel.utils.schemas.support import Fields
+from vbcore.datastruct import ObjectDict
+from vbcore.jsonschema.support import Fields
 
 SCHEMAS = ObjectDict(
     JSONRPC=ObjectDict(

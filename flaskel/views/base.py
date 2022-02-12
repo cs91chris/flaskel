@@ -2,8 +2,8 @@ import typing as t
 
 import flask
 from flask.views import MethodView, View
+from vbcore.http import httpcode, HttpMethod
 
-from flaskel import httpcode, HttpMethod
 from flaskel.ext.default import builder
 
 DefaultUrlsType = t.Tuple[t.Union[t.Dict[str, str], str], ...]

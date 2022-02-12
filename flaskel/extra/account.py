@@ -3,10 +3,14 @@ import typing as t
 
 import flask
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from vbcore.datastruct import ObjectDict
+from vbcore.http import httpcode, HttpMethod
+from vbcore.misc import random_string
 
-from flaskel import cap, httpcode, ObjectDict, ConfigProxy, HttpMethod
+from flaskel import cap
 from flaskel.ext import builder
-from flaskel.utils import ExtProxy, misc, PayloadValidator
+from flaskel.utils.datastruct import ExtProxy, ConfigProxy
+from flaskel.utils.validator import PayloadValidator
 from flaskel.views import BaseView
 
 
@@ -19,7 +23,7 @@ class AuthCode:
         self.key_format = f"{self.pre}{self.sep}{{key}}{self.sep}{{token}}"
 
     def generate(self, key, user):
-        token = misc.random_string(8, string.digits)
+        token = random_string(8, string.digits)
         cache_key = self.key_format.format(key=key, token=token)
         self.cache.set(cache_key, user.email, ex=self.expires)
         return token

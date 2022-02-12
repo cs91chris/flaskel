@@ -1,11 +1,11 @@
 import os
 
 import click
+from vbcore import yaml
+from vbcore.datastruct import ObjectDict
+from vbcore.misc import parse_value
 
 from .builder import AppBuilder
-from .utils import misc
-from .utils import yaml
-from .utils.datastruct import ObjectDict
 from .wsgi.base import BaseApplication
 from .wsgi.factory import WSGIFactory
 from .config import config as decouple_config
@@ -23,7 +23,7 @@ def option_as_dict(ctx, param, value):  # pylint: disable=W0613
     ret = {}
     for opt in value:
         k, v = opt.split("=", 2)
-        ret.update({k: misc.parse_value(v)})
+        ret.update({k: parse_value(v)})
     return ret
 
 

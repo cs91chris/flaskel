@@ -2,12 +2,15 @@ import typing as t
 
 import flask
 from sqlalchemy.exc import SQLAlchemyError
+from vbcore.db.exceptions import DBError
+from vbcore.db.support import SQLASupport
+from vbcore.http import HttpMethod, httpcode
 
-from flaskel import cap, httpcode, ExtProxy, HttpMethod
+from flaskel import cap
 from flaskel.ext.default import builder
-from flaskel.ext.sqlalchemy import SQLASupport
-from flaskel.ext.sqlalchemy.exceptions import DBError
-from flaskel.utils import PayloadValidator, webargs
+from flaskel.utils import webargs
+from flaskel.utils.datastruct import ExtProxy
+from flaskel.utils.validator import PayloadValidator
 from .base import Resource
 
 

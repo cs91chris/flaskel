@@ -1,10 +1,9 @@
 import flask
 from flask import current_app as cap
-from flask_response_builder import encoders
+from vbcore.datastruct import ObjectDict
+from vbcore.http import httpcode
+from vbcore.json import JsonEncoder
 from werkzeug.utils import safe_join
-
-from .http import httpcode
-from .utils.datastruct import ObjectDict
 
 
 class Request(flask.Request):
@@ -89,7 +88,7 @@ class Response(flask.Response):
 class Flaskel(flask.Flask):
     request_class = Request
     response_class = Response
-    json_encoder = encoders.JsonEncoder
+    json_encoder = JsonEncoder
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

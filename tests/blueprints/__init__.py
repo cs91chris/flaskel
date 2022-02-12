@@ -1,16 +1,20 @@
-from flaskel import ExtProxy
+from flask import Blueprint
+
 from flaskel.extra import apidoc
 from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
+from flaskel.utils.datastruct import ExtProxy
 from flaskel.views import proxy, RenderTemplate, rpc
 from flaskel.views.proxy import JsonRPCProxy
 from . import models, views
-from .api import bp_api, resource, rpc as rpc_service
-from .test import bp_test
-from .views import TokenAuthView
+from .endpoints import bp_test
+from .views import TokenAuthView, APIResource, MyJsonRPC
 from .web import bp_web
 
+bp_api = Blueprint("api", __name__)
+
+
 JsonRPCView = rpc.JSONRPCView
-rpc.JSONRPCView.load_from_object(rpc_service.MyJsonRPC())
+rpc.JSONRPCView.load_from_object(MyJsonRPC())
 session = ExtProxy("sqlalchemy.db.session")
 
 
@@ -50,7 +54,7 @@ VIEWS = (
         ),
     ),
     (
-        resource.APIResource,
+        APIResource,
         bp_api,
         dict(name="resource_api", urls=("/resources",)),
     ),
