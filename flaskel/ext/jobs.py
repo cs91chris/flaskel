@@ -41,8 +41,11 @@ class APJobs(APScheduler):
             app.logger.exception(exc)
             return
 
-        # if app is in testing mode execute tasks synchronously
         if test_sync and app.testing:
+            app.logger.warning(
+                "app is in testing mode "
+                "so scheduler executes tasks synchronously in foreground"
+            )
             self._scheduler = BlockingScheduler()
 
         if app.debug:

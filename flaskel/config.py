@@ -5,9 +5,9 @@ import decouple
 
 from flaskel.utils import logger, yaml, Seconds
 
-_conf_search_path = os.environ.get("ENV_PATH")
 _conf_file_name = os.environ.get("ENV_FILE")
 _conf_file_encoding = os.environ.get("ENV_FILE_ENCODING")
+_conf_search_path = os.environ.get("ENV_PATH") or os.getcwd()
 
 
 class AutoConfig(decouple.AutoConfig):
@@ -21,10 +21,10 @@ class AutoConfig(decouple.AutoConfig):
     )
 
 
-config = AutoConfig(search_path=_conf_search_path or os.getcwd())
+config = AutoConfig(search_path=_conf_search_path)
 
 DEBUG = config("DEBUG", default=False, cast=bool)
-TESTING = config("TESTING", default=DEBUG, cast=bool)
+TESTING = config("TESTING", default=False, cast=bool)
 APP_NAME = config("APP_NAME", default="flaskel")
 APP_HOST = config("APP_HOST", default="127.0.0.1")
 APP_PORT = config("APP_PORT", default=5000, cast=int)
@@ -41,9 +41,7 @@ LOCALE = config("LOCALE", default="en_EN.utf8")
 TEMPLATES_AUTO_RELOAD = config("TEMPLATES_AUTO_RELOAD", default=DEBUG, cast=bool)
 EXPLAIN_TEMPLATE_LOADING = config("EXPLAIN_TEMPLATE_LOADING", default=False, cast=bool)
 APIDOCS_ENABLED = config("APIDOCS_ENABLED", default=True, cast=bool)
-CONF_PATH = config(
-    "CONF_PATH", default=os.path.join("flaskel", "scripts", "skeleton", "resources")
-)
+CONF_PATH = config("CONF_PATH", default=os.path.join(_conf_search_path, "resources"))
 
 JWT_TOKEN_LOCATION = ["headers", "query_string"]
 JWT_ACCESS_TOKEN_EXPIRES = config(
@@ -161,7 +159,7 @@ WSGI_WERKZEUG_PROFILER_ENABLED = config(
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = config("SQLALCHEMY_ECHO", default=TESTING, cast=bool)
 
-REQUEST_ID_HEADER = "X-Request-Id"
+REQUEST_ID_HEADER = "X-Request-ID"
 RATELIMIT_ENABLED = config("RATELIMIT_ENABLED", default=not DEBUG, cast=bool)
 RATELIMIT_HEADERS_ENABLED = config("RATELIMIT_HEADERS_ENABLED", default=True, cast=bool)
 RATELIMIT_IN_MEMORY_FALLBACK_ENABLED = config(

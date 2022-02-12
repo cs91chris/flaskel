@@ -29,7 +29,8 @@ define req_compile
 endef
 
 
-all: clean lint clean-install-deps test
+all: clean lint test security
+build-publish: build-dist pypi-publish
 
 compile-deps:
 	$(call req_compile,requirements)
@@ -54,9 +55,9 @@ clean-install-deps:
 clean:
 	find . -name '*.pyc' -prune -exec rm -rf {} \;
 	find . -name '__pycache__' -prune -exec rm -rf {} \;
+	find . -name ".mypy_cache" -prune -exec rm -rf {} \;
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
 	find ${PACKAGE} -name "*.c" -prune -exec rm -rf {} \;
-	find ${PACKAGE} -name ".mypy_cache" -prune -exec rm -rf {} \;
 
 lint:
 	black -t py38 ${PACKAGE} tests setup.py
@@ -66,6 +67,15 @@ lint:
 
 test:
 	pytest --cov=${PACKAGE} --cov-report=html --cov-config .coveragerc tests
+
+security:
+	liccheck \
+		-r ${REQ_PATH}/requirements.txt
+
+	# ignore flask-caching
+	safety check --full-report \
+		--ignore 40459 \
+		-r ${REQ_PATH}/requirements.txt
 
 build-images:
 	mkdir -p ${IMAGES_PATH}
@@ -80,6 +90,9 @@ start-all-services:
 
 build-dist:
 	python setup.py sdist bdist_wheel
+
+pypi-publish:
+	twine upload --verbose --skip-existing -u voidbrain dist/${PACKAGE}-*
 
 bump-build:
 	$(call bump_version,build)

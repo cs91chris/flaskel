@@ -283,9 +283,10 @@ class AppBuilder:
         )
 
     def _patch_app(self):
+        self._dump_urls()
+
         if self._app.debug:
             self._set_linter_and_profiler()
-            self._dump_urls()
 
         with self._app.app_context():
             sqlalchemy = self._app.extensions.get("sqlalchemy")
