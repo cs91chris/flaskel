@@ -16,6 +16,7 @@ endef
 
 
 all: clean lint test security
+build-publish: build-dist pypi-publish
 
 compile-deps:
 	$(call req_compile,requirements)
@@ -41,9 +42,9 @@ clean-install-deps:
 clean:
 	find . -name '*.pyc' -prune -exec rm -rf {} \;
 	find . -name '__pycache__' -prune -exec rm -rf {} \;
+	find . -name ".mypy_cache" -prune -exec rm -rf {} \;
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
 	find ${PACKAGE} -name "*.c" -prune -exec rm -rf {} \;
-	find ${PACKAGE} -name ".mypy_cache" -prune -exec rm -rf {} \;
 
 security:
 	liccheck \
@@ -67,6 +68,9 @@ test:
 
 build-dist:
 	python setup.py sdist bdist_wheel
+
+pypi-publish:
+	twine upload --verbose --skip-existing -u voidbrain dist/${PACKAGE}-*
 
 bump-build:
 	$(call bump_version,build)
