@@ -1,19 +1,20 @@
-from werkzeug.routing import BaseConverter, FloatConverter, UnicodeConverter
+import typing as t
+from decimal import Decimal
+
+from werkzeug.routing import BaseConverter, FloatConverter, UnicodeConverter, Map
 
 
 class ListConverter(BaseConverter):
-    default_separator = "+"
-
-    def __init__(self, map_name=None, sep=None):
+    def __init__(self, map_name: Map, sep: str = "+"):
         """
 
         :param map_name:
         :param sep:
         """
         super().__init__(map_name)
-        self._sep = sep or self.default_separator
+        self._sep = sep
 
-    def to_python(self, value):
+    def to_python(self, value: str) -> t.List[str]:
         """
 
         :param value:
@@ -21,17 +22,30 @@ class ListConverter(BaseConverter):
         """
         return value.split(self._sep)
 
-    def to_url(self, value):
+    def to_url(self, value: t.List[str]) -> str:
         """
 
         :param value:
         :return:
         """
-        return self._sep.join(super().to_url(v) for v in value)
+        return super().to_url(self._sep.join(value))
+
+
+class DecimalConverter(FloatConverter):
+    num_convert = Decimal  # type: ignore
+
+    def __init__(
+        self,
+        map_name: "Map",
+        min: t.Optional[float] = None,  # pylint: disable=redefined-builtin
+        max: t.Optional[float] = None,  # pylint: disable=redefined-builtin
+        signed: bool = True,
+    ) -> None:
+        super().__init__(map_name, min=min, max=max, signed=signed)
 
 
 CONVERTERS = {
     "list": ListConverter,
     "str": UnicodeConverter,
-    "decimal": FloatConverter,
+    "decimal": DecimalConverter,
 }

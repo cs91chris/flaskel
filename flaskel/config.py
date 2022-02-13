@@ -8,6 +8,7 @@ from vbcore.date_helper import Seconds
 from flaskel.utils import logger
 
 DEBUG = config("DEBUG", default=False, cast=bool)
+FLASK_DEBUG = config("FLASK_DEBUG", default=DEBUG, cast=bool)
 TESTING = config("TESTING", default=False, cast=bool)
 APP_NAME = config("APP_NAME", default="flaskel")
 APP_HOST = config("APP_HOST", default="127.0.0.1")
