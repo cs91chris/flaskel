@@ -27,7 +27,7 @@ class ListConverter(BaseConverter):
         :param value:
         :return:
         """
-        return self._sep.join(BaseConverter.to_url(self, v) for v in value)
+        return self._sep.join(super().to_url(v) for v in value)
 
 
 CONVERTERS = {

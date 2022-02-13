@@ -4,14 +4,42 @@ import typing as t
 
 import flask
 import jinja2
-from vbcore.datastruct import ObjectDict
+from flask.typing import AfterRequestCallable, BeforeRequestCallable
 from vbcore.db.events import register_engine_events
 from vbcore.misc import random_string
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
+from werkzeug.routing import BaseConverter
 
 from flaskel import config, flaskel
 from .converters import CONVERTERS
+from .flaskel import DumpUrls, Flaskel
+from .views import BaseView
+
+StrPathLikeType = t.Union[
+    str,
+    os.PathLike,
+    t.Sequence[t.Union[str, os.PathLike]],
+]
+BlueprintType = t.Union[
+    flask.Blueprint,
+    t.Tuple[flask.Blueprint],
+    t.Tuple[flask.Blueprint, t.Dict[str, t.Any]],
+]
+WsgiCallable = t.Callable[[dict, t.Callable], t.Callable]
+WsgiCallableType = t.TypeVar("WsgiCallableType", bound=WsgiCallable)
+MiddleWareType = t.Union[
+    WsgiCallableType,
+    t.Tuple[WsgiCallableType],
+    t.Tuple[WsgiCallableType, t.Dict[str, t.Any]],
+]
+BaseViewType = t.TypeVar("BaseViewType", bound=BaseView)
+ViewType = t.Union[
+    BaseViewType,
+    t.Tuple[BaseViewType],
+    t.Tuple[BaseViewType, t.Dict[str, t.Any]],
+    t.Tuple[BaseViewType, flask.Blueprint, t.Dict[str, t.Any]],
+]
 
 
 # pylint: disable=too-many-instance-attributes,no-member
@@ -42,23 +70,26 @@ class AppBuilder:
     """
     conf_module = config
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
-        conf_module=None,
-        extensions=None,
-        converters=None,
-        blueprints=None,
-        folders=None,
-        middlewares=None,
-        views=None,
-        after_request=None,
-        before_request=None,
-        callback=None,
-        version=None,
+        app: t.Optional[Flaskel] = None,
+        conf_module: t.Optional[str] = None,
+        extensions: t.Optional[t.Dict[str, t.Any]] = None,
+        converters: t.Optional[t.Dict[str, t.Type[BaseConverter]]] = None,
+        folders: t.Tuple[StrPathLikeType, ...] = (),
+        blueprints: t.Tuple[BlueprintType, ...] = (),
+        middlewares: t.Tuple[MiddleWareType, ...] = (),
+        views: t.Tuple[ViewType, ...] = (),
+        after_request: t.Tuple[AfterRequestCallable, ...] = (),
+        before_request: t.Tuple[BeforeRequestCallable, ...] = (),
+        after_create_callback: t.Optional[t.Callable[[None], None]] = None,
+        version: t.Optional[str] = None,
         **options,
-    ):  # pylint: disable=too-many-arguments
+    ):
         """
 
+        :param app: an instance of Flaskel
         :param conf_module: python module file
         :param converters: custom url converter mapping
         :param extensions: custom extension appended to defaults
@@ -68,26 +99,30 @@ class AppBuilder:
         :param views: list of views to register
         :param after_request: list of functions to register after request
         :param before_request: list of functions to register before request
-        :param callback: a function called to patch app after all components registration
+        :param after_create_callback: a function called after all components are registered
         :param options: passed to Flask class
         :param version: app version, may be used by extensions
         :return:
         """
-        self._app: t.Optional[flask.Flask] = None
+        self._app = app
         self._version = version
-        self._converters = converters or {}
-        self._blueprints = blueprints or ()
-        self._extensions = extensions or {}
-        self._middlewares = middlewares or ()
-        self._folders = folders or ()
         self._options = options or {}
-        self._views = views or ()
-        self._after_request = after_request or ()
-        self._before_request = before_request or ()
-        self._callback = callback or (lambda: None)
+        self._converters = converters or {}
+        self._extensions = extensions or {}
+        self._views = views
+        self._folders = folders
+        self._blueprints = blueprints
+        self._middlewares = middlewares
+        self._after_request = after_request
+        self._before_request = before_request
+        self._after_create_callback = after_create_callback
         self._conf_module = conf_module or self.conf_module
 
-    def _generate_secret_key(self, secret_file, key_length):
+    @property
+    def app(self):
+        return self._app
+
+    def generate_secret_key(self, secret_file, key_length):
         secret_key = random_string(key_length)
 
         with open(secret_file, "w", encoding="utf-8") as f:
@@ -98,7 +133,7 @@ class AppBuilder:
             )
         return secret_key
 
-    def _load_secret_key(self, secret_file):
+    def load_secret_key(self, secret_file):
         if not os.path.isfile(secret_file):
             return None
 
@@ -107,42 +142,46 @@ class AppBuilder:
             self._app.logger.info("load secret key from: %s", secret_file)
         return secret_key
 
-    def _set_secret_key(self):
+    def set_secret_key(self):
         secret_key = None
-        key_length = self._app.config["SECRET_KEY_MIN_LENGTH"]
+        key_length = self._app.config.SECRET_KEY_MIN_LENGTH or 256
 
         if not self._app.config.get("FLASK_ENV", "").lower().startswith("dev"):
-            secret_file = self._app.config["SECRET_KEY"]
+            secret_file = self._app.config.SECRET_KEY
             if secret_file:
-                secret_key = self._load_secret_key(secret_file) or secret_file
+                secret_key = self.load_secret_key(secret_file) or secret_file
             else:
-                secret_file = self.secret_file
-                secret_key = self._load_secret_key(secret_file)
-                secret_key = secret_key or self._generate_secret_key(
-                    secret_file, key_length
+                secret_key = self.load_secret_key(self.secret_file)
+                secret_key = secret_key or self.generate_secret_key(
+                    self.secret_file, key_length
                 )
-        elif not self._app.config.get("SECRET_KEY"):
+        elif not self._app.config.SECRET_KEY:
             self._app.logger.debug("set secret key in development mode")
             secret_key = "fake_very_complex_string"
 
-        self._app.config["SECRET_KEY"] = secret_key or self._app.config["SECRET_KEY"]
+        self._app.config.SECRET_KEY = secret_key or self._app.config.SECRET_KEY
         if len(secret_key) < key_length:
             self._app.logger.warning("secret key length is less than: %s", key_length)
 
-        if not self._app.config.get("JWT_SECRET_KEY") is None:
-            self._app.config["JWT_SECRET_KEY"] = self._app.config["SECRET_KEY"]
+        if not self._app.config.JWT_SECRET_KEY:
+            self._app.config.JWT_SECRET_KEY = self._app.config.SECRET_KEY
 
-    def _set_config(self, conf):
+    def set_config(self, conf):
         self._app.config.from_object(self._conf_module)
         self._app.config.from_mapping(**(conf or {}))
         self._app.config.from_envvar("APP_CONFIG_FILE", silent=True)
-        self._app.config = ObjectDict(**self._app.config)
 
-    def _register_extensions(self):
+    @staticmethod
+    def normalize_tuple(tokens: t.Union[t.Any, tuple]) -> t.Tuple[t.Any, t.Dict]:
+        if not isinstance(tokens, (tuple)):
+            return tokens, {}
+        return tokens[0], tokens[1] if len(tokens) > 1 else {}
+
+    def register_extensions(self):
         with self._app.app_context():
             for name, e in self._extensions.items():
                 try:
-                    ext, opt = e[0], e[1] if len(e) > 1 else {}
+                    ext, opt = self.normalize_tuple(e)
                     if not ext:
                         raise TypeError("extension could not be None or empty")
                 except (TypeError, IndexError) as exc:
@@ -160,29 +199,20 @@ class AppBuilder:
         for k, v in self._app.extensions.items():
             self._app.logger.debug("Registered extension '%s': %s", k, v)
 
-    def _register_blueprints(self):
+    def register_blueprints(self):
         for b in self._blueprints:
-            try:
-                bp, opt = b[0], b[1] if len(b) > 1 else {}
-                if not bp:
-                    raise TypeError("blueprint could not be None or empty")
-            except (TypeError, IndexError) as exc:
-                self._app.logger.warning(
-                    "invalid blueprint configuration '%s': %s", b, exc
-                )
-                continue
-
+            bp, opt = self.normalize_tuple(b)
             self._app.register_blueprint(bp, **opt)
             self._app.logger.debug(
                 "Registered blueprint '%s' with options: %s", bp.name, opt
             )
 
-    def _register_converters(self):
+    def register_converters(self):
         self._app.url_map.converters.update({**self.url_converters, **self._converters})
         for k, v in self._app.url_map.converters.items():
             self._app.logger.debug("Registered converter: '%s' = %s", k, v.__name__)
 
-    def _register_template_folders(self):
+    def register_template_folders(self):
         loaders = [self._app.jinja_loader]
 
         for fsl in self._folders:
@@ -193,35 +223,25 @@ class AppBuilder:
             for f in self._folders:
                 self._app.logger.debug("Registered template folder: '%s'", f)
 
-    def _register_middlewares(self):
+    def register_middlewares(self):
         for m in self._middlewares:
-            kwargs = {}
-            try:
-                if isinstance(m, (list, tuple)):
-                    m, kwargs = m[0], m[1] if len(m) > 1 else {}
-                if not m:
-                    raise TypeError("middleware could not be None or empty")
-            except (TypeError, IndexError) as exc:
-                self._app.logger.warning(
-                    "invalid middleware configuration '%s': %s", m, exc
-                )
-                continue
-
+            m, kwargs = self.normalize_tuple(m)
             # WorkAround: in order to pass flask app to middleware without breaking chain
-            if not (hasattr(m, "flask_app") and m.flask_app):
-                setattr(m, "flask_app", self._app)
+            setattr(m, "flask_app", self._app)
 
             self._app.wsgi_app = m(self._app.wsgi_app, **kwargs)
             self._app.logger.debug("Registered middleware: '%s'", m.__name__)
 
-    def _register_views(self):
-        def normalize_args(data):
+    def register_views(self):
+        def normalize_args(data: ViewType) -> tuple:
+            if not isinstance(data, tuple):
+                data = (data,)
             d = data + (None,) * (3 - len(data))
             if isinstance(d[1], dict):
                 return d[0], d[2], d[1]
             return d[0], d[1], d[2] or {}
 
-        def normalize_params(_v, _p):
+        def normalize_params(_v, _p: dict) -> dict:
             _p.setdefault("name", _v.default_view_name)
             _p.setdefault("urls", _v.default_urls)
             return _p
@@ -234,88 +254,74 @@ class AppBuilder:
                 "Registered view: '%s' %s with params: %s", v.__name__, mess, p
             )
 
-    def _register_after_request(self):
+    def register_after_request(self):
         for f in self._after_request:
             self._app.after_request_funcs.setdefault(None, []).append(f)
             self._app.logger.debug(
                 "Registered function after request: '%s'", f.__name__
             )
 
-    def _register_before_request(self):
+    def register_before_request(self):
         for f in self._before_request:
             self._app.before_request_funcs.setdefault(None, []).append(f)
             self._app.logger.debug(
                 "Registered function before request: '%s'", f.__name__
             )
 
-    def _set_linter_and_profiler(self):
-        if self._app.config["WSGI_WERKZEUG_PROFILER_ENABLED"]:
-            file = self._app.config["WSGI_WERKZEUG_PROFILER_FILE"]
+    def set_linter_and_profiler(self):
+        if self._app.config.WSGI_WERKZEUG_PROFILER_ENABLED:
+            file = self._app.config.WSGI_WERKZEUG_PROFILER_FILE
             self._app.wsgi_app = ProfilerMiddleware(
                 self._app.wsgi_app,
                 # pylint: disable=consider-using-with
                 stream=open(file, "w", encoding="utf-8") if file else sys.stdout,
-                restrictions=self._app.config["WSGI_WERKZEUG_PROFILER_RESTRICTION"],
+                restrictions=self._app.config.WSGI_WERKZEUG_PROFILER_RESTRICTION,
             )
             self._app.logger.debug("Registered: '%s'", ProfilerMiddleware.__name__)
 
-        if self._app.config["WSGI_WERKZEUG_LINT_ENABLED"]:
+        if self._app.config.WSGI_WERKZEUG_LINT_ENABLED:
             self._app.wsgi_app = LintMiddleware(self._app.wsgi_app)
             self._app.logger.debug("Registered: '%s'", LintMiddleware.__name__)
 
-    def _dump_urls(self):
-        class DumpUrls:
-            def __init__(self, rules):
-                self._rules = rules
+    def dump_urls(self):
+        if self._app is not None:
+            self._app.logger.debug("Registered routes:\n%s", DumpUrls(self._app))
 
-            def __str__(self):
-                output = []
-                for rule in self._rules:
-                    methods = ",".join(rule.methods)
-                    # pylint: disable=consider-using-f-string
-                    output.append(
-                        "{:30s} {:40s} {}".format(rule.endpoint, methods, rule)
-                    )
-                return "\n".join(sorted(output))
-
-        self._app.logger.debug(
-            "Registered routes:\n%s", DumpUrls(self._app.url_map.iter_rules())
-        )
-
-    def _patch_app(self):
-        self._dump_urls()
-
-        if self._app.debug:
-            self._set_linter_and_profiler()
-
-        with self._app.app_context():
+    def init_db(self):
+        try:
             sqlalchemy = self._app.extensions.get("sqlalchemy")
             if sqlalchemy is not None:
                 register_engine_events(sqlalchemy.db.engine)
                 sqlalchemy.db.create_all()
+        except Exception as exc:  # pylint: disable=broad-except
+            self._app.logger.exception(exc)
 
-            self._callback()
+    def after_create_hook(self):
+        self.dump_urls()
 
-    def create(self, conf=None):
-        self._app = self.flask_class(self.app_name, **self._options)
+        if self._app.debug:
+            self.set_linter_and_profiler()
+
+        with self._app.app_context():
+            self.init_db()
+            if callable(self._after_create_callback):
+                self._after_create_callback()
+
+    def create(self, conf=None) -> Flaskel:
+        self._app = self._app or self.flask_class(self.app_name, **self._options)
         self._app.version = self._version
 
-        self._set_config(conf)
-        self._set_secret_key()
+        self.set_config(conf)
+        self.set_secret_key()
 
-        self._register_extensions()
-        self._register_middlewares()
-        self._register_template_folders()
-        self._register_converters()
-        self._register_views()
-        self._register_blueprints()
-        self._register_after_request()
-        self._register_before_request()
+        self.register_extensions()
+        self.register_middlewares()
+        self.register_template_folders()
+        self.register_converters()
+        self.register_views()
+        self.register_blueprints()
+        self.register_after_request()
+        self.register_before_request()
 
-        self._patch_app()
-
-    def get_or_create(self, conf=None):
-        if self._app is None:
-            self.create(conf)
-
+        self.after_create_hook()
         return self._app

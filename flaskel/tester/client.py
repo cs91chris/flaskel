@@ -44,7 +44,7 @@ class TestClient(FlaskClient, JSONRPCMixin):
         :param kwargs:
         :return:
         """
-        app = AppBuilder(**kwargs).get_or_create(conf)
+        app = AppBuilder(**kwargs).create(conf)
         app.test_client_class = cls
         app.TESTING = True
 

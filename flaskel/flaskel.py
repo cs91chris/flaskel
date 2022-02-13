@@ -1,14 +1,41 @@
+import typing as t
+
 import flask
-from flask import current_app as cap
-from vbcore.datastruct import ObjectDict
+from vbcore.datastruct import ObjectDict, Dumper
 from vbcore.http import httpcode
 from vbcore.json import JsonEncoder
+from werkzeug.routing import Rule
 from werkzeug.utils import safe_join
+
+cap: "Flaskel" = t.cast("Flaskel", flask.current_app)
+request: "Request" = t.cast("Request", flask.request)
+
+
+class Config(flask.Config, ObjectDict):
+    def __init__(self, root_path: str, defaults: t.Optional[dict] = None):
+        flask.Config.__init__(self, root_path, defaults)
+        ObjectDict.__init__(self)
+
+
+class DumpUrls(Dumper):
+    def __init__(self, app: flask.Flask):
+        super().__init__(app.url_map.iter_rules())
+
+    @property
+    def rules(self) -> t.Iterator[Rule]:
+        return self.data
+
+    def dump(self) -> str:
+        output = []
+        for rule in self.rules:
+            methods = ",".join(rule.methods)
+            output.append(f"{rule.endpoint}:30s {methods}:40s {rule}")
+        return "\n".join(sorted(output))
 
 
 class Request(flask.Request):
     @property
-    def id(self):  # pylint: disable=C0103
+    def id(self) -> str:  # pylint: disable=C0103
         hdr = cap.config.REQUEST_ID_HEADER
         if hasattr(flask.g, "request_id"):
             return flask.g.request_id
@@ -18,7 +45,7 @@ class Request(flask.Request):
         flask_header_name = f"HTTP_{hdr.upper().replace('-', '_')}"
         return flask.request.environ.get(flask_header_name)
 
-    def get_json(self, *args, allow_empty=False, **kwargs):
+    def get_json(self, *args, allow_empty=False, **kwargs) -> ObjectDict:
         """
 
         :param allow_empty:
@@ -34,8 +61,8 @@ class Request(flask.Request):
 
 
 class Response(flask.Response):
-    @staticmethod
-    def no_content(status=httpcode.NO_CONTENT, headers=None):
+    @classmethod
+    def no_content(cls, status=httpcode.NO_CONTENT, headers=None) -> "Response":
         """
 
         :param status:
@@ -47,10 +74,10 @@ class Response(flask.Response):
         response.headers.pop("Content-Type")
         response.headers.pop("Content-Length")
         response.status_code = status
-        return response
+        return t.cast("Response", response)
 
-    @staticmethod
-    def send_file(directory, filename, **kwargs):
+    @classmethod
+    def send_file(cls, directory, filename, **kwargs) -> "Response":
         """
 
         :param directory:
@@ -64,8 +91,7 @@ class Response(flask.Response):
             resp = flask.send_file(file_path, **kwargs)
         except IOError as exc:
             cap.logger.warning(str(exc))
-            flask.abort(httpcode.NOT_FOUND)
-            return None  # only to prevent warning # pragma: no cover
+            return flask.abort(httpcode.NOT_FOUND)
 
         # following headers works with nginx compatible proxy
         if cap.use_x_sendfile is True and cap.config.ENABLE_ACCEL is True:
@@ -81,11 +107,12 @@ class Response(flask.Response):
 
         return resp
 
-    def get_json(self, *args, **kwargs):
+    def get_json(self, *args, **kwargs) -> ObjectDict:
         return ObjectDict.normalize(super().get_json(*args, **kwargs))
 
 
 class Flaskel(flask.Flask):
+    config_class = Config
     request_class = Request
     response_class = Response
     json_encoder = JsonEncoder
@@ -93,3 +120,4 @@ class Flaskel(flask.Flask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.version = None
+        self.config: Config

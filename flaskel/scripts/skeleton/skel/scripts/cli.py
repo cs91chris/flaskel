@@ -2,7 +2,7 @@ from views import BLUEPRINTS, VIEWS
 from ext import EXTENSIONS
 from flaskel import AppBuilder, middlewares as middle, Server
 
-APP_CONFIG = dict(
+factory = AppBuilder(
     static_folder=None,  # because static is inside web blueprint
     blueprints=BLUEPRINTS,
     extensions=EXTENSIONS,
@@ -14,8 +14,6 @@ APP_CONFIG = dict(
     ),
 )
 
-factory = AppBuilder(**APP_CONFIG)
-
 
 def create_app(conf=None):
     """
@@ -24,7 +22,7 @@ def create_app(conf=None):
     :param conf:
     :return:
     """
-    return factory.get_or_create(conf)
+    return factory.create(conf)
 
 
 def cli():
