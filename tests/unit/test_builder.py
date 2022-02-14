@@ -245,6 +245,20 @@ def test_set_linter_and_profiler(caplog):
         Asserter.assert_true(record.getMessage().startswith("Registered"))
 
 
+def test_dump_urls(caplog):
+    builder = AppBuilder(get_app())
+    builder.dump_urls()
+    Asserter.assert_equals(len(caplog.records), 1)
+    Asserter.assert_true(caplog.records[0].getMessage().startswith("Registered routes"))
+
+
+def test_after_create_hook():
+    callback = MagicMock()
+    builder = AppBuilder(get_app(), after_create_callback=callback)
+    builder.after_create_hook()
+    callback.is_called()
+
+
 def test_create():
     builder = AppBuilder()
     builder.set_secret_key = MagicMock()

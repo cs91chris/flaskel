@@ -15,7 +15,7 @@ define req_compile
 endef
 
 
-all: clean lint test security
+all: clean lint coverage security
 build-publish: build-dist pypi-publish
 
 compile-deps:
@@ -64,7 +64,10 @@ lint:
 	mypy --install-types --non-interactive --no-strict-optional ${PACKAGE}
 
 test:
-	pytest --cov=${PACKAGE} --cov-report=html --cov-config .coveragerc tests
+	pytest -v --maxfail=5 tests
+
+coverage:
+	pytest --maxfail=5 --cov=${PACKAGE} --cov-report=html --cov-config .coveragerc tests
 
 build-dist:
 	python setup.py sdist bdist_wheel

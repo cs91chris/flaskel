@@ -14,6 +14,7 @@ from werkzeug.routing import BaseConverter
 from flaskel import config, flaskel
 from .converters import CONVERTERS
 from .flaskel import DumpUrls, Flaskel
+from .middlewares import BaseMiddleware
 from .views import BaseView
 
 StrPathLikeType = t.Union[
@@ -226,8 +227,8 @@ class AppBuilder:
     def register_middlewares(self):
         for m in self._middlewares:
             m, kwargs = self.normalize_tuple(m)
-            # WorkAround: in order to pass flask app to middleware without breaking chain
-            setattr(m, "flask_app", self._app)
+            if isinstance(m, BaseMiddleware):
+                m.flask_app = self._app
 
             self._app.wsgi_app = m(self._app.wsgi_app, **kwargs)
             self._app.logger.debug("Registered middleware: '%s'", m.__name__)
