@@ -19,7 +19,8 @@ class Field:
     not_positive = partial(integer, validate=lambda x: x <= 0)
     not_negative = partial(integer, validate=lambda x: x >= 0)
     isodate = partial(fields.DateTime)
-    list_of = partial(fields.DelimitedTuple, cls_or_instance=string(), delimiter="+")
+    str_list = partial(fields.DelimitedList, cls_or_instance=string(), delimiter=",")
+    int_list = partial(fields.DelimitedList, cls_or_instance=integer(), delimiter=",")
 
 
 class OptField:
@@ -32,7 +33,8 @@ class OptField:
     not_positive = partial(Field.not_positive, load_default=None)
     not_negative = partial(Field.not_negative, load_default=None)
     isodate = partial(Field.isodate, load_default=None)
-    list_of = partial(Field.list_of, load_default=())
+    str_list = partial(Field.str_list, load_default=())
+    int_list = partial(Field.int_list, load_default=())
 
 
 class ReqField:
@@ -45,7 +47,8 @@ class ReqField:
     not_positive = partial(Field.not_positive, required=True)
     not_negative = partial(Field.not_negative, required=True)
     isodate = partial(Field.isodate, required=True)
-    list_of = partial(Field.list_of, required=True)
+    str_list = partial(Field.str_list, required=True)
+    int_list = partial(Field.int_list, required=True)
 
 
 @parser.error_handler

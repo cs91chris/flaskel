@@ -1,5 +1,8 @@
+import typing as t
+
 import flask
 import jsonschema
+from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.jsonschema.support import JSONSchema
 
@@ -8,16 +11,11 @@ from flaskel.utils.datastruct import ExtProxy
 
 
 class PayloadValidator:
-    schemas = ExtProxy("SCHEMAS")
-    validator = JSONSchema
+    schemas: ObjectDict = ExtProxy("SCHEMAS")
+    validator: t.Type[JSONSchema] = JSONSchema
 
     @classmethod
-    def validate(cls, schema, strict=True):
-        """
-        :param schema:
-        :param strict:
-        :return:
-        """
+    def validate(cls, schema: t.Union[str, dict], strict: bool = True) -> ObjectDict:
         if strict and schema is None:
             flask.abort(httpcode.INTERNAL_SERVER_ERROR, "empty schema")
 
@@ -28,9 +26,10 @@ class PayloadValidator:
             return payload
         except jsonschema.SchemaError as exc:
             cap.logger.exception(exc)
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            return flask.abort(httpcode.INTERNAL_SERVER_ERROR)
         except jsonschema.ValidationError as exc:
             cap.logger.error(cls.validator.error_report(exc, payload))
             reason = dict(cause=exc.cause, message=exc.message, path=exc.path)
-            flask.abort(httpcode.UNPROCESSABLE_ENTITY, response=dict(reason=reason))
-        return None
+            return flask.abort(
+                httpcode.UNPROCESSABLE_ENTITY, response=dict(reason=reason)
+            )

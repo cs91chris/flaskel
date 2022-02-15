@@ -8,35 +8,31 @@ from flaskel import AppBuilder, middlewares, Flaskel, Response
 from flaskel.views import BaseView
 
 
-def get_app() -> Flaskel:
-    return Flaskel(__name__)
-
-
 @patch("flaskel.builder.random_string")
-def test_generate_secret_key(mock_random_string, tmpdir):
+def test_generate_secret_key(mock_random_string, flaskel_app, tmpdir):
     secret_str = "secretkey"
     mock_random_string.return_value = secret_str
     file = tmpdir.join("test_generate_secret_key.key")
 
-    builder = AppBuilder(get_app())
+    builder = AppBuilder(flaskel_app)
     secret_key = builder.generate_secret_key(file.strpath, len(secret_str))
     Asserter.assert_equals(secret_key, secret_str)
     Asserter.assert_equals(file.read(), secret_str)
 
 
-def test_load_secret_key(tmpdir):
+def test_load_secret_key(flaskel_app, tmpdir):
     secret_str = "secretkey"
     file = tmpdir.join("test_load_secret_key.key")
     file.write(secret_str)
 
-    builder = AppBuilder(get_app())
+    builder = AppBuilder(flaskel_app)
     secret_key = builder.load_secret_key(file.strpath)
     Asserter.assert_equals(secret_key, secret_str)
     Asserter.assert_none(builder.load_secret_key("nofile"))
 
 
-def test_set_secret_key_dev(caplog):
-    app = get_app()
+def test_set_secret_key_dev(flaskel_app, caplog):
+    app = flaskel_app
     builder = AppBuilder(app)
     builder.set_config({"FLASK_ENV": "development"})
     builder.set_secret_key()
@@ -50,8 +46,8 @@ def test_set_secret_key_dev(caplog):
     )
 
 
-def test_set_secret_key_prod(tmpdir):
-    app = get_app()
+def test_set_secret_key_prod(flaskel_app, tmpdir):
+    app = flaskel_app
     builder = AppBuilder(app)
     builder.set_config(
         {
@@ -66,9 +62,9 @@ def test_set_secret_key_prod(tmpdir):
     Asserter.assert_equals(len(app.config.SECRET_KEY), app.config.SECRET_KEY_MIN_LENGTH)
 
 
-def test_register_extension(caplog):
+def test_register_extension(flaskel_app, caplog):
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         extensions={
             "invalid": (None, (None,)),
             "ext1": (MagicMock(),),
@@ -90,9 +86,9 @@ def test_register_extension(caplog):
     Asserter.assert_in("ext2", caplog.records[2].getMessage())
 
 
-def test_register_blueprints(caplog):
+def test_register_blueprints(flaskel_app, caplog):
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         blueprints=(
             Blueprint(import_name="bp1", name="bp1"),
             (Blueprint(import_name="bp2", name="bp2"),),
@@ -108,9 +104,9 @@ def test_register_blueprints(caplog):
         Asserter.assert_true(record.getMessage().startswith("Registered blueprint"))
 
 
-def test_register_converters(caplog):
+def test_register_converters(flaskel_app, caplog):
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         converters={
             "conv1": BaseConverter,
             "conv2": FloatConverter,
@@ -125,9 +121,9 @@ def test_register_converters(caplog):
         Asserter.assert_true(record.getMessage().startswith("Registered converter"))
 
 
-def test_register_template_folders(caplog):
+def test_register_template_folders(flaskel_app, caplog):
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         folders=(
             "folder1",
             "folder2",
@@ -143,9 +139,9 @@ def test_register_template_folders(caplog):
         )
 
 
-def test_register_middlewares(caplog):
+def test_register_middlewares(flaskel_app, caplog):
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         middlewares=(
             middlewares.ForceHttps,
             (middlewares.ForceHttps,),
@@ -160,12 +156,12 @@ def test_register_middlewares(caplog):
         Asserter.assert_true(record.getMessage().startswith("Registered middleware"))
 
 
-def test_register_views(caplog):
+def test_register_views(flaskel_app, caplog):
     class CView(BaseView):
         default_view_name = "cview"
 
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         views=(
             CView,
             (BaseView,),
@@ -181,7 +177,7 @@ def test_register_views(caplog):
         Asserter.assert_true(record.getMessage().startswith("Registered view"))
 
 
-def test_register_after_request(caplog):
+def test_register_after_request(flaskel_app, caplog):
     def after_request_1(resp):
         return resp
 
@@ -189,7 +185,7 @@ def test_register_after_request(caplog):
         return resp
 
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         after_request=(
             after_request_1,
             after_request_2,
@@ -205,7 +201,7 @@ def test_register_after_request(caplog):
         )
 
 
-def test_register_before_request(caplog):
+def test_register_before_request(flaskel_app, caplog):
     def before_request_1() -> Response:
         return Response.no_content()
 
@@ -213,7 +209,7 @@ def test_register_before_request(caplog):
         return Response.no_content()
 
     builder = AppBuilder(
-        get_app(),
+        flaskel_app,
         before_request=(
             before_request_1,
             before_request_2,
@@ -229,8 +225,8 @@ def test_register_before_request(caplog):
         )
 
 
-def test_set_linter_and_profiler(caplog):
-    builder = AppBuilder(get_app())
+def test_set_linter_and_profiler(flaskel_app, caplog):
+    builder = AppBuilder(flaskel_app)
     builder.set_config(
         {
             "DEBUG": True,
@@ -245,16 +241,16 @@ def test_set_linter_and_profiler(caplog):
         Asserter.assert_true(record.getMessage().startswith("Registered"))
 
 
-def test_dump_urls(caplog):
-    builder = AppBuilder(get_app())
+def test_dump_urls(flaskel_app, caplog):
+    builder = AppBuilder(flaskel_app)
     builder.dump_urls()
     Asserter.assert_equals(len(caplog.records), 1)
     Asserter.assert_true(caplog.records[0].getMessage().startswith("Registered routes"))
 
 
-def test_after_create_hook():
+def test_after_create_hook(flaskel_app):
     callback = MagicMock()
-    builder = AppBuilder(get_app(), after_create_callback=callback)
+    builder = AppBuilder(flaskel_app, after_create_callback=callback)
     builder.after_create_hook()
     callback.is_called()
 
