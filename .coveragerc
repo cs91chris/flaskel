@@ -1,9 +1,4 @@
 [run]
-omit =
-    flaskel/wsgi/*
-    flaskel/tester/plugins/*
-    flaskel/scripts/cli.py
-    flaskel/tester/cli.py
 
 [report]
 exclude_lines =

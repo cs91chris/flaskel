@@ -1,29 +1,31 @@
-from .base import WSGIBuiltin
+import typing as t
+
+from .base import WSGIBuiltin, BaseApplication
 
 try:
-    from .gevent import WSGIGevent
+    from .wsgi_gevent import WSGIGevent
 except ImportError:
     WSGIGevent = None  # type: ignore
 try:
-    from .gunicorn import WSGIGunicorn
+    from .wsgi_gunicorn import WSGIGunicorn
 except ImportError:
     WSGIGunicorn = None  # type: ignore
 try:
-    from .tornado import WSGITornado
+    from .wsgi_tornado import WSGITornado
 except ImportError:
     WSGITornado = None  # type: ignore
 try:
-    from .twisted import WSGITwisted
+    from .wsgi_twisted import WSGITwisted
 except ImportError:
     WSGITwisted = None  # type: ignore
 try:
-    from .waitress import WSGIWaitress
+    from .wsgi_waitress import WSGIWaitress
 except ImportError:
     WSGIWaitress = None  # type: ignore
 
 
 class WSGIFactory:
-    WSGI_SERVERS = {
+    WSGI_SERVERS: t.Dict[str, t.Type[BaseApplication]] = {
         "builtin": WSGIBuiltin,
         "gunicorn": WSGIGunicorn,
         "gevent": WSGIGevent,
@@ -33,23 +35,12 @@ class WSGIFactory:
     }
 
     @classmethod
-    def get_instance(cls, name, **kwargs):
-        """
-
-        :param name:
-        :param kwargs:
-        :return:
-        """
+    def get_instance(cls, name: str, **kwargs) -> BaseApplication:
         wsgi_class = cls.get_class(name)
         return wsgi_class(**kwargs)
 
     @classmethod
-    def get_class(cls, name):
-        """
-
-        :param name:
-        :return:
-        """
+    def get_class(cls, name: str) -> t.Type[BaseApplication]:
         if name not in cls.WSGI_SERVERS:
             raise ValueError(f"unable to find wsgi server: '{name}'")
 

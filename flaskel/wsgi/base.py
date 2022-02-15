@@ -1,13 +1,13 @@
+import typing as t
+
+from flaskel import Flaskel
+
+
 class BaseApplication:
     default_host = "127.0.0.1"
     default_port = 5000
 
-    def __init__(self, app, options=None):
-        """
-
-        :param app:
-        :param options:
-        """
+    def __init__(self, app: Flaskel, options: t.Optional[dict] = None):
         self.application = app
         self.options = options or {}
 
@@ -19,19 +19,10 @@ class BaseApplication:
         self._bind = (self._interface, self._port)
 
     def run(self):
-        """
-
-        :return:
-        """
         raise NotImplementedError  # pragma: no cover
 
 
 class WSGIBuiltin(BaseApplication):
     def run(self):
-        """
-
-        :return:
-        """
-        debug = self.application.config.get("DEBUG") or False
-
+        debug = self.application.config.DEBUG or False
         self.application.run(host=self._interface, port=self._port, debug=debug)

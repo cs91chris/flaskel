@@ -1,26 +1,25 @@
 import sys
 import threading
 import traceback
+import typing as t
 from multiprocessing import cpu_count
 
+from gunicorn.app.base import BaseApplication as WSGIServer
+
+from flaskel import Flaskel
 from flaskel.config import config
-
-try:
-    from gunicorn.app.base import BaseApplication as WSGIServer
-except ImportError:
-    WSGIServer = object
-
 from .base import BaseApplication
 
 
 class WSGIGunicorn(BaseApplication, WSGIServer):
-    def init(self, parser, opts, args):
-        self.options = opts or {}
+    default_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
-    def __init__(self, app, options=None):
-        assert WSGIServer is not object, "you must install 'gunicorn'"
+    def __init__(self, app: Flaskel, options: t.Optional[dict] = None):
         BaseApplication.__init__(self, app, options)
         WSGIServer.__init__(self)
+
+    def init(self, parser, opts, args):
+        self.options = opts or {}
 
     def run(self):
         WSGIServer.run(self)
@@ -63,10 +62,7 @@ class WSGIGunicorn(BaseApplication, WSGIServer):
         self.cfg.set("errorlog", "-")
         self.cfg.set("accesslog", "-")
         self.cfg.set("loglevel", config("LOG_LEVEL", default="info").lower())
-        self.cfg.set(
-            "access_log_format",
-            '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"',
-        )
+        self.cfg.set("access_log_format", self.default_log_format)
 
     def load_config(self):
         self.set_default_config()
