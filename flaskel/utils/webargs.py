@@ -1,8 +1,9 @@
 from functools import partial
 
-import flask
 from vbcore.http import httpcode
 from webargs import fields, flaskparser
+
+from flaskel import abort
 
 parser = flaskparser.FlaskParser()
 query = partial(parser.use_args, location="query")
@@ -53,7 +54,7 @@ class ReqField:
 
 @parser.error_handler
 def handle_error(error, *_, **__):
-    flask.abort(httpcode.BAD_REQUEST, response=error.messages)
+    abort(httpcode.BAD_REQUEST, response=error.messages)
 
 
 query_paginate = partial(
