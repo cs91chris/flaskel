@@ -3,7 +3,7 @@ from vbcore.http import httpcode
 
 from flaskel import cap, Response
 from flaskel.config import config
-from flaskel.views import BaseView
+from .base import BaseView
 
 
 class StaticFileView(BaseView):

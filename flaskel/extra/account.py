@@ -8,7 +8,7 @@ from vbcore.http import httpcode, HttpMethod
 from vbcore.misc import random_string
 
 from flaskel import cap
-from flaskel.ext import builder
+from flaskel.ext.default import builder
 from flaskel.utils.datastruct import ExtProxy, ConfigProxy
 from flaskel.utils.validator import PayloadValidator
 from flaskel.views import BaseView

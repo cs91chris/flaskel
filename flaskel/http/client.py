@@ -1,18 +1,14 @@
-import flask
 from requests import exceptions as http_exc
 from vbcore.http.batch import HTTPBatch
 from vbcore.http.client import HTTPClient, JsonRPCClient
 from vbcore.uuid import get_uuid
 
-from flaskel import flaskel
+from flaskel import cap, request
 from .httpdumper import FlaskelHTTPDumper
 
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
 all_errors = (*HTTPStatusError, *NetworkError)
-
-cap = flaskel.cap
-request: "flaskel.Request" = flask.request  # type: ignore
 
 
 class FlaskelHTTPBatch(FlaskelHTTPDumper, HTTPBatch):

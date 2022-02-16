@@ -49,27 +49,16 @@ class JSONRedisClient(Client):
 
 class FlaskRedis:
     def __init__(self, app=None, client=None, **kwargs):
-        """
-
-        :param app:
-        :param client:
-        :param kwargs:
-        """
         self._client = client
 
         if app is not None:
-            self.init_app(app, **kwargs)  # pragma: no cover
+            self.init_app(app, **kwargs)
 
     @property
     def client(self):
         return self._client  # pragma: no cover
 
     def init_app(self, app, redis_class=None, **kwargs):
-        """
-
-        :param app:
-        :param redis_class:
-        """
         assert redis is not None, "redis must be installed"
         if redis_class is None:
             if Client is object:
@@ -78,7 +67,6 @@ class FlaskRedis:
                 redis_class = JSONRedisClient
 
         app.config.setdefault("REDIS_URL", "redis://localhost:6379/0")
-
         app.config.setdefault("REDIS_OPTS", {})
         app.config["REDIS_OPTS"].setdefault("decode_responses", True)
         app.config["REDIS_OPTS"].setdefault("socket_connect_timeout", Seconds.millis)
@@ -94,6 +82,3 @@ class FlaskRedis:
 
     def __getattr__(self, name):
         return getattr(self._client, name)
-
-
-client_redis = FlaskRedis()

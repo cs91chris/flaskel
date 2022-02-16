@@ -6,11 +6,9 @@ from flask import request, current_app as cap
 from flask_caching import Cache as FlaskCache
 from vbcore.http import HttpMethod, httpcode
 
-caching = FlaskCache()
-
 
 class Cache:
-    cache = caching
+    caching = FlaskCache()
     default_timeout: t.Union[t.Callable, str] = None
     key_separator: t.Union[t.Callable, str] = "/"
     key_prefix: t.Union[t.Callable, str] = "/cached_request/"
@@ -76,7 +74,7 @@ class Cache:
 
                 kwargs["timeout"] = cls.optional_callable(kwargs["timeout"])
 
-                @cls.cache.cached(**kwargs)
+                @cls.caching.cached(**kwargs)
                 def decorated_function():
                     return f(*args, **kw)
 

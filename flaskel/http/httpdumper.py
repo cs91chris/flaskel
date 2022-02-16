@@ -1,6 +1,7 @@
-from flask import current_app as cap
 from vbcore.datastruct import Dumper
 from vbcore.http.httpdumper import BaseHTTPDumper
+
+from flaskel import cap
 
 
 class LazyHTTPDumper(BaseHTTPDumper):

@@ -3,23 +3,13 @@ from vbcore.date_helper import DateHelper
 
 class FlaskDateHelper:
     def __init__(self, app=None, **kwargs):
-        """
-
-        :param app:
-        :param kwargs:
-        """
         self._helper = None
         self.iso_format = None
 
         if app is not None:
-            self.init_app(app, **kwargs)  # pragma: no cover
+            self.init_app(app, **kwargs)
 
     def init_app(self, app, helper=DateHelper, **__):
-        """
-
-        :param app:
-        :param helper:
-        """
         app.config.setdefault("DATE_HELPER_COUNTRY", "IT")
         app.config.setdefault("DATE_HELPER_PROV", None)
         app.config.setdefault("DATE_HELPER_STATE", None)
@@ -39,6 +29,3 @@ class FlaskDateHelper:
         return self.change_format(
             str_date, in_fmt=fmt, out_fmt=self.iso_format, **kwargs
         )
-
-
-date_helper = FlaskDateHelper()

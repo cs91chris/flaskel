@@ -3,8 +3,8 @@ import flask_jwt_extended
 from vbcore.http import HttpMethod, httpcode
 
 from flaskel import cap
-from flaskel.ext import builder
 from flaskel.ext.auth import BaseTokenHandler
+from flaskel.ext.default import builder
 from flaskel.utils import webargs
 from flaskel.views import BaseView
 
@@ -20,13 +20,13 @@ class BaseTokenAuth(BaseView):
     ]
 
     """
-        endpoint should not be change otherwise dispatch_request must change
+        NOTE: endpoint should not be change otherwise dispatch_request must change
     """
     default_urls = (
-        {"url": "/token/access", "endpoint": "token_access"},
-        {"url": "/token/refresh", "endpoint": "token_refresh"},
-        {"url": "/token/revoke", "endpoint": "token_revoke"},
-        {"url": "/token/check", "endpoint": "token_check"},
+        {"endpoint": "token_access", "url": "/token/access"},
+        {"endpoint": "token_refresh", "url": "/token/refresh"},
+        {"endpoint": "token_revoke", "url": "/token/revoke"},
+        {"endpoint": "token_check", "url": "/token/check"},
     )
 
     @classmethod
@@ -40,10 +40,10 @@ class BaseTokenAuth(BaseView):
         return None
 
     @classmethod
-    @webargs.query(
+    @webargs.query(  # type: ignore
         dict(
-            expires_access=webargs.OptField.positive(),
-            expires_refresh=webargs.OptField.positive(),
+            expires_access=webargs.OptField.positive(),  # type: ignore
+            expires_refresh=webargs.OptField.positive(),  # type: ignore
         )
     )
     def access_token(cls, args):

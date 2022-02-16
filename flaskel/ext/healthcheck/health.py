@@ -1,24 +1,18 @@
 import functools
 
-import flask
 from vbcore.batch import ThreadBatchExecutor, BatchExecutor
 from vbcore.http import httpcode
 
-from flaskel.ext.default import builder
-from flaskel.flaskel import cap
+from flaskel.flaskel import cap, request
 
 
 class HealthCheck:
     def __init__(self, app=None, **kwargs):
-        """
-
-        :param app:
-        """
         self._executor = None
         self._health_checks = {}
 
-        if app:
-            self.init_app(app, **kwargs)  # pragma: no cover
+        if app is not None:
+            self.init_app(app, **kwargs)
 
     def init_app(self, app, bp=None, extensions=(), decorators=(), executor=None):
         """
@@ -73,11 +67,10 @@ class HealthCheck:
             try:
                 func = ex.pop("func")
                 self.register(**ex)(func)
-            except Exception as exc:  # pylint: disable=W0703
+            except Exception as exc:  # pylint: disable=broad-except
                 app.logger.exception(exc)
                 app.logger.error("invalid healthcheck extension: %s", ex)
 
-    @builder.response("json")
     def perform(self):
         healthy = True
         response = dict(
@@ -86,7 +79,7 @@ class HealthCheck:
             links={"about": cap.config["HEALTHCHECK_ABOUT_LINK"]},
         )
 
-        params = flask.request.args.get(cap.config["HEALTHCHECK_PARAM_KEY"])
+        params = request.args.get(cap.config["HEALTHCHECK_PARAM_KEY"])
         all_checks = set(self._health_checks.keys())
         if not params:
             params = all_checks
@@ -95,7 +88,7 @@ class HealthCheck:
             params = set(params).intersection(all_checks)
 
         # noinspection PyProtectedMember,PyUnresolvedReferences
-        app = cap._get_current_object()  # pylint: disable=W0212
+        app = cap._get_current_object()  # pylint: disable=protected-access
         params = list(params)
         tasks = [(self._health_checks.get(p), dict(app=app)) for p in params]
         resp = self._executor(tasks=tasks).run()
@@ -117,13 +110,7 @@ class HealthCheck:
             {"Content-Type": cap.config["HEALTHCHECK_CONTENT_TYPE"]},
         )
 
-    def register(self, name=None, **kwargs):  # pylint: disable=W0613
-        """
-
-        :param name:
-        :return:
-        """
-
+    def register(self, name=None, **kwargs):  # pylint: disable=unused-argument
         def _register(func):
             nonlocal name
             name = name or func.__name__
@@ -135,6 +122,3 @@ class HealthCheck:
             return wrapped()
 
         return _register
-
-
-health_checks = HealthCheck()

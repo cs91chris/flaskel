@@ -1,1 +1,1 @@
-from .argon import argon2
+from .argon import Argon2

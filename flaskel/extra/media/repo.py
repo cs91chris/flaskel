@@ -1,24 +1,23 @@
+import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
 
-from flaskel.ext.sqlalchemy import db
-from flaskel.http.client import cap
-from flaskel.utils.datastruct import ExtProxy
+from flaskel import cap, ExtProxy
 from .exceptions import MediaError
 
 
 class MediaMixin(StandardMixin):
-    link = db.Column(db.String(255), nullable=False, unique=True)
-    path = db.Column(db.String(255), nullable=False, unique=True)
-    filename = db.Column(db.String(255))
+    link = sa.Column(sa.String(255), nullable=False, unique=True)
+    path = sa.Column(sa.String(255), nullable=False, unique=True)
+    filename = sa.Column(sa.String(255))
 
     def to_dict(self, *_, **__):
         return ObjectDict(id=self.id, link=self.link)
 
 
 class MediaRepo:
-    session = ExtProxy("sqlalchemy.db.session")
+    session = ExtProxy("sqlalchemy.sa.session")
     entity_model = None
     media_model = None
 

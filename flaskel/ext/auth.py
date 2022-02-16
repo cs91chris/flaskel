@@ -3,13 +3,13 @@ from datetime import timedelta
 
 import flask
 import flask_jwt_extended as jwt
+import sqlalchemy as sa
 from flask_httpauth import HTTPBasicAuth
 from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 
 from flaskel import cap
-from .sqlalchemy import db
 
 jwtm = jwt.JWTManager()
 basic_auth = HTTPBasicAuth()
@@ -31,7 +31,7 @@ def invalid_token_loader(mess):
 
 
 class RevokedTokenMixin(StandardMixin):
-    jti = db.Column(db.String(120), nullable=False, unique=True)
+    jti = sa.Column(sa.String(120), nullable=False, unique=True)
 
     def __repr__(self):  # pragma: no cover
         return f"<RevokedToken: {self.id} - {self.jti}>"

@@ -23,14 +23,6 @@ class ClientMail(Mail):
         attachments=None,
         **kwargs,
     ):
-        """
-
-        :param app:
-        :param message:
-        :param sender:
-        :param recipients:
-        :param attachments:
-        """
         destination = recipients or [app.config.MAIL_RECIPIENT]
         try:
             if sender.name and sender.surname:
@@ -59,12 +51,9 @@ class ClientMail(Mail):
                 self.send(mail_message)
 
             socket.setdefaulttimeout(timeout)
+
+            app.logger.info(
+                "email %s from %s sent to %s", mail_message.msgId, sender, destination
+            )
         except OSError as exc:
             app.logger.exception(exc)
-
-        app.logger.info(
-            "email %s from %s sent to %s", mail_message.msgId, sender, destination
-        )
-
-
-client_mail = ClientMail()

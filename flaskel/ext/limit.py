@@ -1,14 +1,16 @@
 import re
 from datetime import datetime
 
-import flask
-from flask import current_app as cap
 from flask_limiter import Limiter
 from vbcore.datastruct import ObjectDict
 from vbcore.date_helper import Day
 from vbcore.http import httpcode
 
-from flaskel.ext.default import cfremote
+import flaskel
+from .default import cfremote
+
+cap = flaskel.cap
+config = flaskel.ConfigProxy("LIMITER")
 
 
 def response_ok(res):
@@ -23,15 +25,13 @@ def response_ko(res):
 
 limiter = Limiter(
     key_func=cfremote.get_remote,
-    default_limits=[lambda: cap.config["LIMITER"]["FAIL"]],
+    default_limits=[lambda: config["FAIL"]],
     default_limits_deduct_when=response_ko,
 )
 
 
 def header_whitelist():
-    hdr = cap.config.LIMITER.BYPASS_KEY
-    value = cap.config.LIMITER.BYPASS_VALUE
-    return flask.request.headers.get(hdr) == value
+    return flaskel.request.headers.get(config.BYPASS_KEY) == config.BYPASS_VALUE
 
 
 @limiter.request_filter
@@ -39,41 +39,31 @@ def _header_whitelist():
     return header_whitelist()
 
 
-class RateLimit:  # pragma: no cover
+class RateLimit:
     limiter = limiter
 
     @classmethod
     def slow(cls):
-        return cls.limiter.limit(
-            lambda: cap.config.LIMITER.SLOW, deduct_when=response_ok
-        )
+        return cls.limiter.limit(lambda: config.SLOW, deduct_when=response_ok)
 
     @classmethod
     def medium(cls):
-        return cls.limiter.limit(
-            lambda: cap.config.LIMITER.MEDIUM, deduct_when=response_ok
-        )
+        return cls.limiter.limit(lambda: config.MEDIUM, deduct_when=response_ok)
 
     @classmethod
     def fast(cls):
-        return cls.limiter.limit(
-            lambda: cap.config.LIMITER.FAST, deduct_when=response_ok
-        )
+        return cls.limiter.limit(lambda: config.FAST, deduct_when=response_ok)
 
     @classmethod
     def fail(cls):
-        return cls.limiter.limit(
-            lambda: cap.config.LIMITER.FAIL, deduct_when=response_ko
-        )
+        return cls.limiter.limit(lambda: config.FAIL, deduct_when=response_ko)
 
 
 class FlaskIPBan:
     def __init__(self, app=None, **kwargs):
         self._ip_banned = {}
         self._url_blocked = {}
-
         self._ip_whitelist = {"127.0.0.1": True}
-
         self._url_whitelist = {
             "^/.well-known/": ObjectDict(
                 pattern=re.compile(r"^/.well-known"), match_type="regex"
@@ -84,16 +74,9 @@ class FlaskIPBan:
         }
 
         if app:
-            self.init_app(app, **kwargs)  # pragma: no cover
+            self.init_app(app, **kwargs)
 
     def init_app(self, app, whitelist=(), nuisances=None):
-        """
-
-        :param app: flask app
-        :param whitelist:
-        :param nuisances:
-        :return:
-        """
         app.config.setdefault("IPBAN_ENABLED", True)
         app.config.setdefault("IPBAN_COUNT", 20)
         app.config.setdefault("IPBAN_SECONDS", Day.seconds)
@@ -101,7 +84,11 @@ class FlaskIPBan:
         app.config.setdefault("IPBAN_STATUS_CODE", httpcode.FORBIDDEN)
         app.config.setdefault(
             "IPBAN_CHECK_CODES",
-            (httpcode.NOT_FOUND, httpcode.METHOD_NOT_ALLOWED, httpcode.NOT_IMPLEMENTED),
+            (
+                httpcode.NOT_FOUND,
+                httpcode.METHOD_NOT_ALLOWED,
+                httpcode.NOT_IMPLEMENTED,
+            ),
         )
 
         if app.config.IPBAN_ENABLED:
@@ -109,20 +96,20 @@ class FlaskIPBan:
             app.before_request(self._before_request)
 
             self.add_whitelist(whitelist or [])
-            self.load_nuisances(conf=cap.config.IPBAN_NUISANCES)
+            self.load_nuisances(conf=app.config.IPBAN_NUISANCES)
 
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["ipban"] = self
 
     @staticmethod
     def get_ip():
-        return flask.request.remote_addr
+        return flaskel.request.remote_addr
 
     @staticmethod
     def get_url():
-        return flask.request.path
+        return flaskel.request.path
 
-    def _is_excluded(self, ip=None, url=None):
+    def _is_excluded(self, ip=None, url=None) -> bool:
         """
 
         :return: true if this ip or url should not be checked
@@ -141,7 +128,7 @@ class FlaskIPBan:
 
         return False
 
-    def _test_blocked(self, url="", ip=None):
+    def _test_blocked(self, url="", ip=None) -> bool:
         """
         return true if the url or ip pattern matches an existing block
 
@@ -185,7 +172,7 @@ class FlaskIPBan:
 
         if entry and (entry.count or 0) > cap.config.IPBAN_COUNT:
             if entry.permanent:
-                flask.abort(cap.config.IPBAN_STATUS_CODE)
+                flaskel.abort(cap.config.IPBAN_STATUS_CODE)
 
             now = datetime.now()
             delta = now - (entry.timestamp or now)
@@ -196,12 +183,12 @@ class FlaskIPBan:
                 cap.logger.info("IP: %s updated in ban list, at url: %s", ip, url)
                 entry.count += 1
                 entry.timestamp = now
-                flask.abort(cap.config.IPBAN_STATUS_CODE)
+                flaskel.abort(cap.config.IPBAN_STATUS_CODE)
 
             entry.count = 0
             cap.logger.debug("IP: %s expired from ban list, at url: %s", ip, url)
 
-    def add_url_block(self, url, match_type="regex"):
+    def add_url_block(self, url, match_type="regex") -> int:
         """
         add or replace the pattern to the list of url patterns to block
 
@@ -214,7 +201,7 @@ class FlaskIPBan:
         )
         return len(self._url_blocked)
 
-    def block(self, ips, permanent=False, timestamp=None, url="block"):
+    def block(self, ips, permanent=False, timestamp=None, url="block") -> int:
         """
         add a list of ip addresses to the block list
 
@@ -245,7 +232,7 @@ class FlaskIPBan:
 
         return len(self._ip_banned)
 
-    def add(self, ip=None, url=None, timestamp=None):
+    def add(self, ip=None, url=None, timestamp=None) -> bool:
         """
         increment ban count ip of the current request in the banned list
 
@@ -284,7 +271,7 @@ class FlaskIPBan:
         cap.logger.info("%s %s added/updated ban list. Count: %d", ip, url, count)
         return True
 
-    def remove(self, ip):
+    def remove(self, ip) -> bool:
         """
         remove from the ban list
 
@@ -297,7 +284,7 @@ class FlaskIPBan:
         del self._ip_banned[ip]
         return True
 
-    def load_nuisances(self, conf=None):
+    def load_nuisances(self, conf=None) -> int:
         """
         load a yaml file of nuisance urls or ips that are commonly used by vulnerability scanners
         any access to one of these that produces unwanted status codes will ban the source ip.
@@ -319,7 +306,7 @@ class FlaskIPBan:
 
         return count
 
-    def add_whitelist(self, ips):
+    def add_whitelist(self, ips) -> int:
         """
 
         :param ips: list of ip addresses to add
@@ -333,12 +320,9 @@ class FlaskIPBan:
 
         return len(self._ip_whitelist)
 
-    def remove_whitelist(self, el):
+    def remove_whitelist(self, el) -> bool:
         if not self._ip_whitelist.get(el):
             return False
 
         del self._ip_whitelist[el]
         return True
-
-
-ip_ban = FlaskIPBan()

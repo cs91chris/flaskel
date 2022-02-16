@@ -1,66 +1,50 @@
+import typing as t
+
 import psutil
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.batch import HTTPBatch
 from vbcore.http.client import HTTPClient
 
+CheckResponseType = t.Tuple[bool, t.Optional[t.Any]]
+SuccessResponse = True, None
 
-def health_sqlalchemy(db, app, stm="SELECT 1"):
-    """
 
-    :param db:
-    :param app:
-    :param stm:
-    :return:
-    """
+def health_sqlalchemy(db, app, stm="SELECT 1") -> CheckResponseType:
     try:
         with app.app_context():
             with db.engine.connect() as connection:
                 connection.execute(stm)
-    except Exception as exc:  # pragma: no cover pylint: disable=W0703
+    except Exception as exc:  # pragma: no cover pylint: disable=broad-except
         return False, str(exc)
-    return True, None
+    return SuccessResponse
 
 
-def health_mongo(db, app, cmd="ping"):
-    """
-
-    :param db:
-    :param app:
-    :param cmd:
-    :return:
-    """
+def health_mongo(db, app, cmd="ping") -> CheckResponseType:
     try:
         with app.app_context():
             db.db.command(cmd)
-    except Exception as exc:  # pylint: disable=W0703
+    except Exception as exc:  # pylint: disable=broad-except
         return False, str(exc)
-    return True, None  # pragma: no cover
+    return SuccessResponse
 
 
-def health_redis(db, app):
-    """
-
-    :param db:
-    :param app:
-    :return:
-    """
+def health_redis(db, app) -> CheckResponseType:
     try:
         with app.app_context():
             db.ping()
     except Exception as exc:  # pylint: disable=W0703
         return False, str(exc)
-    return True, None  # pragma: no cover
+    return SuccessResponse
 
 
-# noinspection PyUnusedLocal
-def health_glances(conf=None, **__):
-    """
+def prepare_config(conf: t.Optional[t.Union[t.Callable, dict]] = None) -> ObjectDict:
+    if not conf:
+        return ObjectDict()
+    return ObjectDict(**conf) if isinstance(conf, dict) else conf()
 
-    :param conf:
-    :return:
-    """
-    conf = conf() if callable(conf) else (conf or {})
+
+def health_glances(conf=None, **__) -> CheckResponseType:
     default_conf = ObjectDict(
         SYSTEM_ENDPOINT="http://localhost:4000/api/2",
         SYSTEM_CPU_THRESHOLD=90,
@@ -70,7 +54,7 @@ def health_glances(conf=None, **__):
         SYSTEM_FS_MOUNT_POINTS=("/",),
         SYSTEM_DUMP_ALL=False,
     )
-    conf = ObjectDict(**{**default_conf, **conf})
+    conf = ObjectDict(**{**default_conf, **prepare_config(conf)})
     resp = ObjectDict(errors=[])
     units = ["cpu", "mem", "fs"]
     if conf.SYSTEM_MEM_INCLUDE_SWAP:
@@ -109,14 +93,7 @@ def health_glances(conf=None, **__):
     return bool(not resp.errors), dict(messages=output)
 
 
-# noinspection PyProtectedMember,PyUnusedLocal
-def health_system(conf=None, **__):
-    """
-
-    :param conf:
-    :return:
-    """
-    conf = conf() if callable(conf) else (conf or {})
+def health_system(conf=None, **__) -> CheckResponseType:
     default_conf = dict(
         SYSTEM_FS_MOUNT_POINTS=("/",),
         SYSTEM_CPU_THRESHOLD=90,
@@ -125,7 +102,7 @@ def health_system(conf=None, **__):
         SYSTEM_MEM_INCLUDE_SWAP=True,
         SYSTEM_DUMP_ALL=False,
     )
-    conf = ObjectDict(**{**default_conf, **conf})
+    conf = ObjectDict(**{**default_conf, **prepare_config(conf)})
     resp = ObjectDict(errors=[])
     th_mem = conf.SYSTEM_MEM_THRESHOLD
     th_cpu = conf.SYSTEM_CPU_THRESHOLD
@@ -158,7 +135,7 @@ def health_system(conf=None, **__):
     return bool(not resp.errors), dict(messages=output)
 
 
-def health_services(app, *_, conf_key="SERVICES", **__):
+def health_services(app, *_, conf_key="SERVICES", **__) -> CheckResponseType:
     status = True
     response = {}
     services = app.config.get(conf_key) or {}

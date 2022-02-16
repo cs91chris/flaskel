@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from flaskel.ext import cors, error_handler
+from flaskel.ext.default import cors, error_handler
 from flaskel.views.static import SPAView
 
 bp_api = Blueprint(

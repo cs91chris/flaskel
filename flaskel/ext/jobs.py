@@ -1,6 +1,7 @@
 import atexit
 import logging
 import os
+from functools import partial
 
 from vbcore.uuid import get_uuid
 
@@ -33,7 +34,7 @@ class APJobs(APScheduler):
                 app.logger.warning("fcntl not supported on this platform")
             elif not self._set_lock(app.config.SCHEDULER_LOCK_FILE):
                 app.logger.info("scheduler already started in another process")
-                return  # pragma: no cover
+                return
 
         try:
             super().init_app(app)
@@ -57,18 +58,14 @@ class APJobs(APScheduler):
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["scheduler"] = self
 
-        self.add_listener(self._exception_listener, events.EVENT_ALL)
+        self.add_listener(
+            partial(self._exception_listener, app.logger), events.EVENT_ALL
+        )
 
         if app.config.SCHEDULER_AUTO_START is True:
             self.start()
 
     def add_job(self, func, kwargs=None, **kw):
-        """
-
-        :param func:
-        :param kwargs:
-        :return:
-        """
         kwargs = kwargs or {}
         kw["kwargs"] = kwargs
         job_id = get_uuid()
@@ -77,7 +74,7 @@ class APJobs(APScheduler):
         return job
 
     @staticmethod
-    def _set_lock(lock_file):  # pragma: no cover
+    def _set_lock(lock_file):
         """
         ensure that only one worker starts the scheduler
         :return: (boolean) True -> scheduler can start
@@ -93,7 +90,7 @@ class APJobs(APScheduler):
                 pass
 
         try:
-            f = open(lock_file, "wb")  # pylint: disable=R1732
+            f = open(lock_file, "wb")  # pylint: disable=consider-using-with
             fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
             atexit.register(unlock)
             return True
@@ -106,8 +103,7 @@ class APJobs(APScheduler):
         return False
 
     @staticmethod
-    def _exception_listener(event):
-        logger = scheduler.app.logger
+    def _exception_listener(logger, event):
         if event.code == events.EVENT_JOB_ERROR:
             logger.error("An error occurred when executing job: %s", event.job_id)
             logger.exception(event.exception)
@@ -124,6 +120,3 @@ class APJobs(APScheduler):
             logger.debug("received event (%s) for job: %s", event.code, event.job_id)
         else:
             logger.debug("received event: %s", event.code)
-
-
-scheduler = APJobs()

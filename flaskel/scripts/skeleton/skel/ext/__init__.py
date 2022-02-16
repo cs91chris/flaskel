@@ -1,53 +1,48 @@
-from flaskel.ext import (
-    caching,
-    client_mail,
-    client_redis,
-    date_helper,
-    default,
-    errors,
-    limit,
-    scheduler,
-    useragent,
-)
+from flaskel.ext import limit, default
 from flaskel.ext.auth import jwtm
-from flaskel.ext.crypto import argon2
-from flaskel.ext.healthcheck import health_checks
-from flaskel.ext.sqlalchemy import db as sqlalchemy
-from flaskel.extra.mobile_support import mobile_version, RedisStore
-from flaskel.extra.stripe import payment_handler
+from flaskel.extra.mobile_support import RedisStore, MobileVersionCompatibility
+from flaskel.extra.stripe import PaymentHandler
 
 
 class OPTS:
-    cors = dict(resources={r"/*": {"origins": "*"}})
-    mobile_version = dict(store=RedisStore(client_redis))
+    cors = dict(
+        resources={r"/*": {"origins": "*"}},
+    )
+    mobile_version = dict(
+        store=RedisStore(default.client_redis),
+    )
     errors = dict(
         dispatcher="subdomain",
         response=default.builder.on_accept(strict=False),
     )
 
 
+ipban = limit.FlaskIPBan()
+database = default.Database()
+scheduler = default.Scheduler()
+payment_handler = PaymentHandler()
+mobile_version = MobileVersionCompatibility()
+
 EXTENSIONS = {
-    # "name":   (<extension>, parameters: dict)
     "cfremote": (default.cfremote,),  # MUST be the first
     "logger": (default.logger,),  # MUST be the second
-    "template": (default.template,),
+    "argon2": (default.argon2,),
     "builder": (default.builder,),
-    "date_helper": (date_helper,),
+    "cache": (default.caching,),
     "cors": (default.cors, OPTS.cors),
-    "database": (sqlalchemy,),
-    "limiter": (limit.limiter,),
-    "ip_ban": (limit.ip_ban,),
-    "cache": (caching,),
-    "errors": (errors.error_handler, OPTS.errors),
-    "useragent": (useragent,),
-    "argon2": (argon2,),
-    "caching": (caching,),
-    "scheduler": (scheduler,),
-    "sendmail": (client_mail,),
-    "redis": (client_redis,),
-    "health_checks": (health_checks,),
+    "database": (database,),
+    "date_helper": (default.date_helper,),
+    "errors": (default.error_handler, OPTS.errors),
+    "health_checks": (default.health_checks,),
+    "ip_ban": (ipban,),
     "jwt": (jwtm,),
-    "ipban": (limit.ip_ban,),
-    "stripe": (payment_handler,),
+    "limiter": (limit.limiter,),
     "mobile_version": (mobile_version, OPTS.mobile_version),
+    "mongo": (default.client_mongo,),
+    "redis": (default.client_redis,),
+    "scheduler": (scheduler,),
+    "sendmail": (default.client_mail,),
+    "stripe": (payment_handler,),
+    "template": (default.template,),
+    "useragent": (default.useragent,),
 }

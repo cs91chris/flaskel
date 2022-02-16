@@ -87,6 +87,3 @@ class PaymentHandler:
     def on_error(self, callback):
         self._error = callback
         return callback
-
-
-payment_handler = PaymentHandler()

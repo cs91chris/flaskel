@@ -7,7 +7,8 @@ from packaging import version
 from vbcore.http import httpcode, HttpMethod
 
 from flaskel import Response
-from flaskel.ext import builder, limit
+from flaskel.ext.default import builder
+from flaskel.ext.limit import RateLimit
 from flaskel.utils import webargs
 from flaskel.utils.datastruct import ExtProxy
 from flaskel.views import BaseView
@@ -257,8 +258,8 @@ class MobileLoggerView(BaseView):
     ]
     decorators = [
         builder.no_content,
-        limit.RateLimit.medium(),
-        limit.RateLimit.fail(),
+        RateLimit.medium(),
+        RateLimit.fail(),
     ]
 
     def __init__(self, logger_name=None):
@@ -319,6 +320,3 @@ class MobileLoggerView(BaseView):
         if "debug" in flask.request.args:
             return payload, httpcode.SUCCESS
         return None
-
-
-mobile_version = MobileVersionCompatibility()

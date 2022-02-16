@@ -4,22 +4,12 @@ from vbcore.http.useragent import UserAgent as UserAgentParser
 
 class UserAgent:
     def __init__(self, app=None, **kwargs):
-        """
-
-        :param app:
-        :param kwargs:
-        """
         self._parser = None
 
         if app is not None:
-            self.init_app(app, **kwargs)  # pragma: no cover
+            self.init_app(app, **kwargs)
 
     def init_app(self, app, parser_class=UserAgentParser):
-        """
-
-        :param app:
-        :param parser_class:
-        """
         self._parser = parser_class
         app.config.setdefault("USER_AGENT_AUTO_PARSE", False)
 
@@ -33,6 +23,3 @@ class UserAgent:
                 ua_str = flask.request.user_agent.string
                 # pylint: disable=assigning-non-slot
                 flask.g.user_agent = self._parser.parse(ua_str)
-
-
-useragent = UserAgent()
