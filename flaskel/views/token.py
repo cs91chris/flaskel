@@ -1,11 +1,9 @@
-import flask
 import flask_jwt_extended
 from vbcore.http import HttpMethod, httpcode
 
-from flaskel import cap
+from flaskel import cap, webargs, request, abort
 from flaskel.ext.auth import BaseTokenHandler
 from flaskel.ext.default import builder
-from flaskel.utils import webargs
 from flaskel.views import BaseView
 
 
@@ -31,7 +29,7 @@ class BaseTokenAuth(BaseView):
 
     @classmethod
     def check_credential(cls):
-        data = flask.request.json
+        data = request.json
         if (
             data.email == cap.config.BASIC_AUTH_USERNAME
             and data.password == cap.config.BASIC_AUTH_PASSWORD
@@ -50,7 +48,7 @@ class BaseTokenAuth(BaseView):
         credentials = cls.check_credential()
         if credentials:
             return cls.handler.create(credentials, **args)
-        return flask.abort(httpcode.UNAUTHORIZED)
+        return abort(httpcode.UNAUTHORIZED)
 
     @classmethod
     def refresh_token(cls):
@@ -71,17 +69,17 @@ class BaseTokenAuth(BaseView):
     @classmethod
     @builder.no_content
     def revoke_token(cls):
-        data = flask.request.json
+        data = request.json
         if data.access_token:
             cls.handler.revoke(data.access_token)
         if data.refresh_token:
             cls.handler.revoke(data.refresh_token)
 
     def dispatch_request(self, *_, **__):
-        if flask.request.method == HttpMethod.GET:
+        if request.method == HttpMethod.GET:
             return self.check_token()
 
-        view_name = flask.request.endpoint
+        view_name = request.endpoint
         if view_name.endswith("token_access"):
             return self.access_token()  # pylint: disable=no-value-for-parameter
         if view_name.endswith("token_refresh"):
@@ -89,4 +87,4 @@ class BaseTokenAuth(BaseView):
         if view_name.endswith("token_revoke"):
             return self.revoke_token()
 
-        return flask.abort(httpcode.BAD_REQUEST)
+        return abort(httpcode.BAD_REQUEST)

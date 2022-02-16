@@ -1,16 +1,12 @@
 import typing as t
 
-import flask
 from sqlalchemy.exc import SQLAlchemyError
 from vbcore.db.exceptions import DBError
 from vbcore.db.support import SQLASupport
 from vbcore.http import HttpMethod, httpcode
 
-from flaskel import cap
+from flaskel import cap, abort, ExtProxy, PayloadValidator, webargs
 from flaskel.ext.default import builder
-from flaskel.utils import webargs
-from flaskel.utils.datastruct import ExtProxy
-from flaskel.utils.validator import PayloadValidator
 from .base import Resource
 
 
@@ -28,10 +24,6 @@ class CatalogResource(Resource):
     ]
 
     def __init__(self, model):
-        """
-
-        :param model: SqlAlchemy model class
-        """
         self._model = model
 
     def on_get(self, res_id, *_, model=None, **kwargs):
@@ -39,7 +31,7 @@ class CatalogResource(Resource):
         Get resource info
 
         :param res_id: resource identifier (primary key value)
-        :param model: alternative SqlAlchemy model class
+        :param model: alternative SQLAlchemy model class
         :param kwargs: extra query filters
         :return:
         """
@@ -102,7 +94,7 @@ class CatalogResource(Resource):
         )
 
     @staticmethod
-    def pagination_headers(data):
+    def pagination_headers(data) -> t.Dict[str, int]:
         return {
             "X-Pagination-Count": data.total,
             "X-Pagination-Page": data.page,
@@ -179,8 +171,8 @@ class Restful(CatalogResource):
         self._session.rollback()
 
         if isinstance(exception, DBError):
-            flask.abort(httpcode.CONFLICT, response={"cause": exception.as_dict()})
-        flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            abort(httpcode.CONFLICT, response={"cause": exception.as_dict()})
+        abort(httpcode.INTERNAL_SERVER_ERROR)
 
     def _create(self, res):
         try:

@@ -1,16 +1,14 @@
 import typing as t
 
-import flask
+from flask import stream_with_context
 from vbcore import uuid
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
 from vbcore.http.client import HTTPBase
 from vbcore.http.rpc import rpc_error_to_httpcode
 
-import flaskel
-from flaskel import cap
+from flaskel import cap, request, abort, flaskel
 from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC
-from flaskel.utils.datastruct import ConfigProxy
 from .base import BaseView
 
 
@@ -71,7 +69,7 @@ class ProxyView(BaseView):
         if response and response.body and response.status != httpcode.NO_CONTENT:
             if self._stream:
                 return flaskel.Response(
-                    flask.stream_with_context(response.body),
+                    stream_with_context(response.body),
                     status=response.status,
                     headers=response.headers,
                 )
@@ -89,11 +87,7 @@ class ProxyView(BaseView):
             stream=self._stream,
         )
 
-    def service(self):
-        """
-
-        :return: ObjectDict
-        """
+    def service(self) -> ObjectDict:
         return ObjectDict(
             host=self.upstream_host(),
             uri=self.request_url(),
@@ -103,23 +97,23 @@ class ProxyView(BaseView):
             data=self.request_body(),
         )
 
-    def upstream_host(self):
+    def upstream_host(self) -> str:
         return self._host
 
-    def request_url(self):
-        return self._url or flask.request.path
+    def request_url(self) -> str:
+        return self._url or request.path
 
-    def request_method(self):
-        return self._method or flask.request.method
+    def request_method(self) -> str:
+        return self._method or request.method
 
     def request_body(self):
-        return flask.request.get_data() if self._proxy_body else None
+        return request.get_data() if self._proxy_body else None
 
-    def request_headers(self):
-        return dict(flask.request.headers.items()) if self._proxy_headers else None
+    def request_headers(self) -> t.Optional[t.Dict[str, t.Any]]:
+        return dict(request.headers.items()) if self._proxy_headers else None
 
-    def request_params(self):
-        return flask.request.args if self._proxy_params else None
+    def request_params(self) -> t.Optional[t.Dict[str, t.Any]]:
+        return request.args if self._proxy_params else None
 
 
 class ConfProxyView(BaseView):
@@ -133,12 +127,7 @@ class ConfProxyView(BaseView):
     def dispatch_request(self, *args, **kwargs):
         return self.perform(*args, **kwargs)
 
-    def perform(self, *_, item=None, **__):
-        """
-
-        :param item:
-        :return: ObjectDict
-        """
+    def perform(self, *_, item=None, **__) -> ObjectDict:
         conf = cap.config
         keys = self._config_key.split(self.sep)
         if item is not None:
@@ -147,7 +136,7 @@ class ConfProxyView(BaseView):
             conf = conf.get(k) or ObjectDict()
         if not conf:
             cap.logger.warning(f"unable to find conf keys: {self.sep.join(keys)}")
-            flask.abort(httpcode.NOT_FOUND)
+            abort(httpcode.NOT_FOUND)
         return ObjectDict(**conf)
 
 
@@ -182,7 +171,7 @@ class SchemaProxyView(ConfProxyView):
         self.ext_support = ext_support
         self.case_sensitive = case_sensitive
 
-    def normalize(self, filepath):
+    def normalize(self, filepath: str) -> str:
         if self.ext_support and filepath.endswith(self.ext_name):
             filepath = self.sep.join(filepath.split(self.sep)[:-1])
         if self.case_sensitive is False:
@@ -197,7 +186,6 @@ class SchemaProxyView(ConfProxyView):
 
 class JsonRPCProxy(ProxyView):
     response_content_type: str = "application/json"
-    request_id_header: t.Callable = ConfigProxy("REQUEST_ID_HEADER")
     client_class: t.Type[FlaskelJsonRPC] = FlaskelJsonRPC
 
     methods = [
@@ -213,10 +201,10 @@ class JsonRPCProxy(ProxyView):
         url = self.upstream_host()
         client = self.client_class(url, url, **kwargs)
 
-        if flask.request.method == HttpMethod.GET:
+        if request.method == HttpMethod.GET:
             resp = client.request(
                 self.request_method(),
-                request_id=self.get_request_id(),
+                request_id=request.id or uuid.get_uuid(),
                 params=self.request_params(),
                 stream=self._stream,
                 headers=self.request_headers(),
@@ -239,18 +227,14 @@ class JsonRPCProxy(ProxyView):
 
         if resp and resp.error is not None:
             status = rpc_error_to_httpcode(resp.error.code)
-            flask.abort(status, response=resp.error)
+            abort(status, response=resp.error)
 
         return ObjectDict(body=resp, status=status, headers=headers)
 
-    def get_request_id(self) -> str:
-        header = self.request_id_header()
-        return flask.request.headers.get(header) or uuid.get_uuid()
-
     def request_method(self) -> str:
-        return flask.request.path.split("/")[-1]
+        return request.path.split("/")[-1]
 
     def request_params(self) -> dict:
-        if flask.request.method == HttpMethod.GET:
-            return flask.request.args.to_dict()
-        return flask.request.json
+        if request.method == HttpMethod.GET:
+            return request.args.to_dict()
+        return request.json

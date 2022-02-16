@@ -1,10 +1,10 @@
 import typing as t
 
-import flask
 from flask.views import MethodView, View
 from vbcore.http import httpcode, HttpMethod
 
 from flaskel.ext.default import builder
+from flaskel.http.exceptions import abort
 
 DefaultUrlsType = t.Tuple[t.Union[t.Dict[str, str], str], ...]
 
@@ -14,15 +14,17 @@ class ViewSupportMixin:
     default_urls: DefaultUrlsType = ()
 
     @staticmethod
-    def normalize_url(url):
+    def normalize_url(url: str) -> str:
         return f"/{url.lstrip('/')}"
 
     @staticmethod
     def not_implemented():  # pragma: no cover
-        flask.abort(httpcode.NOT_IMPLEMENTED)
+        abort(httpcode.NOT_IMPLEMENTED)
 
     @classmethod
-    def register(cls, app, name=None, urls=(), **kwargs):
+    def register(
+        cls, app, name: t.Optional[str] = None, urls: DefaultUrlsType = (), **kwargs
+    ):
         raise NotImplementedError
 
 
@@ -40,7 +42,9 @@ class BaseView(View, ViewSupportMixin):
         return self.not_implemented()  # pragma: no cover
 
     @classmethod
-    def register(cls, app, name=None, urls=(), **kwargs):
+    def register(
+        cls, app, name: t.Optional[str] = None, urls: DefaultUrlsType = (), **kwargs
+    ) -> t.Callable:
         """
 
         :param app: Flask app or blueprint
@@ -97,7 +101,15 @@ class Resource(MethodView, ViewSupportMixin):
             )
 
     @classmethod
-    def register(cls, app, name=None, urls=(), view=None, pk_type="int", **kwargs):
+    def register(
+        cls,
+        app,
+        name: t.Optional[str] = None,
+        urls: DefaultUrlsType = (),
+        view: t.Optional[t.Type[BaseView]] = None,
+        pk_type: str = "int",
+        **kwargs,
+    ) -> t.Callable:
         """
 
         :param app: Flask or Blueprint instance
@@ -124,11 +136,11 @@ class Resource(MethodView, ViewSupportMixin):
         if sub_resource is None:
             return self.on_get(res_id, *args, **kwargs)
         if self.methods_subresource and HttpMethod.GET not in self.methods_subresource:
-            flask.abort(httpcode.METHOD_NOT_ALLOWED)
+            abort(httpcode.METHOD_NOT_ALLOWED)
 
         _sub_resource = getattr(self, f"sub_{sub_resource}", None)
         if _sub_resource is None:
-            flask.abort(httpcode.NOT_FOUND)
+            abort(httpcode.NOT_FOUND)
         return _sub_resource(res_id, *args, **kwargs)
 
     @builder.on_accept()
@@ -136,11 +148,11 @@ class Resource(MethodView, ViewSupportMixin):
         if res_id is None:
             return self.on_post(*args, **kwargs)
         if self.methods_subresource and HttpMethod.POST not in self.methods_subresource:
-            flask.abort(httpcode.METHOD_NOT_ALLOWED)
+            abort(httpcode.METHOD_NOT_ALLOWED)
 
         _sub_resource = getattr(self, f"sub_{sub_resource}_post", None)
         if _sub_resource is None:
-            flask.abort(httpcode.NOT_FOUND)
+            abort(httpcode.NOT_FOUND)
         return _sub_resource(res_id, *args, **kwargs)
 
     @builder.no_content

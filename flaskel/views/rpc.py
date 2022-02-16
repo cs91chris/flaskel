@@ -2,13 +2,12 @@ import functools
 import inspect
 import typing as t
 
-import flask
 from vbcore.batch import BatchExecutor
 from vbcore.datastruct import ObjectDict
 from vbcore.http import HttpMethod, httpcode, rpc
 
 from flaskel.ext.default import builder
-from flaskel.flaskel import Response, cap
+from flaskel import Response, cap, request, abort
 from .base import BaseView
 
 RPCPayloadType = t.Union[t.List[dict], dict]
@@ -68,7 +67,7 @@ class JSONRPCView(BaseView):
             ) from None
 
     def _validate_payload(self) -> RPCPayloadType:
-        payload: RPCPayloadType = flask.request.get_json(True)
+        payload: RPCPayloadType = request.get_json(True)
         if not payload:
             raise rpc.RPCParseError() from None
 
@@ -76,7 +75,7 @@ class JSONRPCView(BaseView):
             max_requests = cap.config.JSONRPC_BATCH_MAX_REQUEST  # type: ignore
             if max_requests and len(payload) > max_requests:
                 mess = f"Operations in a single http request must be less than {max_requests}"
-                flask.abort(httpcode.REQUEST_ENTITY_TOO_LARGE, mess)
+                abort(httpcode.REQUEST_ENTITY_TOO_LARGE, mess)
             for d in payload:
                 self._validate_request(d)
         else:
@@ -154,20 +153,17 @@ class JSONRPCView(BaseView):
                 cls.method(obj.__class__.__name__, name)(member)
 
     @classmethod
-    def method(
-        cls, name: t.Optional[str] = None, operation=None
-    ):  # pylint: disable=W0613
+    def method(cls, name: t.Optional[str] = None, operation: t.Optional[str] = None):
         def _method(func):
-            nonlocal name
-            name = name or func.__name__
+            _name = name or func.__name__
 
             @functools.wraps(func)
             def wrapped():
                 obj = {operation: func}
-                if name not in cls.operations:
-                    cls.operations[name] = obj
+                if _name not in cls.operations:
+                    cls.operations[_name] = obj
                 else:
-                    cls.operations[name].update(obj)
+                    cls.operations[_name].update(obj)
 
             return wrapped()
 
