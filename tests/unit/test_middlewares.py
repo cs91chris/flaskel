@@ -46,9 +46,8 @@ def test_http_method_override(flaskel_app, mock_wsgi_app, from_key, value, metho
 
 def test_request_id_missing(flaskel_app, mock_wsgi_app):
     middle = middlewares.RequestID(mock_wsgi_app)
-    app = flaskel_app
-    middle.flask_app = app
-    app.config["REQUEST_ID_HEADER"] = "X-Request-ID"
+    middle.flask_app = flaskel_app
+    flaskel_app.config["REQUEST_ID_HEADER"] = "X-Request-ID"
 
     environ = {}
     Asserter.assert_true(callable(middle(environ, mock_wsgi_app)))
@@ -57,9 +56,8 @@ def test_request_id_missing(flaskel_app, mock_wsgi_app):
 
 def test_request_id_given(flaskel_app, mock_wsgi_app):
     middle = middlewares.RequestID(mock_wsgi_app)
-    app = flaskel_app
-    middle.flask_app = app
-    app.config["REQUEST_ID_HEADER"] = "X-Request-ID"
+    middle.flask_app = flaskel_app
+    flaskel_app.config["REQUEST_ID_HEADER"] = "X-Request-ID"
 
     environ = {"HTTP_X_REQUEST_ID": uuid.get_uuid()}
     Asserter.assert_true(callable(middle(environ, mock_wsgi_app)))
@@ -68,9 +66,8 @@ def test_request_id_given(flaskel_app, mock_wsgi_app):
 
 def test_request_id_prefixed(flaskel_app, mock_wsgi_app):
     middle = middlewares.RequestID(mock_wsgi_app)
-    app = flaskel_app
-    middle.flask_app = app
-    app.config["REQUEST_ID_PREFIX"] = "PREFIX_"
+    middle.flask_app = flaskel_app
+    flaskel_app.config["REQUEST_ID_PREFIX"] = "PREFIX_"
 
     environ = {"HTTP_X_REQUEST_ID": "PREFIX_123456"}
     Asserter.assert_true(callable(middle(environ, mock_wsgi_app)))

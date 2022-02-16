@@ -35,7 +35,7 @@ class DumpUrls(Dumper):
 
 class Request(flask.Request):
     @property
-    def id(self) -> t.Optional[str]:
+    def id(self) -> t.Optional[str]:  # pylint: disable=invalid-name
         hdr = cap.config.REQUEST_ID_HEADER
         if hasattr(flask.g, "request_id"):
             return flask.g.request_id
