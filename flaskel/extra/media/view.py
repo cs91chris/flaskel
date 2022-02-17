@@ -1,7 +1,6 @@
-import flask
 from vbcore.http import HttpMethod, httpcode
 
-from flaskel.http.client import cap
+from flaskel import cap, request, abort
 from flaskel.views import BaseView
 from flaskel.views.static import StaticFileView
 from .exceptions import BadMediaError
@@ -18,16 +17,16 @@ class ApiMedia(BaseView):
     def dispatch_request(
         self, eid, *_, res_id=None, **__
     ):  # pylint: disable=arguments-differ
-        if flask.request.method == HttpMethod.DELETE:
+        if request.method == HttpMethod.DELETE:
             self.service.delete(eid, res_id)
             return httpcode.NO_CONTENT
 
         try:
-            files = flask.request.files.values()
+            files = request.files.values()
             return self.service.upload(files, eid)
-        except BadMediaError as exc:  # pragma: no cover
+        except BadMediaError as exc:
             cap.logger.exception(exc)
-            return flask.abort(httpcode.BAD_REQUEST, str(exc))
+            return abort(httpcode.BAD_REQUEST, str(exc))
 
 
 class GetMedia(StaticFileView):

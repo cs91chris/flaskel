@@ -1,8 +1,7 @@
-import flask
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 
-from flaskel import cap
+from flaskel import cap, request, abort
 
 try:
     import stripe
@@ -44,7 +43,7 @@ class PaymentHandler:
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["stripe"] = self
 
-    def create_payment_intent(self, amount, currency=None, **kwargs):
+    def create_payment_intent(self, amount, currency=None, **kwargs) -> ObjectDict:
         return ObjectDict(
             **self._stripe.PaymentIntent.create(
                 amount=amount,
@@ -53,9 +52,9 @@ class PaymentHandler:
             )
         )
 
-    def create_event(self, data, raise_exc=False):
+    def create_event(self, data, raise_exc: bool = False) -> ObjectDict:
         webhook_secret = cap.config.STRIPE_WEBHOOK_SECRET
-        signature = flask.request.headers.get("stripe-signature")
+        signature = request.headers.get("stripe-signature")
         try:
             return ObjectDict(
                 **self._stripe.Webhook.construct_event(
@@ -64,21 +63,20 @@ class PaymentHandler:
             )
         except StripeError as exc:
             cap.logger.exception(exc)
-            if raise_exc:
+            if raise_exc is True:
                 raise
-        return None
+        return ObjectDict()
 
     def webhook_handler(self):
-        data = self.create_event(flask.request.data)
-        event_type = data.get("type")
+        data = self.create_event(request.data)
+        event_type = data.type
         if event_type == self.payment_intent_ok:
             return self._success(data)
         if event_type == self.payment_intent_ko:
             return self._error(data)
 
         cap.logger.warning("unhandled event type received: %s\n%s", event_type, data)
-        flask.abort(httpcode.NOT_FOUND)
-        return None
+        return abort(httpcode.NOT_FOUND)
 
     def on_success(self, callback):
         self._success = callback

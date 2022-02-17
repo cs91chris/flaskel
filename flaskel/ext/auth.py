@@ -9,10 +9,10 @@ from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 
-from flaskel import cap
+from flaskel.flaskel import cap
 
-jwtm = jwt.JWTManager()
-basic_auth = HTTPBasicAuth()
+jwtm: jwt.JWTManager = jwt.JWTManager()
+basic_auth: HTTPBasicAuth = HTTPBasicAuth()
 
 
 @basic_auth.verify_password

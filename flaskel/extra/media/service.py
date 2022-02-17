@@ -3,8 +3,7 @@ import typing as t
 
 from vbcore.uuid import get_uuid
 
-from flaskel.http.client import cap
-from flaskel.utils.datastruct import ConfigProxy
+from flaskel import cap, ConfigProxy
 from .exceptions import MediaError
 from .repo import MediaRepo
 
@@ -38,9 +37,9 @@ class MediaService:
         emodel = cls.media_repo.get(eid)
         for f in files:
             if not f.filename:
-                raise MediaError("missing file name")  # pragma: no cover
+                raise MediaError("missing file name")
             if cls.get_ext(f.filename) not in cls.config.ALLOWED_EXTENSIONS:
-                raise MediaError("file extension not allowed")  # pragma: no cover
+                raise MediaError("file extension not allowed")
 
             url, filepath = cls.generate_filepath(emodel.id, f.filename)
             f.save(os.path.join(cls.config.UPLOAD_FOLDER, filepath))
@@ -60,5 +59,5 @@ class MediaService:
             filepath = os.path.join(*cls.config.UPLOAD_FOLDER.split("/"), res.path)
             if os.path.isfile(filepath):
                 os.remove(filepath)
-        except OSError as exc:  # pragma: no cover
+        except OSError as exc:
             cap.logger.exception(exc)

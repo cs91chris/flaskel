@@ -1,3 +1,5 @@
+from vbcore.datastruct import ObjectDict
+
 try:
     from pyfcm import FCMNotification
     from pyfcm.errors import FCMError
@@ -13,7 +15,7 @@ class NotificationHandler:
 
         :param model: sqlalchemy model class, must have a token column
         :param session: sqlalchemy session
-        :param provider: an object with app attribute reference of app instance (nor current_app)
+        :param provider: an object with app attribute reference of app instance (not current_app)
                          only if async methods are used (for background tasks)
         :param dry_run: perform but not send notification (test only)
         """
@@ -40,9 +42,9 @@ class NotificationHandler:
     def async_send_push_notification(self, *args, **kwargs):
         return self._with_app_context(self.send_push_notification, *args, **kwargs)
 
-    def register_device(self, app, data):
+    def register_device(self, app, data: ObjectDict):
         try:
-            device = self.model.query.filter_by(token=data["token"]).first()
+            device = self.model.query.filter_by(token=data.token).first()
             if device:
                 self.session.merge(device.update(data))
             else:

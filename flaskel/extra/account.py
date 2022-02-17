@@ -1,16 +1,13 @@
 import string
 import typing as t
 
-import flask
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
 from vbcore.misc import random_string
 
-from flaskel import cap
+from flaskel import cap, abort, request, ExtProxy, ConfigProxy, PayloadValidator
 from flaskel.ext.default import builder
-from flaskel.utils.datastruct import ExtProxy, ConfigProxy
-from flaskel.utils.validator import PayloadValidator
 from flaskel.views import BaseView
 
 
@@ -34,12 +31,12 @@ class AuthCode:
         email = email.decode() if isinstance(email, bytes) else email
         self.cache.delete(cache_key)
         if not email:
-            flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
+            abort(httpcode.NOT_FOUND)
         return email
 
 
 class AccountHandler:
-    user_model = None
+    user_model = None  # type: ignore
 
     SCHEMAS = ObjectDict(
         register="REGISTER",
@@ -56,8 +53,8 @@ class AccountHandler:
     def __init__(
         self,
         session=None,
-        auth_code_handler=None,
-        notifications=None,
+        auth_code_handler: t.Optional[AuthCode] = None,
+        notifications: t.Optional[ObjectDict] = None,
         scheduler=None,
     ):
         self.session = session or ExtProxy("sqlalchemy.db.session")
@@ -77,23 +74,27 @@ class AccountHandler:
         """
         self.notifications = notifications or ConfigProxy("NOTIFICATIONS")
 
-    def send_notification(self, recipients, subject, template, **kwargs):
+    def send_notification(
+        self, recipients: t.List[str], subject: str, template: str, **kwargs
+    ):
         raise NotImplementedError
 
     def __check_user_model(self):
-        assert self.user_model is not None, "user_model must be defined"
+        if self.user_model is None:
+            raise TypeError("user_model must be defined")
+        return self.user_model
 
     @staticmethod
-    def get_payload(schema):
+    def get_payload(schema: t.Union[str, dict]) -> ObjectDict:
         return PayloadValidator.validate(schema)
 
-    def prepare_user(self, data):
-        self.__check_user_model()
-        return self.user_model(**data)  # pylint: disable=not-callable
+    def prepare_user(self, data: dict):
+        user_model = self.__check_user_model()
+        return user_model(**data)  # pylint: disable=not-callable
 
-    def find_by_email(self, email):
-        self.__check_user_model()
-        return self.user_model.query.filter_by(email=email).first_or_404()
+    def find_by_email(self, email: str):
+        user_model = self.__check_user_model()
+        return user_model.query.filter_by(email=email).first_or_404()
 
     def register(self):
         payload = self.get_payload(self.SCHEMAS.register)
@@ -102,10 +103,10 @@ class AccountHandler:
         try:
             self.session.add(user)
             self.session.commit()
-        except Exception as exc:  # pragma: no cover pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             cap.logger.exception(exc)
             self.session.rollback()
-            flask.abort(
+            abort(
                 httpcode.CONFLICT
                 if isinstance(exc, IntegrityError)
                 else httpcode.INTERNAL_SERVER_ERROR
@@ -133,15 +134,15 @@ class AccountHandler:
             user.confirmed = True
             self.session.merge(user)
             self.session.commit()
-        except SQLAlchemyError as exc:  # pragma: no cover
+        except SQLAlchemyError as exc:
             cap.logger.exception(exc)
             self.session.rollback()
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            abort(httpcode.INTERNAL_SERVER_ERROR)
 
-    def check_user(self, email, password):
+    def check_user(self, email: str, password: str):
         user = self.find_by_email(email)
         if not user.check_password(password):
-            flask.abort(httpcode.BAD_REQUEST)  # pragma: no cover
+            abort(httpcode.BAD_REQUEST)
         return user
 
     def password_reset(self):
@@ -151,10 +152,10 @@ class AccountHandler:
             user.password = payload.new_password
             self.session.merge(user)
             self.session.commit()
-        except SQLAlchemyError as exc:  # pragma: no cover
+        except SQLAlchemyError as exc:
             cap.logger.exception(exc)
             self.session.rollback()
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            abort(httpcode.INTERNAL_SERVER_ERROR)
 
     def password_forgot(self):
         payload = self.get_payload(self.SCHEMAS.password_forgot)
@@ -181,10 +182,10 @@ class AccountHandler:
         try:
             self.session.merge(user)
             self.session.commit()
-        except SQLAlchemyError as exc:  # pragma: no cover
+        except SQLAlchemyError as exc:
             cap.logger.exception(exc)
             self.session.rollback()
-            flask.abort(httpcode.INTERNAL_SERVER_ERROR)
+            abort(httpcode.INTERNAL_SERVER_ERROR)
 
 
 class RegisterView(BaseView):
@@ -199,7 +200,7 @@ class RegisterView(BaseView):
 
     @builder.no_content
     def dispatch_request(self, *_, **__):
-        if flask.request.method == HttpMethod.POST:
+        if request.method == HttpMethod.POST:
             self.account_handler().register()
             return httpcode.ACCEPTED
         self.account_handler().register_confirm()
@@ -218,7 +219,7 @@ class PasswordForgotView(BaseView):
 
     @builder.no_content
     def dispatch_request(self, *_, **__):
-        if flask.request.method == HttpMethod.POST:
+        if request.method == HttpMethod.POST:
             self.account_handler().password_forgot()
             return httpcode.ACCEPTED
         self.account_handler().password_confirm()

@@ -1,73 +1,73 @@
 import logging
+import typing as t
 from datetime import datetime
 
 import flask
-from flask import current_app as cap
 from packaging import version
 from vbcore.http import httpcode, HttpMethod
 
-from flaskel import Response
+from flaskel import Response, cap, webargs, ExtProxy, request, abort, Flaskel
 from flaskel.ext.default import builder
 from flaskel.ext.limit import RateLimit
-from flaskel.utils import webargs
-from flaskel.utils.datastruct import ExtProxy
 from flaskel.views import BaseView
 
 
 class RedisStore:
-    def __init__(self, redis=None, sep="/"):
+    def __init__(self, redis=None, sep: str = "/"):
         self.sep = sep
         self.client = redis
 
-    def _normalize(self, ver):
+    def _normalize(self, ver: str):
         s = ver.split(self.sep)
         return version.parse(s[0]), bool(int(s[1])) if len(s) > 1 else False
 
-    def release(self, key, v, u=False):
+    def release(self, key: str, v: str, u: bool = False):
         if self.client.lpush(key, f"{v}{self.sep}{int(u)}"):
             return version.parse(v), u
         return None
 
-    def latest(self, key):
+    def latest(self, key: str):
         ver = self.retrieve(key)
         if len(ver):
             return ver[0]
         return None, None
 
-    def pop(self, key):
+    def pop(self, key: str):
         res = self.client.lpop(key)
         return self._normalize(res) if res else None
 
-    def clear(self, key):
+    def clear(self, key: str):
         return self.client.delete(key)
 
-    def retrieve(self, key, max_item=1):
+    def retrieve(self, key: str, max_item: int = 1):
         data = self.client.lrange(key, 0, max_item - 1)
         return [self._normalize(d) for d in data]
 
 
 class MobileVersionCompatibility:
-    def __init__(self, app=None, store=None, current_version=None):
+    def __init__(
+        self, app: t.Optional[Flaskel] = None, store=None, current_version=None
+    ):
         self._store = store
-        self._load_time = None
-        self._versions = {None: []}
+        self._load_time: t.Optional[datetime] = None
         self._current_version = current_version
+        self._versions: t.Dict[t.Optional[str], list] = {None: []}
 
         if app is not None:
-            self.init_app(app, store, current_version)  # pragma: no cover
+            self.init_app(app, store, current_version)
 
-    def init_app(self, app, store=None, current_version=None):
+    def init_app(self, app: Flaskel, store=None, current_version=None):
         self._store = store or self._store
         self._current_version = current_version or self._current_version
         if not self._current_version:
-            self._current_version = getattr(app, "version", None)
+            self._current_version = app.version
 
         self.load_config(app)
 
         if app.config.VERSION_CHECK_ENABLED:
             try:
                 self.load_from_storage()
-            except Exception as exc:  # pragma: no cover pylint: disable=W0703
+            except Exception as exc:  # pylint: disable=broad-except
                 app.logger.exception(exc)
 
             app.before_request_funcs.setdefault(None, []).append(
@@ -84,7 +84,7 @@ class MobileVersionCompatibility:
         return flask.g.get("mobile_version")
 
     @property
-    def store(self):  # pragma: no cover
+    def store(self):
         return self._store
 
     @staticmethod
@@ -109,23 +109,21 @@ class MobileVersionCompatibility:
         )
 
     @staticmethod
-    def version_parse(ver):
+    def version_parse(ver: str) -> version.Version:
         return version.Version(ver)
 
     @staticmethod
     def _set_mobile_version():
-        # pylint: disable=E0237
-        flask.g.mobile_version = flask.request.headers.get(
-            cap.config.VERSION_HEADER_KEY
-        )
+        # pylint: disable=assigning-non-slot
+        flask.g.mobile_version = request.headers.get(cap.config.VERSION_HEADER_KEY)
 
     @staticmethod
-    def agent_identity():
+    def agent_identity() -> t.Optional[str]:
         family = flask.g.user_agent.os.family
         return family.lower() if family else None
 
-    def _get_agent(self):
-        agent = flask.request.headers.get(cap.config.VERSION_AGENT_HEADER)
+    def _get_agent(self) -> t.Optional[str]:
+        agent = request.headers.get(cap.config.VERSION_AGENT_HEADER)
         if agent in cap.config.VERSION_AGENTS:
             return agent
         flask.g.user_agent.parse()
@@ -137,28 +135,28 @@ class MobileVersionCompatibility:
             resp.headers[cap.config.VERSION_API_HEADER] = self._current_version
         return resp
 
-    def _agent_key(self, agent):
+    def _agent_key(self, agent: str) -> str:
         return f"{cap.config.VERSION_STORE_KEY}{self._store.sep}{agent}"
 
-    def latest(self, agent):
+    def latest(self, agent: str) -> str:
         versions = self._versions.get(agent) or []
         return str(versions[0][0]) if len(versions) > 0 else ""
 
-    def all_releases(self, agent):
+    def all_releases(self, agent: str) -> t.List[t.Dict[str, t.Any]]:
         versions = self._versions.get(agent) or []
         return [{"version": str(v), "critical": u} for v, u in versions]
 
-    def rollback(self, agent):
+    def rollback(self, agent: str):
         self._store.pop(self._agent_key(agent))
         if agent in self._versions and len(self._versions[agent]):
             self._versions[agent] = self._versions[agent][1:]
 
-    def clear(self, agent):
+    def clear(self, agent: str):
         self._store.clear(self._agent_key(agent))
         if agent in self._versions:
             self._versions[agent] = []
 
-    def publish(self, agent, ver, critical=False):
+    def publish(self, agent: str, ver: str, critical: bool = False):
         latest, _ = self._store.latest(self._agent_key(agent))
         if latest is not None and latest >= self.version_parse(ver):
             raise ValueError("New version must be greater than latest")
@@ -167,7 +165,7 @@ class MobileVersionCompatibility:
         self.load_from_storage(force=True)
         return self._versions[agent]
 
-    def load_from_storage(self, force=False):
+    def load_from_storage(self, force: bool = False):
         if self._load_time:
             seconds = (datetime.now() - self._load_time).seconds
             if not force and seconds < cap.config.VERSION_CACHE_EXPIRE:
@@ -177,7 +175,7 @@ class MobileVersionCompatibility:
             self._versions[a] = self._store.retrieve(self._agent_key(a), smax)
         self._load_time = datetime.now()
 
-    def check_upgrade(self):
+    def check_upgrade(self) -> bool:
         if not self.mobile_version:
             return False
         try:
@@ -198,7 +196,9 @@ class MobileVersionCompatibility:
 
 class MobileReleaseView(BaseView):
     builder = builder
-    ext = ExtProxy("mobile_version")
+    ext: MobileVersionCompatibility = t.cast(
+        MobileVersionCompatibility, ExtProxy("mobile_version")
+    )
     methods = [
         HttpMethod.POST,
         HttpMethod.GET,
@@ -218,10 +218,10 @@ class MobileReleaseView(BaseView):
             agent=webargs.Field.string(required=True),
         )
     )
-    def dispatch_request(self, params, *_, ver=None, **__):
+    def dispatch_request(self, params: dict, *_, ver=None, **__):
         agent = params["agent"]
         if agent not in cap.config.VERSION_AGENTS:
-            flask.abort(
+            abort(
                 httpcode.BAD_REQUEST,
                 response=dict(
                     reason="agent not compatible", agents=cap.config.VERSION_AGENTS
@@ -232,7 +232,7 @@ class MobileReleaseView(BaseView):
             return self.ext.latest(agent) or "", {"Content-Type": "text/plain"}
 
         if ver is None:
-            if flask.request.method == "DELETE":
+            if request.method == "DELETE":
                 if params["all"]:
                     self.ext.clear(agent)
                     return Response.no_content()
@@ -241,7 +241,7 @@ class MobileReleaseView(BaseView):
             try:
                 self.ext.publish(agent, ver, params["critical"])
             except ValueError as exc:
-                flask.abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
+                abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
 
         mimetype, response = self.builder.get_mimetype_accept()
         return response.build(self.ext.all_releases(agent)), {"Content-Type": mimetype}
@@ -262,61 +262,58 @@ class MobileLoggerView(BaseView):
         RateLimit.fail(),
     ]
 
-    def __init__(self, logger_name=None):
-        """
-
-        :param logger_name:
-        """
-        if logger_name:
-            self._log = logging.getLogger(logger_name)  # pragma: no cover
-        else:
-            self._log = cap.logger
+    def __init__(self, name: t.Optional[str] = None):
+        self._log = logging.getLogger(name) if name else cap.logger
 
     @staticmethod
-    def _dump_dict(data):
+    def _dump_dict(data: dict) -> str:
         return "\n\t".join(f"{k}: {v}" for k, v in data.items())
 
-    def dump_key(self, data, key):
+    def dump_key(self, data: dict, key: str) -> t.Optional[str]:
         if key not in data:
             return self.unavailable
 
-        data = data.get(key)
-        if isinstance(data, dict):
-            return self._dump_dict(data)
-        return data
+        _data = data.get(key)
+        if isinstance(_data, dict):
+            return self._dump_dict(_data)
+        return _data
 
-    def get_user_info(self, *_, **__):
+    def get_user_info(self, *_, **__) -> str:
         return self.unavailable
 
-    def dump_message(self, payload, *args, **kwargs):
+    def dump_message(self, payload: dict, *args, **kwargs) -> t.Tuple[str, tuple]:
         return (
-            "%s"
-            "\n\tUser-Info: %s"
-            "\n\tMobile-Version: %s"
-            "\n\tUser-Agent: %s"
-            "\n\tDevice-Info: %s"
-            "\n\tDebug-Info: %s"
-            "\n\tPayload: %s"
-            "\n\tStack-Trace:\n%s",
-            self.intro,
-            self.get_user_info(*args, **kwargs),
-            self.dump_key(flask.request.headers, "X-Mobile-Version"),
-            self.dump_key(flask.request.headers, "User-Agent"),
-            self.dump_key(payload, "device_info"),
-            self.dump_key(payload, "debug_info"),
-            self.dump_key(payload, "payload"),
-            self.dump_key(payload, "stacktrace").replace("\\n", "\n"),
+            (
+                "%s"
+                "\n\tUser-Info: %s"
+                "\n\tMobile-Version: %s"
+                "\n\tUser-Agent: %s"
+                "\n\tDevice-Info: %s"
+                "\n\tDebug-Info: %s"
+                "\n\tPayload: %s"
+                "\n\tStack-Trace:\n%s"
+            ),
+            (
+                self.intro,
+                self.get_user_info(*args, **kwargs),
+                self.dump_key(request.headers, "X-Mobile-Version"),
+                self.dump_key(request.headers, "User-Agent"),
+                self.dump_key(payload, "device_info"),
+                self.dump_key(payload, "debug_info"),
+                self.dump_key(payload, "payload"),
+                self.dump_key(payload, "stacktrace").replace("\\n", "\n"),
+            ),
         )
 
-    def perform(self, payload, *args, **kwargs):
-        message, *args = self.dump_message(payload, *args, **kwargs)
+    def perform(self, payload: dict, *args, **kwargs) -> t.Tuple[str, tuple]:
+        message, args = self.dump_message(payload, *args, **kwargs)
         self._log.error(message, *args)
         return message, args
 
     def dispatch_request(self, *args, **kwargs):
-        payload = flask.request.json
+        payload = request.json
         self.perform(payload, *args, **kwargs)
 
-        if "debug" in flask.request.args:
+        if "debug" in request.args:
             return payload, httpcode.SUCCESS
         return None

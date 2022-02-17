@@ -1,7 +1,9 @@
-import flask
+from flask import url_for
+from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 
-from flaskel.flaskel import cap
+from flaskel.flaskel import cap, request
+from flaskel.http.exceptions import abort
 from flaskel.views.base import BaseView
 from flaskel.views.template import RenderTemplateString
 
@@ -30,16 +32,16 @@ class ApiDocTemplate(RenderTemplateString):
     </body>
 </html>"""
 
-    def service(self, *_, **__):
+    def service(self, *_, **__) -> dict:
         if not cap.config.APIDOCS_ENABLED:
-            flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
+            return abort(httpcode.NOT_FOUND)
 
         proto = cap.config.PREFERRED_URL_SCHEME
         return dict(
             rapidoc_version=cap.config.RAPIDOC_VERSION or "9",
             rapidoc_theme=cap.config.RAPIDOC_THEME or "dark",
             page_title=f"{cap.config.APP_NAME} - API DOCS",
-            spec_url=flask.url_for(self.apispec_view, _external=True, _scheme=proto),
+            spec_url=url_for(self.apispec_view, _external=True, _scheme=proto),
         )
 
 
@@ -47,39 +49,24 @@ class ApiSpecTemplate(BaseView):
     default_view_name = "apispec"
     default_urls = ("/apidoc.json",)
 
-    def __init__(self, version="1.0.0", context_path=""):
-        """
-
-        :param version:
-        :param context_path:
-        """
+    def __init__(self, version: str = "1.0.0", context_path: str = ""):
         self._api_version = version
-        self._context_path = f"{flask.request.environ['SCRIPT_NAME']}/{context_path}"
+        self._context_path = f"{request.environ['SCRIPT_NAME']}/{context_path}"
 
     def dispatch_request(self, *_, **__):
         if not cap.config.APIDOCS_ENABLED:
-            flask.abort(httpcode.NOT_FOUND)  # pragma: no cover
+            abort(httpcode.NOT_FOUND)
 
         return self.set_variables(cap.config.APISPEC)
 
-    def set_variables(self, apispec):
-        """
-
-        :param apispec:
-        :return:
-        """
+    def set_variables(self, apispec: ObjectDict) -> ObjectDict:
         try:
             apispec.info.version = self._api_version
             variables = apispec.servers[0].variables
             variables["context"]["default"] = self._context_path
             scheme = cap.config.PREFERRED_URL_SCHEME or "http"
             variables["host"]["default"] = f"{scheme}://{cap.config.SERVER_NAME}"
-        except (
-            AttributeError,
-            IndexError,
-            KeyError,
-            TypeError,
-        ) as exc:  # pragma: no cover
+        except Exception as exc:  # pylint: disable=broad-except
             cap.logger.exception(exc)
 
         return apispec

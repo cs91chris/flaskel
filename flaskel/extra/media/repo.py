@@ -1,3 +1,5 @@
+import typing as t
+
 import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 from vbcore.datastruct import ObjectDict
@@ -22,8 +24,10 @@ class MediaRepo:
     media_model = None
 
     @classmethod
-    def entity_name(cls):
-        return cls.entity_model.__tablename__
+    def entity_name(cls) -> t.Optional[str]:
+        if cls.entity_model:
+            return cls.entity_model.__tablename__
+        return None
 
     @classmethod
     def get(cls, eid):
@@ -40,7 +44,7 @@ class MediaRepo:
         try:
             cls.session.add(emodel)
             cls.session.commit()
-        except SQLAlchemyError as exc:  # pragma: no cover
+        except SQLAlchemyError as exc:
             cap.logger.exception(exc)
             cls.session.rollback()
             raise MediaError(exc) from exc
@@ -59,7 +63,7 @@ class MediaRepo:
             cls.session.delete(res)
             cls.session.commit()
             return res
-        except SQLAlchemyError as exc:  # pragma: no cover
+        except SQLAlchemyError as exc:
             cap.logger.exception(exc)
             cls.session.rollback()
             raise MediaError(exc) from exc
