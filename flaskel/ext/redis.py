@@ -56,7 +56,7 @@ class FlaskRedis:
 
     @property
     def client(self):
-        return self._client  # pragma: no cover
+        return self._client
 
     def init_app(self, app, redis_class=None, **kwargs):
         assert redis is not None, "redis must be installed"

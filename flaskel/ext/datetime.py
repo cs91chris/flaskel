@@ -24,8 +24,3 @@ class FlaskDateHelper:
 
     def __getattr__(self, name):
         return getattr(self._helper, name)
-
-    def to_iso_format(self, str_date, fmt=None, **kwargs):
-        return self.change_format(
-            str_date, in_fmt=fmt, out_fmt=self.iso_format, **kwargs
-        )
