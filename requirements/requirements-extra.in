@@ -12,3 +12,5 @@ Flask-Mail
 Flask-APScheduler
 flask_pymongo
 flask_socketio
+
+backports.zoneinfo; python_version < "3.9"

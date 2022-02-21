@@ -23,18 +23,21 @@ security: safety liccheck
 compile-deps:
 	$(call req_compile,requirements)
 	$(call req_compile,requirements-extra)
+	$(call req_compile,requirements-wsgi)
 	$(call req_compile,requirements-test)
 	$(call req_compile,requirements-dev)
 
 upgrade-deps:
 	$(call req_compile,requirements, --upgrade)
 	$(call req_compile,requirements-extra, --upgrade)
+	$(call req_compile,requirements-wsgi, --upgrade)
 	$(call req_compile,requirements-test, --upgrade)
 	$(call req_compile,requirements-dev, --upgrade)
 
 install-deps:
 	pip install -r ${REQ_PATH}/requirements.txt
 	pip install -r ${REQ_PATH}/requirements-extra.txt
+	pip install -r ${REQ_PATH}/requirements-wsgi.txt
 	pip install -r ${REQ_PATH}/requirements-dev.txt
 	pip install -r ${REQ_PATH}/requirements-test.txt
 
@@ -51,14 +54,16 @@ clean:
 liccheck:
 	liccheck \
 		-r ${REQ_PATH}/requirements.txt \
-		-r ${REQ_PATH}/requirements-extra.txt
+		-r ${REQ_PATH}/requirements-extra.txt \
+		-r ${REQ_PATH}/requirements-wsgi.txt
 
 safety:
 	# ignore flask-caching
 	safety check --full-report \
 		--ignore 40459 \
 		-r ${REQ_PATH}/requirements.txt \
-		-r ${REQ_PATH}/requirements-extra.txt
+		-r ${REQ_PATH}/requirements-extra.txt \
+		-r ${REQ_PATH}/requirements-wsgi.txt
 
 black:
 	black -t py38 ${PACKAGE} tests setup.py
