@@ -29,8 +29,11 @@ define req_compile
 endef
 
 
-all: clean lint test security
+all: clean lint security run-tox
 build-publish: build-dist pypi-publish
+lint: black flake pylint mypy
+security: safety liccheck
+
 
 compile-deps:
 	$(call req_compile,requirements)
@@ -59,19 +62,29 @@ clean:
 	find . -name '.pytest_cache' -prune -exec rm -rf {} \;
 	find ${PACKAGE} -name "*.c" -prune -exec rm -rf {} \;
 
-lint:
+black:
 	black -t py38 ${PACKAGE} tests setup.py
+
+flake:
 	flake8 --config=.flake8 ${PACKAGE} tests setup.py
+
+pylint:
 	pylint --rcfile=.pylintrc ${PACKAGE} tests setup.py
+
+mypy:
 	mypy --install-types --non-interactive --no-strict-optional ${PACKAGE} tests
+
+run-tox:
+	tox --verbose -p all
 
 test:
 	pytest --cov=${PACKAGE} --cov-report=html --cov-config .coveragerc tests
 
-security:
+liccheck:
 	liccheck \
 		-r ${REQ_PATH}/requirements.txt
 
+safety:
 	# ignore flask-caching
 	safety check --full-report \
 		--ignore 40459 \
