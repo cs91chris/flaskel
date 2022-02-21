@@ -1,4 +1,5 @@
 import re
+import typing as t
 from datetime import datetime
 
 from flask_limiter import Limiter
@@ -13,24 +14,26 @@ cap = flaskel.cap
 config = flaskel.ConfigProxy("LIMITER")
 
 
-def response_ok(res):
+def response_ok(res) -> bool:
     return httpcode.is_ok(res.status_code)
 
 
-def response_ko(res):
+def response_ko(res) -> bool:
     return res.status_code != httpcode.TOO_MANY_REQUESTS and httpcode.is_ko(
         res.status_code
     )
 
 
-limiter = Limiter(
+limiter: Limiter = Limiter(
     key_func=cfremote.get_remote,
     default_limits=[lambda: config["FAIL"]],
     default_limits_deduct_when=response_ko,
 )
 
 
-def header_whitelist():
+def header_whitelist() -> bool:
+    if not config.BYPASS_VALUE:
+        return False
     return flaskel.request.headers.get(config.BYPASS_KEY) == config.BYPASS_VALUE
 
 
@@ -40,7 +43,7 @@ def _header_whitelist():
 
 
 class RateLimit:
-    limiter = limiter
+    limiter: Limiter = limiter
 
     @classmethod
     def slow(cls):
@@ -60,23 +63,30 @@ class RateLimit:
 
 
 class FlaskIPBan:
+    DEFAULT_WHITELIST: t.Dict[str, ObjectDict] = {
+        "^/.well-known/": ObjectDict(
+            pattern=re.compile(r"^/.well-known"), match_type="regex"
+        ),
+        "/favicon.ico": ObjectDict(match_type="string"),
+        "/robots.txt": ObjectDict(match_type="string"),
+        "/ads.txt": ObjectDict(match_type="string"),
+    }
+
     def __init__(self, app=None, **kwargs):
         self._ip_banned = {}
         self._url_blocked = {}
-        self._ip_whitelist = {"127.0.0.1": True}
-        self._url_whitelist = {
-            "^/.well-known/": ObjectDict(
-                pattern=re.compile(r"^/.well-known"), match_type="regex"
-            ),
-            "/favicon.ico": ObjectDict(pattern=re.compile(""), match_type="string"),
-            "/robots.txt": ObjectDict(pattern=re.compile(""), match_type="string"),
-            "/ads.txt": ObjectDict(pattern=re.compile(""), match_type="string"),
-        }
+        self._ip_whitelist: t.Dict[str, bool] = {"127.0.0.1": True}
+        self._url_whitelist: t.Dict[str, ObjectDict] = self.DEFAULT_WHITELIST
 
         if app:
             self.init_app(app, **kwargs)
 
-    def init_app(self, app, whitelist=(), nuisances=None):
+    def init_app(
+        self,
+        app,
+        whitelist: t.Optional[t.List[str]] = None,
+        nuisances: t.Optional[dict] = None,
+    ):
         app.config.setdefault("IPBAN_ENABLED", True)
         app.config.setdefault("IPBAN_COUNT", 20)
         app.config.setdefault("IPBAN_SECONDS", Day.seconds)
@@ -91,28 +101,29 @@ class FlaskIPBan:
             ),
         )
 
-        if app.config.IPBAN_ENABLED:
-            app.after_request(self._after_request)
-            app.before_request(self._before_request)
+        if app.config.IPBAN_ENABLED is True:
+            app.after_request(self.after_request_hook)
+            app.before_request(self.before_request_hook)
 
-            self.add_whitelist(whitelist or [])
+            self.add_whitelist(whitelist)
             self.load_nuisances(conf=app.config.IPBAN_NUISANCES)
 
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["ipban"] = self
 
     @staticmethod
-    def get_ip():
+    def get_ip() -> str:
         return flaskel.request.remote_addr
 
     @staticmethod
-    def get_url():
+    def get_url() -> str:
         return flaskel.request.path
 
-    def _is_excluded(self, ip=None, url=None) -> bool:
+    def is_whitelisted(
+        self, ip: t.Optional[str] = None, url: t.Optional[str] = None
+    ) -> bool:
         """
-
-        :return: true if this ip or url should not be checked
+        return true if this ip or url should not be checked
         """
         ip = ip or self.get_ip()
         url = url or self.get_url()
@@ -128,7 +139,7 @@ class FlaskIPBan:
 
         return False
 
-    def _test_blocked(self, url="", ip=None) -> bool:
+    def is_blocked(self, url: str = "", ip: t.Optional[str] = None) -> bool:
         """
         return true if the url or ip pattern matches an existing block
 
@@ -136,12 +147,11 @@ class FlaskIPBan:
         :param ip: (optional) an ip to check
         :return:
         """
-        query_path = url.split("?")[0]
         for pattern, item in self._url_blocked.items():
-            if item.match_type == "regex" and item.pattern.match(query_path):
+            if item.match_type == "regex" and item.pattern.match(url):
                 cap.logger.warning("url %s matches block pattern %s", url, pattern)
                 return True
-            if item.match_type == "string" and pattern == query_path:
+            if item.match_type == "string" and pattern == url:
                 cap.logger.warning("url %s matches block string %s", url, pattern)
                 return True
             if ip and item.match_type == "ip" and pattern == ip:
@@ -150,20 +160,17 @@ class FlaskIPBan:
 
         return False
 
-    def _after_request(self, response):
+    def after_request_hook(self, response):
         """
         method to call after a request to allow recording all unwanted status codes
-
-        :param response:
-        :return:
         """
         if response.status_code in cap.config.IPBAN_CHECK_CODES:
-            self.add()
+            self.ban_ip()
 
         return response
 
-    def _before_request(self):
-        if self._is_excluded():
+    def before_request_hook(self):
+        if self.is_whitelisted():
             return
 
         ip = self.get_ip()
@@ -188,7 +195,7 @@ class FlaskIPBan:
             entry.count = 0
             cap.logger.debug("IP: %s expired from ban list, at url: %s", ip, url)
 
-    def add_url_block(self, url, match_type="regex") -> int:
+    def add_url_block(self, url: str, match_type: str = "regex") -> int:
         """
         add or replace the pattern to the list of url patterns to block
 
@@ -201,7 +208,13 @@ class FlaskIPBan:
         )
         return len(self._url_blocked)
 
-    def block(self, ips, permanent=False, timestamp=None, url="block") -> int:
+    def block_ip(
+        self,
+        ips: t.List[str],
+        permanent: bool = False,
+        timestamp=None,
+        url: str = "block",
+    ) -> int:
         """
         add a list of ip addresses to the block list
 
@@ -232,7 +245,9 @@ class FlaskIPBan:
 
         return len(self._ip_banned)
 
-    def add(self, ip=None, url=None, timestamp=None) -> bool:
+    def ban_ip(
+        self, ip: t.Optional[str] = None, url: t.Optional[str] = None, timestamp=None
+    ) -> bool:
         """
         increment ban count ip of the current request in the banned list
 
@@ -245,7 +260,7 @@ class FlaskIPBan:
         ip = ip or self.get_ip()
         url = url or self.get_url()
 
-        if self._is_excluded(ip=ip, url=url):
+        if self.is_whitelisted(ip=ip, url=url):
             return False
 
         entry = self._ip_banned.get(ip)
@@ -253,9 +268,9 @@ class FlaskIPBan:
         if (
             not entry
             or (entry and (entry.count or 0) < cap.config.IPBAN_COUNT)
-            and self._test_blocked(url, ip=ip)
+            and self.is_blocked(url, ip=ip)
         ):
-            self.block([ip], url=url)
+            self.block_ip([ip], url=url)
             return True
 
         if not timestamp or (timestamp and timestamp > datetime.now()):
@@ -271,7 +286,7 @@ class FlaskIPBan:
         cap.logger.info("%s %s added/updated ban list. Count: %d", ip, url, count)
         return True
 
-    def remove(self, ip) -> bool:
+    def unban_ip(self, ip: str) -> bool:
         """
         remove from the ban list
 
@@ -284,7 +299,7 @@ class FlaskIPBan:
         del self._ip_banned[ip]
         return True
 
-    def load_nuisances(self, conf=None) -> int:
+    def load_nuisances(self, conf: t.Optional[dict] = None) -> int:
         """
         load a yaml file of nuisance urls or ips that are commonly used by vulnerability scanners
         any access to one of these that produces unwanted status codes will ban the source ip.
@@ -297,32 +312,31 @@ class FlaskIPBan:
         for match_type in ["ip", "string", "regex"]:
             values = conf.get(match_type) or ()
             for v in values:
-                try:
-                    self.add_url_block(v, match_type)
-                    count += 1
-                except (ValueError, TypeError) as e:
-                    cap.logger.error("an error occurred while adding pattern '%s'", v)
-                    cap.logger.exception(e)
+                self.add_url_block(v, match_type)
+                count += 1
 
         return count
 
-    def add_whitelist(self, ips) -> int:
+    def add_whitelist(self, ips: t.Union[str, t.List[str]]) -> int:
         """
 
         :param ips: list of ip addresses to add
         :return: number of entries in the ip whitelist
         """
-        if not isinstance(ips, (list, tuple)):
-            ips = (ips,)
+        if not isinstance(ips, list):
+            ips = [ips]
 
         for ip in ips:
             self._ip_whitelist[ip] = True
 
         return len(self._ip_whitelist)
 
-    def remove_whitelist(self, el) -> bool:
-        if not self._ip_whitelist.get(el):
+    def remove_whitelist(self, ip: str) -> bool:
+        if ip not in self._ip_whitelist:
             return False
 
-        del self._ip_whitelist[el]
+        del self._ip_whitelist[ip]
         return True
+
+
+ipban = FlaskIPBan()
