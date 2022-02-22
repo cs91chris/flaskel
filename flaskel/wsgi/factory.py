@@ -1,52 +1,22 @@
 import typing as t
 
-from .base import WSGIBuiltin, BaseApplication
+from vbcore.importer import ImporterFactory, ImporterError
 
-try:
-    from .wsgi_gevent import WSGIGevent
-except ImportError:
-    WSGIGevent = None  # type: ignore
-try:
-    from .wsgi_gunicorn import WSGIGunicorn
-except ImportError:
-    WSGIGunicorn = None  # type: ignore
-try:
-    from .wsgi_tornado import WSGITornado
-except ImportError:
-    WSGITornado = None  # type: ignore
-try:
-    from .wsgi_twisted import WSGITwisted
-except ImportError:
-    WSGITwisted = None  # type: ignore
-try:
-    from .wsgi_waitress import WSGIWaitress
-except ImportError:
-    WSGIWaitress = None  # type: ignore
+from .base import BaseApplication
+
+DEFAULT_WSGI_SERVERS: t.Dict[str, str] = {
+    "builtin": "flaskel.wsgi.base:WSGIBuiltin",
+    "gunicorn": "flaskel.wsgi.wsgi_gunicorn:WSGIGunicorn",
+    "gevent": "flaskel.wsgi.wsgi_gevent:WSGIGevent",
+    "tornado": "flaskel.wsgi.wsgi_tornado.WSGITornado",
+    "twisted": "flaskel.wsgi.wsgi_twisted:WSGITwisted",
+    "waitress": "flaskel.wsgi.wsgi_waitress:WSGIWaitress",
+}
 
 
-class WSGIFactory:
-    WSGI_SERVERS: t.Dict[str, t.Type[BaseApplication]] = {
-        "builtin": WSGIBuiltin,
-        "gunicorn": WSGIGunicorn,
-        "gevent": WSGIGevent,
-        "tornado": WSGITornado,
-        "twisted": WSGITwisted,
-        "waitress": WSGIWaitress,
-    }
-
-    @classmethod
-    def get_instance(cls, name: str, **kwargs) -> BaseApplication:
-        wsgi_class = cls.get_class(name)
-        return wsgi_class(**kwargs)
-
-    @classmethod
-    def get_class(cls, name: str) -> t.Type[BaseApplication]:
-        if name not in cls.WSGI_SERVERS:
-            raise ValueError(f"unable to find wsgi server: '{name}'")
-
-        wsgi_class = cls.WSGI_SERVERS.get(name)
-
-        if wsgi_class is None:
-            raise ImportError(f"You must install '{name}' dependencies")
-
-        return wsgi_class
+class WSGIFactory(ImporterFactory):
+    def get_class(self, name: str, *args, **kwargs) -> t.Type[BaseApplication]:
+        try:
+            return super().get_class(name, *args, **kwargs)
+        except ImporterError as exc:
+            raise ImportError(f"missing '{name}' dependency") from exc

@@ -8,8 +8,7 @@ from vbcore.misc import parse_value
 
 from .builder import AppBuilder
 from .config import config as configurator
-from .wsgi import BaseApplication
-from .wsgi.factory import WSGIFactory
+from .wsgi import BaseApplication, WSGIFactory, DEFAULT_WSGI_SERVERS
 
 
 def option_as_dict(ctx, param, value):
@@ -34,7 +33,7 @@ class Server:
     )
     opt_wsgi_server_attr = dict(
         default=None,
-        type=click.Choice(list(WSGIFactory.WSGI_SERVERS.keys()), case_sensitive=False),
+        type=click.Choice(list(DEFAULT_WSGI_SERVERS.keys()), case_sensitive=False),
         help="name of wsgi server to use",
     )
     option_wsgi_config_attr = dict(
@@ -58,7 +57,9 @@ class Server:
         wsgi_factory: t.Optional[WSGIFactory] = None,
     ):
         self._app_factory = app_factory or AppBuilder()
-        self._wsgi_factory = wsgi_factory or WSGIFactory()
+        self._wsgi_factory = wsgi_factory or WSGIFactory(
+            base_class=BaseApplication, classes=DEFAULT_WSGI_SERVERS
+        )
 
     def register_options(self, func: t.Callable) -> t.Callable:
         @click.command()
