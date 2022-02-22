@@ -11,7 +11,10 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def flaskel_app() -> Flaskel:
-    return Flaskel(__name__)
+    app = Flaskel(__name__)
+    app.testing = True
+    app.debug = True
+    return app
 
 
 @pytest.fixture

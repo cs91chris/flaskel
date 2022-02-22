@@ -39,10 +39,14 @@ def test_set_secret_key_dev(flaskel_app, caplog):
 
     Asserter.assert_equals(app.config.JWT_SECRET_KEY, app.config.SECRET_KEY)
     Asserter.assert_equals(app.config.SECRET_KEY, "fake_very_complex_string")
-    Asserter.assert_equals(len(caplog.records), 1)
-    Asserter.assert_equals(caplog.records[0].levelname, "WARNING")
+    Asserter.assert_equals(len(caplog.records), 2)
+    Asserter.assert_equals(caplog.records[0].levelname, "DEBUG")
     Asserter.assert_equals(
-        caplog.records[0].getMessage(), "secret key length is less than: 256"
+        caplog.records[0].getMessage(), "set secret key in development mode"
+    )
+    Asserter.assert_equals(caplog.records[1].levelname, "WARNING")
+    Asserter.assert_equals(
+        caplog.records[1].getMessage(), "secret key length is less than: 256"
     )
 
 
