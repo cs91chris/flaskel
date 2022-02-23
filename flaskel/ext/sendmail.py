@@ -1,59 +1,55 @@
 import socket
+import typing as t
 
 try:
-    from flask_mail import Mail, Message
-except ImportError:
-    Mail = Message = object
+    from flask_mail import Mail, Message, Attachment
+except ImportError:  # pragma: no cover
+    Attachment = Mail = Message = object
+
+AddressType = t.Union[str, t.Tuple[str, str]]
 
 
 class ClientMail(Mail):
     def init_app(self, app):
         assert Mail is not object, "you must install 'flask_mail'"
 
+        self.app = app
         super().init_app(app)
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["client_mail"] = self
 
     def sendmail(
         self,
-        app,
-        sender=None,
-        recipients=None,
-        message=None,
-        attachments=None,
+        subject: str,
+        html: t.Optional[str] = None,
+        body: t.Optional[str] = None,
+        recipients: t.Optional[t.List[AddressType]] = None,
+        reply_to: t.Optional[AddressType] = None,
+        cc: t.Optional[t.List[AddressType]] = None,
+        bcc: t.Optional[t.List[AddressType]] = None,
+        sender: t.Optional[AddressType] = None,
+        attachments: t.Optional[t.List[Attachment]] = None,
         **kwargs,
-    ):
-        destination = recipients or [app.config.MAIL_RECIPIENT]
-        try:
-            if sender.name and sender.surname:
-                sender = (f"{sender.name} {sender.surname}", sender.email)
-            else:
-                sender = sender.email or app.config.MAIL_DEFAULT_SENDER
-        except AttributeError:
-            sender = sender or app.config.MAIL_DEFAULT_SENDER
+    ) -> str:
+        destination = recipients or [self.app.config.MAIL_RECIPIENT]
+        message = Message(
+            subject=subject,
+            html=html,
+            body=body,
+            recipients=destination,
+            reply_to=reply_to,
+            cc=cc,
+            bcc=bcc,
+            sender=sender,
+            attachments=attachments,
+            **kwargs,
+        )
+        timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(self.app.config.MAIL_TIMEOUT or 60)
+        self.send(message)
+        socket.setdefaulttimeout(timeout)
 
-        mail_message = Message(sender=sender, recipients=destination, **kwargs)
-        mail_message.html = message
-
-        if attachments:
-            try:
-                for attach in attachments:
-                    with open(attach["filename"], encoding="utf-8") as file:
-                        mail_message.attach(data=file.read(), **(attach or {}))
-            except (OSError, IOError) as exc:
-                app.logger.warning(str(exc))
-
-        try:
-            timeout = socket.getdefaulttimeout()
-            socket.setdefaulttimeout(app.config.MAIL_TIMEOUT or 60)
-
-            with app.app_context():
-                self.send(mail_message)
-
-            socket.setdefaulttimeout(timeout)
-
-            app.logger.info(
-                "email %s from %s sent to %s", mail_message.msgId, sender, destination
-            )
-        except OSError as exc:
-            app.logger.exception(exc)
+        self.app.logger.info(
+            "sent email %s from %s to %s", message.msgId, sender, destination
+        )
+        return message.msgId
