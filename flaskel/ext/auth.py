@@ -1,22 +1,32 @@
+import dataclasses
 import functools
+import typing as t
 from datetime import timedelta
 
-import flask
-import flask_jwt_extended as jwt
 import sqlalchemy as sa
 from flask_httpauth import HTTPBasicAuth
+from flask_jwt_extended import (
+    JWTManager,
+    jwt_required,
+    get_jwt_identity,
+    get_jwt,
+    decode_token,
+    create_access_token,
+    create_refresh_token,
+)
 from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 
 from flaskel.flaskel import cap
+from flaskel.http.exceptions import abort
 
-jwtm: jwt.JWTManager = jwt.JWTManager()
+token_auth: JWTManager = JWTManager()
 basic_auth: HTTPBasicAuth = HTTPBasicAuth()
 
 
 @basic_auth.verify_password
-def simple_basic_auth(username, password):
+def simple_basic_auth(username: str, password: str) -> t.Optional[dict]:
     if (
         username == cap.config.BASIC_AUTH_USERNAME
         and password == cap.config.BASIC_AUTH_PASSWORD
@@ -25,55 +35,75 @@ def simple_basic_auth(username, password):
     return None
 
 
-@jwtm.invalid_token_loader
-def invalid_token_loader(mess):
-    return dict(message=mess), httpcode.UNAUTHORIZED  # pragma: no cover
+@token_auth.invalid_token_loader
+def invalid_token_loader(mess) -> t.Tuple[dict, int]:
+    return dict(message=mess), httpcode.UNAUTHORIZED
 
 
 class RevokedTokenMixin(StandardMixin):
     jti = sa.Column(sa.String(120), nullable=False, unique=True)
 
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self):
         return f"<RevokedToken: {self.id} - {self.jti}>"
 
     @classmethod
-    def is_block_listed(cls, jti):  # pragma: no cover
+    def is_block_listed(cls, jti: str) -> bool:
         # noinspection PyUnresolvedReferences
         return bool(cls.query.filter_by(jti=jti).first())
 
 
+@dataclasses.dataclass(frozen=True)
+class TokenData:
+    access_token: str
+    expires_in: int
+    issued_at: int
+    token_type: str
+    scope: t.Optional[str] = None
+    refresh_token: t.Optional[str] = None
+
+    def to_dict(self):
+        data = ObjectDict(
+            access_token=self.access_token,
+            expires_in=self.expires_in,
+            issued_at=self.issued_at,
+            token_type=self.token_type,
+            scope=self.scope,
+        )
+        if self.refresh_token:
+            data.refresh_token = self.refresh_token
+        return data
+
+
 class BaseTokenHandler:
-    def __init__(self, blocklist_loader=None):
-        """
+    def __init__(self, blocklist_loader: t.Optional[t.Callable] = None):
+        token_auth.token_in_blocklist_loader(blocklist_loader)
 
-        :param blocklist_loader:
-        """
-        jwtm.token_in_blocklist_loader(blocklist_loader)
+    # pylint: disable=no-self-use
+    def check_token_block_listed(self, jwt_headers, jwt_data) -> bool:
+        _ = jwt_headers, jwt_data
+        return False
 
-    def check_token_block_listed(self, jwt_headers, jwt_data):
-        raise NotImplementedError()  # pragma: no cover
-
-    def revoke(self, token=None):
-        raise NotImplementedError()  # pragma: no cover
+    def revoke(self, token: t.Optional[str] = None):
+        pass
 
     @classmethod
     def role(cls):
-        return None  # pragma: no cover
+        return None
 
     # noinspection PyMethodMayBeStatic
-    def prepare_identity(self, data):  # pylint: disable=R0201
+    def prepare_identity(self, data):  # pylint: disable=no-self-use
         return data
 
     @classmethod
     def check_permission(cls, role):
         if cls.role() != role:
-            flask.abort(httpcode.FORBIDDEN)
+            abort(httpcode.FORBIDDEN)
 
     @classmethod
     def auth_required(cls, perm=None, **kwargs):
         def wrapper(fun):
             @functools.wraps(fun)
-            @jwt.jwt_required(**kwargs)
+            @jwt_required(**kwargs)
             def check_optional_permission(*args, **kw):
                 if perm is not None:
                     cls.check_permission(perm)
@@ -84,53 +114,36 @@ class BaseTokenHandler:
         return wrapper
 
     @classmethod
-    def identity(cls):
-        identity = jwt.get_jwt_identity()
+    def identity(cls) -> ObjectDict:
+        identity = get_jwt_identity()
         if isinstance(identity, dict):
             identity = ObjectDict(**identity)
         return identity
 
     @classmethod
-    def get_raw(cls):
-        return ObjectDict(**jwt.get_jwt())
+    def get_raw(cls) -> ObjectDict:
+        return ObjectDict(**get_jwt())
 
     @classmethod
-    def decode(cls, token):
-        return ObjectDict(**jwt.decode_token(token))
+    def decode(cls, token: str) -> ObjectDict:
+        return ObjectDict(**decode_token(token))
 
-    def get_access(self, identity=None, expires=None):
-        """
-
-        :param identity:
-        :param expires:
-        :return:
-        """
-        return jwt.create_access_token(
+    def get_access(self, identity=None, expires: t.Optional[int] = None) -> str:
+        return create_access_token(
             identity=identity or self.identity(),
             expires_delta=timedelta(seconds=expires) if expires else None,
         )
 
-    def get_refresh(self, identity=None, expires=None):
-        """
-
-        :param identity:
-        :param expires:
-        :return:
-        """
-        return jwt.create_refresh_token(
+    def get_refresh(self, identity=None, expires: t.Optional[int] = None) -> str:
+        return create_refresh_token(
             identity=identity or self.identity(),
             expires_delta=timedelta(seconds=expires) if expires else None,
         )
 
-    def refresh(self, expires=None):
-        """
-
-        :param expires: in seconds
-        :return:
-        """
+    def refresh(self, expires: t.Optional[int] = None) -> TokenData:
         access_token = self.get_access(expires=expires)
         decoded = self.decode(access_token)
-        return ObjectDict(
+        return TokenData(
             access_token=access_token,
             expires_in=decoded.exp,
             issued_at=decoded.iat,
@@ -141,45 +154,28 @@ class BaseTokenHandler:
     def create(
         self,
         identity,
-        refresh=True,
-        expires_access=None,
-        expires_refresh=None,
-        scope=None,
-    ):
-        """
-
-        :param identity: user identifier, generally the username
-        :param refresh: enable refresh token
-        :param expires_access: in seconds
-        :param expires_refresh: in seconds
-        :param scope:
-        :return:
-        """
+        refresh: bool = True,
+        expires_access: t.Optional[int] = None,
+        expires_refresh: t.Optional[int] = None,
+        scope: t.Optional[str] = None,
+    ) -> TokenData:
         identity = self.prepare_identity(identity)
         access_token = self.get_access(identity=identity, expires=expires_access)
         decoded = self.decode(access_token)
-        resp = ObjectDict(
+        return TokenData(
             access_token=access_token,
             expires_in=decoded.exp,
             issued_at=decoded.iat,
             token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
             scope=scope or cap.config.JWT_DEFAULT_SCOPE,
+            refresh_token=self.get_refresh(identity=identity, expires=expires_refresh)
+            if refresh
+            else None,
         )
 
-        if refresh:
-            resp.refresh_token = self.get_refresh(
-                identity=identity, expires=expires_refresh
-            )
-
-        return resp
-
-    def dump(self, token_type=None, scope=None):
-        """
-
-        :param token_type:
-        :param scope:
-        :return:
-        """
+    def dump(
+        self, token_type: t.Optional[str] = None, scope: t.Optional[str] = None
+    ) -> ObjectDict:
         return ObjectDict(
             token_type=token_type or cap.config.JWT_DEFAULT_TOKEN_TYPE,
             scope=scope or cap.config.JWT_DEFAULT_SCOPE,
@@ -188,32 +184,18 @@ class BaseTokenHandler:
 
 
 class DBTokenHandler(BaseTokenHandler):
-    def __init__(self, model, session, blocklist_loader=None):
-        """
-
-        :param model:
-        """
+    def __init__(self, model, session, blocklist_loader: t.Optional[t.Callable] = None):
         self.model = model
         self.session = session
         super().__init__(blocklist_loader or self.check_token_block_listed)
 
-    def check_token_block_listed(self, jwt_headers, jwt_data):
-        """
-
-        :param jwt_headers:
-        :param jwt_data:
-        :return:
-        """
+    def check_token_block_listed(self, jwt_headers, jwt_data) -> bool:
         return self.model.is_block_listed(jwt_data["jti"])
 
-    def revoke(self, token=None):
-        """
-
-        :param token:
-        """
-        token = self.decode(token) if token else self.get_raw()
-        if token.jti:
-            self.session.add(self.model(jti=token.jti))
+    def revoke(self, token: t.Optional[str] = None):
+        decoded_token = self.decode(token) if token else self.get_raw()
+        if decoded_token.jti:
+            self.session.add(self.model(jti=decoded_token.jti))
             self.session.commit()
 
 
@@ -221,32 +203,19 @@ class RedisTokenHandler(BaseTokenHandler):
     entry_value = "true"
     key_prefix = "token_revoked::"
 
-    def __init__(self, redis, blocklist_loader=None):
-        """
-
-        :param redis:
-        :param blocklist_loader:
-        """
+    def __init__(self, redis, blocklist_loader: t.Optional[t.Callable] = None):
         self.redis = redis
         super().__init__(blocklist_loader or self.check_token_block_listed)
 
-    def check_token_block_listed(self, jwt_headers, jwt_data):
-        """
-
-        :param jwt_headers:
-        :param jwt_data:
-        :return:
-        """
+    def check_token_block_listed(self, jwt_headers, jwt_data) -> bool:
         entry = self.redis.get(f"{self.key_prefix}{jwt_data['jti']}")
         if not entry:
             return False
 
-        return entry == self.entry_value or entry == self.entry_value.encode()
+        if isinstance(entry, str):
+            return entry == self.entry_value
+        return entry == self.entry_value.encode()
 
-    def revoke(self, token=None):
-        """
-
-        :param token:
-        """
-        token = self.decode(token) if token else self.get_raw()
-        self.redis.set(f"{self.key_prefix}{token.jti}", self.entry_value)
+    def revoke(self, token: t.Optional[str] = None):
+        decoded_token = self.decode(token) if token else self.get_raw()
+        self.redis.set(f"{self.key_prefix}{decoded_token.jti}", self.entry_value)

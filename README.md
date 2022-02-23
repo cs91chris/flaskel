@@ -456,7 +456,7 @@ Configuration specific for internal extensions:
 
 - flaskel.ext.jobs.APJobs
  - ``SCHEDULER_AUTO_START``: *(default = False)*
- - ``SCHEDULER_PATCH_MULTIPROCESS``: *(default = True)*
+ - ``SCHEDULER_PATCH_MULTITHREAD``: *(default = True)*
  - ``SCHEDULER_LOCK_FILE``: *(default = .scheduler.lock)*
 
 

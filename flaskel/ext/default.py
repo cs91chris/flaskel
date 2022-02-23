@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_errors_handler import ErrorHandler
 from flask_logify import FlaskLogging
 from flask_response_builder import ResponseBuilder
+from flask_sqlalchemy import SQLAlchemy
 from flask_template_support import TemplateSupport
 
 from .caching import Caching
@@ -17,7 +18,7 @@ from .jobs import APJobs
 from .mongo import FlaskMongoDB
 from .redis import FlaskRedis
 from .sendmail import ClientMail
-from .sqlalchemy import SQLAModel, SQLAlchemy
+from .sqlalchemy import SQLAModel
 from .useragent import UserAgent
 
 cors: CORS = CORS()
