@@ -2,9 +2,9 @@ import os
 import sys
 import typing as t
 
-import flask
-import jinja2
+from flask import Blueprint
 from flask.typing import AfterRequestCallable, BeforeRequestCallable
+from jinja2 import ChoiceLoader, FileSystemLoader
 from vbcore.db.events import register_engine_events
 from vbcore.misc import random_string
 from werkzeug.middleware.lint import LintMiddleware
@@ -23,9 +23,9 @@ StrPathLikeType = t.Union[
     t.Sequence[t.Union[str, os.PathLike]],
 ]
 BlueprintType = t.Union[
-    flask.Blueprint,
-    t.Tuple[flask.Blueprint],
-    t.Tuple[flask.Blueprint, t.Dict[str, t.Any]],
+    Blueprint,
+    t.Tuple[Blueprint],
+    t.Tuple[Blueprint, t.Dict[str, t.Any]],
 ]
 WsgiCallable = t.Callable[[dict, t.Callable], t.Callable]
 WsgiCallableType = t.TypeVar("WsgiCallableType", bound=WsgiCallable)
@@ -39,52 +39,33 @@ ViewType = t.Union[
     BaseViewType,
     t.Tuple[BaseViewType],
     t.Tuple[BaseViewType, t.Dict[str, t.Any]],
-    t.Tuple[BaseViewType, flask.Blueprint, t.Dict[str, t.Any]],
+    t.Tuple[BaseViewType, Blueprint, t.Dict[str, t.Any]],
 ]
 
 
-# pylint: disable=too-many-instance-attributes,no-member
+# pylint: disable=too-many-instance-attributes
 class AppBuilder:
-    """
-    default app name
-    """
-
-    app_name = config.FLASK_APP
-
-    """
-    default flask class
-    """
-    flask_class = flaskel.Flaskel
-
-    """
-    default secret key file name
-    """
-    secret_file = ".secret.key"
-
-    """
-    custom url converters
-    """
-    url_converters = CONVERTERS
-
-    """
-    custom app config module
-    """
     conf_module = config
+    app_name: str = config.FLASK_APP
+    secret_file: str = config.SECRET_KEY_FILE_NAME
+    flask_class: t.Type[flaskel.Flaskel] = flaskel.Flaskel
+    url_converters: t.Dict[str, t.Type[BaseConverter]] = CONVERTERS
 
     # pylint: disable=too-many-arguments
     def __init__(
         self,
         app: t.Optional[Flaskel] = None,
+        *,
         conf_module: t.Optional[str] = None,
-        extensions: t.Optional[t.Dict[str, t.Any]] = None,
-        converters: t.Optional[t.Dict[str, t.Type[BaseConverter]]] = None,
+        views: t.Tuple[ViewType, ...] = (),
         folders: t.Tuple[StrPathLikeType, ...] = (),
         blueprints: t.Tuple[BlueprintType, ...] = (),
         middlewares: t.Tuple[MiddleWareType, ...] = (),
-        views: t.Tuple[ViewType, ...] = (),
+        extensions: t.Optional[t.Dict[str, t.Any]] = None,
         after_request: t.Tuple[AfterRequestCallable, ...] = (),
         before_request: t.Tuple[BeforeRequestCallable, ...] = (),
-        after_create_callback: t.Optional[t.Callable[[None], None]] = None,
+        after_create_hook: t.Optional[t.Callable[[None], None]] = None,
+        converters: t.Optional[t.Dict[str, t.Type[BaseConverter]]] = None,
         version: t.Optional[str] = None,
         **options,
     ):
@@ -116,7 +97,7 @@ class AppBuilder:
         self._middlewares = middlewares
         self._after_request = after_request
         self._before_request = before_request
-        self._after_create_callback = after_create_callback
+        self._after_create_callback = after_create_hook
         self._conf_module = conf_module or self.conf_module
 
     @property
@@ -167,14 +148,14 @@ class AppBuilder:
         if not self._app.config.JWT_SECRET_KEY:
             self._app.config.JWT_SECRET_KEY = self._app.config.SECRET_KEY
 
-    def set_config(self, conf):
+    def set_config(self, conf: t.Optional[t.Dict[str, t.Any]] = None):
         self._app.config.from_object(self._conf_module)
         self._app.config.from_mapping(**(conf or {}))
         self._app.config.from_envvar("APP_CONFIG_FILE", silent=True)
 
     @staticmethod
     def normalize_tuple(tokens: t.Union[t.Any, tuple]) -> t.Tuple[t.Any, t.Dict]:
-        if not isinstance(tokens, (tuple)):
+        if not isinstance(tokens, tuple):
             return tokens, {}
         return tokens[0], tokens[1] if len(tokens) > 1 else {}
 
@@ -209,7 +190,8 @@ class AppBuilder:
             )
 
     def register_converters(self):
-        self._app.url_map.converters.update({**self.url_converters, **self._converters})
+        self._app.url_map.converters.update(self.url_converters)
+        self._app.url_map.converters.update(self._converters)
         for k, v in self._app.url_map.converters.items():
             self._app.logger.debug("Registered converter: '%s' = %s", k, v.__name__)
 
@@ -217,10 +199,10 @@ class AppBuilder:
         loaders = [self._app.jinja_loader]
 
         for fsl in self._folders:
-            loaders.append(jinja2.FileSystemLoader(fsl))
+            loaders.append(FileSystemLoader(fsl))
 
         if self._folders:
-            self._app.jinja_loader = jinja2.ChoiceLoader(loaders)
+            self._app.jinja_loader = ChoiceLoader(loaders)
             for f in self._folders:
                 self._app.logger.debug("Registered template folder: '%s'", f)
 
@@ -308,7 +290,7 @@ class AppBuilder:
             if callable(self._after_create_callback):
                 self._after_create_callback()
 
-    def create(self, conf=None) -> Flaskel:
+    def create(self, conf: t.Optional[t.Dict[str, t.Any]] = None) -> Flaskel:
         self._app = self._app or self.flask_class(self.app_name, **self._options)
         self._app.version = self._version
 

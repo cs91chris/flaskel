@@ -67,7 +67,7 @@ class APJobs(APScheduler):
             logger = logging.getLogger("flask_apscheduler")
             logger.setLevel(logging.DEBUG)
 
-    # pylint: disable=too-many-arguments,too-many-locals
+    # pylint: disable=too-many-arguments
     def add(
         self,
         func: t.Optional[t.Union[str, t.Callable]],
@@ -89,9 +89,8 @@ class APJobs(APScheduler):
                 "scheduler not running or not started in this process"
             )
 
-        job_id = get_uuid()
         job = self.add_job(
-            id=job_id,
+            id=get_uuid(),
             func=func,
             trigger=trigger,
             args=args,
@@ -106,7 +105,7 @@ class APJobs(APScheduler):
             replace_existing=replace_existing,
             **kw,
         )
-        self.app.logger.debug("added job %s: %s", func, job_id)
+        self.app.logger.debug("added job %s: %s", func, job.id)
         return job
 
     def set_lock(self, lock_file: str) -> bool:

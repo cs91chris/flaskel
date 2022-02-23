@@ -118,7 +118,6 @@ class Server:
         os.environ["FLASK_ENV"] = config.app.FLASK_ENV
         return config
 
-    # pylint: disable=too-many-arguments
     def serve_forever(
         self,
         config: t.Optional[str] = None,

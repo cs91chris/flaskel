@@ -9,7 +9,6 @@ from flaskel.flaskel import cap, request, Response
 
 
 class Caching(FlaskCache):
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         app=None,

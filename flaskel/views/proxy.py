@@ -12,11 +12,9 @@ from flaskel.http.client import FlaskelHttp, FlaskelJsonRPC
 from .base import BaseView
 
 
-# pylint: disable=too-many-instance-attributes
 class ProxyView(BaseView):
     client_class: t.Type[HTTPBase] = FlaskelHttp
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         host: str = None,
