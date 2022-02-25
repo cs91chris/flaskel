@@ -37,7 +37,6 @@ REQUIRES = [
     "Flask-ResponseBuilder",
     "Flask-SQLAlchemy",
     "Flask-TemplateSupport",
-    "psutil",
     "webargs",
     "aiohttp",
     "nest-asyncio",

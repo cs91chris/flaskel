@@ -16,6 +16,7 @@ bump2version==1.0.1
     # via -r requirements/requirements-dev.in
 certifi==2021.10.8
     # via
+    #   -c requirements/requirements-test.txt
     #   -c requirements/requirements.txt
     #   requests
 cffi==1.15.0
@@ -24,6 +25,7 @@ cffi==1.15.0
     #   cryptography
 charset-normalizer==2.0.12
     # via
+    #   -c requirements/requirements-test.txt
     #   -c requirements/requirements.txt
     #   requests
 click==8.0.4
@@ -65,6 +67,7 @@ greenlet==1.1.2
     #   sqlalchemy
 idna==3.3
     # via
+    #   -c requirements/requirements-test.txt
     #   -c requirements/requirements.txt
     #   requests
 importlib-metadata==4.11.1
@@ -173,6 +176,7 @@ readme-renderer==32.0
     # via twine
 requests==2.27.1
     # via
+    #   -c requirements/requirements-test.txt
     #   -c requirements/requirements.txt
     #   requests-toolbelt
     #   safety
@@ -226,6 +230,7 @@ typing-extensions==4.1.1
     #   sqlalchemy-stubs
 urllib3==1.26.8
     # via
+    #   -c requirements/requirements-test.txt
     #   -c requirements/requirements.txt
     #   requests
     #   twine

@@ -8,10 +8,25 @@ attrs==21.4.0
     # via
     #   -c requirements/requirements.txt
     #   pytest
+certifi==2021.10.8
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   requests
+charset-normalizer==2.0.12
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   requests
 coverage[toml]==6.3.2
     # via
     #   -r requirements/requirements-test.in
     #   pytest-cov
+idna==3.3
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   requests
 iniconfig==1.1.1
     # via pytest
 packaging==21.3
@@ -32,7 +47,20 @@ pytest==7.0.1
     #   pytest-cov
 pytest-cov==3.0.0
     # via -r requirements/requirements-test.in
+requests==2.27.1
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   responses
+responses==0.18.0
+    # via -r requirements/requirements-test.in
 tomli==2.0.1
     # via
     #   coverage
     #   pytest
+urllib3==1.26.8
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   requests
+    #   responses
