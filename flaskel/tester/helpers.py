@@ -21,177 +21,198 @@ def load_sample_data(filename: str):
     )
 
 
-def api_tester(
-    client: TestClient,
-    url: t.Optional[str] = None,
-    view: t.Optional[str] = None,
-    schema: t.Optional[str] = None,
-    status: int = httpcode.SUCCESS,
-    params: t.Optional[dict] = None,
-    **kwargs,
-):
-    kwargs.setdefault("method", HttpMethod.GET)
-    url, _ = build_url(url_for(view) if view else url, **(params or {}))
-    response = client.open(url, **kwargs)
-    Asserter.assert_status_code(response, status)
-    if schema:
-        Asserter.assert_schema(response.json, schema)
-    return response
+class ApiTester:
+    def __init__(self, client: TestClient):
+        self.client = client
 
-
-def post_api_tester(
-    client: TestClient,
-    url: t.Optional[str] = None,
-    view: t.Optional[str] = None,
-    schema: t.Optional[str] = None,
-    status: int = httpcode.SUCCESS,
-    params: t.Optional[dict] = None,
-    **kwargs,
-):
-    return api_tester(
-        client,
-        method=HttpMethod.POST,
-        url=url,
-        view=view,
-        schema=schema,
-        status=status,
-        params=params,
+    def perform(
+        self,
+        url: t.Optional[str] = None,
+        method: str = HttpMethod.GET,
+        view: t.Optional[str] = None,
+        schema: t.Optional[str] = None,
+        status: int = httpcode.SUCCESS,
+        params: t.Optional[dict] = None,
+        mimetype: t.Optional[str] = None,
         **kwargs,
-    )
+    ):
+        url, _ = build_url(url_for(view) if view else url, **(params or {}))
+        response = self.client.open(url, method=method, **kwargs)
+        Asserter.assert_status_code(response, status)
+        if mimetype:
+            Asserter.assert_equals(response.mimetype, mimetype)
+        if schema:
+            Asserter.assert_schema(response.json, schema)
+        return response
 
-
-def put_api_tester(
-    client: TestClient,
-    url: t.Optional[str] = None,
-    view: t.Optional[str] = None,
-    schema: t.Optional[str] = None,
-    status: int = httpcode.SUCCESS,
-    params: t.Optional[dict] = None,
-    **kwargs,
-):
-    return api_tester(
-        client,
-        method=HttpMethod.PUT,
-        url=url,
-        view=view,
-        schema=schema,
-        status=status,
-        params=params,
+    def post(
+        self,
+        url: t.Optional[str] = None,
+        view: t.Optional[str] = None,
+        schema: t.Optional[str] = None,
+        status: int = httpcode.SUCCESS,
+        params: t.Optional[dict] = None,
+        mimetype: t.Optional[str] = None,
         **kwargs,
-    )
+    ):
+        return self.perform(
+            method=HttpMethod.POST,
+            url=url,
+            view=view,
+            schema=schema,
+            status=status,
+            params=params,
+            mimetype=mimetype,
+            **kwargs,
+        )
 
-
-def get_api_tester(
-    client: TestClient,
-    url: t.Optional[str] = None,
-    view: t.Optional[str] = None,
-    schema: t.Optional[str] = None,
-    status: int = httpcode.SUCCESS,
-    params: t.Optional[dict] = None,
-    **kwargs,
-):
-    return api_tester(
-        client,
-        method=HttpMethod.GET,
-        url=url,
-        view=view,
-        schema=schema,
-        status=status,
-        params=params,
+    def put(
+        self,
+        url: t.Optional[str] = None,
+        view: t.Optional[str] = None,
+        schema: t.Optional[str] = None,
+        status: int = httpcode.SUCCESS,
+        params: t.Optional[dict] = None,
+        mimetype: t.Optional[str] = None,
         **kwargs,
-    )
+    ):
+        return self.perform(
+            method=HttpMethod.PUT,
+            url=url,
+            view=view,
+            schema=schema,
+            status=status,
+            params=params,
+            mimetype=mimetype,
+            **kwargs,
+        )
 
-
-def delete_api_tester(
-    client: TestClient,
-    url: t.Optional[str] = None,
-    view: t.Optional[str] = None,
-    schema: t.Optional[str] = None,
-    status: int = httpcode.SUCCESS,
-    params: t.Optional[dict] = None,
-    **kwargs,
-):
-    return api_tester(
-        client,
-        method=HttpMethod.DELETE,
-        url=url,
-        view=view,
-        schema=schema,
-        status=status,
-        params=params,
+    def get(
+        self,
+        url: t.Optional[str] = None,
+        view: t.Optional[str] = None,
+        schema: t.Optional[str] = None,
+        status: int = httpcode.SUCCESS,
+        params: t.Optional[dict] = None,
+        mimetype: t.Optional[str] = None,
         **kwargs,
-    )
+    ):
+        return self.perform(
+            method=HttpMethod.GET,
+            url=url,
+            view=view,
+            schema=schema,
+            status=status,
+            params=params,
+            mimetype=mimetype,
+            **kwargs,
+        )
 
-
-def patch_api_tester(
-    client: TestClient,
-    url: t.Optional[str] = None,
-    view: t.Optional[str] = None,
-    schema: t.Optional[str] = None,
-    status: int = httpcode.SUCCESS,
-    params: t.Optional[dict] = None,
-    **kwargs,
-):
-    return api_tester(
-        client,
-        method=HttpMethod.PATCH,
-        url=url,
-        view=view,
-        schema=schema,
-        status=status,
-        params=params,
+    def delete(
+        self,
+        url: t.Optional[str] = None,
+        view: t.Optional[str] = None,
+        schema: t.Optional[str] = None,
+        status: int = httpcode.SUCCESS,
+        params: t.Optional[dict] = None,
+        mimetype: t.Optional[str] = None,
         **kwargs,
-    )
+    ):
+        return self.perform(
+            method=HttpMethod.DELETE,
+            url=url,
+            view=view,
+            schema=schema,
+            status=status,
+            params=params,
+            mimetype=mimetype,
+            **kwargs,
+        )
 
+    def patch(
+        self,
+        url: t.Optional[str] = None,
+        view: t.Optional[str] = None,
+        schema: t.Optional[str] = None,
+        status: int = httpcode.SUCCESS,
+        params: t.Optional[dict] = None,
+        mimetype: t.Optional[str] = None,
+        **kwargs,
+    ):
+        return self.perform(
+            method=HttpMethod.PATCH,
+            url=url,
+            view=view,
+            schema=schema,
+            status=status,
+            params=params,
+            mimetype=mimetype,
+            **kwargs,
+        )
 
-def restful_tester(
-    client: TestClient,
-    view: str,
-    res_id=None,
-    headers: t.Optional[dict] = None,
-    body_create: t.Optional[dict] = None,
-    body_update: t.Optional[dict] = None,
-    schema_read=None,
-    schema_collection=None,
-    methods: t.Tuple[str, ...] = (
-        HttpMethod.GET,
-        HttpMethod.POST,
-        HttpMethod.PUT,
-        HttpMethod.DELETE,
-    ),
-    **params,
-):
-    url_collection, args = build_url(view=view, params=params)
+    def restful(
+        self,
+        view: str,
+        res_id=None,
+        headers: t.Optional[dict] = None,
+        body_create: t.Optional[dict] = None,
+        body_update: t.Optional[dict] = None,
+        schema_read=None,
+        schema_collection=None,
+        methods: t.Tuple[str, ...] = (
+            HttpMethod.GET,
+            HttpMethod.POST,
+            HttpMethod.PUT,
+            HttpMethod.DELETE,
+        ),
+        **params,
+    ):
+        url_collection, args = build_url(url_for(view), params=params)
 
-    if HttpMethod.POST in methods:
-        res = client.post(url_collection, json=body_create, headers=headers)
-        Asserter.assert_status_code(res, httpcode.CREATED)
-        Asserter.assert_schema(res.json, schema_read)
-        res_id = res.json.id
+        if HttpMethod.POST in methods:
+            res = self.post(
+                url_collection,
+                json=body_create,
+                headers=headers,
+                status=httpcode.CREATED,
+                schema=schema_read,
+            )
+            res_id = res.json.id
 
-    url_resource = f"{url_for(view, res_id=res_id)}?{args}"
-    if HttpMethod.GET in methods:
-        res = client.get(url_collection, headers=headers)
-        Asserter.assert_status_code(res)
-        Asserter.assert_schema(res.json, schema_collection)
+        url_resource = f"{url_for(view, res_id=res_id)}?{args}"
 
-        res = client.get(url_resource, headers=headers)
-        Asserter.assert_status_code(res)
-        Asserter.assert_schema(res.json, schema_read)
+        if HttpMethod.GET in methods:
+            self.get(
+                url_collection,
+                headers=headers,
+                schema=schema_collection,
+            )
+            self.get(
+                url_resource,
+                headers=headers,
+                schema=schema_read,
+            )
 
-    if HttpMethod.PUT in methods:
-        body_update = body_update or body_create
-        res = client.put(url_resource, headers=headers, json=body_update)
-        Asserter.assert_status_code(res)
-        Asserter.assert_schema(res.json, schema_read)
+        if HttpMethod.PUT in methods:
+            self.put(
+                url_resource,
+                headers=headers,
+                json=body_update or body_create,
+                schema=schema_read,
+            )
 
-    if HttpMethod.DELETE in methods:
-        res = client.delete(url_resource, headers=headers)
-        Asserter.assert_status_code(res, httpcode.NO_CONTENT)
-
-        res = client.get(url_resource, headers=headers)
-        Asserter.assert_status_code(res, httpcode.NOT_FOUND)
-        Asserter.assert_schema(res.json, schemas.API_PROBLEM)
+        if HttpMethod.DELETE in methods:
+            self.delete(
+                url_resource,
+                headers=headers,
+                status=httpcode.NO_CONTENT,
+            )
+            self.get(
+                url_resource,
+                headers=headers,
+                status=httpcode.NOT_FOUND,
+                schema=schemas.API_PROBLEM,
+            )
 
 
 def get_access_token(

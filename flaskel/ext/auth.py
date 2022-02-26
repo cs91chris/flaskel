@@ -61,7 +61,7 @@ class TokenData:
     scope: t.Optional[str] = None
     refresh_token: t.Optional[str] = None
 
-    def to_dict(self):
+    def to_dict(self) -> ObjectDict:
         data = ObjectDict(
             access_token=self.access_token,
             expires_in=self.expires_in,
