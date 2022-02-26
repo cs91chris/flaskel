@@ -34,7 +34,7 @@ class FlaskelHTTPDumper(LazyHTTPDumper):
         return super().dump_response(resp, dump_body, only_hdr=h, **kwargs)
 
 
-class FlaskelHTTPBatch(FlaskelHTTPDumper, HTTPBatch):
+class FlaskelHttpBatch(FlaskelHTTPDumper, HTTPBatch):
     def __init__(self, **kwargs):
         kwargs.setdefault("logger", cap.logger)
         kwargs.setdefault("conn_timeout", cap.config.HTTP_TIMEOUT or 10)

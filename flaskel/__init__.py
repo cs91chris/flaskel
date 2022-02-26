@@ -2,7 +2,7 @@ from .builder import AppBuilder
 from .flaskel import Flaskel, Request, Response, cap, request
 from .http.client import (
     FlaskelHttp,
-    FlaskelHTTPBatch,
+    FlaskelHttpBatch,
     FlaskelHTTPDumper,
     FlaskelJsonRPC,
 )

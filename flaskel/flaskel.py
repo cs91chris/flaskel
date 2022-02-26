@@ -42,6 +42,9 @@ class Request(flask.Request):
         if hdr in flask.request.headers:
             return flask.request.headers[hdr]
 
+        if not hdr:
+            return None
+
         flask_header_name = f"HTTP_{hdr.upper().replace('-', '_')}"
         return flask.request.environ.get(flask_header_name)
 
