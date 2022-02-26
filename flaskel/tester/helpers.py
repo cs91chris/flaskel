@@ -192,3 +192,27 @@ def restful_tester(
         res = client.get(url_resource, headers=headers)
         Asserter.assert_status_code(res, httpcode.NOT_FOUND)
         Asserter.assert_schema(res.json, schemas.API_PROBLEM)
+
+
+def get_access_token(
+    client,
+    is_query: bool = False,
+    token: t.Optional[str] = None,
+    token_type: str = "Bearer",
+    access_view: str = "auth.token_access",
+    credentials: t.Optional[t.Union[t.Dict[str, str], t.Tuple[str, str]]] = None,
+) -> t.Dict[str, str]:
+    if token is not None:
+        return dict(Authorization=f"{token_type} {token}")
+
+    if not credentials:
+        conf = client.application.config
+        credentials = dict(email=conf.ADMIN_EMAIL, password=conf.ADMIN_PASSWORD)
+    elif isinstance(credentials, tuple):
+        credentials = dict(email=credentials[0], password=credentials[1])
+
+    tokens = client.post(url_for(access_view), json=credentials)
+    if is_query is True:
+        return dict(jwt=tokens.json.access_token)
+
+    return dict(Authorization=f"{token_type} {tokens.json.access_token}")
