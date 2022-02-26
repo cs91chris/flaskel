@@ -12,7 +12,7 @@ def handler(formatter, **kwargs):
 
 LOGGING = dict(
     version=1,
-    disable_existing_loggers=True,
+    disable_existing_loggers=False,
     objects={"queue": {"class": "queue.Queue", "maxsize": 10000}},
     formatters={
         "simple": {"format": "[%(asctime)s][%(levelname)s]: %(message)s"},
@@ -72,33 +72,32 @@ LOGGING = dict(
             "handlers": ["cfg://handlers.syslogNoRequest"],
         },
     },
-    root={"level": "WARN", "handlers": ["simple"]},
     loggers={
         "development": {
             "level": "DEBUG",
-            "propagate": False,
+            "propagate": True,
             "handlers": ["consoleDebug"],
         },
         "developmentQueue": {
             "level": "DEBUG",
-            "propagate": False,
+            "propagate": True,
             "handlers": ["queueConsole"],
         },
-        "production": {"level": "INFO", "propagate": False, "handlers": ["console"]},
+        "production": {"level": "INFO", "propagate": True, "handlers": ["console"]},
         "productionQueue": {
             "level": "INFO",
-            "propagate": False,
+            "propagate": True,
             "handlers": ["queueConsole"],
         },
-        "flask-limiter": {"level": "DEBUG", "propagate": False, "handlers": ["simple"]},
+        "flask-limiter": {"level": "DEBUG", "propagate": True, "handlers": ["simple"]},
         "gunicorn.error": {
             "level": "INFO",
-            "propagate": False,
+            "propagate": True,
             "handlers": ["queueSyslogNoRequest"],
         },
         "gunicorn.access": {
             "level": "INFO",
-            "propagate": False,
+            "propagate": True,
             "handlers": ["queueSyslogNoRequest"],
         },
     },

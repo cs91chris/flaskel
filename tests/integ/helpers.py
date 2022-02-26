@@ -3,11 +3,21 @@ import os
 from vbcore import yaml
 from vbcore.datastruct import ObjectDict
 
+from flaskel import cap
 from flaskel.tester.helpers import load_sample_data
 
 DB_TEST = "test.sqlite"
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SAMPLE_DIR = os.path.join(BASE_DIR, "data")
+
+
+def after_request_hook(response):
+    cap.logger.info("AFTER_REQUEST_HOOK")
+    return response
+
+
+def before_request_hook():
+    cap.logger.info("BEFORE_REQUEST_HOOK")
 
 
 def after_create_hook():

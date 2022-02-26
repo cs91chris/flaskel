@@ -9,15 +9,12 @@ from .components import (
     BEFORE_REQUEST,
     EXTENSIONS,
 )
-from .helpers import (
-    prepare_config,
-    after_create_hook,
-)
+from .helpers import prepare_config, after_create_hook
 
 
 @pytest.fixture()
 def testapp():
-    def _get_app(config=None, extensions=None, views=()):
+    def _get_app(config=None, extensions=None, views=(), **kwargs):
         return TestClient.get_app(
             version="1.0.0",
             static_folder=None,
@@ -28,8 +25,9 @@ def testapp():
             converters=CONVERTERS,
             after_request=AFTER_REQUEST,
             before_request=BEFORE_REQUEST,
-            extensions=EXTENSIONS.update(extensions or {}),
+            extensions={**EXTENSIONS, **(extensions or {})},
             after_create_hook=after_create_hook,
+            **kwargs,
         )
 
     return _get_app

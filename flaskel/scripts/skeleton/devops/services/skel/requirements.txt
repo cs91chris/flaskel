@@ -22,7 +22,7 @@ flask-errorshandler==4.0.2  # via -c requirements/requirements-all.txt, flaskel
 flask-httpauth==4.5.0     # via -c requirements/requirements-all.txt, flaskel
 flask-jwt-extended==4.3.1  # via -c requirements/requirements-all.txt, flaskel
 flask-limiter==2.0.2      # via -c requirements/requirements-all.txt, flaskel
-flask-logify==2.4.4       # via -c requirements/requirements-all.txt, flaskel
+flask-logify==2.4.5       # via -c requirements/requirements-all.txt, flaskel
 flask-responsebuilder==2.0.16  # via -c requirements/requirements-all.txt, flaskel
 flask-sqlalchemy==2.5.1   # via -c requirements/requirements-all.txt, flaskel
 flask-templatesupport==2.0.1  # via -c requirements/requirements-all.txt, flaskel

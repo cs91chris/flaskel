@@ -4,6 +4,7 @@ from flaskel.converters import CONVERTERS as DEFAULT_CONVERTERS
 from flaskel.ext import default
 from flaskel.middlewares import RequestID, HTTPMethodOverride
 from flaskel.views.static import SPAView
+from tests.integ.helpers import after_request_hook, before_request_hook
 
 bp_api = Blueprint(
     "api",
@@ -44,8 +45,8 @@ BLUEPRINTS = (
     (bp_spa,),
     (bp_web,),
 )
-AFTER_REQUEST = ()
-BEFORE_REQUEST = ()
+AFTER_REQUEST = (after_request_hook,)
+BEFORE_REQUEST = (before_request_hook,)
 
 EXTENSIONS = {
     "cfremote": (default.cfremote,),
