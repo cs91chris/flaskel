@@ -1,4 +1,5 @@
 import flask_jwt_extended
+from vbcore.datastruct import ObjectDict
 from vbcore.http import HttpMethod, httpcode
 
 from flaskel import cap, webargs, request, abort
@@ -31,8 +32,8 @@ class BaseTokenAuth(BaseView):
     def check_credential(cls):
         data = request.json
         if (
-            data.email == cap.config.BASIC_AUTH_USERNAME
-            and data.password == cap.config.BASIC_AUTH_PASSWORD
+            data.email == cap.config.ADMIN_EMAIL
+            and data.password == cap.config.ADMIN_PASSWORD
         ):
             return data
         return None
@@ -44,17 +45,17 @@ class BaseTokenAuth(BaseView):
             expires_refresh=webargs.OptField.positive(),  # type: ignore
         )
     )
-    def access_token(cls, args):
+    def access_token(cls, args) -> ObjectDict:
         credentials = cls.check_credential()
         if credentials:
-            return cls.handler.create(credentials, **args)
+            return cls.handler.create(credentials, **args).to_dict()
         return abort(httpcode.UNAUTHORIZED)
 
     @classmethod
-    def refresh_token(cls):
+    def refresh_token(cls) -> ObjectDict:
         @cls.jwt.jwt_required(refresh=True)
         def _refresh_token():
-            return cls.handler.refresh()
+            return cls.handler.refresh().to_dict()
 
         return _refresh_token()
 

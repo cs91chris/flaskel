@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 from flaskel.converters import CONVERTERS as DEFAULT_CONVERTERS
-from flaskel.ext import default
+from flaskel.ext import default, auth
 from flaskel.middlewares import RequestID, HTTPMethodOverride
 from flaskel.views.static import SPAView
 from tests.integ.helpers import after_request_hook, before_request_hook
@@ -52,6 +52,7 @@ EXTENSIONS = {
     "cfremote": (default.cfremote,),
     "logger": (default.logger,),
     "argon2": (default.argon2,),
+    "auth": (auth.token_auth,),
     "builder": (default.builder,),
     "cors": (default.cors, dict(resources={r"/*": {"origins": "*"}})),
     "database": (default.Database(),),

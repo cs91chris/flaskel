@@ -167,7 +167,7 @@ class ApiTester:
         ),
         **params,
     ):
-        url_collection, args = build_url(url_for(view), params=params)
+        url_collection, args = build_url(url_for(view), **params)
 
         if HttpMethod.POST in methods:
             res = self.post(

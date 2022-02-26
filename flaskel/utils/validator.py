@@ -7,11 +7,11 @@ from vbcore.jsonschema.support import JSONSchema
 
 from flaskel import cap, request
 from flaskel.http.exceptions import abort
-from .datastruct import ExtProxy
+from .datastruct import ConfigProxy
 
 
 class PayloadValidator:
-    schemas: ObjectDict = ExtProxy("SCHEMAS")
+    schemas: ObjectDict = ConfigProxy("SCHEMAS")
     validator: t.Type[JSONSchema] = JSONSchema
 
     @classmethod
