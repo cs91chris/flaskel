@@ -4,6 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from vbcore.db.exceptions import DBError
 from vbcore.db.support import SQLASupport
 from vbcore.http import HttpMethod, httpcode
+from vbcore.http.headers import HeaderEnum
 
 from flaskel import cap, abort, ExtProxy, PayloadValidator, webargs
 from flaskel.ext.default import builder
@@ -96,10 +97,10 @@ class CatalogResource(Resource):
     @staticmethod
     def pagination_headers(data) -> t.Dict[str, int]:
         return {
-            "X-Pagination-Count": data.total,
-            "X-Pagination-Page": data.page,
-            "X-Pagination-Num-Pages": data.pages,
-            "X-Pagination-Page-Size": data.per_page,
+            HeaderEnum.X_PAGINATION_COUNT: data.total,
+            HeaderEnum.X_PAGINATION_PAGE: data.page,
+            HeaderEnum.X_PAGINATION_NUM_PAGES: data.pages,
+            HeaderEnum.X_PAGINATION_PAGE_SIZE: data.per_page,
         }
 
 

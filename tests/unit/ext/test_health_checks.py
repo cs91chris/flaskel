@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import responses
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
+from vbcore.http.headers import HeaderEnum, ContentTypeEnum
 from vbcore.system import (
     MemoryStat,
     SwapStat,
@@ -28,6 +29,7 @@ from flaskel.ext.healthcheck.checkers import (
     health_system,
     health_services,
 )
+from flaskel.ext.healthcheck.health import CheckStatus
 
 
 def test_health_sqlalchemy(flaskel_app):
@@ -309,13 +311,16 @@ def test_health_system(
 @responses.activate
 def test_health_services(flaskel_app):
     responses.add(
-        responses.GET, url="http://fake-endpoint-pass.com", json={}, status=200
+        responses.GET,
+        url="http://fake-endpoint-pass.com",
+        json={},
+        status=httpcode.SUCCESS,
     )
     responses.add(
         responses.GET,
         url="http://fake-endpoint-fail.com",
         json={"message": "error"},
-        status=500,
+        status=httpcode.INTERNAL_SERVER_ERROR,
     )
     flaskel_app.config.HEALTH_SERVICES = {
         "test-service-pass": {
@@ -331,9 +336,12 @@ def test_health_services(flaskel_app):
         (
             False,
             {
-                "test-service-pass": {"status": 200, "message": {}},
+                "test-service-pass": {
+                    "status": httpcode.SUCCESS,
+                    "message": {},
+                },
                 "test-service-fail": {
-                    "status": 500,
+                    "status": httpcode.INTERNAL_SERVER_ERROR,
                     "message": {"message": "error"},
                     "exception": None,
                 },
@@ -359,17 +367,20 @@ def test_health_checks_perform(flaskel_app):
             handler.perform(),
             (
                 {
-                    "status": "fail",
+                    "status": CheckStatus.FAIL,
                     "checks": {
-                        "check_pass": {"status": "pass", "output": None},
+                        "check_pass": {
+                            "status": CheckStatus.PASS,
+                            "output": None,
+                        },
                         "check_fail": {
-                            "status": "fail",
+                            "status": CheckStatus.FAIL,
                             "output": {"message": "error"},
                         },
                     },
                     "links": {"about": None},
                 },
                 httpcode.MULTI_STATUS,
-                {"Content-Type": "application/health+json"},
+                {HeaderEnum.CONTENT_TYPE: ContentTypeEnum.JSON_HEALTH},
             ),
         )

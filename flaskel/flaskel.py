@@ -3,6 +3,7 @@ import typing as t
 import flask
 from vbcore.datastruct import ObjectDict, Dumper
 from vbcore.http import httpcode
+from vbcore.http.headers import HeaderEnum
 from vbcore.json import JsonEncoder
 from werkzeug.routing import Rule
 from werkzeug.utils import safe_join
@@ -74,8 +75,8 @@ class Response(flask.Response):
         """
         response = flask.make_response(bytes())
         response.headers.update(headers or {})
-        response.headers.pop("Content-Type")
-        response.headers.pop("Content-Length")
+        response.headers.pop(HeaderEnum.CONTENT_TYPE)
+        response.headers.pop(HeaderEnum.CONTENT_LENGTH)
         response.status_code = status
         return t.cast("Response", response)
 
@@ -98,15 +99,21 @@ class Response(flask.Response):
 
         # following headers works with nginx compatible proxy
         if cap.use_x_sendfile is True and cap.config.ENABLE_ACCEL is True:
-            resp.headers["X-Accel-Redirect"] = file_path
-            resp.headers["X-Accel-Charset"] = cap.config.ACCEL_CHARSET or "utf-8"
-            resp.headers["X-Accel-Buffering"] = (
+            resp.headers[HeaderEnum.X_ACCEL_REDIRECT] = file_path
+            resp.headers[HeaderEnum.X_ACCEL_CHARSET] = (
+                cap.config.ACCEL_CHARSET or "utf-8"
+            )
+            resp.headers[HeaderEnum.X_ACCEL_BUFFERING] = (
                 "yes" if cap.config.ACCEL_BUFFERING else "no"
             )
             if cap.config.ACCEL_LIMIT_RATE:
-                resp.headers["X-Accel-Limit-Rate"] = cap.config.ACCEL_LIMIT_RATE
+                resp.headers[
+                    HeaderEnum.X_ACCEL_LIMIT_RATE
+                ] = cap.config.ACCEL_LIMIT_RATE
             if cap.config.SEND_FILE_MAX_AGE_DEFAULT:
-                resp.headers["X-Accel-Expires"] = cap.config.SEND_FILE_MAX_AGE_DEFAULT
+                resp.headers[
+                    HeaderEnum.X_ACCEL_EXPIRES
+                ] = cap.config.SEND_FILE_MAX_AGE_DEFAULT
 
         return resp
 

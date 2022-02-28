@@ -5,6 +5,7 @@ from vbcore import uuid
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
 from vbcore.http.client import HTTPBase
+from vbcore.http.headers import HeaderEnum, ContentTypeEnum
 from vbcore.http.rpc import rpc_error_to_httpcode
 
 from flaskel import cap, request, abort, flaskel
@@ -183,7 +184,7 @@ class SchemaProxyView(ConfProxyView):
 
 
 class JsonRPCProxy(ProxyView):
-    response_content_type: str = "application/json"
+    response_content_type: str = ContentTypeEnum.JSON
     client_class: t.Type[FlaskelJsonRPC] = FlaskelJsonRPC
 
     methods = [
@@ -220,7 +221,7 @@ class JsonRPCProxy(ProxyView):
     def prepare_response(
         self, resp: t.Optional[ObjectDict] = None, **kwargs
     ) -> ObjectDict:
-        headers = {"Content-Type": self.response_content_type, **kwargs}
+        headers = {HeaderEnum.CONTENT_TYPE: self.response_content_type, **kwargs}
         status = httpcode.NO_CONTENT if resp is None else httpcode.SUCCESS
 
         if resp and resp.error is not None:

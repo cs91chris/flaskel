@@ -4,6 +4,7 @@ from base64 import b64encode
 
 from flask_caching import Cache as FlaskCache
 from vbcore.http import HttpMethod, httpcode
+from vbcore.http.headers import HeaderEnum
 
 from flaskel.flaskel import cap, request, Response
 
@@ -18,7 +19,9 @@ class Caching(FlaskCache):
         key_prefix: t.Union[t.Callable, str] = "/cached_request",
         default_timeout: t.Union[t.Callable, str] = None,
         cache_control_bypass: t.Union[t.Callable, str] = "no-store",
-        headers_in_keys: t.Union[t.Callable, t.Iterable[str]] = ("Content-Type",),
+        headers_in_keys: t.Union[t.Callable, t.Iterable[str]] = (
+            HeaderEnum.CONTENT_TYPE,
+        ),
         cacheable_methods: t.Union[t.Callable, t.Iterable[str]] = (HttpMethod.GET,),
     ):
         self.key_prefix = key_prefix
@@ -59,7 +62,7 @@ class Caching(FlaskCache):
             return True
 
         bypass = self.optional_callable(self.cache_control_bypass)
-        return bypass == request.headers.get("Cache-Control")
+        return bypass == request.headers.get(HeaderEnum.CACHE_CONTROL)
 
     def response_filter(self, response) -> bool:
         if request.method not in self.optional_callable(self.cacheable_methods):

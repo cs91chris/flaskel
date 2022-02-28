@@ -6,6 +6,7 @@ from flask import Blueprint
 from vbcore.batch import BatchExecutor
 from vbcore.datastruct import LStrEnum
 from vbcore.http import httpcode, HttpMethod
+from vbcore.http.headers import HeaderEnum, ContentTypeEnum
 
 from flaskel.flaskel import request, Flaskel
 from .checkers import CheckerResponseType
@@ -63,7 +64,7 @@ class HealthCheck:
         self.app.config.setdefault("HEALTHCHECK_PARAM_KEY", "checks")
         self.app.config.setdefault("HEALTHCHECK_PARAM_SEP", "+")
         self.app.config.setdefault(
-            "HEALTHCHECK_CONTENT_TYPE", "application/health+json"
+            "HEALTHCHECK_CONTENT_TYPE", ContentTypeEnum.JSON_HEALTH
         )
 
     def register_route(
@@ -92,7 +93,7 @@ class HealthCheck:
         only_checkers = (
             params.split(self.app.config.HEALTHCHECK_PARAM_SEP) if params else None
         )
-        all_checkers = set(self._checkers.keys())
+        all_checkers = set(self._checkers)
         return list(
             all_checkers
             if not only_checkers
@@ -126,7 +127,7 @@ class HealthCheck:
         return (
             response,
             httpcode.SUCCESS if healthy else httpcode.MULTI_STATUS,
-            {"Content-Type": self.app.config.HEALTHCHECK_CONTENT_TYPE},
+            {HeaderEnum.CONTENT_TYPE: self.app.config.HEALTHCHECK_CONTENT_TYPE},
         )
 
     def register(self, name: t.Optional[str] = None, **kwargs):

@@ -5,6 +5,7 @@ from datetime import datetime
 import flask
 from packaging import version
 from vbcore.http import httpcode, HttpMethod
+from vbcore.http.headers import HeaderEnum, ContentTypeEnum
 
 from flaskel import Response, cap, webargs, ExtProxy, request, abort, Flaskel
 from flaskel.ext.default import builder
@@ -229,7 +230,9 @@ class MobileReleaseView(BaseView):
             )
 
         if ver == "latest":
-            return self.ext.latest(agent) or "", {"Content-Type": "text/plain"}
+            return self.ext.latest(agent) or "", {
+                HeaderEnum.CONTENT_TYPE: ContentTypeEnum.PLAIN
+            }
 
         if ver is None:
             if request.method == "DELETE":
@@ -244,7 +247,9 @@ class MobileReleaseView(BaseView):
                 abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
 
         mimetype, response = self.builder.get_mimetype_accept()
-        return response.build(self.ext.all_releases(agent)), {"Content-Type": mimetype}
+        return response.build(self.ext.all_releases(agent)), {
+            HeaderEnum.CONTENT_TYPE: mimetype
+        }
 
 
 class MobileLoggerView(BaseView):

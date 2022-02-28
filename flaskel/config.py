@@ -4,6 +4,7 @@ import decouple
 from vbcore import yaml
 from vbcore.configurator import config
 from vbcore.date_helper import Seconds
+from vbcore.http.headers import HeaderEnum, ContentTypeEnum
 
 from flaskel.utils import logger
 
@@ -53,16 +54,16 @@ REDIS_OPTS = {
 }
 
 _CORS_EXPOSE_HEADERS_DEFAULT = [
-    "X-Pagination-Count",
-    "X-Pagination-Num-Pages",
-    "X-Pagination-Page",
-    "X-Pagination-Page-Size",
-    "X-Request-ID",
-    "X-Api-Version",
-    "X-RateLimit-Reset",
-    "X-RateLimit-Remaining",
-    "X-RateLimit-Limit",
-    "Retry-After",
+    HeaderEnum.X_PAGINATION_COUNT,
+    HeaderEnum.X_PAGINATION_NUM_PAGES,
+    HeaderEnum.X_PAGINATION_PAGE,
+    HeaderEnum.X_PAGINATION_PAGE_SIZE,
+    HeaderEnum.X_REQUEST_ID,
+    HeaderEnum.X_API_VERSION,
+    HeaderEnum.X_RATELIMIT_RESET,
+    HeaderEnum.X_RATELIMIT_REMAINING,
+    HeaderEnum.X_RATELIMIT_LIMIT,
+    HeaderEnum.RETRY_AFTER,
 ]
 CORS_EXPOSE_HEADERS = config(
     "CORS_EXPOSE_HEADERS",
@@ -144,7 +145,7 @@ WSGI_WERKZEUG_PROFILER_ENABLED = config(
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = config("SQLALCHEMY_ECHO", default=TESTING, cast=bool)
 
-REQUEST_ID_HEADER = "X-Request-ID"
+REQUEST_ID_HEADER = HeaderEnum.X_REQUEST_ID
 RATELIMIT_ENABLED = config("RATELIMIT_ENABLED", default=not DEBUG, cast=bool)
 RATELIMIT_HEADERS_ENABLED = config("RATELIMIT_HEADERS_ENABLED", default=True, cast=bool)
 RATELIMIT_IN_MEMORY_FALLBACK_ENABLED = config(
@@ -156,8 +157,7 @@ ERROR_PAGE = "core/error.html"
 SECRET_KEY_FILE_NAME = ".secret.key"
 SECRET_KEY_MIN_LENGTH = 256
 RB_DEFAULT_ACCEPTABLE_MIMETYPES = [
-    "application/json",
-    "application/xml",
+    ContentTypeEnum.JSON,
 ]
 
 JWT_DEFAULT_SCOPE = None

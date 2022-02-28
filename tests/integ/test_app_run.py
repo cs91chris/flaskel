@@ -41,8 +41,8 @@ def test_api_cors(testapp):
     client = ApiTester(testapp().test_client())
     response = client.get("/", status=httpcode.NOT_FOUND)
 
-    Asserter.assert_header(response, "Access-Control-Allow-Origin", "*")
+    Asserter.assert_header(response, HeaderEnum.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
     Asserter.assert_allin(
-        response.headers["Access-Control-Expose-Headers"].split(", "),
+        response.headers[HeaderEnum.ACCESS_CONTROL_EXPOSE_HEADERS].split(", "),
         config.CORS_EXPOSE_HEADERS,
     )
