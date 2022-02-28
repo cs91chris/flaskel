@@ -4,7 +4,7 @@ from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 from vbcore.tester.mixins import Asserter
 
-from flaskel.tester.helpers import ApiTester
+from flaskel.tester.helpers import ApiTester, config
 
 
 @pytest.mark.parametrize(
@@ -35,3 +35,14 @@ def test_base_blueprints(url, subdomain, content_type, testapp, caplog):
     Asserter.assert_true(uuid.check_uuid(response.headers[HeaderEnum.X_REQUEST_ID]))
     Asserter.assert_equals(caplog.records[-3].getMessage(), "BEFORE_REQUEST_HOOK")
     Asserter.assert_equals(caplog.records[-2].getMessage(), "AFTER_REQUEST_HOOK")
+
+
+def test_api_cors(testapp):
+    client = ApiTester(testapp().test_client())
+    response = client.get("/", status=httpcode.NOT_FOUND)
+
+    Asserter.assert_header(response, "Access-Control-Allow-Origin", "*")
+    Asserter.assert_allin(
+        response.headers["Access-Control-Expose-Headers"].split(", "),
+        config.CORS_EXPOSE_HEADERS,
+    )
