@@ -18,7 +18,7 @@ class ViewSupportMixin:
         return f"/{url.lstrip('/')}"
 
     @staticmethod
-    def not_implemented():  # pragma: no cover
+    def not_implemented() -> t.NoReturn:  # pragma: no cover
         abort(httpcode.NOT_IMPLEMENTED)
 
     @classmethod

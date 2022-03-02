@@ -15,8 +15,8 @@ OperationsType = t.Dict[t.Optional[str], t.Dict[str, t.Callable]]
 
 
 class JSONRPCView(BaseView):
-    version = "2.0"
-    separator = "."
+    version: str = "2.0"
+    separator: str = "."
     operations: OperationsType = {}
 
     default_view_name = "jsonrpc"

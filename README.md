@@ -368,6 +368,7 @@ Configuration via env:
 - ``WSGI_WERKZEUG_PROFILER_FILE``: *(default = "profiler.txt")*
 - ``WSGI_WERKZEUG_PROFILER_RESTRICTION``: *(default: list = [0.1])
 - ``SQLALCHEMY_ECHO``: *(default = TESTING)*
+- ``JSONRPC_BATCH_MAX_REQUEST``: *(default = 10)*
 - ``IPBAN_ENABLED``: *(default = True)*
 - ``IPBAN_COUNT``: *(default = 5)*
 - ``IPBAN_SECONDS``: *(default = 3600)*

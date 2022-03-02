@@ -8,7 +8,7 @@ from vbcore.http.headers import HeaderEnum
 
 from flaskel import cap, abort, ExtProxy, PayloadValidator, webargs
 from flaskel.ext.default import builder
-from .base import Resource
+from .base import Resource, DefaultUrlsType, BaseView
 
 
 class CatalogResource(Resource):
@@ -107,8 +107,8 @@ class CatalogResource(Resource):
 class Restful(CatalogResource):
     post_schema: t.Any = None
     put_schema: t.Any = None
-    validator: t.Type[PayloadValidator] = PayloadValidator
     support_class: t.Type[SQLASupport] = SQLASupport
+    validator: t.Type[PayloadValidator] = PayloadValidator
 
     methods_subresource = [
         HttpMethod.GET,
@@ -163,11 +163,7 @@ class Restful(CatalogResource):
         resource.update(data)
         return resource
 
-    def _session_exception_handler(self, exception: SQLAlchemyError):
-        """
-
-        :param exception:
-        """
+    def _session_exception_handler(self, exception: SQLAlchemyError) -> t.NoReturn:
         cap.logger.exception(exception)
         self._session.rollback()
 
@@ -190,31 +186,26 @@ class Restful(CatalogResource):
             self._session_exception_handler(exc)
 
     @classmethod
-    def _prepare_upsert_filters(cls, *_, **__):
+    def _prepare_upsert_filters(cls, *_, **__) -> t.Dict[str, t.Any]:
         return {}
 
-    def _upsert(self, data):
+    def _upsert(self, data) -> t.Tuple[t.Any, int]:
         try:
             res, created = self.support.update_or_create(
                 data, **self._prepare_upsert_filters(data)
             )
             self._session.commit()
+            return res, httpcode.CREATED if created else httpcode.SUCCESS
         except SQLAlchemyError as exc:
             return self._session_exception_handler(exc)
 
-        return res, httpcode.CREATED if created else httpcode.SUCCESS
-
-    def on_post(self, *_, **__):
-        """
-
-        :return:
-        """
+    def on_post(self, *_, **__) -> t.Tuple[t.Dict[str, t.Any], int]:
         payload = self.validate(self.post_schema)
         res = self.create_resource(payload)
         self._create(res)
         return res.to_dict(), httpcode.CREATED
 
-    def _delete(self, res_id, *_, **__):
+    def _delete(self, res_id, *_, **__) -> t.Dict[str, t.Any]:
         """
 
         :param res_id: resource identifier (primary key value)
@@ -233,7 +224,7 @@ class Restful(CatalogResource):
     def on_delete(self, res_id, *args, **kwargs):
         self._delete(res_id, *args, **kwargs)
 
-    def on_put(self, *_, res_id=None, **__):
+    def on_put(self, *_, res_id=None, **__) -> t.Tuple[t.Dict[str, t.Any], int]:
         """
 
         :param res_id: resource identifier (primary key value)
@@ -246,7 +237,7 @@ class Restful(CatalogResource):
             res = self._model.query.get_or_404(res_id)
             res = self.update_resource(res, payload)
             self._update(res)
-            return res.to_dict()
+            return res.to_dict(), httpcode.SUCCESS
 
         res, status = self._upsert(payload)
         return res.to_dict(), status
@@ -261,8 +252,17 @@ class PatchApiView(Restful):
     ]
 
     @classmethod
-    def register(cls, app, name=None, urls=(), **kwargs):
-        view_func = cls.as_view(name, **kwargs)
+    def register(
+        cls,
+        app,
+        name: t.Optional[str] = None,
+        urls: DefaultUrlsType = (),
+        view: t.Optional[t.Type[BaseView]] = None,
+        **kwargs,
+    ) -> t.Callable:
+        _class = view or cls
+        name = name or _class.__name__
+        view_func = _class.as_view(name, **kwargs)
         for url in urls:
             cls.normalize_url(url)
             app.add_url_rule(url, view_func=view_func, methods=cls.methods)
