@@ -11,7 +11,7 @@ class StaticFileView(BaseView):
     default_view_name = "static"
     default_urls = ("/static/<path:filename>",)
 
-    def dispatch_request(self, filename, *_, **__):  # pylint: disable=arguments-differ
+    def dispatch_request(self, filename, *_, **__):
         return send_from_directory(self.default_static_path, filename)
 
 
@@ -27,7 +27,7 @@ class SPAView(BaseView):
         "/<path:path>",
     )
 
-    def dispatch_request(self, *_, path=None, **__):  # pylint: disable=arguments-differ
+    def dispatch_request(self, *_, path=None, **__):
         if path is not None:
             return Response.no_content(httpcode.NOT_MODIFIED)
         return cap.send_static_file(self.template)

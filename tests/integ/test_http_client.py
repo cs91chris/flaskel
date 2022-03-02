@@ -1,15 +1,10 @@
-from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
 from vbcore.tester.mixins import Asserter
 from werkzeug.exceptions import HTTPException
 
 from flaskel import FlaskelHttp, FlaskelHttpBatch
 from flaskel.http.client import HTTPStatusError
-
-HOSTS = ObjectDict(
-    apitester="http://httpbin.org",
-    fake="http://localhost",
-)
+from tests.integ.helpers import HOSTS
 
 
 def test_utils_http_client_simple(flaskel_app):

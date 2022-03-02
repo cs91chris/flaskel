@@ -14,9 +14,7 @@ class ApiMedia(BaseView):
         HttpMethod.DELETE,
     ]
 
-    def dispatch_request(
-        self, eid, *_, res_id=None, **__
-    ):  # pylint: disable=arguments-differ
+    def dispatch_request(self, eid, *_, res_id=None, **__):
         if request.method == HttpMethod.DELETE:
             self.service.delete(eid, res_id)
             return httpcode.NO_CONTENT

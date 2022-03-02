@@ -22,9 +22,9 @@ def load_sample_data(filename: str):
 
 
 class ApiTester:
-    def __init__(self, client: TestClient, content_type: t.Optional[str] = None):
+    def __init__(self, client: TestClient, mimetype: t.Optional[str] = None):
         self.client = client
-        self.content_type = content_type
+        self.mimetype = mimetype
 
     def token_header(
         self, call: bool = False, **kwargs
@@ -47,8 +47,8 @@ class ApiTester:
         url, _ = build_url(url_for(view) if view else url, **(params or {}))
         response = self.client.open(url, method=method, **kwargs)
         Asserter.assert_status_code(response, status)
-        if response.data and (mimetype or self.content_type):
-            Asserter.assert_equals(response.mimetype, mimetype or self.content_type)
+        if response.data and (mimetype or self.mimetype):
+            Asserter.assert_equals(response.mimetype, mimetype or self.mimetype)
         if schema:
             Asserter.assert_schema(response.json, schema)
         return response

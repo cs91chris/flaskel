@@ -18,14 +18,14 @@ class ProxyView(BaseView):
 
     def __init__(
         self,
-        host: str = None,
-        url: str = None,
-        method: str = None,
+        host: t.Optional[str] = None,
+        url: t.Optional[str] = None,
+        method: t.Optional[str] = None,
         proxy_body: bool = False,
         proxy_headers: bool = False,
         proxy_params: bool = False,
-        skip_args: t.Tuple[str, ...] = (),
         stream: bool = True,
+        skip_args: t.Tuple[str, ...] = (),
         options: t.Optional[t.Callable] = None,
         **kwargs,
     ):
@@ -119,7 +119,7 @@ class ConfProxyView(BaseView):
     sep = "."
     config_key = None
 
-    def __init__(self, config_key=None):
+    def __init__(self, config_key: t.Optional[str] = None):
         self._config_key = config_key or self.config_key
         assert self._config_key is not None, "missing 'config_key'"
 
@@ -136,7 +136,7 @@ class ConfProxyView(BaseView):
         if not conf:
             cap.logger.warning(f"unable to find conf keys: {self.sep.join(keys)}")
             abort(httpcode.NOT_FOUND)
-        return ObjectDict(**conf)
+        return conf
 
 
 class TransparentProxyView(ProxyView):
@@ -147,11 +147,31 @@ class TransparentProxyView(ProxyView):
         HttpMethod.DELETE,
     ]
 
-    def __init__(self, **kwargs):
-        kwargs.setdefault("proxy_body", True)
-        kwargs.setdefault("proxy_headers", True)
-        kwargs.setdefault("proxy_params", True)
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        host: t.Optional[str] = None,
+        url: t.Optional[str] = None,
+        method: t.Optional[str] = None,
+        proxy_body: bool = True,
+        proxy_headers: bool = True,
+        proxy_params: bool = True,
+        stream: bool = True,
+        skip_args: t.Tuple[str, ...] = (),
+        options: t.Optional[t.Callable] = None,
+        **kwargs,
+    ):
+        super().__init__(
+            host=host,
+            url=url,
+            method=method,
+            proxy_body=proxy_body,
+            proxy_headers=proxy_headers,
+            proxy_params=proxy_params,
+            skip_args=skip_args,
+            stream=stream,
+            options=options,
+            **kwargs,
+        )
 
 
 class SchemaProxyView(ConfProxyView):
@@ -160,10 +180,10 @@ class SchemaProxyView(ConfProxyView):
 
     def __init__(
         self,
-        config_key="SCHEMAS",
-        case_sensitive=False,
-        ext_support=True,
-        ext_name=".json",
+        config_key: str = "SCHEMAS",
+        case_sensitive: bool = False,
+        ext_support: bool = True,
+        ext_name: str = ".json",
     ):
         super().__init__(config_key)
         self.ext_name = ext_name
@@ -184,6 +204,7 @@ class SchemaProxyView(ConfProxyView):
 
 
 class JsonRPCProxy(ProxyView):
+    default_view_name: str = "jsonrpc_proxy"
     response_content_type: str = ContentTypeEnum.JSON
     client_class: t.Type[FlaskelJsonRPC] = FlaskelJsonRPC
 
@@ -192,28 +213,44 @@ class JsonRPCProxy(ProxyView):
         HttpMethod.POST,
     ]
 
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("stream", False)
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        url: t.Optional[str] = None,
+        proxy_headers: bool = False,
+        stream: bool = False,
+        skip_args: t.Tuple[str, ...] = (),
+        options: t.Optional[t.Callable] = None,
+        namespace: t.Optional[str] = None,
+        **kwargs,
+    ):
+        super().__init__(
+            url=url,
+            stream=stream,
+            proxy_headers=proxy_headers,
+            skip_args=skip_args,
+            options=options,
+            **kwargs,
+        )
+        self.namespace = namespace
 
     def proxy(self, data: ObjectDict, **kwargs) -> ObjectDict:
-        url = self.upstream_host()
+        url = self.request_url()
         client = self.client_class(url, url, **kwargs)
 
         if request.method == HttpMethod.GET:
             resp = client.request(
                 self.request_method(),
                 request_id=request.id or uuid.get_uuid(),
-                params=self.request_params(),
                 stream=self._stream,
+                params=self.request_params(),
                 headers=self.request_headers(),
             )
             return self.prepare_response(resp)
 
         client.notification(
             self.request_method(),
-            params=self.request_params(),
             stream=self._stream,
+            params=self.request_params(),
             headers=self.request_headers(),
         )
         return self.prepare_response()
@@ -230,8 +267,14 @@ class JsonRPCProxy(ProxyView):
 
         return ObjectDict(body=resp, status=status, headers=headers)
 
+    def request_url(self) -> str:
+        return self._url
+
     def request_method(self) -> str:
-        return request.path.split("/")[-1]
+        action = request.path.split("/")[-1]
+        if self.namespace is None:
+            return action
+        return f"{self.namespace}.{action}"
 
     def request_params(self) -> dict:
         if request.method == HttpMethod.GET:

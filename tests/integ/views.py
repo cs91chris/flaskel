@@ -10,12 +10,15 @@ from flaskel.views.token import BaseTokenAuth
 
 
 class VIEWS:
+    index = "index"
+    api_docs = "apidocs"
+    api_specs = "apispec"
     check_token = "api.token_check"
     access_token = "api.token_access"
     refresh_token = "api.token_refresh"
     revoke_token = "api.token_revoke"
-    api_docs = "apidocs"
-    api_specs = "apispec"
+    schema_proxy = "api.schema_proxy"
+    jsonrpc_proxy = "api.jsonrpc_proxy"
 
 
 class ApiDocTemplate(apidoc.ApiDocTemplate):

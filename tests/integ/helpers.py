@@ -11,6 +11,11 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SAMPLE_DIR = os.path.join(BASE_DIR, "data")
 
 
+class HOSTS:
+    fake = "http://localhost"
+    apitester = "https://httpbin.org"
+
+
 def after_request_hook(response):
     cap.logger.info("AFTER_REQUEST_HOOK")
     return response

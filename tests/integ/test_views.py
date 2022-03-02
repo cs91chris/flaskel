@@ -6,9 +6,12 @@ from vbcore.tester.mixins import Asserter
 
 from flaskel.ext.auth import TokenInfo
 from flaskel.extra.apidoc import ApiSpecTemplate
-from flaskel.tester.helpers import config, ApiTester
+from flaskel.tester.helpers import config, ApiTester, url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
+from flaskel.views import RenderTemplate
+from flaskel.views.proxy import TransparentProxyView, SchemaProxyView, JsonRPCProxy
 from .components import bp_api
+from .helpers import HOSTS
 from .views import TokenAuthView, VIEWS, ApiDocTemplate, APIResource
 
 
@@ -26,7 +29,7 @@ def test_jwt(testapp):
     app = testapp(
         config=ObjectDict(SCHEMAS=DEFAULT_SCHEMAS), views=((TokenAuthView, bp_api),)
     )
-    client = ApiTester(app.test_client(), content_type=ContentTypeEnum.JSON)
+    client = ApiTester(app.test_client(), mimetype=ContentTypeEnum.JSON)
     token_header = client.token_header(access_view=VIEWS.access_token)
 
     tokens = client.post(
@@ -72,6 +75,18 @@ def test_jwt(testapp):
     # )
 
 
+def test_template_view(testapp):
+    class IndexTemplate(RenderTemplate):
+        def service(self, *_, **kwargs):
+            return ObjectDict(username="USERNAME", title="TITLE")
+
+    app = testapp(views=(IndexTemplate,))
+    client = ApiTester(app.test_client())
+    response = client.get(view=VIEWS.index, mimetype=ContentTypeEnum.HTML)
+    Asserter.assert_in("TITLE", response.get_data(as_text=True))
+    Asserter.assert_in("USERNAME", response.get_data(as_text=True))
+
+
 def test_api_resource(testapp):
     conf = ObjectDict(
         SCHEMAS=ObjectDict(
@@ -96,3 +111,76 @@ def test_api_resource(testapp):
         body_create={"item": "TEST"},
         body_update={"id": 1, "item": "TEST"},
     )
+
+
+def test_proxy_view(testapp):
+    app = testapp(
+        views=((TransparentProxyView, dict(host=HOSTS.apitester, url="/anything")),)
+    )
+    client = ApiTester(app.test_client(), mimetype=ContentTypeEnum.JSON)
+    response = client.get(
+        view=VIEWS.index,
+        json={"a": "a"},
+        headers={"X-Test": "test"},
+        params={"test": "test"},
+    )
+
+    Asserter.assert_equals(response.json.method, "GET")
+    Asserter.assert_equals(response.json.json, {"a": "a"})
+    Asserter.assert_equals(response.json.args.test, "test")
+    Asserter.assert_equals(response.json.headers["X-Test"], "test")
+
+
+def test_schema_conf_proxy_view(testapp):
+    app = testapp(
+        config=ObjectDict(SCHEMAS=DEFAULT_SCHEMAS),
+        views=((SchemaProxyView, bp_api),),
+    )
+    client = ApiTester(app.test_client())
+
+    response = client.get(
+        url=url_for(VIEWS.schema_proxy, filepath="api_problem"),
+        mimetype=ContentTypeEnum.JSON,
+    )
+    Asserter.assert_equals(response.json, DEFAULT_SCHEMAS.API_PROBLEM)
+
+    client.get(
+        url=url_for(VIEWS.schema_proxy, filepath="not_found"),
+        status=httpcode.NOT_FOUND,
+        schema=DEFAULT_SCHEMAS.API_PROBLEM,
+        mimetype=ContentTypeEnum.JSON_PROBLEM,
+    )
+
+
+def test_jsonrpc_proxy_view(testapp):
+    namespace = "Search"
+    rpc_method = "test_method"
+    params = dict(param1="1", param2="2")
+
+    app = testapp(
+        views=(
+            (
+                JsonRPCProxy,
+                dict(
+                    url=f"{HOSTS.apitester}/anything",
+                    skip_args=("action",),
+                    namespace=namespace,
+                    urls=(
+                        {
+                            "url": "/search/<path:action>",
+                            "endpoint": "proxy_searches",
+                        },
+                    ),
+                ),
+            ),
+        )
+    )
+    url = url_for("proxy_searches", action=rpc_method)
+    client = ApiTester(app.test_client(), mimetype=ContentTypeEnum.JSON)
+
+    response = client.get(url=url, params=params)
+    Asserter.assert_schema(response.json.json, DEFAULT_SCHEMAS.JSONRPC.RESPONSE)
+    Asserter.assert_equals(response.json.json.params, params)
+    Asserter.assert_equals(response.json.json.method, f"{namespace}.{rpc_method}")
+
+    client.post(url=url, json=params, status=httpcode.NO_CONTENT)
