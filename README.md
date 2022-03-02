@@ -316,6 +316,7 @@ Configuration via env:
 - ``SERVER_NAME``: *(default = APP_HOST:APP_PORT)*
 - ``FLASK_ENV``: *(default = development)*
 - ``LOCALE``: *(default = "en_EN.utf8")*
+- ``JWT_ALGORITHM``: *(default = "HS512")*
 - ``JWT_ACCESS_TOKEN_EXPIRES``: *(default: 1 day)*
 - ``JWT_REFRESH_TOKEN_EXPIRES``: *(default: 14 day)*
 - ``TEMPLATES_AUTO_RELOAD``: *(default: bool = DEBUG)*

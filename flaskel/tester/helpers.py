@@ -22,8 +22,16 @@ def load_sample_data(filename: str):
 
 
 class ApiTester:
-    def __init__(self, client: TestClient):
+    def __init__(self, client: TestClient, content_type: t.Optional[str] = None):
         self.client = client
+        self.content_type = content_type
+
+    def token_header(
+        self, call: bool = False, **kwargs
+    ) -> t.Union[t.Callable, t.Dict[str, str]]:
+        if call is True:
+            return get_access_token(self.client, **kwargs)
+        return partial(get_access_token, self.client, **kwargs)
 
     def perform(
         self,
@@ -39,8 +47,8 @@ class ApiTester:
         url, _ = build_url(url_for(view) if view else url, **(params or {}))
         response = self.client.open(url, method=method, **kwargs)
         Asserter.assert_status_code(response, status)
-        if mimetype:
-            Asserter.assert_equals(response.mimetype, mimetype)
+        if response.data and (mimetype or self.content_type):
+            Asserter.assert_equals(response.mimetype, mimetype or self.content_type)
         if schema:
             Asserter.assert_schema(response.json, schema)
         return response
@@ -223,17 +231,18 @@ def get_access_token(
     access_view: str = "auth.token_access",
     credentials: t.Optional[t.Union[t.Dict[str, str], t.Tuple[str, str]]] = None,
 ) -> t.Dict[str, str]:
+    conf = client.application.config
+
     if token is not None:
         return dict(Authorization=f"{token_type} {token}")
 
     if not credentials:
-        conf = client.application.config
         credentials = dict(email=conf.ADMIN_EMAIL, password=conf.ADMIN_PASSWORD)
     elif isinstance(credentials, tuple):
         credentials = dict(email=credentials[0], password=credentials[1])
 
     tokens = client.post(url_for(access_view), json=credentials)
     if is_query is True:
-        return dict(jwt=tokens.json.access_token)
+        return {conf.JWT_QUERY_STRING_NAME: tokens.json.access_token}
 
     return dict(Authorization=f"{token_type} {tokens.json.access_token}")

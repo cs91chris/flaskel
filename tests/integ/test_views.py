@@ -4,9 +4,11 @@ from vbcore.http.headers import ContentTypeEnum
 from vbcore.jsonschema.support import Fields
 from vbcore.tester.mixins import Asserter
 
+from flaskel.ext.auth import TokenInfo
 from flaskel.extra.apidoc import ApiSpecTemplate
-from flaskel.tester.helpers import get_access_token, config, ApiTester
+from flaskel.tester.helpers import config, ApiTester
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
+from .components import bp_api
 from .views import TokenAuthView, VIEWS, ApiDocTemplate, APIResource
 
 
@@ -21,8 +23,11 @@ def test_apidoc(testapp):
 
 
 def test_jwt(testapp):
-    app = testapp(config=ObjectDict(SCHEMAS=DEFAULT_SCHEMAS), views=(TokenAuthView,))
-    client = ApiTester(app.test_client())
+    app = testapp(
+        config=ObjectDict(SCHEMAS=DEFAULT_SCHEMAS), views=((TokenAuthView, bp_api),)
+    )
+    client = ApiTester(app.test_client(), content_type=ContentTypeEnum.JSON)
+    token_header = client.token_header(access_view=VIEWS.access_token)
 
     tokens = client.post(
         view=VIEWS.access_token,
@@ -30,19 +35,23 @@ def test_jwt(testapp):
         schema=config.SCHEMAS.ACCESS_TOKEN,
     )
 
-    token_refresh = get_access_token(
-        client, access_view=VIEWS.access_token, token=tokens.json.refresh_token
+    token_info = client.get(
+        view=VIEWS.check_token,
+        headers=token_header(token=tokens.json.access_token),
     )
+    Asserter.assert_equals(token_info.json, TokenInfo(**token_info.json).to_dict())
 
     client.post(
         view=VIEWS.access_token,
         json=dict(email=config.ADMIN_EMAIL, password="bad password"),
         status=httpcode.UNAUTHORIZED,
+        mimetype=ContentTypeEnum.JSON_PROBLEM,
+        schema=config.SCHEMAS.API_PROBLEM,
     )
 
     client.post(
         view=VIEWS.refresh_token,
-        headers=token_refresh,
+        headers=token_header(token=tokens.json.refresh_token),
         schema=config.SCHEMAS.REFRESH_TOKEN,
     )
 
@@ -58,7 +67,7 @@ def test_jwt(testapp):
     # TODO uncomment when using redis client instead of a mock
     # client.post(
     #     VIEWS.refresh_token,
-    #     headers=token_refresh,
+    #     headers=token_header(token=tokens.json.refresh_token),
     #     status=httpcode.UNAUTHORIZED
     # )
 

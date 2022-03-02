@@ -29,7 +29,16 @@ EXPLAIN_TEMPLATE_LOADING = config("EXPLAIN_TEMPLATE_LOADING", default=False, cas
 APIDOCS_ENABLED = config("APIDOCS_ENABLED", default=True, cast=bool)
 CONF_PATH = config("CONF_PATH", default=os.path.join(config.search_path, "resources"))
 
+JWT_DEFAULT_SCOPE = None
+JWT_IDENTITY_CLAIM = "identity"
+JWT_DEFAULT_TOKEN_TYPE = "bearer"
+JWT_ERROR_MESSAGE_KEY = "message"
+JWT_QUERY_STRING_NAME = "token"
 JWT_TOKEN_LOCATION = ["headers", "query_string"]
+JWT_ALGORITHM = config("JWT_ALGORITHM", default="HS512")
+JWT_DECODE_ALGORITHMS = config(
+    "JWT_ALGORITHM", default=JWT_ALGORITHM, cast=decouple.Csv()
+)
 JWT_ACCESS_TOKEN_EXPIRES = config(
     "JWT_ACCESS_TOKEN_EXPIRES", default=Seconds.day, cast=int
 )
@@ -160,8 +169,6 @@ RB_DEFAULT_ACCEPTABLE_MIMETYPES = [
     ContentTypeEnum.JSON,
 ]
 
-JWT_DEFAULT_SCOPE = None
-JWT_DEFAULT_TOKEN_TYPE = "bearer"
 PRETTY_DATE = "%d %B %Y %I:%M %p"
 DATE_ISO_FORMAT = "%Y-%m-%dT%H:%M:%S"
 SEND_FILE_MAX_AGE_DEFAULT = config(

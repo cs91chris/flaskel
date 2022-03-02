@@ -63,7 +63,7 @@ class BaseTokenAuth(BaseView):
     def check_token(cls):
         @cls.jwt.jwt_required()
         def _check_token():
-            return cls.handler.dump()
+            return cls.handler.dump().to_dict()
 
         return _check_token()
 

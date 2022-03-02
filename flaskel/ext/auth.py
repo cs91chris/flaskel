@@ -14,7 +14,7 @@ from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
 )
-from vbcore.datastruct import ObjectDict
+from vbcore.datastruct import ObjectDict, DataClassDictable
 from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 
@@ -53,7 +53,19 @@ class RevokedTokenMixin(StandardMixin):
 
 
 @dataclasses.dataclass(frozen=True)
-class TokenData:
+class TokenInfo(DataClassDictable):
+    fresh: bool
+    expires_in: int
+    issued_at: int
+    token_type: str
+    type: str
+    jti: str
+    identity: dict
+    scope: t.Optional[str] = None
+
+
+@dataclasses.dataclass(frozen=True)
+class TokenData(DataClassDictable):
     access_token: str
     expires_in: int
     issued_at: int
@@ -173,13 +185,17 @@ class BaseTokenHandler:
             else None,
         )
 
-    def dump(
-        self, token_type: t.Optional[str] = None, scope: t.Optional[str] = None
-    ) -> ObjectDict:
-        return ObjectDict(
-            token_type=token_type or cap.config.JWT_DEFAULT_TOKEN_TYPE,
-            scope=scope or cap.config.JWT_DEFAULT_SCOPE,
-            **self.get_raw(),
+    def dump(self) -> TokenInfo:
+        data = self.get_raw()
+        return TokenInfo(
+            fresh=data.fresh,
+            type=data.type,
+            token_type=data.token_type,
+            scope=data.scope,
+            expires_in=data.exp,
+            issued_at=data.iat,
+            jti=data.jti,
+            identity=data.identity,
         )
 
 

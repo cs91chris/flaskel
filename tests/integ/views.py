@@ -10,9 +10,10 @@ from flaskel.views.token import BaseTokenAuth
 
 
 class VIEWS:
-    access_token = "token_access"
-    refresh_token = "token_refresh"
-    revoke_token = "token_revoke"
+    check_token = "api.token_check"
+    access_token = "api.token_access"
+    refresh_token = "api.token_refresh"
+    revoke_token = "api.token_revoke"
     api_docs = "apidocs"
     api_specs = "apispec"
 
