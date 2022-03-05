@@ -6,6 +6,7 @@ from flaskel import cap, webargs, request, abort
 from flaskel.ext.auth import BaseTokenHandler
 from flaskel.ext.default import builder
 from flaskel.views import BaseView
+from flaskel.views.base import UrlRule
 
 
 class BaseTokenAuth(BaseView):
@@ -19,13 +20,13 @@ class BaseTokenAuth(BaseView):
     ]
 
     """
-        NOTE: endpoint should not be change otherwise dispatch_request must change
+        NOTE: endpoint should not be change otherwise dispatch_request MUST change
     """
     default_urls = (
-        {"endpoint": "token_access", "url": "/token/access"},
-        {"endpoint": "token_refresh", "url": "/token/refresh"},
-        {"endpoint": "token_revoke", "url": "/token/revoke"},
-        {"endpoint": "token_check", "url": "/token/check"},
+        UrlRule(url="/token/access", endpoint="token_access"),
+        UrlRule(url="/token/refresh", endpoint="token_refresh"),
+        UrlRule(url="/token/revoke", endpoint="token_revoke"),
+        UrlRule(url="/token/check", endpoint="token_check"),
     )
 
     @classmethod
@@ -39,10 +40,10 @@ class BaseTokenAuth(BaseView):
         return None
 
     @classmethod
-    @webargs.query(  # type: ignore
+    @webargs.query(
         dict(
-            expires_access=webargs.OptField.positive(),  # type: ignore
-            expires_refresh=webargs.OptField.positive(),  # type: ignore
+            expires_access=webargs.OptField.positive(),
+            expires_refresh=webargs.OptField.positive(),
         )
     )
     def access_token(cls, args) -> ObjectDict:

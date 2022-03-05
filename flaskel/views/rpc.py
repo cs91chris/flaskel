@@ -8,10 +8,25 @@ from vbcore.http import HttpMethod, httpcode, rpc
 
 from flaskel.ext.default import builder
 from flaskel import Response, cap, request, abort
-from .base import BaseView
+from .base import BaseView, UrlsType
 
-RPCPayloadType = t.Union[t.List[dict], dict]
+"""
+{
+    None: {
+        "action1": funct1,
+        "action2": funct2,
+        ...
+    },
+    "method1": {
+        "action1": funct1,
+        "action2": funct2,
+        ...
+    },
+    ...
+}
+"""
 OperationsType = t.Dict[t.Optional[str], t.Dict[str, t.Callable]]
+RPCPayloadType = t.Union[t.List[dict], dict]
 
 
 class JSONRPCView(BaseView):
@@ -35,24 +50,6 @@ class JSONRPCView(BaseView):
         batch_executor: t.Type[BatchExecutor] = BatchExecutor,
         **kwargs,
     ):
-        """
-
-        :param batch_executor
-        :param operations: a dict of jsonrpc operations like:
-            {
-                None: {
-                    "action1": funct1,
-                    "action2": funct2,
-                    ...
-                },
-                "method1": {
-                    "action1": funct1,
-                    "action2": funct2,
-                    ...
-                },
-                ...
-            }
-        """
         self.operations = operations or {}
         self._batch_executor = batch_executor
         self._batch_args = kwargs
@@ -173,6 +170,13 @@ class JSONRPCView(BaseView):
         return _method
 
     @classmethod
-    def register(cls, app, name: t.Optional[str] = None, urls=(), **kwargs):
+    def register(
+        cls,
+        app,
+        name: t.Optional[str] = None,
+        urls: UrlsType = (),
+        view: t.Optional[t.Type[BaseView]] = None,
+        **kwargs,
+    ) -> t.Callable:
         kwargs.setdefault("operations", cls.operations)
-        return super().register(app, name, urls, **kwargs)
+        return super().register(app, name, urls, view, **kwargs)

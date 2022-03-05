@@ -9,6 +9,7 @@ from flaskel.extra.apidoc import ApiSpecTemplate
 from flaskel.tester.helpers import config, ApiTester, url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
 from flaskel.views import RenderTemplate
+from flaskel.views.base import UrlRule
 from flaskel.views.proxy import TransparentProxyView, SchemaProxyView, JsonRPCProxy
 from .components import bp_api
 from .helpers import HOSTS
@@ -67,12 +68,13 @@ def test_jwt(testapp):
         status=httpcode.NO_CONTENT,
     )
 
-    # TODO uncomment when using redis client instead of a mock
-    # client.post(
-    #     VIEWS.refresh_token,
-    #     headers=token_header(token=tokens.json.refresh_token),
-    #     status=httpcode.UNAUTHORIZED
-    # )
+    client.post(
+        view=VIEWS.refresh_token,
+        headers=token_header(token=tokens.json.refresh_token),
+        status=httpcode.UNAUTHORIZED,
+        mimetype=ContentTypeEnum.JSON_PROBLEM,
+        schema=config.SCHEMAS.API_PROBLEM,
+    )
 
 
 def test_template_view(testapp):
@@ -166,10 +168,10 @@ def test_jsonrpc_proxy_view(testapp):
                     skip_args=("action",),
                     namespace=namespace,
                     urls=(
-                        {
-                            "url": "/search/<path:action>",
-                            "endpoint": "proxy_searches",
-                        },
+                        UrlRule(
+                            url="/search/<path:action>",
+                            endpoint="proxy_searches",
+                        ),
                     ),
                 ),
             ),

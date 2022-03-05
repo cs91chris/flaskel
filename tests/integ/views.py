@@ -1,5 +1,4 @@
-from unittest.mock import MagicMock
-
+from redislite import Redis
 from vbcore.http import httpcode, rpc
 
 from flaskel import ConfigProxy, PayloadValidator, abort
@@ -26,8 +25,7 @@ class ApiDocTemplate(apidoc.ApiDocTemplate):
 
 
 class TokenAuthView(BaseTokenAuth):
-    # TODO use a fake redis client instead of a mock
-    handler = auth.RedisTokenHandler(redis=MagicMock())
+    handler = auth.RedisTokenHandler(redis=Redis("/tmp/redis.db"))
 
 
 class ApiItem(Restful):

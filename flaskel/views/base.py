@@ -1,3 +1,4 @@
+import dataclasses
 import typing as t
 
 from flask.views import MethodView, View
@@ -6,34 +7,74 @@ from vbcore.http import httpcode, HttpMethod
 from flaskel.ext.default import builder
 from flaskel.http.exceptions import abort
 
-DefaultUrlsType = t.Tuple[t.Union[t.Dict[str, str], str], ...]
+UrlsType = t.Tuple[t.Union["UrlRule", str], ...]
+
+
+@dataclasses.dataclass(frozen=True)
+class UrlRule:
+    url: str
+    endpoint: t.Optional[str] = None
+    options: t.Optional[dict] = None
+    provide_automatic_options: t.Optional[bool] = None
 
 
 class ViewSupportMixin:
+    methods = [
+        HttpMethod.GET,
+    ]
     default_view_name: str = ""
-    default_urls: DefaultUrlsType = ()
-
-    @staticmethod
-    def normalize_url(url: str) -> str:
-        return f"/{url.lstrip('/')}"
+    default_urls: UrlsType = ()
 
     @staticmethod
     def not_implemented() -> t.NoReturn:  # pragma: no cover
         abort(httpcode.NOT_IMPLEMENTED)
 
     @classmethod
+    def normalize_url(cls, url: str) -> str:
+        return f"/{url.lstrip('/')}"
+
+    @classmethod
+    def add_url_rule(
+        cls,
+        app,
+        rule: UrlRule,
+        view_func: t.Optional[t.Callable] = None,
+    ):
+        app.add_url_rule(
+            cls.normalize_url(rule.url),
+            view_func=view_func,
+            methods=cls.methods,
+            endpoint=rule.endpoint,
+            provide_automatic_options=rule.provide_automatic_options,
+            **(rule.options or {}),
+        )
+
+    @classmethod
+    def prepare_view_func(
+        cls,
+        name: t.Optional[str] = None,
+        view: t.Optional[t.Type["BaseView"]] = None,
+        **kwargs,
+    ):
+        _class = view or cls
+        name = name or _class.__name__
+        return _class.as_view(name, **kwargs)  # type: ignore
+
+    @classmethod
     def register(
-        cls, app, name: t.Optional[str] = None, urls: DefaultUrlsType = (), **kwargs
+        cls,
+        app,
+        name: t.Optional[str] = None,
+        urls: UrlsType = (),
+        view: t.Optional[t.Type["BaseView"]] = None,
+        **kwargs,
     ):
         raise NotImplementedError
 
 
 class BaseView(View, ViewSupportMixin):
-    methods = [
-        HttpMethod.GET,
-    ]
     default_view_name: str = "index"
-    default_urls: DefaultUrlsType = ("/",)
+    default_urls: UrlsType = ("/",)
 
     def dispatch_request(self, *_, **__):
         """
@@ -43,30 +84,32 @@ class BaseView(View, ViewSupportMixin):
 
     @classmethod
     def register(
-        cls, app, name: t.Optional[str] = None, urls: DefaultUrlsType = (), **kwargs
+        cls,
+        app,
+        name: t.Optional[str] = None,
+        urls: UrlsType = (),
+        view: t.Optional[t.Type["BaseView"]] = None,
+        **kwargs,
     ) -> t.Callable:
         """
 
         :param app: Flask app or blueprint
         :param name: optional view name
         :param urls: optional urls or view name
+        :param view: view class, subclass che call this must pass its reference
         :param kwargs: argument passed to cls constructor
         """
-        name = name or cls.__name__
-        view = cls.as_view(name, **kwargs)
-        for u in urls or (f"/{name}",):
-            if isinstance(u, dict):
-                url = u.pop("url")
-                app.add_url_rule(url, view_func=view, methods=cls.methods, **u)
-                u["url"] = url
-            else:
-                app.add_url_rule(u, view_func=view, methods=cls.methods)
-        return view
+        view_func = cls.prepare_view_func(name, view, **kwargs)
+        if not urls:
+            cls.add_url_rule(app, UrlRule(url=name), view_func)
+        for rule in urls:
+            _rule = UrlRule(url=rule) if isinstance(rule, str) else rule
+            cls.add_url_rule(app, _rule, view_func)
+        return view_func
 
 
 class Resource(MethodView, ViewSupportMixin):
     default_view_name: str = "resource"
-    default_urls: DefaultUrlsType = ()
 
     methods_collection = [
         HttpMethod.GET,
@@ -83,21 +126,30 @@ class Resource(MethodView, ViewSupportMixin):
     ]
 
     @classmethod
-    def _register_urls(cls, app, view_func, pk_type, url):
+    def _register_urls(
+        cls, app, view_func: t.Callable, url: str, pk_type: str = "int", **kwargs
+    ):
         url = cls.normalize_url(url)
         if cls.methods_collection:
-            app.add_url_rule(url, view_func=view_func, methods=cls.methods_collection)
+            app.add_url_rule(
+                url,
+                view_func=view_func,
+                methods=cls.methods_collection,
+                **kwargs,
+            )
         if cls.methods_resource:
             app.add_url_rule(
                 f"{url}/<{pk_type}:res_id>",
                 view_func=view_func,
                 methods=cls.methods_resource,
+                **kwargs,
             )
         if cls.methods_subresource:
             app.add_url_rule(
                 f"{url}/<{pk_type}:res_id>/<sub_resource>",
                 view_func=view_func,
                 methods=cls.methods_subresource,
+                **kwargs,
             )
 
     @classmethod
@@ -105,24 +157,28 @@ class Resource(MethodView, ViewSupportMixin):
         cls,
         app,
         name: t.Optional[str] = None,
-        urls: DefaultUrlsType = (),
+        urls: UrlsType = (),
         view: t.Optional[t.Type[BaseView]] = None,
-        pk_type: str = "int",
         **kwargs,
     ) -> t.Callable:
-        """
+        view_func = cls.prepare_view_func(name, view, **kwargs)
+        pk_type = kwargs.pop("pk_type", "int")  # type of res_id
 
-        :param app: Flask or Blueprint instance
-        :param name: view name
-        :param urls: url to bind if missing, name is used
-        :param view: view class, subclass che call this must pass its reference
-        :param pk_type: type of res_id
-        """
-        _class = view or cls
-        name = name or _class.__name__
-        view_func = _class.as_view(name, **kwargs)
-        for url in urls or (name,):
-            cls._register_urls(app, view_func, pk_type, url)
+        if not urls:
+            cls._register_urls(app, view_func, name, pk_type)
+        for rule in urls:
+            if isinstance(rule, str):
+                cls._register_urls(app, view_func, rule, pk_type)
+            else:
+                cls._register_urls(
+                    app,
+                    view_func,
+                    rule.url,
+                    pk_type,
+                    endpoint=rule.endpoint,
+                    provide_automatic_options=rule.provide_automatic_options,
+                    **(rule.options or {}),
+                )
         return view_func
 
     @builder.no_content

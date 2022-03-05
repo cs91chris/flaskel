@@ -8,7 +8,7 @@ from vbcore.http.headers import HeaderEnum
 
 from flaskel import cap, abort, ExtProxy, PayloadValidator, webargs
 from flaskel.ext.default import builder
-from .base import Resource, DefaultUrlsType, BaseView
+from .base import Resource, UrlsType, BaseView
 
 
 class CatalogResource(Resource):
@@ -197,7 +197,7 @@ class Restful(CatalogResource):
             self._session.commit()
             return res, httpcode.CREATED if created else httpcode.SUCCESS
         except SQLAlchemyError as exc:
-            return self._session_exception_handler(exc)
+            return t.cast(t.Tuple[t.Any, int], self._session_exception_handler(exc))
 
     def on_post(self, *_, **__) -> t.Tuple[t.Dict[str, t.Any], int]:
         payload = self.validate(self.post_schema)
@@ -256,17 +256,11 @@ class PatchApiView(Restful):
         cls,
         app,
         name: t.Optional[str] = None,
-        urls: DefaultUrlsType = (),
+        urls: UrlsType = (),
         view: t.Optional[t.Type[BaseView]] = None,
         **kwargs,
     ) -> t.Callable:
-        _class = view or cls
-        name = name or _class.__name__
-        view_func = _class.as_view(name, **kwargs)
-        for url in urls:
-            cls.normalize_url(url)
-            app.add_url_rule(url, view_func=view_func, methods=cls.methods)
-        return view_func
+        return BaseView.register(app, name, urls, view)
 
     @builder.no_content
     def patch(self, *args, **kwargs):
