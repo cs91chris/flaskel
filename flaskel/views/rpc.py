@@ -66,7 +66,7 @@ class JSONRPCView(BaseView):
                 f"jsonrpc version is {self.version}", req_id=data.get("id")
             ) from None
 
-    def _validate_payload(self) -> RPCPayloadType:
+    def _validate_payload(self) -> t.Tuple[t.List[dict], bool]:
         payload: RPCPayloadType = request.get_json(True)
         if not payload:
             raise rpc.RPCParseError() from None
@@ -81,7 +81,7 @@ class JSONRPCView(BaseView):
         else:
             self._validate_request(payload)
 
-        return payload
+        return (payload, True) if isinstance(payload, list) else ([payload], False)
 
     def _get_action(self, method: str) -> t.Callable:
         m = method.split(self.separator)
@@ -101,7 +101,7 @@ class JSONRPCView(BaseView):
         responses = []
 
         try:
-            payload = self._validate_payload()
+            payload, is_batch = self._validate_payload()
         except rpc.RPCError as ex:
             return (
                 ObjectDict(
@@ -112,34 +112,37 @@ class JSONRPCView(BaseView):
                 httpcode.BAD_REQUEST,
             )
 
-        for d in payload if isinstance(payload, list) else [payload]:
+        for d in payload:
             resp = ObjectDict(jsonrpc=self.version, id=None)
             try:
+                params = d.get("params") or {}
                 if "id" not in d:
-                    tasks.append(
-                        (self._get_action(d["method"]), {**(d.get("params") or {})})
-                    )
+                    tasks.append((self._get_action(d["method"]), params))
                 else:
-                    resp.id = d.get("id")  # pylint: disable=invalid-name
+                    resp.id = d.get("id")
                     action = self._get_action(d["method"])
-                    resp.result = action(**(d.get("params") or {}))
-            except rpc.RPCError as ex:
-                resp.error = ex.as_dict()
-            except Exception as ex:  # pylint: disable=broad-except
-                cap.logger.exception(ex)
-                mess = str(ex) if cap.debug is True else None
+                    resp.result = action(**params)
+            except rpc.RPCError as exc:
+                cap.logger.exception(exc)
+                resp.error = exc.as_dict()
+            except Exception as exc:  # pylint: disable=broad-except
+                cap.logger.exception(exc)
+                mess = str(exc) if cap.debug is True else None
                 resp.error = rpc.RPCInternalError(message=mess).as_dict()
 
             if "id" in d:
                 responses.append(resp)
 
         self._batch_executor(tasks=tasks, **self._batch_args).run()
+        return self.prepare_responses(responses, is_batch)
 
+    @classmethod
+    def prepare_responses(cls, responses: t.List[dict], is_batch: bool):
         if not responses:
             res = Response.no_content()
             return None, res.status_code, res.headers
 
-        if isinstance(payload, (list, tuple)):
+        if is_batch:
             if len(responses) > 1:
                 return responses, httpcode.MULTI_STATUS
             return responses

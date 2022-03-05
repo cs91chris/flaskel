@@ -23,6 +23,8 @@ class MyJsonRPC:
 
 
 JSONRPCView.load_from_object(MyJsonRPC())
+ACTION_SUCCESS = "MyJsonRPC.action_success"
+ACTION_NOT_FOUND = "MyJsonRPC.NotFoundMethod"
 
 
 def test_api_jsonrpc_success(testapp):
@@ -33,11 +35,11 @@ def test_api_jsonrpc_success(testapp):
     client = app.test_client()
 
     rpc_client = TestJsonRPC(client, endpoint=url)
-    rpc_client.perform(request=dict(method="MyJsonRPC.action_success", id=call_id))
+    rpc_client.perform(request=dict(method=ACTION_SUCCESS, id=call_id))
     Asserter.assert_equals(rpc_client.json.id, call_id)
     Asserter.assert_equals(rpc_client.json.result.action_success, "action_success")
 
-    res = client.jsonrpc(url, method="MyJsonRPC.action_success")
+    res = client.jsonrpc(url, method=ACTION_SUCCESS)
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
 
 
@@ -67,7 +69,7 @@ def test_api_jsonrpc_error(testapp):
     Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
-    res = client.jsonrpc(url, json={"jsonrpc": 1, "method": "MyJsonRPC.action_success"})
+    res = client.jsonrpc(url, json={"jsonrpc": 1, "method": ACTION_SUCCESS})
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
     Asserter.assert_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
@@ -106,8 +108,8 @@ def test_api_jsonrpc_batch(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method="MyJsonRPC.action_success", call_id=1, params={}),
-            dict(method="MyJsonRPC.NotFoundMethod", call_id=2),
+            dict(method=ACTION_SUCCESS, call_id=1, params={}),
+            dict(method=ACTION_NOT_FOUND, call_id=2),
         ),
     )
     Asserter.assert_status_code(res, httpcode.MULTI_STATUS)
@@ -117,9 +119,9 @@ def test_api_jsonrpc_batch(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method="MyJsonRPC.action_success", call_id=1, params={}),
-            dict(method="MyJsonRPC.NotFoundMethod", call_id=2),
-            dict(method="MyJsonRPC.NotFoundMethod", call_id=3),
+            dict(method=ACTION_SUCCESS, call_id=1, params={}),
+            dict(method=ACTION_NOT_FOUND, call_id=2),
+            dict(method=ACTION_NOT_FOUND, call_id=3),
         ),
     )
     Asserter.assert_status_code(res, httpcode.REQUEST_ENTITY_TOO_LARGE)
@@ -133,8 +135,8 @@ def test_api_jsonrpc_notification(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method="MyJsonRPC.action_success", params={}),
-            dict(method="MyJsonRPC.NotFoundMethod"),
+            dict(method=ACTION_SUCCESS, params={}),
+            dict(method=ACTION_NOT_FOUND),
         ),
     )
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
@@ -142,8 +144,8 @@ def test_api_jsonrpc_notification(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method="MyJsonRPC.action_success", call_id=1, params={}),
-            dict(method="MyJsonRPC.NotFoundMethod"),
+            dict(method=ACTION_SUCCESS, call_id=1, params={}),
+            dict(method=ACTION_NOT_FOUND),
         ),
     )
     Asserter.assert_status_code(res)
