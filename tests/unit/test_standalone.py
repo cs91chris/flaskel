@@ -8,6 +8,8 @@ from vbcore.tester.mixins import Asserter
 
 from flaskel import Server
 
+LOG_CONFIG_FILE = "log_config.yaml"
+
 
 @patch("flaskel.standalone.yaml")
 def test_prepare_config(mock_yaml):
@@ -19,7 +21,7 @@ def test_prepare_config(mock_yaml):
     config = server.prepare_config(
         debug=True,
         filename="config.yaml",
-        log_config="log_config.yaml",
+        log_config=LOG_CONFIG_FILE,
         bind=bind_address,
     )
 
@@ -28,7 +30,7 @@ def test_prepare_config(mock_yaml):
         {
             "app": {
                 "FLASK_ENV": flask_env,
-                "LOG_FILE_CONF": "log_config.yaml",
+                "LOG_FILE_CONF": LOG_CONFIG_FILE,
                 "DEBUG": True,
             },
             "wsgi": {"bind": bind_address},
@@ -53,7 +55,7 @@ def test_run_from_cli(tmpdir):
             "--debug",
             "--bind",        "127.0.0.1:5000",
             "--config",      config_file.strpath,
-            "--log-config",  "log_config.yaml",
+            "--log-config",  LOG_CONFIG_FILE,
             "--wsgi-server", "gunicorn",
             "--app-config",  "SECRET_KEY=secret",
             "--wsgi-config", "WORKERS=4",

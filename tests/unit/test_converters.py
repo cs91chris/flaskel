@@ -14,15 +14,17 @@ def test_list_converter():
 
 
 def test_decimal_converter():
+    num = "-123.456"
     converter = DecimalConverter(Map())
-    Asserter.assert_equals(converter.to_python("-123.456"), Decimal("-123.456"))
-    Asserter.assert_equals(converter.to_url(Decimal("-123.456")), "-123.456")
+    Asserter.assert_equals(converter.to_python(num), Decimal(num))
+    Asserter.assert_equals(converter.to_url(Decimal(num)), num)
 
 
 def test_decimal_converter_unsigned():
+    num = "-123.456"
     converter = DecimalConverter(Map(), signed=False)
-    Asserter.assert_equals(converter.to_python("-123.456"), Decimal("-123.456"))
-    Asserter.assert_equals(converter.to_url(Decimal("-123.456")), "-123.456")
+    Asserter.assert_equals(converter.to_python(num), Decimal(num))
+    Asserter.assert_equals(converter.to_url(Decimal(num)), num)
 
 
 def test_decimal_converter_range():

@@ -73,13 +73,14 @@ class TokenData(DataClassDictable):
     scope: t.Optional[str] = None
     refresh_token: t.Optional[str] = None
 
-    def to_dict(self) -> ObjectDict:
+    def to_dict(self, **kwargs) -> ObjectDict:
         data = ObjectDict(
             access_token=self.access_token,
             expires_in=self.expires_in,
             issued_at=self.issued_at,
             token_type=self.token_type,
             scope=self.scope,
+            **kwargs,
         )
         if self.refresh_token:
             data.refresh_token = self.refresh_token
@@ -96,7 +97,7 @@ class BaseTokenHandler:
         return False
 
     def revoke(self, token: t.Optional[str] = None):
-        pass
+        """can be implemented by subclass"""
 
     @classmethod
     def role(cls):

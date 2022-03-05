@@ -5,8 +5,7 @@ from vbcore.http import httpcode
 from vbcore.tester.mixins import Asserter
 
 from flaskel import Response
-from flaskel.ext import limit
-from flaskel.ext.limit import ipban
+from flaskel.ext.limit import ipban, response_ok, response_ko, header_whitelist
 
 
 @pytest.mark.parametrize(
@@ -19,7 +18,7 @@ from flaskel.ext.limit import ipban
     ],
 )
 def test_response_ok(status, expected):
-    Asserter.assert_equals(limit.response_ok(Response(status=status)), expected)
+    Asserter.assert_equals(response_ok(Response(status=status)), expected)
 
 
 @pytest.mark.parametrize(
@@ -33,12 +32,12 @@ def test_response_ok(status, expected):
     ],
 )
 def test_response_ko(status, expected):
-    Asserter.assert_equals(limit.response_ko(Response(status=status)), expected)
+    Asserter.assert_equals(response_ko(Response(status=status)), expected)
 
 
 def test_bypass_limit(flaskel_app):
     with flaskel_app.test_request_context():
-        Asserter.assert_false(limit.header_whitelist())
+        Asserter.assert_false(header_whitelist())
 
     bypass_key, bypass_value = "X-Limiter-Bypass", "bypass-rate-limit"
     flaskel_app.config.LIMITER = {
@@ -47,7 +46,7 @@ def test_bypass_limit(flaskel_app):
     }
 
     with flaskel_app.test_request_context(headers={bypass_key: bypass_value}):
-        Asserter.assert_true(limit.header_whitelist())
+        Asserter.assert_true(header_whitelist())
 
 
 def test_ipban_init(flaskel_app):
