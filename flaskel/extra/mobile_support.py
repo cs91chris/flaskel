@@ -18,6 +18,12 @@ class RedisStore:
         self.sep = sep
         self.client = redis
 
+    @staticmethod
+    def normalize_string(data) -> t.Optional[str]:
+        if not data:
+            return None
+        return data if isinstance(data, str) else data.decode()
+
     def _normalize(self, ver: str):
         s = ver.split(self.sep)
         return version.parse(s[0]), bool(int(s[1])) if len(s) > 1 else False
@@ -34,7 +40,7 @@ class RedisStore:
         return None, None
 
     def pop(self, key: str):
-        res = self.client.lpop(key)
+        res = self.normalize_string(self.client.lpop(key))
         return self._normalize(res) if res else None
 
     def clear(self, key: str):
@@ -42,7 +48,7 @@ class RedisStore:
 
     def retrieve(self, key: str, max_item: int = 1):
         data = self.client.lrange(key, 0, max_item - 1)
-        return [self._normalize(d) for d in data]
+        return [self._normalize(self.normalize_string(d)) for d in data]
 
 
 class MobileVersionCompatibility:
@@ -189,7 +195,7 @@ class MobileVersionCompatibility:
                     return True
                 if v <= mv:
                     return False
-        except Exception as exc:  # pragma: no cover pylint: disable=W0703
+        except Exception as exc:  # pylint: disable=broad-except
             cap.logger.exception(exc)
             return False
         return len(versions) >= cap.config.VERSION_STORE_MAX
@@ -222,10 +228,12 @@ class MobileReleaseView(BaseView):
     def dispatch_request(self, params: dict, *_, ver=None, **__):
         agent = params["agent"]
         if agent not in cap.config.VERSION_AGENTS:
-            abort(
+            return abort(
                 httpcode.BAD_REQUEST,
-                response=dict(
-                    reason="agent not compatible", agents=cap.config.VERSION_AGENTS
+                response=Response(
+                    dict(
+                        reason="agent not compatible", agents=cap.config.VERSION_AGENTS
+                    )
                 ),
             )
 
@@ -244,7 +252,7 @@ class MobileReleaseView(BaseView):
             try:
                 self.ext.publish(agent, ver, params["critical"])
             except ValueError as exc:
-                abort(httpcode.BAD_REQUEST, response=dict(reason=str(exc)))
+                abort(httpcode.BAD_REQUEST, str(exc))
 
         mimetype, response = self.builder.get_mimetype_accept()
         return response.build(self.ext.all_releases(agent)), {

@@ -1,4 +1,4 @@
-from redislite import Redis
+from redislite import StrictRedis
 from vbcore.http import httpcode, rpc
 
 from flaskel import ConfigProxy, PayloadValidator, abort
@@ -25,7 +25,7 @@ class ApiDocTemplate(apidoc.ApiDocTemplate):
 
 
 class TokenAuthView(BaseTokenAuth):
-    handler = auth.RedisTokenHandler(redis=Redis("/tmp/redis.db"))
+    handler = auth.RedisTokenHandler(redis=StrictRedis("/tmp/redis.db"))
 
 
 class ApiItem(Restful):

@@ -10,21 +10,19 @@ from flaskel.ext.default import builder
 from flaskel import Response, cap, request, abort
 from .base import BaseView, UrlsType
 
-"""
-{
-    None: {
-        "action1": funct1,
-        "action2": funct2,
-        ...
-    },
-    "method1": {
-        "action1": funct1,
-        "action2": funct2,
-        ...
-    },
-    ...
-}
-"""
+# {
+#     None: {
+#         "action1": funct1,
+#         "action2": funct2,
+#         ...
+#     },
+#     "method1": {
+#         "action1": funct1,
+#         "action2": funct2,
+#         ...
+#     },
+#     ...
+# }
 OperationsType = t.Dict[t.Optional[str], t.Dict[str, t.Callable]]
 RPCPayloadType = t.Union[t.List[dict], dict]
 
