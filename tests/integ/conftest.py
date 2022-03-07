@@ -1,6 +1,6 @@
 import pytest
 
-from flaskel import TestClient
+from flaskel import TestClient, ExtProxy
 from .components import (
     BLUEPRINTS,
     MIDDLEWARES,
@@ -10,6 +10,17 @@ from .components import (
     EXTENSIONS,
 )
 from .helpers import prepare_config, after_create_hook
+
+
+@pytest.fixture()
+def session_save():
+    def _save(items):
+        session = ExtProxy("sqlalchemy.db.session")
+        for i in items:
+            session.merge(i)
+        session.commit()
+
+    return _save
 
 
 @pytest.fixture()

@@ -13,6 +13,10 @@ class ApiMedia(BaseView):
         HttpMethod.POST,
         HttpMethod.DELETE,
     ]
+    default_urls = (
+        "/resources/<int:eid>/media",
+        "/resources/<int:eid>/media/<int:res_id>",
+    )
 
     def dispatch_request(self, eid, *_, res_id=None, **__):
         if request.method == HttpMethod.DELETE:

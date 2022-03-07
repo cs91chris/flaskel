@@ -4,9 +4,17 @@ import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
+from vbcore.jsonschema.support import Fields
 
 from flaskel import cap, ExtProxy
 from .exceptions import MediaError
+
+SCHEMA_MEDIA = Fields.array_object(
+    properties={
+        "id": Fields.integer,
+        "link": Fields.string,
+    }
+)
 
 
 class MediaMixin(StandardMixin):
@@ -19,9 +27,9 @@ class MediaMixin(StandardMixin):
 
 
 class MediaRepo:
-    session = ExtProxy("sqlalchemy.sa.session")
     entity_model = None
     media_model = None
+    session = ExtProxy("sqlalchemy.db.session")
 
     @classmethod
     def entity_name(cls) -> t.Optional[str]:

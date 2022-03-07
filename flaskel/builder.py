@@ -275,7 +275,7 @@ class AppBuilder:
             sqlalchemy = self._app.extensions.get("sqlalchemy")
             if sqlalchemy is not None:
                 register_engine_events(sqlalchemy.db.engine)
-                sqlalchemy.db.create_all()
+                sqlalchemy.db.create_all(app=self._app)
         except Exception as exc:  # pylint: disable=broad-except
             self._app.logger.exception(exc)
 

@@ -42,7 +42,7 @@ Scheduler: t.Type[APJobs] = t.cast(
     functools.partial(APJobs),
 )
 
-Database: t.Type[SQLAlchemy] = t.cast(
+Database = t.cast(
     t.Type[SQLAlchemy],
     functools.partial(SQLAlchemy, model_class=SQLAModel),
 )

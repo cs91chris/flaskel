@@ -130,6 +130,7 @@ HTTP_DUMP_BODY = [
     config("HTTP_DUMP_RESP_BODY", default=False, cast=bool),
 ]
 
+MAX_CONTENT_LENGTH = config("MAX_CONTENT_LENGTH", default=10 * 10**6, cast=int)
 USE_X_SENDFILE = config("USE_X_SENDFILE", default=not DEBUG, cast=bool)
 ENABLE_ACCEL = config("ENABLE_ACCEL", default=True, cast=bool)
 ACCEL_BUFFERING = True

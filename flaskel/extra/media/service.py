@@ -2,6 +2,8 @@ import os
 import typing as t
 
 from vbcore.uuid import get_uuid
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 
 from flaskel import cap, ConfigProxy
 from .exceptions import MediaError
@@ -14,17 +16,19 @@ class MediaService:
     config = ConfigProxy("MEDIA")
 
     @classmethod
-    def get_ext(cls, filename):
+    def get_ext(cls, filename) -> t.Optional[str]:
         if "." in filename:
-            return filename.rsplit(".", 1)[-1].lower()
+            return filename.split(".", 1)[-1].lower()
         return None
 
     @classmethod
-    def generate_filepath(cls, eid, filename) -> t.Tuple[str, str]:
+    def generate_filepath(cls, eid, filename: str) -> t.Tuple[str, str]:
         ext = cls.get_ext(filename)
         entity_name = cls.media_repo.entity_name()
         if cls.obfuscate_filename is True:
             filename = get_uuid()
+        else:
+            filename = secure_filename(filename)
 
         filename = f"{eid}-{filename}.{ext}"
         filepath = os.path.join(entity_name, filename)
@@ -32,15 +36,18 @@ class MediaService:
         return url, filepath
 
     @classmethod
-    def upload(cls, files, eid):
+    def check_file(cls, file: FileStorage):
+        if not file.filename:
+            raise MediaError("missing file name")
+        if cls.get_ext(file.filename) not in cls.config.ALLOWED_EXTENSIONS:
+            raise MediaError("file extension not allowed")
+
+    @classmethod
+    def upload(cls, files: t.Iterable[FileStorage], eid) -> list:
         medias = []
         emodel = cls.media_repo.get(eid)
         for f in files:
-            if not f.filename:
-                raise MediaError("missing file name")
-            if cls.get_ext(f.filename) not in cls.config.ALLOWED_EXTENSIONS:
-                raise MediaError("file extension not allowed")
-
+            cls.check_file(f)
             url, filepath = cls.generate_filepath(emodel.id, f.filename)
             f.save(os.path.join(cls.config.UPLOAD_FOLDER, filepath))
             res = cls.media_repo.update(
