@@ -1,6 +1,6 @@
 from flaskel.ext import limit, default, auth
 from flaskel.extra.mobile_support import RedisStore, MobileVersionCompatibility
-from flaskel.extra.stripe import PaymentHandler
+from flaskel.extra.payments.stripe import PaymentHandler
 
 
 class OPTS:

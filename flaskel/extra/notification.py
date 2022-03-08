@@ -1,3 +1,5 @@
+import typing as t
+
 from vbcore.datastruct import ObjectDict
 
 try:
@@ -10,7 +12,7 @@ except ImportError:
 
 
 class NotificationHandler:
-    def __init__(self, model, session, provider=None, dry_run=False):
+    def __init__(self, model, session, provider=None, dry_run: bool = False):
         """
 
         :param model: sqlalchemy model class, must have a token column
@@ -55,7 +57,13 @@ class NotificationHandler:
             self.session.rollback()
 
     def send_push_notification(
-        self, app, title, message, user_ids=None, tokens=None, **kwargs
+        self,
+        app,
+        title: str,
+        message: str,
+        user_ids: t.List[str] = None,
+        tokens: t.List[str] = None,
+        **kwargs,
     ):
         """
 
@@ -80,13 +88,12 @@ class NotificationHandler:
                 app.logger.exception(exc)
                 return
 
-        tokens = [t[0] for t in tokens]
-        # noinspection PyUnresolvedReferences
+        tokens = [token[0] for token in tokens]
         rmax = FCMNotification.FCM_MAX_RECIPIENTS - 1
         if len(tokens) > rmax:
             tokens_set = [tokens[x : x + rmax] for x in range(0, len(tokens), rmax)]
         else:
-            tokens_set = tokens
+            tokens_set = [tokens]
 
         kwargs.setdefault("sound", "Default")
         kwargs.setdefault("dry_run", self.dry_run)
