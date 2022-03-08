@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from flaskel import TestClient, db_session
@@ -9,7 +11,7 @@ from .components import (
     BEFORE_REQUEST,
     EXTENSIONS,
 )
-from .helpers import prepare_config, after_create_hook
+from .helpers import prepare_config, DB_TEST
 
 
 @pytest.fixture()
@@ -22,8 +24,13 @@ def session_save():
     return _save
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def testapp():
+    try:
+        os.remove(DB_TEST)
+    except OSError as exc:
+        print(str(exc))
+
     def _get_app(config=None, extensions=None, views=(), **kwargs):
         return TestClient.get_app(
             version="1.0.0",
@@ -36,7 +43,6 @@ def testapp():
             after_request=AFTER_REQUEST,
             before_request=BEFORE_REQUEST,
             extensions={**EXTENSIONS, **(extensions or {})},
-            after_create_hook=after_create_hook,
             **kwargs,
         )
 
