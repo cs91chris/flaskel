@@ -6,7 +6,16 @@ from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
 from vbcore.misc import random_string
 
-from flaskel import cap, abort, request, ExtProxy, ConfigProxy, PayloadValidator
+from flaskel import (
+    cap,
+    abort,
+    request,
+    ConfigProxy,
+    PayloadValidator,
+    db_session,
+    job_scheduler,
+    client_redis,
+)
 from flaskel.ext.default import builder
 from flaskel.views import BaseView
 
@@ -52,16 +61,16 @@ class AccountHandler:
 
     def __init__(
         self,
-        session=None,
+        session=db_session,
         auth_code_handler: t.Optional[AuthCode] = None,
         notifications: t.Optional[ObjectDict] = None,
-        scheduler=None,
+        scheduler=job_scheduler,
     ):
-        self.session = session or ExtProxy("sqlalchemy.db.session")
+        self.session = session
+        self.scheduler = scheduler
         self.auth_code_handler = auth_code_handler or AuthCode(
-            ExtProxy("redis"), ObjectDict()
+            client_redis, ObjectDict()
         )
-        self.scheduler = scheduler or ExtProxy("scheduler")
 
         """ EXAMPLE
         ------------------------------------------------

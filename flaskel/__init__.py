@@ -14,3 +14,9 @@ from .utils.datastruct import ConfigProxy, ExtProxy
 from .utils.validator import PayloadValidator
 from .version import *  # noqa: F403
 from .wsgi import WSGIFactory, BaseApplication
+
+
+client_mail = ExtProxy("redis")
+client_redis = ExtProxy("redis")
+job_scheduler = ExtProxy("scheduler")
+db_session = ExtProxy("sqlalchemy.db.session")

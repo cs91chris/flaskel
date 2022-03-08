@@ -1,6 +1,6 @@
 from vbcore.http import HttpMethod, httpcode
 
-from flaskel import request, ExtProxy, abort, cap
+from flaskel import request, ExtProxy, abort, cap, db_session
 from flaskel.views import BaseView, UrlRule
 from .repo import PaymentStatus, PaymentRepo, Payment
 
@@ -12,7 +12,7 @@ class PaymentEndpoint:
 
 class PaymentView(BaseView):
     gateway = ExtProxy("stripe")
-    repo = PaymentRepo(ExtProxy("sqlalchemy.db.session"), Payment)
+    repo = PaymentRepo(db_session, Payment)
 
     default_view_name = "payments"
     default_urls = (

@@ -6,7 +6,7 @@ from vbcore.db.support import SQLASupport
 from vbcore.http import HttpMethod, httpcode
 from vbcore.http.headers import HeaderEnum
 
-from flaskel import cap, abort, ExtProxy, PayloadValidator, webargs
+from flaskel import cap, abort, PayloadValidator, webargs, db_session
 from flaskel.ext.default import builder
 from .base import Resource, UrlsType, BaseView
 
@@ -125,14 +125,14 @@ class Restful(CatalogResource):
         HttpMethod.DELETE,
     ]
 
-    def __init__(self, model, session=None):
+    def __init__(self, model, session=db_session):
         """
 
         :param session: sqlalchemy session instance
         :param model: sqlalchemy model
         """
         super().__init__(model)
-        self._session = session or ExtProxy("sqlalchemy.db.session")
+        self._session = session
         self.support = self.support_class(self._model, self._session)
 
     def validate(self, schema):

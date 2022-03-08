@@ -6,7 +6,7 @@ from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
 from vbcore.jsonschema.support import Fields
 
-from flaskel import cap, ExtProxy
+from flaskel import cap, db_session
 from .exceptions import MediaError
 
 SCHEMA_MEDIA = Fields.array_object(
@@ -29,7 +29,7 @@ class MediaMixin(StandardMixin):
 class MediaRepo:
     entity_model = None
     media_model = None
-    session = ExtProxy("sqlalchemy.db.session")
+    session = db_session
 
     @classmethod
     def entity_name(cls) -> t.Optional[str]:
