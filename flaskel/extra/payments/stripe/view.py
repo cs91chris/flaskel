@@ -1,59 +1,45 @@
-from vbcore.http import HttpMethod, httpcode
+from vbcore.http import HttpMethod
 
-from flaskel import request, ExtProxy, abort, cap, db_session
-from flaskel.views import BaseView, UrlRule
-from .repo import PaymentStatus, PaymentRepo, Payment
-
-
-class PaymentEndpoint:
-    intent = "payment_intent"
-    webhook = "payment_webhook"
+from flaskel import ExtProxy, db_session, Response
+from flaskel.views import BaseView
+from .repo import PaymentRepo, Payment
 
 
 class PaymentView(BaseView):
+    model = Payment
+    repo_class = PaymentRepo
+    methods = [HttpMethod.POST]
     gateway = ExtProxy("stripe")
-    repo = PaymentRepo(db_session, Payment)
 
-    default_view_name = "payments"
-    default_urls = (
-        UrlRule(url="/stripe/payment/intent", endpoint=PaymentEndpoint.intent),
-        UrlRule(url="/stripe/payment/webhook", endpoint=PaymentEndpoint.webhook),
-    )
-    methods = [
-        HttpMethod.POST,
-    ]
+    def __init__(self, session=None):
+        self.repo = self.repo_class(session or db_session, self.model)
+
+
+class PaymentIntentView(PaymentView):
+    default_view_name = "payment_intent"
+    default_urls = ("/stripe/payment/intent",)
 
     def dispatch_request(self, *_, **__):
-        if request.endpoint.endswith(PaymentEndpoint.intent):
-            return self.payment_intent(request.json, client_id=self.get_client_id())
-        if request.endpoint.endswith(PaymentEndpoint.webhook):
-            return self.payment_webhook(request.data)
+        intent = self.gateway.create_payment_intent(self.get_amount())
+        self.repo.save(intent, client_id=self.get_client_id())
+        return intent
 
-        return abort(
-            httpcode.BAD_REQUEST, "no action associated with the requested url"
-        )
+    def get_amount(self):
+        """must be implemented in subclass"""
+        return self.not_implemented()
 
     def get_client_id(self):
         """must be implemented in subclass"""
         return self.not_implemented()
 
-    def payment_intent(self, data, **kwargs):
-        intent = self.gateway.create_payment_intent(data.amount)
-        self.repo.save(intent, **kwargs)
-        return intent
 
-    def payment_webhook(self, data):
-        event = self.gateway.create_event(data)
-        if not event:
-            abort(httpcode.BAD_REQUEST, response="unable to decode event")
+class PaymentWebhookView(PaymentView):
+    default_view_name = "payment_webhook"
+    default_urls = ("/stripe/payment/webhook",)
 
-        event_type = event.get("type")
-        if event_type == self.gateway.payment_intent_ok:
-            status = PaymentStatus.SUCCESSO
-        elif event_type == self.gateway.payment_intent_ko:
-            status = PaymentStatus.ERRORE
-        else:
-            cap.logger.warning("unhandled event type received: %s", event_type)
-            return
+    def dispatch_request(self, *_, **__):
+        status, event = self.gateway.webhook_handler()
+        if status is not None:
+            self.repo.update(status, event)
 
-        self.repo.update(status, event)
+        return Response.no_content()

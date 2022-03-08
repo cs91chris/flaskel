@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import sqlalchemy as sa
+from sqlalchemy.ext.declarative import declared_attr
 from vbcore import json
 from vbcore.datastruct import IntEnum, ObjectDict
 from vbcore.db.mixins import CatalogMixin, StandardMixin
@@ -8,9 +9,9 @@ from vbcore.db.sqla import LoaderModel
 
 
 class PaymentStatusValue(IntEnum):
-    ATTESA = 1
-    SUCCESSO = 2
-    ERRORE = 3
+    WAIT = 1
+    SUCCESS = 2
+    ERROR = 3
 
 
 class PaymentStatus(CatalogMixin, LoaderModel):
@@ -35,10 +36,17 @@ class Payment(StandardMixin):
     cancellation_reason = sa.Column(sa.Text)
     payment_method = sa.Column(sa.String(255))
 
-    status_id = sa.Column(sa.Enum(PaymentStatus), sa.ForeignKey("payment_status.id"))
-    status = sa.orm.relationship(
-        PaymentStatus, foreign_keys=status_id, uselist=False, lazy="joined"
-    )  # type: ignore
+    @classmethod
+    @declared_attr
+    def status_id(cls):
+        return sa.Column(sa.Integer, sa.ForeignKey(PaymentStatus.id))
+
+    @classmethod
+    @declared_attr
+    def status(cls):
+        return sa.orm.relationship(
+            PaymentStatus, foreign_keys=cls.status_id, uselist=False, lazy="joined"
+        )  # type: ignore
 
 
 class PaymentRepo:
@@ -52,7 +60,7 @@ class PaymentRepo:
                 self.model(
                     request_id=data.id,
                     request=json.dumps(data),
-                    status_id=PaymentStatus.ATTESA,
+                    status_id=PaymentStatusValue.WAIT,
                     **kwargs,
                 )
             )
@@ -62,9 +70,9 @@ class PaymentRepo:
             raise
 
     def get_payment(self, request_id: str) -> Payment:
-        return self.model.query.get_or_404(request_id)
+        return self.model.query.filter_by(request_id=request_id).first_or_404()
 
-    def update(self, status: PaymentStatus, event: ObjectDict):
+    def update(self, status: PaymentStatusValue, event: ObjectDict):
         try:
             data = event.data.object.charges.data[0]
         except (AttributeError, IndexError):
