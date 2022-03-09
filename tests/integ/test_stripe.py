@@ -14,7 +14,7 @@ from flaskel.extra.payments.stripe import (
 from flaskel.extra.payments.stripe.repo import Payment
 from flaskel.tester.helpers import ApiTester
 
-db = Database()  # type: ignore
+db = Database()
 
 CONFIG = ObjectDict(
     STRIPE_SECRET_KEY="STRIPE_SECRET_KEY",

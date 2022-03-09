@@ -34,6 +34,9 @@ class APJobs(APScheduler):
 
         self.set_config(app)
 
+        setattr(app, "extensions", getattr(app, "extensions", {}))
+        app.extensions["scheduler"] = self
+
         if app.config.SCHEDULER_PATCH_MULTITHREAD is True:
             if fcntl is None:  # pragma: no cover
                 app.logger.warning(
@@ -42,9 +45,6 @@ class APJobs(APScheduler):
             elif not self.set_lock(app.config.SCHEDULER_LOCK_FILE):
                 app.logger.info("scheduler already started in another process")
                 return
-
-        setattr(app, "extensions", getattr(app, "extensions", {}))
-        app.extensions["scheduler"] = self
 
         if not self.running and app.config.SCHEDULER_AUTO_START is True:
             try:

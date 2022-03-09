@@ -1,5 +1,7 @@
 import io
 
+import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin, UserMixin
 from vbcore.http import httpcode
@@ -16,13 +18,13 @@ from flaskel.extra.media.service import MediaService as BaseMediaService
 from flaskel.extra.media.view import ApiMedia, GetMedia
 from flaskel.tester.helpers import url_for, ApiTester
 
-db = Database()  # type: ignore
+db = Database()
 
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
 
-    images = db.relationship(
+    images = relationship(
         "Media",
         secondary="media_users",
         back_populates="users",
@@ -34,14 +36,14 @@ class User(db.Model, UserMixin):
 class MediaUser(db.Model, StandardMixin):
     __tablename__ = "media_users"
 
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    media_id = db.Column(db.Integer, db.ForeignKey("media.id"))
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"))
+    media_id = sa.Column(sa.Integer, sa.ForeignKey("media.id"))
 
 
 class Media(db.Model, MediaMixin):
     __tablename__ = "media"
 
-    users = db.relationship("User", secondary="media_users", back_populates="images")
+    users = relationship("User", secondary="media_users", back_populates="images")
 
     def to_dict(self, *_, **__):
         return MediaMixin.to_dict(self)

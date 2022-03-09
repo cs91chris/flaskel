@@ -16,7 +16,7 @@ from .version import *  # noqa: F403
 from .wsgi import WSGIFactory, BaseApplication
 
 
-client_mail = ExtProxy("redis")
 client_redis = ExtProxy("redis")
+client_mail = ExtProxy("client_mail")
 job_scheduler = ExtProxy("scheduler")
 db_session = ExtProxy("sqlalchemy.db.session")
