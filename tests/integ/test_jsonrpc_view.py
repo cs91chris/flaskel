@@ -5,22 +5,7 @@ from vbcore.tester.mixins import Asserter
 from flaskel.tester.helpers import url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
 from flaskel.views.rpc import JSONRPCView
-
-
-class MyJsonRPC:
-    @staticmethod
-    def action_success(**__):
-        return {"action_success": "action_success"}
-
-    @staticmethod
-    def action_invalid_params(**kwargs):
-        if kwargs.get("param") != "testparam":
-            raise rpc.RPCInvalidParams()
-
-    @staticmethod
-    def action_error(**__):
-        raise ValueError("value error")
-
+from tests.integ.views import MyJsonRPC
 
 JSONRPCView.load_from_object(MyJsonRPC())
 ACTION_SUCCESS = "MyJsonRPC.action_success"

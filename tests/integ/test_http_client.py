@@ -4,7 +4,11 @@ from werkzeug.exceptions import HTTPException
 
 from flaskel import FlaskelHttp, FlaskelHttpBatch
 from flaskel.http.client import HTTPStatusError
-from tests.integ.helpers import HOSTS
+
+
+class HOSTS:
+    fake = "http://localhost"
+    apitester = "https://httpbin.org"
 
 
 def test_utils_http_client_simple(flaskel_app):
@@ -46,16 +50,17 @@ def test_utils_http_client_filename(flaskel_app):
         res = api.get("/not-found")
         Asserter.assert_status_code(res, httpcode.NOT_FOUND)
 
+        url = "/response-headers"
         param[hdr] = f"attachment; filename={filename}"
-        res = api.get("/response-headers", params=param)
+        res = api.get(url, params=param)
         Asserter.assert_equals(api.response_filename(res.headers), filename)
 
         param[hdr] = f"filename={filename}"
-        res = api.post("/response-headers", params=param)
+        res = api.post(url, params=param)
         Asserter.assert_equals(api.response_filename(res.headers), filename)
 
         param[hdr] = filename
-        res = api.post("/response-headers", params=param)
+        res = api.post(url, params=param)
         Asserter.assert_none(api.response_filename(res.headers))
 
 

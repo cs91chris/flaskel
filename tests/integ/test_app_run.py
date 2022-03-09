@@ -4,7 +4,17 @@ from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 from vbcore.tester.mixins import Asserter
 
+from flaskel import cap
 from flaskel.tester.helpers import ApiTester, config
+
+
+def after_request_hook(response):
+    cap.logger.info("AFTER_REQUEST_HOOK")
+    return response
+
+
+def before_request_hook():
+    cap.logger.info("BEFORE_REQUEST_HOOK")
 
 
 @pytest.mark.parametrize(
@@ -23,7 +33,11 @@ from flaskel.tester.helpers import ApiTester, config
     ],
 )
 def test_base_blueprints(url, subdomain, content_type, testapp, caplog):
-    client = ApiTester(testapp().test_client())
+    app = testapp(
+        after_request=(after_request_hook,),
+        before_request=(before_request_hook,),
+    )
+    client = ApiTester(app.test_client())
 
     response = client.get(
         url=url,

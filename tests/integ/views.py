@@ -1,23 +1,52 @@
+from flask import Blueprint
 from redislite import StrictRedis
+from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, rpc
 
 from flaskel import ConfigProxy, PayloadValidator, abort
 from flaskel.ext import auth
+from flaskel.ext import default
 from flaskel.extra import apidoc
+from flaskel.views import RenderTemplate
 from flaskel.views.resource import Resource, Restful
+from flaskel.views.static import SPAView
 from flaskel.views.token import BaseTokenAuth
 
+bp_api = Blueprint(
+    "api",
+    __name__,
+    subdomain="api",
+    static_folder=None,
+    static_url_path=None,
+    template_folder=None,
+)
 
-class VIEWS:
-    index = "index"
-    api_docs = "apidocs"
-    api_specs = "apispec"
-    check_token = "api.token_check"
-    access_token = "api.token_access"
-    refresh_token = "api.token_refresh"
-    revoke_token = "api.token_revoke"
-    schema_proxy = "api.schema_proxy"
-    jsonrpc_proxy = "api.jsonrpc_proxy"
+bp_spa = Blueprint(
+    "spa",
+    __name__,
+    template_folder=SPAView.default_template_folder,
+    static_folder=SPAView.default_static_folder,
+    static_url_path=SPAView.default_static_url_path,
+)
+
+bp_web = Blueprint(
+    "web",
+    __name__,
+    url_prefix="/",
+    template_folder="data/templates",
+    static_folder="data/static",
+    static_url_path="/static/",
+)
+
+default.cors.init_app(bp_api)
+default.error_handler.api_register(bp_api)
+default.error_handler.web_register(bp_spa)
+default.error_handler.web_register(bp_web)
+
+
+class IndexTemplate(RenderTemplate):
+    def service(self, *_, **kwargs):
+        return ObjectDict(username="USERNAME", title="TITLE")
 
 
 class ApiDocTemplate(apidoc.ApiDocTemplate):
@@ -75,18 +104,14 @@ class APIResource(Resource):
 
 class MyJsonRPC:
     @staticmethod
-    def test_action_1(**__):
-        return {"action1": True}
+    def action_success(**__):
+        return {"action_success": "action_success"}
 
     @staticmethod
-    def test_action_2(**__):
-        return {"action2": True}
-
-    @staticmethod
-    def test_invalid_params(**kwargs):
+    def action_invalid_params(**kwargs):
         if kwargs.get("param") != "testparam":
             raise rpc.RPCInvalidParams()
 
     @staticmethod
-    def test_internal_error():
-        raise ValueError
+    def action_error(**__):
+        raise ValueError("value error")

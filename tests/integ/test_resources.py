@@ -29,3 +29,13 @@ def test_api_resource(testapp):
         body_create={"item": "TEST"},
         body_update={"id": 1, "item": "TEST"},
     )
+
+
+def test_catalog(testapp):
+    # TODO: added missing tests
+    assert True
+
+
+def test_restful(testapp):
+    # TODO: added missing tests
+    assert True

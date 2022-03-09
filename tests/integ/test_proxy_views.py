@@ -7,9 +7,8 @@ from flaskel.tester.helpers import url_for, ApiTester
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
 from flaskel.views import UrlRule
 from flaskel.views.proxy import JsonRPCProxy, SchemaProxyView, TransparentProxyView
-from tests.integ.components import bp_api
-from tests.integ.helpers import HOSTS
-from tests.integ.views import VIEWS
+from tests.integ.test_http_client import HOSTS
+from tests.integ.views import bp_api
 
 
 def test_proxy_view(testapp):
@@ -18,7 +17,7 @@ def test_proxy_view(testapp):
     )
     client = ApiTester(app.test_client(), mimetype=ContentTypeEnum.JSON)
     response = client.get(
-        view=VIEWS.index,
+        view=TransparentProxyView.default_view_name,
         json={"a": "a"},
         headers={"X-Test": "test"},
         params={"test": "test"},
@@ -38,13 +37,13 @@ def test_schema_conf_proxy_view(testapp):
     client = ApiTester(app.test_client())
 
     response = client.get(
-        url=url_for(VIEWS.schema_proxy, filepath="api_problem"),
+        url=url_for("api.schema_proxy", filepath="api_problem"),
         mimetype=ContentTypeEnum.JSON,
     )
     Asserter.assert_equals(response.json, DEFAULT_SCHEMAS.API_PROBLEM)
 
     client.get(
-        url=url_for(VIEWS.schema_proxy, filepath="not_found"),
+        url=url_for("api.schema_proxy", filepath="not_found"),
         status=httpcode.NOT_FOUND,
         schema=DEFAULT_SCHEMAS.API_PROBLEM,
         mimetype=ContentTypeEnum.JSON_PROBLEM,

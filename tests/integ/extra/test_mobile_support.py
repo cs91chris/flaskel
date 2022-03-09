@@ -10,7 +10,7 @@ from flaskel.extra.mobile_support import (
     RedisStore,
 )
 from flaskel.tester.helpers import ApiTester, url_for
-from tests.integ.components import bp_api
+from tests.integ.views import bp_api
 
 MOBILE_EXT = {
     "mobile": (
