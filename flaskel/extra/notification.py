@@ -1,16 +1,19 @@
 import typing as t
 
+import sqlalchemy as sa
+from pyfcm import FCMNotification
+from pyfcm.errors import FCMError
+from sqlalchemy.exc import SQLAlchemyError
 from vbcore.datastruct import ObjectDict
-
-try:
-    from pyfcm import FCMNotification
-    from pyfcm.errors import FCMError
-    from sqlalchemy.exc import SQLAlchemyError
-except ImportError:
-    FCMNotification = FCMError = None  # type: ignore
-    SQLAlchemyError = None  # type: ignore
+from vbcore.db.support import SQLASupport
 
 
+class DeviceModelMixin:
+    token = sa.Column(sa.String(255), unique=True, nullable=False)
+    user_agent = sa.Column(sa.String(255), nullable=False)
+
+
+# TODO: convert to an extension
 class NotificationHandler:
     def __init__(self, model, session, provider=None, dry_run: bool = False):
         """
@@ -25,9 +28,7 @@ class NotificationHandler:
         self.session = session
         self.model = model
         self.dry_run = dry_run
-
-        assert FCMNotification is not None, "you must install 'pyfcm'"
-        assert SQLAlchemyError is not None, "you must install 'sqlalchemy'"
+        self.sa_support = SQLASupport(self.model, self.session)
 
     def _with_app_context(self, f, *args, **kwargs):
         assert (
@@ -46,23 +47,26 @@ class NotificationHandler:
 
     def register_device(self, app, data: ObjectDict):
         try:
-            device = self.model.query.filter_by(token=data.token).first()
-            if device:
-                self.session.merge(device.update(data))
-            else:
-                self.session.add(self.model(**data))
+            self.sa_support.update_or_create(data, token=data.token)
             self.session.commit()
-        except SQLAlchemyError as exc:  # pragma: no cover
+        except SQLAlchemyError as exc:
             app.logger.exception(exc)
             self.session.rollback()
+
+    def get_tokens(self, user_ids: t.List[t.Union[int, str]]) -> t.List[str]:
+        # TODO: find a way to avoid big user_ids list
+        query = self.model.query.with_entities(self.model.token).where(
+            self.model.user_id.in_(user_ids)
+        )
+        return [token[0] for token in query]
 
     def send_push_notification(
         self,
         app,
         title: str,
         message: str,
-        user_ids: t.List[str] = None,
-        tokens: t.List[str] = None,
+        tokens: t.Optional[t.List[str]] = None,
+        user_ids: t.Optional[t.List[t.Union[int, str]]] = None,
         **kwargs,
     ):
         """
@@ -76,33 +80,25 @@ class NotificationHandler:
         :return:
         """
         service = FCMNotification(api_key=app.config.FCM_API_KEY)
+        service.FCM_MAX_RECIPIENTS = app.config.FCM_MAX_RECIPIENTS
 
         if tokens is None:
             try:
-                tokens = (
-                    self.model.query.with_entities(self.model.token)
-                    .where(self.model.user_id.in_(user_ids))
-                    .all()
-                )
+                tokens = self.get_tokens(user_ids)
             except SQLAlchemyError as exc:  # pragma: no cover
                 app.logger.exception(exc)
                 return
 
-        tokens = [token[0] for token in tokens]
-        rmax = FCMNotification.FCM_MAX_RECIPIENTS - 1
-        if len(tokens) > rmax:
-            tokens_set = [tokens[x : x + rmax] for x in range(0, len(tokens), rmax)]
-        else:
-            tokens_set = [tokens]
-
         kwargs.setdefault("sound", "Default")
         kwargs.setdefault("dry_run", self.dry_run)
 
-        for ts in tokens_set:
-            try:
-                res = service.notify_multiple_devices(
-                    ts, message_title=title, message_body=message, **kwargs
-                )
-                app.logger.debug(res)
-            except FCMError as exc:  # pragma: no cover
-                app.logger.exception(exc)
+        try:
+            res = service.notify_multiple_devices(
+                tokens,
+                message_title=title,
+                message_body=message,
+                **kwargs,
+            )
+            app.logger.debug(res)
+        except FCMError as exc:  # pragma: no cover
+            app.logger.exception(exc)

@@ -1,15 +1,11 @@
 import typing as t
 from functools import partial
 
+import stripe
+from stripe.error import StripeError
 from vbcore.datastruct import ObjectDict
 
 from flaskel import cap, request
-
-try:
-    import stripe
-    from stripe.error import StripeError
-except ImportError:
-    stripe = StripeError = None
 
 CallbackType = t.Callable[[t.Dict[str, t.Any]], t.Any]
 
@@ -30,8 +26,8 @@ class PaymentHandler:
     def _not_registered(callback_type: str, *_):
         cap.logger.warning("no callback registered for: %s", callback_type)
 
-    def check_prerequisites(self, app):
-        assert self.handler is not None, "you must install 'stripe'"
+    @staticmethod
+    def check_prerequisites(app):
         assert app.config.STRIPE_SECRET_KEY is not None, "missing STRIPE_SECRET_KEY"
         assert app.config.STRIPE_PUBLIC_KEY is not None, "missing STRIPE_PUBLIC_KEY"
 

@@ -43,14 +43,13 @@ class APJobs(APScheduler):
                 app.logger.info("scheduler already started in another process")
                 return
 
-        super().init_app(app)
-        self.add_listener(self.exception_listener, events.EVENT_ALL)
-
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["scheduler"] = self
 
         if not self.running and app.config.SCHEDULER_AUTO_START is True:
             try:
+                super().init_app(app)
+                self.add_listener(self.exception_listener, events.EVENT_ALL)
                 self.start()
             except SchedulerAlreadyRunningError as exc:  # pylint: disable=broad-except
                 app.logger.exception(exc)
