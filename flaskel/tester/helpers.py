@@ -39,18 +39,25 @@ class ApiTester:
         method: str = HttpMethod.GET,
         view: t.Optional[str] = None,
         schema: t.Optional[str] = None,
-        status: int = httpcode.SUCCESS,
+        status: t.Optional[int] = None,
         params: t.Optional[dict] = None,
         mimetype: t.Optional[str] = None,
         **kwargs,
     ):
         url, _ = build_url(url_for(view) if view else url, **(params or {}))
         response = self.client.open(url, method=method, **kwargs)
-        Asserter.assert_status_code(response, status)
+
+        if status is not None:
+            Asserter.assert_status_code(response, status)
+        else:
+            Asserter.assert_true(httpcode.is_ok(response.status_code))
+
         if response.data and (mimetype or self.mimetype):
             Asserter.assert_equals(response.mimetype, mimetype or self.mimetype)
+
         if schema:
             Asserter.assert_schema(response.json, schema)
+
         return response
 
     def post(
@@ -58,7 +65,7 @@ class ApiTester:
         url: t.Optional[str] = None,
         view: t.Optional[str] = None,
         schema: t.Optional[str] = None,
-        status: int = httpcode.SUCCESS,
+        status: t.Optional[int] = None,
         params: t.Optional[dict] = None,
         mimetype: t.Optional[str] = None,
         **kwargs,
@@ -79,7 +86,7 @@ class ApiTester:
         url: t.Optional[str] = None,
         view: t.Optional[str] = None,
         schema: t.Optional[str] = None,
-        status: int = httpcode.SUCCESS,
+        status: t.Optional[int] = None,
         params: t.Optional[dict] = None,
         mimetype: t.Optional[str] = None,
         **kwargs,
@@ -100,7 +107,7 @@ class ApiTester:
         url: t.Optional[str] = None,
         view: t.Optional[str] = None,
         schema: t.Optional[str] = None,
-        status: int = httpcode.SUCCESS,
+        status: t.Optional[int] = None,
         params: t.Optional[dict] = None,
         mimetype: t.Optional[str] = None,
         **kwargs,
@@ -120,8 +127,7 @@ class ApiTester:
         self,
         url: t.Optional[str] = None,
         view: t.Optional[str] = None,
-        schema: t.Optional[str] = None,
-        status: int = httpcode.SUCCESS,
+        status: t.Optional[int] = None,
         params: t.Optional[dict] = None,
         mimetype: t.Optional[str] = None,
         **kwargs,
@@ -130,7 +136,7 @@ class ApiTester:
             method=HttpMethod.DELETE,
             url=url,
             view=view,
-            schema=schema,
+            schema=None,
             status=status,
             params=params,
             mimetype=mimetype,
@@ -142,7 +148,7 @@ class ApiTester:
         url: t.Optional[str] = None,
         view: t.Optional[str] = None,
         schema: t.Optional[str] = None,
-        status: int = httpcode.SUCCESS,
+        status: t.Optional[int] = None,
         params: t.Optional[dict] = None,
         mimetype: t.Optional[str] = None,
         **kwargs,

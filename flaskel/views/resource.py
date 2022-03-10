@@ -50,7 +50,7 @@ class CatalogResource(Resource):
         """
         page = size = None
         model = model or self._model
-        max_size = cap.config.MAX_PAGE_SIZE
+        max_size = cap.config.PAGINATION_MAX_PAGE_SIZE
         order_by = getattr(model, "order_by", None)
 
         if params is None:
@@ -90,7 +90,7 @@ class CatalogResource(Resource):
 
         return (
             [r.to_dict(**kwargs) for r in res.items],
-            httpcode.PARTIAL_CONTENT if res.has_next else httpcode.SUCCESS,
+            (httpcode.PARTIAL_CONTENT if res.has_next else httpcode.SUCCESS),
             self.pagination_headers(res),
         )
 

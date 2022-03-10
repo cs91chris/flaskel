@@ -32,8 +32,9 @@ class TokenAuthView(BaseTokenAuth):
 
 
 class ApiItem(Restful):
+    default_view_name = "resource_item"
     post_schema = ConfigProxy("SCHEMAS.ITEM_POST")
-    decorators = [auth.basic_auth.login_required()]
+    put_schema = ConfigProxy("SCHEMAS.ITEM_POST")
 
 
 class APIResource(Resource):
