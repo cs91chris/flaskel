@@ -4,44 +4,18 @@ from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, rpc
 
 from flaskel import ConfigProxy, PayloadValidator, abort
-from flaskel.ext import auth
-from flaskel.ext import default
+from flaskel.ext import auth, default
 from flaskel.extra import apidoc
 from flaskel.views import RenderTemplate
 from flaskel.views.resource import Resource, Restful
-from flaskel.views.static import SPAView
+from flaskel.views.static import StaticFileView as BaseStaticFileView, SPAView
 from flaskel.views.token import BaseTokenAuth
 
-bp_api = Blueprint(
-    "api",
-    __name__,
-    subdomain="api",
-    static_folder=None,
-    static_url_path=None,
-    template_folder=None,
-)
 
-bp_spa = Blueprint(
-    "spa",
-    __name__,
-    template_folder=SPAView.default_template_folder,
-    static_folder=SPAView.default_static_folder,
-    static_url_path=SPAView.default_static_url_path,
-)
-
-bp_web = Blueprint(
-    "web",
-    __name__,
-    url_prefix="/",
-    template_folder="data/templates",
-    static_folder="data/static",
-    static_url_path="/static/",
-)
-
-default.cors.init_app(bp_api)
-default.error_handler.api_register(bp_api)
-default.error_handler.web_register(bp_spa)
-default.error_handler.web_register(bp_web)
+class StaticFileView(BaseStaticFileView):
+    default_view_name = "assets"
+    static_directory = "assets"
+    default_urls = ("/assets/<path:filename>",)
 
 
 class IndexTemplate(RenderTemplate):
@@ -115,3 +89,35 @@ class MyJsonRPC:
     @staticmethod
     def action_error(**__):
         raise ValueError("value error")
+
+
+bp_api = Blueprint(
+    "api",
+    __name__,
+    subdomain="api",
+    static_folder=None,
+    static_url_path=None,
+    template_folder=None,
+)
+
+bp_spa = Blueprint(
+    "spa",
+    __name__,
+    template_folder=SPAView.default_template_folder,
+    static_folder=SPAView.default_static_folder,
+    static_url_path=SPAView.default_static_url_path,
+)
+
+bp_web = Blueprint(
+    "web",
+    __name__,
+    url_prefix="/",
+    template_folder="data/templates",
+    static_folder="data/assets",
+    static_url_path="/assets/",
+)
+
+default.cors.init_app(bp_api)
+default.error_handler.api_register(bp_api)
+default.error_handler.web_register(bp_spa)
+default.error_handler.web_register(bp_web)

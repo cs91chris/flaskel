@@ -1,13 +1,20 @@
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
-from vbcore.http.headers import ContentTypeEnum
+from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 from vbcore.tester.mixins import Asserter
 
 from flaskel.ext.auth import TokenInfo
 from flaskel.extra.apidoc import ApiSpecTemplate
-from flaskel.tester.helpers import config, ApiTester
+from flaskel.tester.helpers import config, ApiTester, url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
-from .views import TokenAuthView, ApiDocTemplate, IndexTemplate, bp_api
+from .views import (
+    bp_api,
+    bp_web,
+    TokenAuthView,
+    ApiDocTemplate,
+    IndexTemplate,
+    StaticFileView,
+)
 
 
 class TokenViews:
@@ -91,8 +98,15 @@ def test_template_view(testapp):
 
 
 def test_static_file_view(testapp):
-    # TODO: added missing tests
-    assert True
+    app = testapp(views=((StaticFileView, bp_web),))
+    client = ApiTester(app.test_client())
+    response = client.get(
+        url=url_for("web.assets", filename="css/style.css"),
+        mimetype=ContentTypeEnum.CSS,
+    )
+    Asserter.assert_header(
+        response, HeaderEnum.CONTENT_LENGTH, r"^[1-9][0-9]*$", regex=True
+    )
 
 
 def test_spa_view(testapp):

@@ -51,6 +51,7 @@ def prepare_config(conf=None):
     config.SQLALCHEMY_ECHO = True
     config.RATELIMIT_ENABLED = False
     config.CONF_PATH = str(SAMPLE_DIR)
+    config.SERVER_NAME = "flask.local"
     config.SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_TEST}"
     config.APISPEC = yaml.load_yaml_file(os.path.join(SAMPLE_DIR, "swagger.yaml"))
     config.SENDRIA = dict(
