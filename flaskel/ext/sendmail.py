@@ -1,18 +1,13 @@
 import socket
 import typing as t
 
-try:
-    from flask_mail import Mail, Message, Attachment
-except ImportError:  # pragma: no cover
-    Attachment = Mail = Message = object
+from flask_mail import Mail, Message, Attachment
 
 AddressType = t.Union[str, t.Tuple[str, str]]
 
 
 class ClientMail(Mail):
     def init_app(self, app):
-        assert Mail is not object, "you must install 'flask_mail'"
-
         self.app = app
         super().init_app(app)
         setattr(app, "extensions", getattr(app, "extensions", {}))
@@ -31,6 +26,7 @@ class ClientMail(Mail):
         attachments: t.Optional[t.List[Attachment]] = None,
         **kwargs,
     ) -> str:
+        sender = sender or self.app.config.MAIL_DEFAULT_SENDER
         destination = recipients or [self.app.config.MAIL_RECIPIENT]
         message = Message(
             subject=subject,
@@ -44,6 +40,7 @@ class ClientMail(Mail):
             attachments=attachments,
             **kwargs,
         )
+
         timeout = socket.getdefaulttimeout()
         socket.setdefaulttimeout(self.app.config.MAIL_TIMEOUT or 60)
         self.send(message)
