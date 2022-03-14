@@ -14,7 +14,7 @@ from flaskel.views.token import BaseTokenAuth
 
 class StaticFileView(BaseStaticFileView):
     default_view_name = "assets"
-    static_directory = "assets"
+    default_static_path = "tests/integ/data/assets"
     default_urls = ("/assets/<path:filename>",)
 
 

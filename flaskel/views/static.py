@@ -1,4 +1,3 @@
-from flask import send_from_directory
 from vbcore.http import httpcode
 
 from flaskel import cap, Response
@@ -12,12 +11,10 @@ class StaticFileView(BaseView):
     default_urls = ("/static/<path:filename>",)
 
     def dispatch_request(self, filename, *_, **__):
-        return send_from_directory(
-            etag=True,
-            conditional=True,
-            path=filename,
-            directory=self.default_static_path,
+        return Response.send_file(
+            filename=filename,
             max_age=cap.get_send_file_max_age,
+            directory=self.default_static_path,
         )
 
 
@@ -34,10 +31,8 @@ class SPAView(BaseView):
         if path is not None:
             return Response.no_content(httpcode.NOT_MODIFIED)
 
-        return send_from_directory(
-            etag=True,
-            conditional=True,
-            path=self.template,
-            directory=self.default_template_folder,
+        return Response.send_file(
+            filename=self.template,
             max_age=cap.get_send_file_max_age,
+            directory=self.default_template_folder,
         )

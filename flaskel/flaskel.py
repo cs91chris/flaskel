@@ -1,3 +1,4 @@
+import os.path
 import typing as t
 
 import flask
@@ -81,41 +82,35 @@ class Response(flask.Response):
         return t.cast("Response", response)
 
     @classmethod
-    def send_file(cls, directory, filename, **kwargs) -> "Response":
-        """
+    def set_sendfile_headers(cls, response: "Response", file_path: str) -> "Response":
+        hdr = HeaderEnum
+        conf = cap.config
+        response.headers[hdr.X_ACCEL_REDIRECT] = os.path.abspath(file_path)
+        response.headers[hdr.X_ACCEL_CHARSET] = conf.ACCEL_CHARSET or "utf-8"
+        response.headers[hdr.X_ACCEL_BUFFERING] = (
+            "yes" if conf.ACCEL_BUFFERING else "no"
+        )
+        if conf.ACCEL_LIMIT_RATE:
+            response.headers[hdr.X_ACCEL_LIMIT_RATE] = conf.ACCEL_LIMIT_RATE
+        if conf.SEND_FILE_MAX_AGE_DEFAULT:
+            response.headers[hdr.X_ACCEL_EXPIRES] = conf.SEND_FILE_MAX_AGE_DEFAULT
+        return response
 
-        :param directory:
-        :param filename:
-        :param kwargs:
-        """
+    @classmethod
+    def send_file(cls, directory: str, filename: str, **kwargs) -> "Response":
         kwargs.setdefault("as_attachment", True)
         file_path = safe_join(directory, filename)
 
         try:
-            resp = flask.send_file(file_path, **kwargs)
+            response = flask.send_file(file_path, etag=True, conditional=True, **kwargs)
         except IOError as exc:
             cap.logger.warning(str(exc))
             return flask.abort(httpcode.NOT_FOUND)
 
-        # following headers works with nginx compatible proxy
         if cap.use_x_sendfile is True and cap.config.ENABLE_ACCEL is True:
-            resp.headers[HeaderEnum.X_ACCEL_REDIRECT] = file_path
-            resp.headers[HeaderEnum.X_ACCEL_CHARSET] = (
-                cap.config.ACCEL_CHARSET or "utf-8"
-            )
-            resp.headers[HeaderEnum.X_ACCEL_BUFFERING] = (
-                "yes" if cap.config.ACCEL_BUFFERING else "no"
-            )
-            if cap.config.ACCEL_LIMIT_RATE:
-                resp.headers[
-                    HeaderEnum.X_ACCEL_LIMIT_RATE
-                ] = cap.config.ACCEL_LIMIT_RATE
-            if cap.config.SEND_FILE_MAX_AGE_DEFAULT:
-                resp.headers[
-                    HeaderEnum.X_ACCEL_EXPIRES
-                ] = cap.config.SEND_FILE_MAX_AGE_DEFAULT
-
-        return resp
+            # following headers works with nginx compatible proxy
+            return cls.set_sendfile_headers(response, file_path)
+        return response
 
     def get_json(self, *args, **kwargs) -> ObjectDict:
         return ObjectDict.normalize(super().get_json(*args, **kwargs))

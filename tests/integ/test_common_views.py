@@ -9,7 +9,6 @@ from flaskel.tester.helpers import config, ApiTester, url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
 from .views import (
     bp_api,
-    bp_web,
     TokenAuthView,
     ApiDocTemplate,
     IndexTemplate,
@@ -34,6 +33,7 @@ def test_apidoc(testapp):
         view=ApiSpecTemplate.default_view_name, mimetype=ContentTypeEnum.JSON
     )
     Asserter.assert_different(res.json, {})
+    Asserter.assert_schema(res.json, DEFAULT_SCHEMAS.OPENAPI)
 
 
 def test_jwt(testapp):
@@ -98,14 +98,52 @@ def test_template_view(testapp):
 
 
 def test_static_file_view(testapp):
-    app = testapp(views=((StaticFileView, bp_web),))
-    client = ApiTester(app.test_client())
-    response = client.get(
-        url=url_for("web.assets", filename="css/style.css"),
-        mimetype=ContentTypeEnum.CSS,
+    app = testapp(
+        config=ObjectDict(USE_X_SENDFILE=False),
+        views=((StaticFileView, bp_api),),
     )
-    Asserter.assert_header(
-        response, HeaderEnum.CONTENT_LENGTH, r"^[1-9][0-9]*$", regex=True
+    client = ApiTester(app.test_client())
+
+    response = client.get(
+        url=url_for("api.assets", filename="css/style.css"),
+        mimetype=ContentTypeEnum.CSS,
+        status=httpcode.SUCCESS,
+    )
+    Asserter.assert_equals(
+        len(response.get_data(as_text=True)),
+        int(response.headers[HeaderEnum.CONTENT_LENGTH]),
+    )
+
+
+def test_use_x_send_file(testapp):
+    app = testapp(
+        config=ObjectDict(USE_X_SENDFILE=True, ENABLE_ACCEL=True),
+        views=((StaticFileView, bp_api, {"name": "protected_assets"}),),
+    )
+    client = ApiTester(app.test_client())
+
+    response = client.get(
+        url=url_for("api.protected_assets", filename="css/style.css"),
+        mimetype=ContentTypeEnum.CSS,
+        status=httpcode.SUCCESS,
+    )
+
+    Asserter.assert_equals(len(response.get_data(as_text=True)), 0)
+    Asserter.assert_greater(int(response.headers[HeaderEnum.CONTENT_LENGTH]), 0)
+    Asserter.assert_true(
+        response.headers[HeaderEnum.X_ACCEL_REDIRECT].endswith(
+            f"{StaticFileView.default_static_path}/css/style.css"
+        )
+    )
+    Asserter.assert_headers(
+        response,
+        {
+            HeaderEnum.X_ACCEL_BUFFERING: "yes",
+            HeaderEnum.X_ACCEL_CHARSET: app.config.ACCEL_CHARSET,
+            HeaderEnum.X_ACCEL_LIMIT_RATE: app.config.ACCEL_LIMIT_RATE,
+            HeaderEnum.X_ACCEL_EXPIRES: app.config.SEND_FILE_MAX_AGE_DEFAULT,
+            HeaderEnum.CONTENT_DISPOSITION: "attachment; filename=style.css",
+        },
     )
 
 
