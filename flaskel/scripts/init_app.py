@@ -29,8 +29,11 @@ def init_app(name):
     placeholder = "{skeleton}"
     init_file = Path(os.path.join(name, "__init__.py"))
     init_file.write_text("from .version import *\n", encoding="utf-8")
-    service_dir = os.path.join("devops", "services", name)
-    shutil.move(os.path.join("devops", "services", "skel"), service_dir)
+
+    devops_dir = "devops"
+    services_dir = os.path.join(devops_dir, "services")
+    service_dir = os.path.join(services_dir, name)
+    shutil.move(os.path.join(services_dir, "skel"), service_dir)
 
     for args in (
         ("setup.py", (placeholder, name)),
@@ -38,8 +41,8 @@ def init_app(name):
         ("pytest.ini", (placeholder, name)),
         (".coveragerc", (placeholder, name)),
         (".bumpversion.cfg", (placeholder, name)),
-        (os.path.join("devops", "Dockerfile"), (placeholder, name)),
-        (os.path.join("devops", "docker-compose.yaml"), (placeholder, name)),
+        (os.path.join(devops_dir, "Dockerfile"), (placeholder, name)),
+        (os.path.join(devops_dir, "docker-compose.yaml"), (placeholder, name)),
         (os.path.join(service_dir, "settings.ini"), (placeholder, name)),
         (os.path.join(service_dir, "env"), (placeholder, name)),
         (

@@ -1,7 +1,10 @@
 from vbcore.datastruct import ObjectDict
 from vbcore.jsonschema.support import Fields
 
+from .openapi3 import SCHEMA as OPENAPI_SCHEMA
+
 SCHEMAS = ObjectDict(
+    OPENAPI=OPENAPI_SCHEMA,
     JSONRPC=ObjectDict(
         REQUEST=Fields.oneof(
             Fields.ref("/definitions/request", description="An individual request"),
