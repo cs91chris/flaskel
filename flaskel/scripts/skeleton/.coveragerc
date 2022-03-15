@@ -1,8 +1,9 @@
 [run]
-omit =
-	{skeleton}/scripts/cli.py
 
 [report]
 exclude_lines =
     pragma: no cover
+    raise AssertionError
     raise NotImplementedError
+    def __repr__
+    if __name__ == .__main__.:

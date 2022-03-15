@@ -1,4 +1,4 @@
-FROM python:3.8 AS builder
+FROM python:3.9 AS builder
 
 WORKDIR /tmp
 
@@ -10,7 +10,7 @@ COPY ./devops/build.sh .
 RUN bash ./build.sh
 
 
-FROM python:3.8-slim as base-app
+FROM python:3.9-slim as base-app
 
 ENV APP_USER flaskel
 

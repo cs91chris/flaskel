@@ -3,13 +3,13 @@
 import os
 
 import pytest
+from scripts.cli import APP_CONFIG  # type: ignore
 
 # pylint: disable=import-error
 from vbcore.datastruct import ObjectDict
 from vbcore.db.support import SQLASupport
 
 from flaskel.tester import helpers as h, TestClient
-from scripts.cli import APP_CONFIG  # type: ignore
 from .helpers import Views
 
 DB_TEST = "test.sqlite"
@@ -69,7 +69,7 @@ def auth_token(test_client, views):
     def get_access_token(token=None, email=None, password=None, in_query=True):
         if token is not None:
             if in_query is True:
-                return f"jwt={token}"
+                return f"token={token}"
             return dict(Authorization=f"Bearer {token}")
 
         credentials = dict(
@@ -78,7 +78,7 @@ def auth_token(test_client, views):
         )
         tokens = test_client.post(h.url_for(views.access_token), json=credentials)
         if in_query is True:
-            return f"jwt={tokens.json.access_token}"
+            return f"token={tokens.json.access_token}"
         return dict(Authorization=f"Bearer {tokens.json.access_token}")
 
     return get_access_token

@@ -8,10 +8,10 @@ from setuptools import setup
 from setuptools.command.test import test
 
 LICENSE = "MIT"
-URL = None
+URL = ""
 PLATFORMS = "any"
-PYTHON_VERSION = ">3.6"
-DESCRIPTION = None
+PYTHON_VERSION = ">=3.8"
+DESCRIPTION = ""
 PACKAGE_DATA = True
 
 PKG_NAME = "{skeleton}"

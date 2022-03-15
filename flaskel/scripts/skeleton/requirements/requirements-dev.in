@@ -5,7 +5,7 @@ twine
 wheel
 black
 flake8
-pip-tools<5.5
+pip-tools
 pylint
 pylint-flask
 pylint-flask-sqlalchemy

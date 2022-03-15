@@ -87,7 +87,6 @@ liccheck:
 safety:
 	# ignore flask-caching
 	safety check --full-report \
-		--ignore 40459 \
 		-r ${REQ_PATH}/requirements.txt
 
 build-images:

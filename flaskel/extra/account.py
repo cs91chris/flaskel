@@ -240,7 +240,6 @@ class BaseAccountView(BaseView):
 
 
 class RegisterView(BaseAccountView):
-
     default_view_name = "account_register"
     default_urls = ("/register",)
 

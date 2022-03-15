@@ -1,6 +1,8 @@
-from flaskel.ext import limit, default, auth
+from flaskel.ext import limit, default
+from flaskel.ext.auth import token_auth
 from flaskel.extra.mobile_support import RedisStore, MobileVersionCompatibility
 from flaskel.extra.payments.stripe import PaymentHandler
+from .auth import account_handler
 
 
 class OPTS:
@@ -34,7 +36,7 @@ EXTENSIONS = {
     "errors": (default.error_handler, OPTS.errors),
     "health_checks": (default.health_checks,),
     "ip_ban": (ipban,),
-    "token_auth": (auth.token_auth,),
+    "token_auth": (token_auth,),
     "limiter": (limit.limiter,),
     "mobile_version": (mobile_version, OPTS.mobile_version),
     "mongo": (default.client_mongo,),
@@ -44,4 +46,5 @@ EXTENSIONS = {
     "stripe": (payment_handler,),
     "template": (default.template,),
     "useragent": (default.useragent,),
+    "account": (account_handler,),
 }

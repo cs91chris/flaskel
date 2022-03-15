@@ -1,8 +1,15 @@
-from flaskel.extra import apidoc
-from flaskel.extra.mobile_support import MobileLoggerView, MobileReleaseView
 from flaskel.views import rpc
 from .blueprints import bp_auth, bp_api, bp_spa, bp_web
-from .token import TokenAuthView
+from .common import (
+    ApiDocTemplate,
+    ApiSpecTemplate,
+    MobileReleaseView,
+    MobileLoggerView,
+    TokenAuthView,
+    RegisterView,
+    PasswordResetView,
+    PasswordForgotView,
+)
 
 rpc_service = object  # import rpc_service here
 rpc.JSONRPCView.load_from_object(rpc_service())
@@ -16,9 +23,12 @@ BLUEPRINTS = (
 
 VIEWS = (
     (TokenAuthView, bp_auth),
+    (RegisterView, bp_auth),
+    (PasswordResetView, bp_auth),
+    (PasswordForgotView, bp_auth),
     (rpc.JSONRPCView, bp_api),
-    (apidoc.ApiDocTemplate, bp_api),
-    (apidoc.ApiSpecTemplate, bp_api),
+    (ApiDocTemplate, bp_api),
+    (ApiSpecTemplate, bp_api),
     (MobileReleaseView, bp_api),
     (MobileLoggerView, bp_api),
 )

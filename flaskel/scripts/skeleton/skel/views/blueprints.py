@@ -15,6 +15,7 @@ bp_api = Blueprint(
 bp_auth = Blueprint(
     "auth",
     __name__,
+    subdomain="api",
     url_prefix="/auth",
     static_folder=None,
     static_url_path=None,
@@ -24,6 +25,7 @@ bp_auth = Blueprint(
 bp_spa = Blueprint(
     "spa",
     __name__,
+    url_prefix="/",
     template_folder=SPAView.default_template_folder,
     static_folder=SPAView.default_static_folder,
     static_url_path=SPAView.default_static_url_path,

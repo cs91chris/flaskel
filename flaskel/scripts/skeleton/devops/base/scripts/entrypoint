@@ -10,4 +10,5 @@ run)
     ;;
 esac
 
-exec bash --login
+# shellcheck disable=SC2068
+exec bash --login $@

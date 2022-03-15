@@ -7,23 +7,32 @@ from flaskel.tester.helpers import ApiTester, url_for
 
 
 def test_app_runs(test_client):
-    ApiTester(test_client).get(test_client, "/", status=httpcode.NOT_FOUND)
+    client = ApiTester(test_client)
+    client.get(
+        test_client,
+        "/",
+        status=httpcode.NOT_FOUND,
+        mimetype=ContentTypeEnum.JSON_PROBLEM,
+    )
 
 
 def test_cors_headers(test_client):
     client = ApiTester(test_client)
-    headers = test_client.application.config.CORS_EXPOSE_HEADERS
 
-    res = client.get(url="/", status=httpcode.NOT_FOUND)
+    res = client.get(
+        url="/", status=httpcode.NOT_FOUND, mimetype=ContentTypeEnum.JSON_PROBLEM
+    )
     Asserter.assert_header(res, HeaderEnum.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
     Asserter.assert_allin(
-        res.headers[HeaderEnum.ACCESS_CONTROL_EXPOSE_HEADERS].split(", "), headers
+        res.headers[HeaderEnum.ACCESS_CONTROL_EXPOSE_HEADERS].split(", "),
+        test_client.application.config.CORS_EXPOSE_HEADERS,
     )
 
 
-def test_apidoc(test_client, views):
-    client = ApiTester(test_client)
-    headers = basic_auth_header()
+def test_apidoc(testapp, views):
+    conf = testapp.config
+    client = ApiTester(testapp.test_client())
+    headers = basic_auth_header(conf.ADMIN_EMAIL, conf.ADMIN_PASSWORD)
 
     res = client.get(url_for(views.apidocs), headers=headers)
     Asserter.assert_status_code(res)
