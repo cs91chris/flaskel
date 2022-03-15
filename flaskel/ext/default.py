@@ -15,8 +15,6 @@ from .datetime import FlaskDateHelper
 from .errors import ErrorNormalizer
 from .healthcheck import HealthCheck
 from .jobs import APJobs
-from .mongo import FlaskMongoDB
-from .redis import FlaskRedis
 from .sendmail import ClientMail
 from .sqlalchemy import SQLAModel
 from .useragent import UserAgent
@@ -32,9 +30,7 @@ argon2: Argon2 = Argon2()
 caching: Caching = Caching()
 useragent: UserAgent = UserAgent()
 client_mail: ClientMail = ClientMail()
-client_redis: FlaskRedis = FlaskRedis()
 health_checks: HealthCheck = HealthCheck()
-client_mongo: FlaskMongoDB = FlaskMongoDB()
 date_helper: FlaskDateHelper = FlaskDateHelper()
 
 Scheduler: t.Type[APJobs] = t.cast(

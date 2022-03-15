@@ -17,6 +17,7 @@ def health_sqlalchemy(db, app, stm: str = "SELECT 1") -> CheckerResponseType:
             with db.engine.connect() as connection:
                 connection.execute(stm)
     except Exception as exc:  # pylint: disable=broad-except
+        app.logger.exception(exc)
         return False, str(exc)
     return SuccessResponse
 
@@ -26,6 +27,7 @@ def health_mongo(db, app, cmd: str = "ping") -> CheckerResponseType:
         with app.app_context():
             db.db.command(cmd)
     except Exception as exc:  # pylint: disable=broad-except
+        app.logger.exception(exc)
         return False, str(exc)
     return SuccessResponse
 
@@ -35,6 +37,7 @@ def health_redis(db, app) -> CheckerResponseType:
         with app.app_context():
             db.ping()
     except Exception as exc:  # pylint: disable=broad-except
+        app.logger.exception(exc)
         return False, str(exc)
     return SuccessResponse
 

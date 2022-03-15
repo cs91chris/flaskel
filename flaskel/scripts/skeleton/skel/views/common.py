@@ -22,43 +22,53 @@ class TokenAuthView(BaseTokenAuth):
 
 
 class ApiDocTemplate(apidoc.ApiDocTemplate):
-    decorators = (
+    decorators = [
         caching.cached(),
         basic_auth.login_required(),
-    )
+    ]
 
 
 class ApiSpecTemplate(apidoc.ApiSpecTemplate):
-    decorators = (
+    decorators = [
         caching.cached(),
         basic_auth.login_required(),
-    )
+    ]
 
 
 class MobileReleaseView(mobile.MobileReleaseView):
-    decorators = (token_handler.auth_required(),)
+    decorators = [
+        token_handler.auth_required(),
+    ]
 
 
 class MobileLoggerView(mobile.MobileLoggerView):
-    decorators = (token_handler.auth_required(),)
+    decorators = [
+        token_handler.auth_required(),
+    ]
 
 
 class RegisterView(BaseRegisterView):
-    decorators = (RateLimit.slow(),)
+    decorators = [
+        RateLimit.slow(),
+    ]
 
 
 class PasswordForgotView(BasePasswordForgotView):
-    decorators = (RateLimit.slow(),)
+    decorators = [
+        RateLimit.slow(),
+    ]
 
 
 class PasswordResetView(BasePasswordResetView):
-    decorators = (token_handler.auth_required(),)
+    decorators = [
+        token_handler.auth_required(),
+    ]
 
 
 class ApiCatalog(Resource):
     methods_subresource = None
 
-    decorators = (
+    decorators = [
         caching.cached(),
         token_handler.auth_required(),
-    )
+    ]

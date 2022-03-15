@@ -54,11 +54,6 @@ def prepare_config(conf=None):
     config.SERVER_NAME = "flask.local"
     config.SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_TEST}"
     config.APISPEC = yaml.load_yaml_file(os.path.join(SAMPLE_DIR, "swagger.yaml"))
-    config.SENDRIA = dict(
-        endpoint="http://sendria.local:61000/api/messages",
-        username="guest123",
-        password="guest123",
-    )
 
     config.update(conf or {})
     return config

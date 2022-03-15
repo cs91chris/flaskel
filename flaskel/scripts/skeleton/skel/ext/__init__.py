@@ -1,8 +1,19 @@
 from flaskel.ext import limit, default
 from flaskel.ext.auth import token_auth
+from flaskel.ext.mongo import FlaskMongoDB
+from flaskel.ext.redis import FlaskRedis
 from flaskel.extra.mobile_support import RedisStore, MobileVersionCompatibility
 from flaskel.extra.payments.stripe import PaymentHandler
 from .auth import account_handler
+
+
+ipban = limit.FlaskIPBan()
+client_redis = FlaskRedis()
+client_mongo = FlaskMongoDB()
+database = default.Database()
+scheduler = default.Scheduler()
+payment_handler = PaymentHandler()
+mobile_version = MobileVersionCompatibility()
 
 
 class OPTS:
@@ -10,19 +21,13 @@ class OPTS:
         resources={r"/*": {"origins": "*"}},
     )
     mobile_version = dict(
-        store=RedisStore(default.client_redis),
+        store=RedisStore(client_redis),
     )
     errors = dict(
         dispatcher="subdomain",
         response=default.builder.on_accept(strict=False),
     )
 
-
-ipban = limit.FlaskIPBan()
-database = default.Database()
-scheduler = default.Scheduler()
-payment_handler = PaymentHandler()
-mobile_version = MobileVersionCompatibility()
 
 EXTENSIONS = {
     "cfremote": (default.cfremote,),  # MUST be the first
@@ -39,8 +44,8 @@ EXTENSIONS = {
     "token_auth": (token_auth,),
     "limiter": (limit.limiter,),
     "mobile_version": (mobile_version, OPTS.mobile_version),
-    "mongo": (default.client_mongo,),
-    "redis": (default.client_redis,),
+    "mongo": (client_mongo,),
+    "redis": (client_redis,),
     "scheduler": (scheduler,),
     "sendmail": (default.client_mail,),
     "stripe": (payment_handler,),

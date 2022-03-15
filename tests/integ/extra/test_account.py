@@ -1,12 +1,14 @@
 import re
 
+from redislite import StrictRedis
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum
 from vbcore.tester.mixins import Asserter
 
 from flaskel import client_mail
-from flaskel.ext.default import Database, client_redis
+from flaskel.ext.default import Database
+from flaskel.ext.redis import FlaskRedis
 from flaskel.ext.sendmail import ClientMail
 from flaskel.extra.account import (
     RegisterView,
@@ -19,6 +21,7 @@ from flaskel.tester.helpers import ApiTester
 from tests.integ.views import bp_api
 
 db = Database()
+client_redis = FlaskRedis(client=StrictRedis("/tmp/redis.db"))
 
 
 class AccountModel(db.Model, BaseAccountModel):

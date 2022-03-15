@@ -19,4 +19,5 @@ from .wsgi import WSGIFactory, BaseApplication
 client_redis = ExtProxy("redis")
 client_mail = ExtProxy("client_mail")
 job_scheduler = ExtProxy("scheduler")
+client_mongo = ExtProxy("mongo.default.db")
 db_session = ExtProxy("sqlalchemy.db.session")

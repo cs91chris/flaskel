@@ -2,11 +2,12 @@ from unittest.mock import MagicMock
 
 from vbcore.tester.mixins import Asserter
 
-from flaskel.ext.default import client_redis
+from flaskel.ext.redis import FlaskRedis
 
 
 def test_init_app(flaskel_app):
     app = flaskel_app
+    client_redis = FlaskRedis()
     client_redis.init_app(app, redis_class=MagicMock())
 
     Asserter.assert_equals(app.extensions["redis"], client_redis)
