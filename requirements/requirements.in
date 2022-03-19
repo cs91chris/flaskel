@@ -13,4 +13,4 @@ Flask-TemplateSupport
 webargs
 aiohttp
 nest-asyncio
-vbcore[all]==1.1.0.rc4
+vbcore[all]==1.1.0.rc6

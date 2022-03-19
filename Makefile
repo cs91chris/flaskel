@@ -90,7 +90,7 @@ build-dist:
 	python setup.py sdist bdist_wheel
 
 pypi-publish:
-	twine upload --verbose --skip-existing -u voidbrain dist/${PACKAGE}-*
+	twine upload --verbose --skip-existing -u voidbrain dist/Flaskel-*
 
 bump-build:
 	$(call bump_version,build)

@@ -147,7 +147,7 @@ urllib3==1.26.8
     # via requests
 user-agents==2.2.0
     # via vbcore
-vbcore[all]==1.1.0.rc4
+vbcore[all]==1.1.0.rc6
     # via -r requirements/requirements.in
 webargs==8.1.0
     # via -r requirements/requirements.in
