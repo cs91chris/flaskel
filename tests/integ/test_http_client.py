@@ -65,10 +65,9 @@ def test_utils_http_client_filename(flaskel_app):
 
 
 def test_http_client_batch(flaskel_app):
+    batch_client = FlaskelHttpBatch(logger=flaskel_app.logger, dump_body=(True, False))
     with flaskel_app.test_request_context():
-        responses = FlaskelHttpBatch(
-            logger=flaskel_app.logger, dump_body=(True, False)
-        ).request(
+        responses = batch_client.request(
             [
                 dict(
                     url=f"{HOSTS.apitester}/anything",

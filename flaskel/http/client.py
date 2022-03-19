@@ -1,3 +1,5 @@
+import typing as t
+
 from requests import exceptions as http_exc
 from vbcore.datastruct import Dumper
 from vbcore.http.batch import HTTPBatch
@@ -35,11 +37,10 @@ class FlaskelHTTPDumper(LazyHTTPDumper):
 
 
 class FlaskelHttpBatch(FlaskelHTTPDumper, HTTPBatch):
-    def __init__(self, **kwargs):
+    def __init__(self, endpoint: t.Optional[str] = None, **kwargs):
         kwargs.setdefault("logger", cap.logger)
-        kwargs.setdefault("conn_timeout", cap.config.HTTP_TIMEOUT or 10)
-        kwargs.setdefault("read_timeout", cap.config.HTTP_TIMEOUT or 10)
-        super().__init__(**kwargs)
+        kwargs.setdefault("timeout", cap.config.HTTP_TIMEOUT or 10)
+        super().__init__(endpoint, **kwargs)
 
     def request(self, requests, **kwargs):
         if request.id:
