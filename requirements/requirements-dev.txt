@@ -8,6 +8,8 @@ astroid==2.9.3
     # via
     #   pylint
     #   pylint-flask
+autoflake==1.4
+    # via -r requirements/requirements-dev.in
 black==22.1.0
     # via -r requirements/requirements-dev.in
 bleach==4.1.0
@@ -75,7 +77,9 @@ importlib-metadata==4.11.2
     #   keyring
     #   twine
 isort==5.10.1
-    # via pylint
+    # via
+    #   -r requirements/requirements-dev.in
+    #   pylint
 itsdangerous==2.1.0
     # via
     #   -c requirements/requirements.txt
@@ -148,7 +152,9 @@ pycparser==2.21
     #   -c requirements/requirements.txt
     #   cffi
 pyflakes==2.4.0
-    # via flake8
+    # via
+    #   autoflake
+    #   flake8
 pygments==2.11.2
     # via readme-renderer
 pylint==2.12.2

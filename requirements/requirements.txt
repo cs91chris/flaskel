@@ -102,6 +102,8 @@ netaddr==0.8.0
     # via flask-cloudflareremote
 packaging==21.3
     # via webargs
+psutil==5.9.0
+    # via vbcore
 pycparser==2.21
     # via cffi
 pydot==1.4.2

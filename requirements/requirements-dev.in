@@ -16,3 +16,5 @@ mypy
 sqlalchemy-stubs
 liccheck
 safety
+isort
+autoflake

@@ -112,3 +112,4 @@ migrations
 test.py
 profiler.txt
 /settings.ini
+pip.conf
