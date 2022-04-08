@@ -4,12 +4,13 @@ from flaskel.ext.default import caching
 from flaskel.ext.limit import RateLimit
 from flaskel.extra import apidoc, mobile_support as mobile
 from flaskel.extra.account import (
-    PasswordResetView as BasePasswordResetView,
     PasswordForgotView as BasePasswordForgotView,
+    PasswordResetView as BasePasswordResetView,
     RegisterView as BaseRegisterView,
 )
 from flaskel.views import Resource
 from flaskel.views.token import BaseTokenAuth
+
 from ..ext.auth import token_handler
 
 

@@ -10,7 +10,7 @@ from flaskel.ext.default import Database
 from flaskel.tester.helpers import ApiTester, config, url_for
 from flaskel.utils.schemas.default import SCHEMAS
 from flaskel.views.resource import CatalogResource
-from tests.integ.views import APIResource, bp_api, ApiItem
+from tests.integ.views import ApiItem, APIResource, bp_api
 
 db = Database()
 

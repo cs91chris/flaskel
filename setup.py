@@ -7,8 +7,7 @@ import re
 import sys
 
 from pkg_resources import parse_requirements
-from setuptools import find_packages as base_find_packages
-from setuptools import setup
+from setuptools import find_packages as base_find_packages, setup
 from setuptools.command.test import test
 
 LICENSE = "MIT"
@@ -67,10 +66,9 @@ ENTRY_POINTS = dict(
 try:
     # must be after setuptools
     # noinspection PyPackageRequirements
-    from Cython.Build import cythonize as base_cythonize
-
     # noinspection PyPackageRequirements,PyPep8Naming
     import Cython.Compiler.Options as cython_options
+    from Cython.Build import cythonize as base_cythonize
 
     cython_options.docstrings = False
 except ImportError:

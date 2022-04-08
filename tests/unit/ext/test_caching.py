@@ -2,7 +2,7 @@ import base64
 from unittest.mock import patch
 
 import pytest
-from vbcore.http import HttpMethod, httpcode
+from vbcore.http import httpcode, HttpMethod
 from vbcore.tester.mixins import Asserter
 from werkzeug.datastructures import Headers
 

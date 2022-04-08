@@ -4,7 +4,7 @@ import decouple
 from vbcore import yaml
 from vbcore.configurator import config
 from vbcore.date_helper import Seconds
-from vbcore.http.headers import HeaderEnum, ContentTypeEnum
+from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 
 from flaskel.utils import logger
 

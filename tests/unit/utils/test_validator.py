@@ -6,7 +6,7 @@ from vbcore.jsonschema.support import Fields
 from vbcore.tester.mixins import Asserter
 
 from flaskel import PayloadValidator
-from flaskel.http.exceptions import UnprocessableEntity, InternalServerError
+from flaskel.http.exceptions import InternalServerError, UnprocessableEntity
 from flaskel.utils.schemas.default import SCHEMAS
 
 

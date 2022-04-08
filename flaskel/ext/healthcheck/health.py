@@ -6,9 +6,10 @@ from flask import Blueprint
 from vbcore.batch import BatchExecutor
 from vbcore.datastruct import LStrEnum
 from vbcore.http import httpcode, HttpMethod
-from vbcore.http.headers import HeaderEnum, ContentTypeEnum
+from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 
-from flaskel.flaskel import request, Flaskel
+from flaskel.flaskel import Flaskel, request
+
 from .checkers import CheckerResponseType
 
 DecoratorType = t.Callable[[t.Callable], None]

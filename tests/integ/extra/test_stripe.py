@@ -7,9 +7,9 @@ from vbcore.tester.mixins import Asserter
 
 from flaskel.ext.default import Database
 from flaskel.extra.payments.stripe import (
+    PaymentHandler as BasePaymentHandler,
     PaymentIntentView as BasePaymentIntentView,
     PaymentWebhookView as BasePaymentWebhookView,
-    PaymentHandler as BasePaymentHandler,
 )
 from flaskel.extra.payments.stripe.repo import Payment
 from flaskel.tester.helpers import ApiTester

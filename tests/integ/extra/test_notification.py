@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
@@ -9,11 +9,11 @@ from vbcore.tester.mixins import Asserter
 from flaskel import db_session, ExtProxy
 from flaskel.ext.default import Database, Scheduler
 from flaskel.extra.notification import (
-    FCMNotification,
     DeviceModelMixin,
     DeviceRegisterView as BaseDeviceRegisterView,
-    SendPushView,
+    FCMNotification,
     SCHEMAS,
+    SendPushView,
 )
 from flaskel.tester.helpers import ApiTester
 

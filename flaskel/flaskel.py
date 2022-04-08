@@ -2,7 +2,7 @@ import os.path
 import typing as t
 
 import flask
-from vbcore.datastruct import ObjectDict, Dumper
+from vbcore.datastruct import Dumper, ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import HeaderEnum
 from vbcore.json import JsonEncoder

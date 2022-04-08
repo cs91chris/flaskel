@@ -1,11 +1,11 @@
-from flaskel.ext import limit, default
+from flaskel.ext import default, limit
 from flaskel.ext.auth import token_auth
 from flaskel.ext.mongo import FlaskMongoDB
 from flaskel.ext.redis import FlaskRedis
-from flaskel.extra.mobile_support import RedisStore, MobileVersionCompatibility
+from flaskel.extra.mobile_support import MobileVersionCompatibility, RedisStore
 from flaskel.extra.payments.stripe import PaymentHandler
-from .auth import account_handler
 
+from .auth import account_handler
 
 ipban = limit.FlaskIPBan()
 client_redis = FlaskRedis()

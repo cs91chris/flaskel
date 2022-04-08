@@ -1,6 +1,6 @@
 import typing as t
 
-from vbcore.importer import ImporterFactory, ImporterError
+from vbcore.importer import ImporterError, ImporterFactory
 
 from .base import BaseApplication
 

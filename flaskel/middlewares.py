@@ -8,6 +8,7 @@ from werkzeug.urls import url_decode
 if t.TYPE_CHECKING:
     # pylint: disable=unused-import
     from _typeshed.wsgi import StartResponse, WSGIApplication, WSGIEnvironment
+
     from flaskel import Flaskel
 
 

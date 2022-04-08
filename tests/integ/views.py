@@ -3,12 +3,12 @@ from redislite import StrictRedis
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, rpc
 
-from flaskel import ConfigProxy, PayloadValidator, abort
+from flaskel import abort, ConfigProxy, PayloadValidator
 from flaskel.ext import auth, default
 from flaskel.extra import apidoc
 from flaskel.views import RenderTemplate
 from flaskel.views.resource import Resource, Restful
-from flaskel.views.static import StaticFileView as BaseStaticFileView, SPAView
+from flaskel.views.static import SPAView, StaticFileView as BaseStaticFileView
 from flaskel.views.token import BaseTokenAuth
 
 

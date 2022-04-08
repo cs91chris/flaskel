@@ -6,6 +6,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from flaskel import cap, ConfigProxy
+
 from .exceptions import MediaError
 from .repo import MediaRepo
 

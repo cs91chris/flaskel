@@ -8,6 +8,7 @@ from gunicorn.app.base import BaseApplication as WSGIServer
 
 from flaskel import Flaskel
 from flaskel.config import config
+
 from .base import BaseApplication
 
 

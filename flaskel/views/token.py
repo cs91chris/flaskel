@@ -1,8 +1,8 @@
 import flask_jwt_extended
 from vbcore.datastruct import ObjectDict
-from vbcore.http import HttpMethod, httpcode
+from vbcore.http import httpcode, HttpMethod
 
-from flaskel import cap, webargs, request, abort
+from flaskel import abort, cap, request, webargs
 from flaskel.ext.auth import BaseTokenHandler
 from flaskel.ext.default import builder
 from flaskel.views import BaseView

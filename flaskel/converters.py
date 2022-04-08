@@ -1,7 +1,7 @@
 import typing as t
 from decimal import Decimal
 
-from werkzeug.routing import BaseConverter, FloatConverter, UnicodeConverter, Map
+from werkzeug.routing import BaseConverter, FloatConverter, Map, UnicodeConverter
 
 
 class ListConverter(BaseConverter):

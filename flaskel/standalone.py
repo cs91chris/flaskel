@@ -8,7 +8,7 @@ from vbcore.misc import parse_value
 
 from .builder import AppBuilder
 from .config import config as configurator
-from .wsgi import BaseApplication, WSGIFactory, DEFAULT_WSGI_SERVERS
+from .wsgi import BaseApplication, DEFAULT_WSGI_SERVERS, WSGIFactory
 
 
 def option_as_dict(ctx, param, value):

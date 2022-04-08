@@ -12,6 +12,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 from werkzeug.routing import BaseConverter
 
 from flaskel import config, flaskel
+
 from .converters import CONVERTERS
 from .flaskel import DumpUrls, Flaskel
 from .middlewares import BaseMiddleware

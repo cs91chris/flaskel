@@ -9,9 +9,9 @@ from flaskel.ext.healthcheck import HealthCheck
 from flaskel.ext.healthcheck.checkers import (
     health_mongo,
     health_redis,
+    health_services,
     health_sqlalchemy,
     health_system,
-    health_services,
 )
 from flaskel.ext.mongo import FlaskMongoDB
 from flaskel.ext.redis import FlaskRedis

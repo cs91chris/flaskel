@@ -9,8 +9,8 @@ from vbcore.uuid import get_uuid
 
 try:
     from apscheduler import events
-    from apscheduler.util import undefined
     from apscheduler.schedulers import SchedulerAlreadyRunningError
+    from apscheduler.util import undefined
     from flask_apscheduler import APScheduler
 except ImportError:  # pragma: no cover
     events = undefined = None

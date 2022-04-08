@@ -3,8 +3,7 @@ import os
 import re
 import sys
 
-from setuptools import find_packages as base_find_packages
-from setuptools import setup
+from setuptools import find_packages as base_find_packages, setup
 from setuptools.command.test import test
 
 LICENSE = "MIT"
@@ -34,10 +33,9 @@ VERSION_FILE = os.path.join(PKG_NAME, "skel", "version.py")
 try:
     # must be after setuptools
     # noinspection PyPackageRequirements
-    from Cython.Build import cythonize as base_cythonize
-
     # noinspection PyPackageRequirements
     import Cython.Compiler.Options as cython_options
+    from Cython.Build import cythonize as base_cythonize
 
     cython_options.docstrings = False
 except ImportError:

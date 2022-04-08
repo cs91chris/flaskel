@@ -1,8 +1,9 @@
 from vbcore.http import HttpMethod
 
-from flaskel import ExtProxy, db_session, Response
+from flaskel import db_session, ExtProxy, Response
 from flaskel.views import BaseView
-from .repo import PaymentRepo, Payment
+
+from .repo import Payment, PaymentRepo
 
 
 class PaymentView(BaseView):

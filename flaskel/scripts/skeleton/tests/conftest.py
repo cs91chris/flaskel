@@ -10,6 +10,7 @@ from vbcore.datastruct import ObjectDict
 from vbcore.db.support import SQLASupport
 
 from flaskel.tester import helpers as h, TestClient
+
 from .helpers import Views
 
 DB_TEST = "test.sqlite"

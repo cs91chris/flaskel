@@ -3,7 +3,7 @@ import typing as t
 from base64 import b64encode
 
 from flask_caching import Cache as FlaskCache
-from vbcore.http import HttpMethod, httpcode
+from vbcore.http import httpcode, HttpMethod
 from vbcore.http.headers import HeaderEnum
 
 from flaskel.flaskel import cap, request, Response

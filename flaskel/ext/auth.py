@@ -6,15 +6,15 @@ from datetime import timedelta
 import sqlalchemy as sa
 from flask_httpauth import HTTPBasicAuth
 from flask_jwt_extended import (
-    JWTManager,
-    jwt_required,
-    get_jwt_identity,
-    get_jwt,
-    decode_token,
     create_access_token,
     create_refresh_token,
+    decode_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+    JWTManager,
 )
-from vbcore.datastruct import ObjectDict, DataClassDictable
+from vbcore.datastruct import DataClassDictable, ObjectDict
 from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 

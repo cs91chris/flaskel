@@ -2,7 +2,7 @@ import pytest
 from vbcore.tester.mixins import Asserter
 
 from flaskel import WSGIFactory
-from flaskel.wsgi import WSGIBuiltin, DEFAULT_WSGI_SERVERS
+from flaskel.wsgi import DEFAULT_WSGI_SERVERS, WSGIBuiltin
 
 
 def test_import_ok():

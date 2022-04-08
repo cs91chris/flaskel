@@ -8,7 +8,7 @@ from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 from vbcore.tester.mixins import Asserter
 
-from flaskel.ext.default import Database, builder
+from flaskel.ext.default import builder, Database
 from flaskel.extra.media.repo import (
     MediaMixin,
     MediaRepo as BaseMediaRepo,
@@ -16,7 +16,7 @@ from flaskel.extra.media.repo import (
 )
 from flaskel.extra.media.service import MediaService as BaseMediaService
 from flaskel.extra.media.view import ApiMedia, GetMedia
-from flaskel.tester.helpers import url_for, ApiTester
+from flaskel.tester.helpers import ApiTester, url_for
 
 db = Database()
 

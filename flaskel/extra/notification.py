@@ -12,12 +12,12 @@ from vbcore.jsonschema.support import Fields
 from vbcore.uuid import get_uuid
 
 from flaskel import (
-    PayloadValidator,
-    Response,
-    request,
+    db_session,
     ExtProxy,
     job_scheduler,
-    db_session,
+    PayloadValidator,
+    request,
+    Response,
 )
 from flaskel.views import BaseView
 

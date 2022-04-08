@@ -5,9 +5,9 @@ from datetime import datetime
 import flask
 from packaging import version
 from vbcore.http import httpcode, HttpMethod
-from vbcore.http.headers import HeaderEnum, ContentTypeEnum
+from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 
-from flaskel import Response, cap, webargs, ExtProxy, request, abort, Flaskel
+from flaskel import abort, cap, ExtProxy, Flaskel, request, Response, webargs
 from flaskel.ext.default import builder
 from flaskel.ext.limit import RateLimit
 from flaskel.views import BaseView

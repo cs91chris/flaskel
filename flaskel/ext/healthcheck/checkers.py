@@ -4,7 +4,7 @@ import typing as t
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
 from vbcore.http.client import HTTPClient
-from vbcore.system import SysStats, MemoryStat, CpuStat, DiskStat, NetStat, SwapStat
+from vbcore.system import CpuStat, DiskStat, MemoryStat, NetStat, SwapStat, SysStats
 
 ConfigType = t.Optional[t.Union[t.Callable, dict]]
 CheckerResponseType = t.Tuple[bool, t.Optional[t.Any]]

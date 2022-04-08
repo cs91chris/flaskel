@@ -1,7 +1,7 @@
 import socket
 import typing as t
 
-from flask_mail import Mail, Message, Attachment
+from flask_mail import Attachment, Mail, Message
 
 AddressType = t.Union[str, t.Tuple[str, str]]
 

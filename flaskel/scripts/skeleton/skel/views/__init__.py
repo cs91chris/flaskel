@@ -1,14 +1,15 @@
 from flaskel.views import rpc
-from .blueprints import bp_auth, bp_api, bp_spa, bp_web
+
+from .blueprints import bp_api, bp_auth, bp_spa, bp_web
 from .common import (
     ApiDocTemplate,
     ApiSpecTemplate,
-    MobileReleaseView,
     MobileLoggerView,
-    TokenAuthView,
-    RegisterView,
-    PasswordResetView,
+    MobileReleaseView,
     PasswordForgotView,
+    PasswordResetView,
+    RegisterView,
+    TokenAuthView,
 )
 
 rpc_service = object  # import rpc_service here

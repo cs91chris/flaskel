@@ -1,5 +1,5 @@
 from .builder import AppBuilder
-from .flaskel import Flaskel, Request, Response, cap, request
+from .flaskel import cap, Flaskel, Request, request, Response
 from .http.client import (
     FlaskelHttp,
     FlaskelHttpBatch,
@@ -13,8 +13,7 @@ from .utils import webargs
 from .utils.datastruct import ConfigProxy, ExtProxy
 from .utils.validator import PayloadValidator
 from .version import *  # noqa: F403
-from .wsgi import WSGIFactory, BaseApplication
-
+from .wsgi import BaseApplication, WSGIFactory
 
 client_redis = ExtProxy("redis")
 client_mail = ExtProxy("client_mail")

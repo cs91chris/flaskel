@@ -3,12 +3,13 @@ import typing as t
 from sqlalchemy.exc import SQLAlchemyError
 from vbcore.db.exceptions import DBError
 from vbcore.db.support import SQLASupport
-from vbcore.http import HttpMethod, httpcode
+from vbcore.http import httpcode, HttpMethod
 from vbcore.http.headers import HeaderEnum
 
-from flaskel import cap, abort, PayloadValidator, webargs, db_session
+from flaskel import abort, cap, db_session, PayloadValidator, webargs
 from flaskel.ext.default import builder
-from .base import Resource, UrlsType, BaseView
+
+from .base import BaseView, Resource, UrlsType
 
 
 class CatalogResource(Resource):

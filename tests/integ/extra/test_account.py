@@ -11,11 +11,11 @@ from flaskel.ext.default import Database
 from flaskel.ext.redis import FlaskRedis
 from flaskel.ext.sendmail import ClientMail
 from flaskel.extra.account import (
-    RegisterView,
-    PasswordForgotView,
-    PasswordResetView,
     AccountHandler,
     AccountModel as BaseAccountModel,
+    PasswordForgotView,
+    PasswordResetView,
+    RegisterView,
 )
 from flaskel.tester.helpers import ApiTester
 from tests.integ.views import bp_api

@@ -4,10 +4,10 @@ import pytest
 from vbcore import yaml
 from vbcore.datastruct import ObjectDict
 
-from flaskel import TestClient, db_session
+from flaskel import db_session, TestClient
 from flaskel.converters import CONVERTERS
-from flaskel.ext import default, auth
-from flaskel.middlewares import RequestID, HTTPMethodOverride
+from flaskel.ext import auth, default
+from flaskel.middlewares import HTTPMethodOverride, RequestID
 from tests.integ.views import bp_api, bp_spa, bp_web
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))

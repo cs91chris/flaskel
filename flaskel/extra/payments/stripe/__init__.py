@@ -1,3 +1,3 @@
 from .handler import PaymentHandler
 from .repo import PaymentRepo
-from .view import PaymentView, PaymentIntentView, PaymentWebhookView
+from .view import PaymentIntentView, PaymentView, PaymentWebhookView

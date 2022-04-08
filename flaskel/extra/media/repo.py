@@ -7,6 +7,7 @@ from vbcore.db.mixins import StandardMixin
 from vbcore.jsonschema.support import Fields
 
 from flaskel import cap, db_session
+
 from .exceptions import MediaError
 
 SCHEMA_MEDIA = Fields.array_object(

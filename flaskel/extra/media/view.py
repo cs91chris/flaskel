@@ -1,8 +1,9 @@
-from vbcore.http import HttpMethod, httpcode
+from vbcore.http import httpcode, HttpMethod
 
-from flaskel import cap, request, abort
+from flaskel import abort, cap, request
 from flaskel.views import BaseView
 from flaskel.views.static import StaticFileView
+
 from .exceptions import BadMediaError
 from .service import MediaService
 

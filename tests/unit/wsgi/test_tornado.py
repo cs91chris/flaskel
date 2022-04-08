@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from flaskel import Flaskel
 from flaskel.wsgi.wsgi_tornado import WSGITornado

@@ -5,7 +5,7 @@ from vbcore.http import httpcode
 from vbcore.tester.mixins import Asserter
 
 from flaskel import Response
-from flaskel.ext.limit import ipban, response_ok, response_ko, header_whitelist
+from flaskel.ext.limit import header_whitelist, ipban, response_ko, response_ok
 
 
 @pytest.mark.parametrize(

@@ -3,7 +3,7 @@ from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum
 from vbcore.tester.mixins import Asserter
 
-from flaskel.tester.helpers import url_for, ApiTester
+from flaskel.tester.helpers import ApiTester, url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
 from flaskel.views import UrlRule
 from flaskel.views.proxy import JsonRPCProxy, SchemaProxyView, TransparentProxyView

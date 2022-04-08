@@ -7,6 +7,7 @@ from vbcore.jsonschema.support import JSONSchema
 
 from flaskel import cap, request
 from flaskel.http.exceptions import abort
+
 from .datastruct import ConfigProxy
 
 

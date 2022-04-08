@@ -4,7 +4,7 @@ import pytest
 from vbcore.tester.mixins import Asserter
 from werkzeug.routing import Map, ValidationError
 
-from flaskel.converters import ListConverter, DecimalConverter
+from flaskel.converters import DecimalConverter, ListConverter
 
 
 def test_list_converter():

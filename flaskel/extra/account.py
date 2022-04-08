@@ -6,22 +6,22 @@ from flask import render_template
 from sqlalchemy.exc import SQLAlchemyError
 from vbcore.datastruct import ObjectDict
 from vbcore.db.exceptions import DBDuplicateEntry
-from vbcore.db.mixins import UserMixin, StandardMixin
+from vbcore.db.mixins import StandardMixin, UserMixin
 from vbcore.http import httpcode, HttpMethod
 from vbcore.jsonschema.support import Fields
 from vbcore.misc import random_string
 
 from flaskel import (
-    cap,
     abort,
-    request,
-    PayloadValidator,
-    db_session,
-    job_scheduler,
-    client_redis,
-    Response,
+    cap,
     client_mail,
+    client_redis,
+    db_session,
     ExtProxy,
+    job_scheduler,
+    PayloadValidator,
+    request,
+    Response,
 )
 from flaskel.views import BaseView
 

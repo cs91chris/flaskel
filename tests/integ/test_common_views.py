@@ -5,15 +5,10 @@ from vbcore.tester.mixins import Asserter
 
 from flaskel.ext.auth import TokenInfo
 from flaskel.extra.apidoc import ApiSpecTemplate
-from flaskel.tester.helpers import config, ApiTester, url_for
+from flaskel.tester.helpers import ApiTester, config, url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
-from .views import (
-    bp_api,
-    TokenAuthView,
-    ApiDocTemplate,
-    IndexTemplate,
-    StaticFileView,
-)
+
+from .views import ApiDocTemplate, bp_api, IndexTemplate, StaticFileView, TokenAuthView
 
 
 class TokenViews:

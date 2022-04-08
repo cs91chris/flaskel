@@ -5,7 +5,7 @@ from click.testing import CliRunner
 from vbcore.tester.mixins import Asserter
 
 from flaskel.scripts.cli import cli
-from flaskel.scripts.init_app import init_app, DEVOPS_DIR, SERVICES_DIR
+from flaskel.scripts.init_app import DEVOPS_DIR, init_app, SERVICES_DIR
 
 
 @patch("flaskel.scripts.cli.init_app")

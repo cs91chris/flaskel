@@ -1,10 +1,10 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from flask import Blueprint
 from vbcore.tester.mixins import Asserter
 from werkzeug.routing import BaseConverter, FloatConverter
 
-from flaskel import AppBuilder, middlewares, Flaskel, Response
+from flaskel import AppBuilder, Flaskel, middlewares, Response
 from flaskel.views import BaseView
 
 

@@ -3,6 +3,7 @@ import typing as t
 from gevent.pywsgi import WSGIServer  # pylint: disable=import-error
 
 from flaskel import Flaskel
+
 from .base import BaseApplication
 
 
