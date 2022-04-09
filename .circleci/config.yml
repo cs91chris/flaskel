@@ -1,0 +1,22 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@1.5.0
+
+jobs:
+  run-tox:
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - checkout
+      - run:
+          name: Install requirements
+          command: pip install -r requirements/requirements-build.txt
+      - run:
+          name: Run tests
+          command: make run-tox
+
+workflows:
+  run-tox:
+    jobs:
+      - run-tox
