@@ -1,15 +1,7 @@
 #!/bin/bash
 
-DIFF_OPTS="--cached --name-only --diff-filter=ACM --no-color"
-SRC=$(git diff ${DIFF_OPTS} | grep --color=never -e '\.py$')
-
+SRC=$(git diff --cached --name-only --diff-filter=ACM --no-color | grep --color=never -e '\.py$')
 [[ -z "${SRC}" ]] && exit 0
 
-black -t py38 --check ${SRC} || {
-  black -t py38 ${SRC}
-  exit 1
-}
-
-flake8 --config=.flake8 ${SRC} || exit 1
-pylint --rcfile=.pylintrc ${SRC} || exit 1
-mypy --install-types --non-interactive --no-strict-optional ${SRC} || exit 1
+export FMT_ONLY_CHECK=true
+make format lint

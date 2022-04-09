@@ -1,4 +1,3 @@
 #!/bin/bash
 
-
-tox || exit 1
+make run-tox
