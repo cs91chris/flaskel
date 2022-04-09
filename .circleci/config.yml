@@ -4,7 +4,18 @@ orbs:
   python: circleci/python@1.5.0
 
 jobs:
-  run-tox:
+  test-py38:
+    docker:
+      - image: cimg/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Install requirements
+          command: pip install -r requirements/requirements-build.txt
+      - run:
+          name: Run tests
+          command: tox -e py38
+  test-py39:
     docker:
       - image: cimg/python:3.9
     steps:
@@ -14,9 +25,22 @@ jobs:
           command: pip install -r requirements/requirements-build.txt
       - run:
           name: Run tests
-          command: make run-tox
+          command: tox -e py39
+  test-py310:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install requirements
+          command: pip install -r requirements/requirements-build.txt
+      - run:
+          name: Run tests
+          command: tox -e py310
 
 workflows:
   run-tox:
     jobs:
-      - run-tox
+      - test-py38
+      - test-py39
+      - test-py310
