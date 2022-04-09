@@ -34,6 +34,7 @@ compile-deps:
 	$(call req_compile,requirements-wsgi)
 	$(call req_compile,requirements-test)
 	$(call req_compile,requirements-dev)
+	$(call req_compile,requirements-build)
 
 upgrade-deps:
 	$(call req_compile,requirements, --upgrade)
@@ -41,6 +42,7 @@ upgrade-deps:
 	$(call req_compile,requirements-wsgi, --upgrade)
 	$(call req_compile,requirements-test, --upgrade)
 	$(call req_compile,requirements-dev, --upgrade)
+	$(call req_compile,requirements-build, --upgrade)
 
 install-deps:
 	pip install -r ${REQ_PATH}/requirements.txt
