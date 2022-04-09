@@ -45,7 +45,7 @@ pyparsing==3.0.7
     # via
     #   -c requirements/requirements.txt
     #   packaging
-pytest==7.0.1
+pytest==7.1.1
     # via
     #   -r requirements/requirements-test.in
     #   pytest-cov
@@ -62,13 +62,13 @@ requests==2.27.1
     #   -c requirements/requirements-extra.txt
     #   -c requirements/requirements.txt
     #   responses
-responses==0.18.0
+responses==0.20.0
     # via -r requirements/requirements-test.in
 tomli==2.0.1
     # via
     #   coverage
     #   pytest
-urllib3==1.26.8
+urllib3==1.26.9
     # via
     #   -c requirements/requirements-extra.txt
     #   -c requirements/requirements.txt

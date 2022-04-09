@@ -11,7 +11,10 @@ from flaskel.extra.payments.stripe import (
     PaymentIntentView as BasePaymentIntentView,
     PaymentWebhookView as BasePaymentWebhookView,
 )
-from flaskel.extra.payments.stripe.repo import Payment
+from flaskel.extra.payments.stripe.repo import (
+    Payment,
+    PaymentStatus as BasePaymentStatus,
+)
 from flaskel.tester.helpers import ApiTester
 
 db = Database()
@@ -181,8 +184,13 @@ stripe_mock.PaymentIntent.create.return_value = SAMPLE_INTENT
 stripe_mock.Webhook.construct_event.return_value = SAMPLE_WEBHOOK
 
 
+class PaymentStatus(db.Model, BasePaymentStatus):
+    __tablename__ = "payments_status"
+
+
 class PaymentModel(db.Model, Payment):
     __tablename__ = "payments"
+    _status_model = PaymentStatus
 
 
 class PaymentHandler(BasePaymentHandler):

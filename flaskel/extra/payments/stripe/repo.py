@@ -15,7 +15,7 @@ class PaymentStatusValue(IntEnum):
 
 
 class PaymentStatus(CatalogMixin, LoaderModel):
-    __tablename__ = "payment_status"
+    __abstract__ = True
 
     values = PaymentStatusValue.to_list()
 
@@ -24,6 +24,8 @@ class PaymentStatus(CatalogMixin, LoaderModel):
 
 
 class Payment(StandardMixin):
+    _status_model = PaymentStatus
+
     request_id = sa.Column(sa.String(255), unique=True, nullable=False)
     response_id = sa.Column(sa.String(255), unique=True)
     client_id = sa.Column(sa.String(255), nullable=False)
@@ -36,16 +38,17 @@ class Payment(StandardMixin):
     cancellation_reason = sa.Column(sa.Text)
     payment_method = sa.Column(sa.String(255))
 
-    @classmethod
     @declared_attr
-    def status_id(cls):
-        return sa.Column(sa.Integer, sa.ForeignKey(PaymentStatus.id))
+    def status_id(self):
+        return sa.Column(sa.Integer, sa.ForeignKey(self._status_model.id))
 
-    @classmethod
     @declared_attr
-    def status(cls):
+    def status(self):
         return sa.orm.relationship(
-            PaymentStatus, foreign_keys=cls.status_id, uselist=False, lazy="joined"
+            self._status_model,
+            foreign_keys=self.status_id,
+            uselist=False,
+            lazy="joined",
         )  # type: ignore
 
 

@@ -18,3 +18,10 @@ liccheck
 safety
 isort
 autoflake
+
+types-cryptography
+types-pyOpenSSL
+types-redis
+types-requests
+types-urllib3
+types-waitress

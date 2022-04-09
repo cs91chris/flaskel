@@ -11,7 +11,7 @@ backports-zoneinfo==0.2.1 ; python_version < "3.9"
     #   -r requirements/requirements-extra.in
     #   pytz-deprecation-shim
     #   tzlocal
-bidict==0.21.4
+bidict==0.22.0
     # via python-socketio
 blinker==1.4
     # via flask-mail
@@ -23,11 +23,11 @@ charset-normalizer==2.0.12
     # via
     #   -c requirements/requirements.txt
     #   requests
-click==8.0.4
+click==8.1.2
     # via
     #   -c requirements/requirements.txt
     #   flask
-flask==2.0.3
+flask==2.1.1
     # via
     #   -c requirements/requirements.txt
     #   flask-apscheduler
@@ -60,21 +60,25 @@ idna==3.3
     # via
     #   -c requirements/requirements.txt
     #   requests
-itsdangerous==2.1.0
+importlib-metadata==4.11.3
     # via
     #   -c requirements/requirements.txt
     #   flask
-jinja2==3.0.3
+itsdangerous==2.1.2
     # via
     #   -c requirements/requirements.txt
     #   flask
-markupsafe==2.1.0
+jinja2==3.1.1
+    # via
+    #   -c requirements/requirements.txt
+    #   flask
+markupsafe==2.1.1
     # via
     #   -c requirements/requirements.txt
     #   jinja2
 pyfcm==1.5.4
     # via -r requirements/requirements-extra.in
-pymongo==4.0.2
+pymongo==4.1.0
     # via flask-pymongo
 python-dateutil==2.8.2
     # via
@@ -84,7 +88,7 @@ python-engineio==4.3.1
     # via python-socketio
 python-socketio==5.5.2
     # via flask-socketio
-pytz==2021.3
+pytz==2022.1
     # via apscheduler
 pytz-deprecation-shim==0.1.0.post0
     # via tzlocal
@@ -105,21 +109,25 @@ six==1.16.0
     #   apscheduler
     #   python-dateutil
     #   rejson
-stripe==2.67.0
+stripe==2.71.0
     # via -r requirements/requirements-extra.in
-tzdata==2021.5
+tzdata==2022.1
     # via pytz-deprecation-shim
-tzlocal==4.1
+tzlocal==4.2
     # via apscheduler
-urllib3==1.26.8
+urllib3==1.26.9
     # via
     #   -c requirements/requirements.txt
     #   pyfcm
     #   requests
-werkzeug==2.0.3
+werkzeug==2.1.1
     # via
     #   -c requirements/requirements.txt
     #   flask
+zipp==3.8.0
+    # via
+    #   -c requirements/requirements.txt
+    #   importlib-metadata
 zope-event==4.5.0
     # via gevent
 zope-interface==5.4.0

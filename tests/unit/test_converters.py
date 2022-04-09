@@ -10,7 +10,7 @@ from flaskel.converters import DecimalConverter, ListConverter
 def test_list_converter():
     converter = ListConverter(Map())
     Asserter.assert_equals(converter.to_python("a+b+c"), ["a", "b", "c"])
-    Asserter.assert_equals(converter.to_url(["a", "b", "c"]), "a%2Bb%2Bc")
+    Asserter.assert_equals(converter.to_url(["a", "b", "c"]), "a+b+c")
 
 
 def test_decimal_converter():

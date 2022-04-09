@@ -27,6 +27,9 @@ except ImportError:  # pragma: no cover
 
 class APJobs(APScheduler):
     def init_app(self, app):
+        # this is necessary because super().init_app is conditionally invoked
+        self.app = app
+
         if APScheduler is object:
             raise ImportError(
                 "you must install 'flask_apscheduler'"

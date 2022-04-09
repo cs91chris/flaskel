@@ -67,10 +67,9 @@ liccheck:
 		-r ${REQ_PATH}/requirements-wsgi.txt
 
 safety:
-	# ignore flask-caching, waitress
+	# ignore flask-caching
 	safety check --full-report \
 		--ignore 40459 \
-		--ignore 46436 \
 		-r ${REQ_PATH}/requirements.txt \
 		-r ${REQ_PATH}/requirements-extra.txt \
 		-r ${REQ_PATH}/requirements-wsgi.txt

@@ -33,7 +33,7 @@ twisted==22.2.0
     # via -r requirements/requirements-wsgi.in
 typing-extensions==4.1.1
     # via twisted
-waitress==2.0.0
+waitress==2.1.1
     # via -r requirements/requirements-wsgi.in
 zope-interface==5.4.0
     # via
