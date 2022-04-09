@@ -12,7 +12,6 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 from werkzeug.routing import BaseConverter
 
 from flaskel import config, flaskel
-
 from .converters import CONVERTERS
 from .flaskel import DumpUrls, Flaskel
 from .middlewares import BaseMiddleware
@@ -149,9 +148,12 @@ class AppBuilder:
         if not self._app.config.JWT_SECRET_KEY:
             self._app.config.JWT_SECRET_KEY = self._app.config.SECRET_KEY
 
-    def set_config(self, conf: t.Optional[t.Dict[str, t.Any]] = None):
+    def set_config(self, conf: t.Optional[t.Union[str, t.Dict[str, t.Any]]] = None):
         self._app.config.from_object(self._conf_module)
-        self._app.config.from_mapping(**(conf or {}))
+        if isinstance(conf, str):
+            self._app.config.from_object(conf)
+        else:
+            self._app.config.from_mapping(**(conf or {}))
         self._app.config.from_envvar("APP_CONFIG_FILE", silent=True)
 
     @staticmethod
@@ -291,7 +293,9 @@ class AppBuilder:
             if callable(self._after_create_callback):
                 self._after_create_callback()
 
-    def create(self, conf: t.Optional[t.Dict[str, t.Any]] = None) -> Flaskel:
+    def create(
+        self, conf: t.Optional[t.Union[str, t.Dict[str, t.Any]]] = None
+    ) -> Flaskel:
         self._app = self._app or self.flask_class(self.app_name, **self._options)
         self._app.version = self._version
 
