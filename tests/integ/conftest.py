@@ -47,6 +47,7 @@ EXTENSIONS = {
 
 def prepare_config(conf=None):
     config = ObjectDict()
+    config.TESTING = True
     config.CACHE_TYPE = "null"
     config.SQLALCHEMY_ECHO = True
     config.RATELIMIT_ENABLED = False

@@ -39,7 +39,7 @@ jobs:
           command: tox -e py310
 
 workflows:
-  run-tox:
+  test-multiple-version:
     jobs:
       - test-py38
       - test-py39
