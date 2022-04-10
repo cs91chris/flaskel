@@ -17,6 +17,11 @@ validate-test-py38:
   image: python:3.8
   script:
     - tox -e py38
+  artifacts:
+    when: always
+    reports:
+      junit: junit-report.xml
+      cobertura: coverage.xml
 
 validate-test-py39:
   stage: test
@@ -34,6 +39,11 @@ validate-test-py310:
   image: python:3.10
   script:
     - tox -e py310
+  artifacts:
+    when: always
+    reports:
+      junit: junit-report.xml
+      cobertura: coverage.xml
 
 dist-build-publish:
   stage: build
