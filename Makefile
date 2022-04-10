@@ -113,6 +113,13 @@ test:
 		--cov-config .coveragerc \
 		tests
 
+test-coverage:
+	pytest -v -rf --strict-markers \
+		--junitxml=junit-report.xml \
+		--cov=${PACKAGE} --cov-report=xml \
+		--cov-config .coveragerc \
+		tests
+
 build-dist:
 	python setup.py sdist bdist_wheel
 

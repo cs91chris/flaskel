@@ -113,3 +113,5 @@ test.py
 profiler.txt
 /settings.ini
 pip.conf
+junit-report.xml
+liccheck-report.txt

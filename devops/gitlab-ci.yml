@@ -23,6 +23,11 @@ validate-test-py39:
   image: python:3.9
   script:
     - tox -e py39
+  artifacts:
+    when: always
+    reports:
+      junit: junit-report.xml
+      cobertura: coverage.xml
 
 validate-test-py310:
   stage: test
