@@ -50,7 +50,7 @@ class ApiTester:
         if status is not None:
             Asserter.assert_status_code(response, status)
         else:
-            Asserter.assert_true(httpcode.is_ok(response.status_code))
+            Asserter.assert_status_code(response.status_code)
 
         if response.data and (mimetype or self.mimetype):
             Asserter.assert_equals(response.mimetype, mimetype or self.mimetype)
