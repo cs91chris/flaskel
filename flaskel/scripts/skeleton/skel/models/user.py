@@ -1,6 +1,6 @@
-from flaskel.extra.account import AccountModel as BaseAccountModel
+from ext.database import database as db
 
-from ..ext import database as db
+from flaskel.extra.account import AccountModel as BaseAccountModel
 
 
 class AccountModel(db.Model, BaseAccountModel):

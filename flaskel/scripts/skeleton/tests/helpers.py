@@ -1,6 +1,6 @@
 class Views:
-    access_token = "auth.access_token"
-    refresh_token = "auth.refresh_token"
-    revoke_token = "auth.revoke_token"
+    access_token = "auth.token_access"
+    refresh_token = "auth.token_refresh"
+    revoke_token = "auth.token_revoke"
     api_docs = "api.apidocs"
     api_spec = "api.apispec"

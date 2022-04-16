@@ -6,11 +6,11 @@ from flaskel.extra.mobile_support import MobileVersionCompatibility, RedisStore
 from flaskel.extra.payments.stripe import PaymentHandler
 
 from .auth import account_handler
+from .database import database
 
 ipban = limit.FlaskIPBan()
 client_redis = FlaskRedis()
 client_mongo = FlaskMongoDB()
-database = default.Database()
 scheduler = default.Scheduler()
 payment_handler = PaymentHandler()
 mobile_version = MobileVersionCompatibility()

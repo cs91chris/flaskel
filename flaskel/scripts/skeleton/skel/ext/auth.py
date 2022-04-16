@@ -1,10 +1,9 @@
+from models.user import AccountModel
 from vbcore.datastruct import ObjectDict
 
 from flaskel import client_redis
 from flaskel.ext import auth
 from flaskel.extra.account import AccountHandler
-
-from ..models.user import AccountModel
 
 
 class TokenHandler(auth.RedisTokenHandler):

@@ -1,5 +1,5 @@
-from ext import EXTENSIONS
-from views import BLUEPRINTS, VIEWS
+from {skeleton}.ext import EXTENSIONS
+from {skeleton}.views import BLUEPRINTS, VIEWS
 
 from flaskel import AppBuilder, middlewares as middle, Server
 

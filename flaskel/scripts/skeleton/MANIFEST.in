@@ -1,4 +1,0 @@
-exclude *.pyc
-exclude *.log
-recursive-exclude log *
-recursive-exclude tests *

@@ -1,5 +1,0 @@
--c requirements.txt
-
-coverage
-pytest
-pytest-cov

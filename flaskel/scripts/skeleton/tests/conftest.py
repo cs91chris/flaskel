@@ -3,14 +3,13 @@
 import os
 
 import pytest
-from scripts.cli import APP_CONFIG  # type: ignore
-
-# pylint: disable=import-error
+from flask import Config
+from flaskel.tester import helpers as h, TestClient
+from flaskel.tester.helpers import ApiTester
 from vbcore.datastruct import ObjectDict
 from vbcore.db.support import SQLASupport
 
-from flaskel.tester import helpers as h, TestClient
-
+from pisciapp.scripts.cli import APP_CONFIG
 from .helpers import Views
 
 DB_TEST = "test.sqlite"
@@ -18,31 +17,19 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SAMPLE_DATA = os.path.join(BASE_DIR, "..", "resources", "sample.sql")
 CONFIG = ObjectDict()
 
+CONFIG.DEBUG = True
+CONFIG.TESTING = True
 CONFIG.MAIL_DEBUG = True
 CONFIG.CACHE_TYPE = "null"
 CONFIG.RATELIMIT_ENABLED = False
 CONFIG.SQLALCHEMY_ECHO = True
 CONFIG.SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_TEST}"
 
-CONFIG.SENDRIA = dict(
-    endpoint="http://sendria.local:61000/api/messages",
-    username="guest123",
-    password="guest123",
-)
-
 
 def load_sample_data():
     SQLASupport.exec_from_file(
         CONFIG.SQLALCHEMY_DATABASE_URI, SAMPLE_DATA, CONFIG.SQLALCHEMY_ECHO
     )
-
-
-EXTRAS = dict(
-    conf=CONFIG,
-    template_folder="blueprints/web/templates",
-    static_folder="blueprints/web/static",
-    callback=load_sample_data,
-)
 
 
 @pytest.fixture(scope="session")
@@ -52,12 +39,33 @@ def testapp():
     except OSError as exc:
         print(str(exc))
 
-    return TestClient.get_app(**{**APP_CONFIG, **EXTRAS})
+    config = Config(".")
+    config.from_pyfile("{skeleton}/scripts/config.py")
+    config.from_mapping(CONFIG)
+
+    extras = dict(
+        conf=ObjectDict(**config),
+        template_folder="{skeleton}/views/web/templates",
+        static_folder="{skeleton}/views/web/static",
+        after_create_hook=load_sample_data,
+    )
+
+    return TestClient.get_app(**{**APP_CONFIG, **extras})
 
 
 @pytest.fixture(scope="session")
 def test_client(testapp):
     return testapp.test_client()
+
+
+@pytest.fixture(scope="session")
+def config(testapp):
+    return testapp.config
+
+
+@pytest.fixture(scope="session")
+def api_tester(test_client):
+    return ApiTester(test_client)
 
 
 @pytest.fixture(scope="session")

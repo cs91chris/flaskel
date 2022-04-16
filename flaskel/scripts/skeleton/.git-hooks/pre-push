@@ -1,4 +1,0 @@
-#!/bin/bash
-
-
-tox || exit 1
