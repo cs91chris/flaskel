@@ -4,12 +4,13 @@ import os
 
 import pytest
 from flask import Config
-from flaskel.tester import helpers as h, TestClient
-from flaskel.tester.helpers import ApiTester
+from scripts.cli import APP_CONFIG
 from vbcore.datastruct import ObjectDict
 from vbcore.db.support import SQLASupport
 
-from pisciapp.scripts.cli import APP_CONFIG
+from flaskel.tester import helpers as h, TestClient
+from flaskel.tester.helpers import ApiTester
+
 from .helpers import Views
 
 DB_TEST = "test.sqlite"

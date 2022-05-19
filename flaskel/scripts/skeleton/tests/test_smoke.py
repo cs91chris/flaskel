@@ -1,8 +1,9 @@
-from flaskel.tester.helpers import url_for
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 from vbcore.tester.helpers import basic_auth_header
 from vbcore.tester.mixins import Asserter
+
+from flaskel.tester.helpers import url_for
 
 
 def test_app_runs(api_tester):

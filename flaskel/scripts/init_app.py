@@ -3,9 +3,6 @@ import shutil
 import sys
 from pathlib import Path
 
-DEVOPS_DIR = "devops"
-SERVICES_DIR = os.path.join(DEVOPS_DIR, "services")
-
 
 def replace_in_file(file, *args):
     _f = Path(file)
@@ -15,7 +12,7 @@ def replace_in_file(file, *args):
     _f.write_text(text, encoding="utf-8")
 
 
-def copy_skeleton(name):
+def copy_skeleton(name: str):
     from flaskel import scripts as flaskel_scripts  # pylint: disable=C0415
 
     try:
@@ -27,35 +24,27 @@ def copy_skeleton(name):
         sys.exit(1)
 
 
-def fix_files_references(name, service_dir):
-    placeholder = "{skeleton}"
+def fix_files_references(name: str, placeholder: str):
     for args in (
-        ("setup.py", (placeholder, name)),
-        ("Makefile", (placeholder, name)),
-        ("pytest.ini", (placeholder, name)),
-        (".coveragerc", (placeholder, name)),
-        (".bumpversion.cfg", (placeholder, name)),
-        (os.path.join(DEVOPS_DIR, "Dockerfile"), (placeholder, name)),
-        (os.path.join(DEVOPS_DIR, "docker-compose.yaml"), (placeholder, name)),
-        (os.path.join(service_dir, "settings.ini"), (placeholder, name)),
-        (os.path.join(service_dir, "env"), (placeholder, name)),
         (
             os.path.join(name, "scripts", "cli.py"),
             ("from ext", f"from {name}.ext"),
             ("from views", f"from {name}.views"),
         ),
         (
-            os.path.join("tests", "__init__.py"),
+            os.path.join("tests", "conftest.py"),
             ("from scripts.cli", f"from {name}.scripts.cli"),
+        ),
+        (
+            os.path.join("tests", "conftest.py"),
+            (placeholder, name),
         ),
     ):
         replace_in_file(*args)
 
 
-def init_app(name):
+def init_app(name: str, placeholder: str = "{skeleton}"):
     copy_skeleton(name)
     init_file = Path(os.path.join(name, "__init__.py"))
     init_file.write_text("from .version import *\n", encoding="utf-8")
-    service_dir = os.path.join(SERVICES_DIR, name)
-    shutil.move(os.path.join(SERVICES_DIR, "skel"), service_dir)
-    fix_files_references(name, service_dir)
+    fix_files_references(name, placeholder)
