@@ -11,9 +11,7 @@ bidict==0.22.0
 blinker==1.4
     # via flask-mail
 certifi==2021.10.8
-    # via
-    #   -c requirements/requirements.txt
-    #   requests
+    # via requests
 charset-normalizer==2.0.12
     # via
     #   -c requirements/requirements.txt
@@ -95,7 +93,6 @@ rejson==0.5.6
     # via -r requirements/requirements-extra.in
 requests==2.27.1
     # via
-    #   -c requirements/requirements.txt
     #   pyfcm
     #   stripe
 six==1.16.0
@@ -112,7 +109,6 @@ tzlocal==4.2
     # via apscheduler
 urllib3==1.26.9
     # via
-    #   -c requirements/requirements.txt
     #   pyfcm
     #   requests
 werkzeug==2.1.1

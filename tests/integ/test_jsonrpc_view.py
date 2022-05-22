@@ -1,5 +1,4 @@
 from vbcore.http import httpcode, rpc
-from vbcore.tester.http import TestJsonRPC
 from vbcore.tester.mixins import Asserter
 
 from flaskel.tester.helpers import url_for
@@ -19,10 +18,10 @@ def test_api_jsonrpc_success(testapp):
     url = url_for("jsonrpc")
     client = app.test_client()
 
-    rpc_client = TestJsonRPC(client, endpoint=url)
-    rpc_client.perform(request=dict(method=ACTION_SUCCESS, id=call_id))
-    Asserter.assert_equals(rpc_client.json.id, call_id)
-    Asserter.assert_equals(rpc_client.json.result.action_success, "action_success")
+    res = client.jsonrpc(url, method=ACTION_SUCCESS, call_id=call_id)
+    Asserter.assert_status_code(res, httpcode.SUCCESS)
+    Asserter.assert_equals(res.json.id, call_id)
+    Asserter.assert_equals(res.json.result.action_success, "action_success")
 
     res = client.jsonrpc(url, method=ACTION_SUCCESS)
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)

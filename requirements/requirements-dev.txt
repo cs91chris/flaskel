@@ -19,12 +19,9 @@ bump2version==1.0.1
 certifi==2021.10.8
     # via
     #   -c requirements/requirements-test.txt
-    #   -c requirements/requirements.txt
     #   requests
 cffi==1.15.0
-    # via
-    #   -c requirements/requirements.txt
-    #   cryptography
+    # via cryptography
 charset-normalizer==2.0.12
     # via
     #   -c requirements/requirements-test.txt
@@ -151,9 +148,7 @@ py==1.11.0
 pycodestyle==2.8.0
     # via flake8
 pycparser==2.21
-    # via
-    #   -c requirements/requirements.txt
-    #   cffi
+    # via cffi
 pyflakes==2.4.0
     # via
     #   autoflake
@@ -188,7 +183,6 @@ readme-renderer==34.0
 requests==2.27.1
     # via
     #   -c requirements/requirements-test.txt
-    #   -c requirements/requirements.txt
     #   requests-toolbelt
     #   safety
     #   twine
@@ -258,7 +252,6 @@ typing-extensions==4.1.1
 urllib3==1.26.9
     # via
     #   -c requirements/requirements-test.txt
-    #   -c requirements/requirements.txt
     #   requests
     #   twine
 virtualenv==20.14.0

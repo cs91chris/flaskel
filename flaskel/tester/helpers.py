@@ -53,7 +53,7 @@ class ApiTester:
             Asserter.assert_status_code(
                 response,
                 in_range=True,
-                code=(httpcode.SUCCESS, 299),
+                code=(httpcode.SUCCESS - 1, httpcode.MULTIPLE_CHOICES - 1),
             )
 
         if response.data and (mimetype or self.mimetype):

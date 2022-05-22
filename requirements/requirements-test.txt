@@ -11,7 +11,6 @@ attrs==21.4.0
 certifi==2021.10.8
     # via
     #   -c requirements/requirements-extra.txt
-    #   -c requirements/requirements.txt
     #   requests
 charset-normalizer==2.0.12
     # via
@@ -60,7 +59,6 @@ redislite==6.0.674960
 requests==2.27.1
     # via
     #   -c requirements/requirements-extra.txt
-    #   -c requirements/requirements.txt
     #   responses
 responses==0.20.0
     # via -r requirements/requirements-test.in
@@ -71,7 +69,6 @@ tomli==2.0.1
 urllib3==1.26.9
     # via
     #   -c requirements/requirements-extra.txt
-    #   -c requirements/requirements.txt
     #   requests
     #   responses
 
