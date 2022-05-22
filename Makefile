@@ -26,6 +26,7 @@ all: clean run-tox
 lint: flake pylint mypy
 security: safety liccheck
 format: autoflake black isort
+dev: format lint test
 
 
 compile-deps:
