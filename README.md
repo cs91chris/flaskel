@@ -49,7 +49,7 @@ Internal extensions:
 - ``flaskel.ext.limit.FlaskIPBan`` (ipban)
 - ``flaskel.ext.redis.FlaskRedis`` (redis)
 - ``flaskel.ext.useragent.UserAgent`` (useragent)
-- ``flaskel.ext.redis.FlaskRedis`` (redis) 
+- ``flaskel.ext.redis.FlaskRedis`` (redis)
 - ``flaskel.ext.sendmail.ClientMail`` (client_mail) extends Flask-Mail
 - ``flaskel.ext.jobs.APJobs`` (scheduler) extends Flask-APScheduler
 - ``flaskel.ext.mongo.FlaskMongoDB`` (mongo) extends Flask-PyMongo
@@ -370,8 +370,14 @@ Configuration via env:
 - ``SQLALCHEMY_ECHO``: *(default = TESTING)*
 - ``JSONRPC_BATCH_MAX_REQUEST``: *(default = 10)*
 - ``IPBAN_ENABLED``: *(default = True)*
+- ``IPBAN_KEY_PREFIX``: *(default = APP_NAME)*
+- ``IPBAN_KEY_SEP``: *(default = /)*
+- ``IPBAN_BACKEND``: *(default = local)*
+- ``IPBAN_BACKEND_OPTS``: *(default = {})*
 - ``IPBAN_COUNT``: *(default = 5)*
 - ``IPBAN_SECONDS``: *(default = 3600)*
+- ``IPBAN_NET_WHITELIST``: *(default = 127.0.0.0/8)*
+- ``IPBAN_IP_WHITELIST``: *(default = 127.0.0.1)*
 - ``IPBAN_STATUS_CODE``: *(default = 403)*
 - ``IPBAN_CHECK_CODES``: *(default = 404,405,501)*
 - ``RATELIMIT_ENABLED``: *(default = not DEBUG)*
@@ -462,16 +468,20 @@ Configuration specific for internal extensions:
  - ``SCHEDULER_LOCK_FILE``: *(default = .scheduler.lock)*
 
 
-- flaskel.ext.limit.FlaskIPBan
+- flaskel.ext.ipban.FlaskIPBan
  - ``IPBAN_ENABLED``: *(default = True)*
- - ``IPBAN_COUNT``: *(default = 20)*
- - ``IPBAN_SECONDS``: *(default = Day.seconds)*
- - ``IPBAN_NUISANCES``: *(default = nuisances)*
- - ``IPBAN_STATUS_CODE``: *(default = FORBIDDEN)*
- - ``IPBAN_CHECK_CODES``: *(default = (NOT_FOUND, METHOD_NOT_ALLOWED, NOT_IMPLEMENTED))*
+ - ``IPBAN_KEY_PREFIX``: *(default = APP_NAME)*
+ - ``IPBAN_KEY_SEP``: *(default = /)*
+ - ``IPBAN_BACKEND``: *(default = local)*
+ - ``IPBAN_BACKEND_OPTS``: *(default = {})*
+ - ``IPBAN_COUNT``: *(default = 5)*
+ - ``IPBAN_SECONDS``: *(default = 3600)*
+ - ``IPBAN_NET_WHITELIST``: *(default = 127.0.0.0/8)*
+ - ``IPBAN_IP_WHITELIST``: *(default = 127.0.0.1)*
+ - ``IPBAN_STATUS_CODE``: *(default = 403)*
+ - ``IPBAN_CHECK_CODES``: *(default = 404,405,501)*
 
-
-- flaskel.ext.caching.caching
+- flaskel.ext.caching.Caching
  - ``CACHE_TYPE``: *(default = "flask_caching.backends.redis")*
  - ``CACHE_REDIS_URL``: *(default = REDIS_URL)*
  - ``CACHE_DEFAULT_TIMEOUT``: *(default = Seconds.hour)*
@@ -496,7 +506,7 @@ Configuration specific for internal extensions:
 - flaskel.extra.stripe.PaymentHandler (stripe)
  - ``STRIPE_SECRET_KEY``:
  - ``STRIPE_PUBLIC_KEY``:
- - ``STRIPE_WEBHOOK_SECRET``: 
+ - ``STRIPE_WEBHOOK_SECRET``:
  - ``STRIPE_DEBUG``: *(default = False)*
  - ``STRIPE_DEFAULT_CURRENCY``: *(default = eur)*
  - ``STRIPE_API_VERSION``: *(default = 2020-08-27)*
