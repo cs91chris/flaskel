@@ -21,7 +21,9 @@ validate-test-py38:
     when: always
     reports:
       junit: junit-report.xml
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 validate-test-py39:
   stage: test
@@ -32,7 +34,9 @@ validate-test-py39:
     when: always
     reports:
       junit: junit-report.xml
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 validate-test-py310:
   stage: test
@@ -43,7 +47,9 @@ validate-test-py310:
     when: always
     reports:
       junit: junit-report.xml
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 dist-build-publish:
   stage: build
@@ -51,6 +57,7 @@ dist-build-publish:
   needs:
     - validate-test-py38
     - validate-test-py39
+    - validate-test-py310
   variables:
     TWINE_USERNAME: gitlab-ci-token
     TWINE_PASSWORD: ${CI_JOB_TOKEN}
