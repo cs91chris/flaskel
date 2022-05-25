@@ -437,12 +437,13 @@ Configuration specific for internal extensions:
 
 
 - flaskel.ext.crypto.argon.Argon2
- - ``ARGON2_ENCODING``
- - ``ARGON2_TIME_COST``
- - ``ARGON2_HASH_LEN``
- - ``ARGON2_MEMORY_COST``
- - ``ARGON2_PARALLELISM``
- - ``ARGON2_SALT_LEN``
+- ``ARGON2_ENCODING``: *(default = utf-8)*
+- ``ARGON2_TIME_COST``: *(default = 3)*
+- ``ARGON2_HASH_LEN``: *(default = 32)*
+- ``ARGON2_PARALLELISM``: *(default = 4)*
+- ``ARGON2_SALT_LEN``: *(default = 16)*
+- ``ARGON2_MEMORY_COST``: *(default = 65536)* 64 MiB
+- ``ARGON2_PROFILE``: *(default = low)* allowed low|high
 
 
 - flaskel.ext.healthcheck.health.HealthCheck
