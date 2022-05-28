@@ -16,12 +16,15 @@ bleach==5.0.0
     # via readme-renderer
 bump2version==1.0.1
     # via -r requirements/requirements-dev.in
-certifi==2021.10.8
+certifi==2022.5.18.1
     # via
     #   -c requirements/requirements-test.txt
+    #   -c requirements/requirements.txt
     #   requests
 cffi==1.15.0
-    # via cryptography
+    # via
+    #   -c requirements/requirements.txt
+    #   cryptography
 charset-normalizer==2.0.12
     # via
     #   -c requirements/requirements-test.txt
@@ -148,7 +151,9 @@ py==1.11.0
 pycodestyle==2.8.0
     # via flake8
 pycparser==2.21
-    # via cffi
+    # via
+    #   -c requirements/requirements.txt
+    #   cffi
 pyflakes==2.4.0
     # via
     #   autoflake
@@ -183,6 +188,7 @@ readme-renderer==34.0
 requests==2.27.1
     # via
     #   -c requirements/requirements-test.txt
+    #   -c requirements/requirements.txt
     #   requests-toolbelt
     #   safety
     #   twine
@@ -252,6 +258,7 @@ typing-extensions==4.1.1
 urllib3==1.26.9
     # via
     #   -c requirements/requirements-test.txt
+    #   -c requirements/requirements.txt
     #   requests
     #   twine
 virtualenv==20.14.0

@@ -8,7 +8,7 @@ bleach==5.0.0
     # via
     #   -c requirements/requirements-dev.txt
     #   readme-renderer
-certifi==2021.10.8
+certifi==2022.5.18.1
     # via
     #   -c requirements/requirements-dev.txt
     #   requests

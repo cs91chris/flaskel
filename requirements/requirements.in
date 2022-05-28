@@ -11,6 +11,5 @@ Flask-ResponseBuilder
 Flask-SQLAlchemy
 Flask-TemplateSupport
 webargs
-aiohttp
 nest-asyncio
-vbcore[all]==1.2.0
+vbcore[all]==1.2.1
