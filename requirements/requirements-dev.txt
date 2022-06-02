@@ -247,6 +247,8 @@ types-redis==4.2.6
     # via -r requirements/requirements-dev.in
 types-requests==2.27.29
     # via -r requirements/requirements-dev.in
+types-setuptools==57.4.16
+    # via -r requirements/requirements-dev.in
 types-urllib3==1.26.15
     # via
     #   -r requirements/requirements-dev.in

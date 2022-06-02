@@ -103,7 +103,7 @@ pylint:
 	pylint --rcfile=.pylintrc ${PACKAGE} tests setup.py
 
 mypy:
-	mypy --install-types --non-interactive --no-strict-optional ${PACKAGE}
+	mypy --warn-unused-configs --no-strict-optional ${PACKAGE}
 
 run-tox:
 	tox --verbose --parallel all

@@ -25,3 +25,4 @@ types-redis
 types-requests
 types-urllib3
 types-waitress
+types-setuptools<57.4.17
