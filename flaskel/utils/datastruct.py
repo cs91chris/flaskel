@@ -41,7 +41,7 @@ class ConfigProxy:
         return res if res is not None else self.__default
 
     def get(self, item: t.Optional[str] = None):
-        res = self.__call__(item)
+        res = self(item)
         return res if res is not None else self.__default
 
 

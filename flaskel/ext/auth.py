@@ -91,7 +91,6 @@ class BaseTokenHandler:
     def __init__(self, blocklist_loader: t.Optional[t.Callable] = None):
         token_auth.token_in_blocklist_loader(blocklist_loader)
 
-    # pylint: disable=no-self-use
     def check_token_block_listed(self, jwt_headers, jwt_data) -> bool:
         _ = jwt_headers, jwt_data
         return False
@@ -104,7 +103,7 @@ class BaseTokenHandler:
         return None
 
     # noinspection PyMethodMayBeStatic
-    def prepare_identity(self, data):  # pylint: disable=no-self-use
+    def prepare_identity(self, data):
         return data
 
     @classmethod

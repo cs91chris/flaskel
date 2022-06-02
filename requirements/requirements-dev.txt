@@ -53,7 +53,7 @@ docutils==0.18.1
     # via readme-renderer
 dparse==0.5.1
     # via safety
-filelock==3.7.0
+filelock==3.7.1
     # via
     #   tox
     #   virtualenv
@@ -165,7 +165,7 @@ pygments==2.12.0
     #   -c requirements/requirements.txt
     #   readme-renderer
     #   rich
-pylint==2.13.9
+pylint==2.14.0
     # via
     #   -r requirements/requirements-dev.in
     #   pylint-flask
@@ -215,7 +215,7 @@ six==1.16.0
     #   bleach
     #   tox
     #   virtualenv
-sqlalchemy==1.4.36
+sqlalchemy==1.4.37
     # via
     #   -c requirements/requirements.txt
     #   flask-sqlalchemy
@@ -233,9 +233,11 @@ tomli==2.0.1
     #   mypy
     #   pep517
     #   pylint
+tomlkit==0.11.0
+    # via pylint
 tox==3.25.0
     # via -r requirements/requirements-dev.in
-twine==4.0.0
+twine==4.0.1
     # via -r requirements/requirements-dev.in
 types-cryptography==3.3.21
     # via
@@ -245,7 +247,7 @@ types-pyopenssl==22.0.3
     # via -r requirements/requirements-dev.in
 types-redis==4.2.6
     # via -r requirements/requirements-dev.in
-types-requests==2.27.29
+types-requests==2.27.30
     # via -r requirements/requirements-dev.in
 types-setuptools==57.4.16
     # via -r requirements/requirements-dev.in

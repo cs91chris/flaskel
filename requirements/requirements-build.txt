@@ -36,7 +36,7 @@ docutils==0.18.1
     # via
     #   -c requirements/requirements-dev.txt
     #   readme-renderer
-filelock==3.7.0
+filelock==3.7.1
     # via
     #   -c requirements/requirements-dev.txt
     #   tox
@@ -131,7 +131,7 @@ tox==3.25.0
     # via
     #   -c requirements/requirements-dev.txt
     #   -r requirements/requirements-build.in
-twine==4.0.0
+twine==4.0.1
     # via
     #   -c requirements/requirements-dev.txt
     #   -r requirements/requirements-build.in

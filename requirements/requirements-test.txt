@@ -18,7 +18,7 @@ charset-normalizer==2.0.12
     #   -c requirements/requirements-extra.txt
     #   -c requirements/requirements.txt
     #   requests
-coverage[toml]==6.4
+coverage[toml]==6.4.1
     # via
     #   -r requirements/requirements-test.in
     #   pytest-cov

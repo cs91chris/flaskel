@@ -1,6 +1,6 @@
 import typing as t
 
-from flaskel import Flaskel
+from flaskel.flaskel import Flaskel
 
 
 class BaseApplication:

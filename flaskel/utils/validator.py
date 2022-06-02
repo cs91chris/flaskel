@@ -5,7 +5,7 @@ from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.jsonschema.support import JSONSchema
 
-from flaskel import cap, request
+from flaskel.flaskel import cap, request
 from flaskel.http.exceptions import abort
 
 from .datastruct import ConfigProxy

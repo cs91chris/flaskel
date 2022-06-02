@@ -7,7 +7,7 @@ from vbcore.http.client import HTTPClient, JsonRPCClient
 from vbcore.http.httpdumper import BaseHTTPDumper
 from vbcore.uuid import get_uuid
 
-from flaskel import cap, request
+from flaskel.flaskel import cap, request
 
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)

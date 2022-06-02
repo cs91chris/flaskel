@@ -3,7 +3,7 @@ from functools import partial
 from vbcore.http import httpcode
 from webargs import fields, flaskparser
 
-from flaskel import abort
+from flaskel.http.exceptions import abort
 
 parser = flaskparser.FlaskParser()
 query = partial(parser.use_args, location="query")
