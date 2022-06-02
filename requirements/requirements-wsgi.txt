@@ -29,10 +29,12 @@ six==1.16.0
     #   automat
 tornado==6.1
     # via -r requirements/requirements-wsgi.in
-twisted==22.2.0
+twisted==22.4.0
     # via -r requirements/requirements-wsgi.in
-typing-extensions==4.1.1
-    # via twisted
+typing-extensions==4.2.0
+    # via
+    #   -c requirements/requirements.txt
+    #   twisted
 waitress==2.1.1
     # via -r requirements/requirements-wsgi.in
 zope-interface==5.4.0
