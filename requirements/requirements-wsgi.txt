@@ -6,7 +6,7 @@
 #
 attrs==21.4.0
     # via
-    #   -c requirements/requirements.txt
+    #   -c requirements.txt
     #   automat
     #   twisted
 automat==20.2.0
@@ -17,29 +17,29 @@ hyperlink==21.0.0
     # via twisted
 idna==3.3
     # via
-    #   -c requirements/requirements-extra.txt
-    #   -c requirements/requirements.txt
+    #   -c requirements-extra.txt
+    #   -c requirements.txt
     #   hyperlink
 incremental==21.3.0
     # via twisted
 six==1.16.0
     # via
-    #   -c requirements/requirements-extra.txt
-    #   -c requirements/requirements.txt
+    #   -c requirements-extra.txt
+    #   -c requirements.txt
     #   automat
 tornado==6.1
-    # via -r requirements/requirements-wsgi.in
+    # via -r requirements-wsgi.in
 twisted==22.4.0
-    # via -r requirements/requirements-wsgi.in
+    # via -r requirements-wsgi.in
 typing-extensions==4.2.0
     # via
-    #   -c requirements/requirements.txt
+    #   -c requirements.txt
     #   twisted
-waitress==2.1.1
-    # via -r requirements/requirements-wsgi.in
+waitress==2.1.2
+    # via -r requirements-wsgi.in
 zope-interface==5.4.0
     # via
-    #   -c requirements/requirements-extra.txt
+    #   -c requirements-extra.txt
     #   twisted
 
 # The following packages are considered to be unsafe in a requirements file:
