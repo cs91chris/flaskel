@@ -70,19 +70,21 @@ liccheck:
 		-r ${REQ_PATH}/requirements-wsgi.txt
 
 safety:
-	# ignore flask-caching
 	safety check --full-report \
-		--ignore 40459 \
 		-r ${REQ_PATH}/requirements.txt \
 		-r ${REQ_PATH}/requirements-extra.txt \
 		-r ${REQ_PATH}/requirements-wsgi.txt
 
 autoflake:
 	autoflake $(call check_format) \
-		--recursive --in-place \
-		--remove-all-unused-imports --ignore-init-module-imports \
-		--remove-duplicate-keys --remove-unused-variables \
+		--recursive \
+		--in-place \
+		--remove-all-unused-imports \
+		--ignore-init-module-imports \
+		--remove-duplicate-keys \
+		--remove-unused-variables \
 		${PACKAGE} tests setup.py
+
 black:
 	black $(call check_format) \
 		-t py${PYVER} --workers $(shell nproc) \
@@ -91,9 +93,14 @@ black:
 isort:
 	isort $(call check_format) \
 		--profile black -j $(shell nproc) --py ${PYVER} \
-		--atomic --overwrite-in-place \
-		--combine-star --combine-as --dont-float-to-top --honor-noqa \
-		--force-alphabetical-sort-within-sections --multi-line VERTICAL_HANGING_INDENT \
+		--atomic \
+		--overwrite-in-place \
+		--combine-star \
+		--combine-as \
+		--dont-float-to-top \
+		--honor-noqa \
+		--force-alphabetical-sort-within-sections \
+		--multi-line VERTICAL_HANGING_INDENT \
 		${PACKAGE} tests setup.py
 
 flake:
@@ -110,15 +117,13 @@ run-tox:
 
 test:
 	pytest -v -rf --strict-markers \
-		--cov=${PACKAGE} --cov-report=html \
-		--cov-config .coveragerc \
+		--cov=${PACKAGE} --cov-report=html --cov-config .coveragerc \
 		tests
 
 test-coverage:
 	pytest -v -rf --strict-markers \
+		--cov=${PACKAGE} --cov-report=xml --cov-config .coveragerc \
 		--junitxml=junit-report.xml \
-		--cov=${PACKAGE} --cov-report=xml \
-		--cov-config .coveragerc \
 		tests
 
 build-dist:
