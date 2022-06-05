@@ -46,7 +46,7 @@ Internal extensions:
 
 - ``flaskel.ext.crypto.argon.Argon2`` (argon2)
 - ``flaskel.ext.datetime.FlaskDateHelper`` (date_helper)
-- ``flaskel.ext.limit.FlaskIPBan`` (ipban)
+- ``flaskel.ext.ipban.FlaskIPBan`` (ipban)
 - ``flaskel.ext.redis.FlaskRedis`` (redis)
 - ``flaskel.ext.useragent.UserAgent`` (useragent)
 - ``flaskel.ext.redis.FlaskRedis`` (redis)
@@ -119,63 +119,12 @@ class SQLAModel(Model):
     def update(self, attributes): ...
 ```
 
-- models mixins, for common use cases
-
-```python
-class StandardMixin: ...
-class CatalogMixin: ...
-class CatalogXMixin(CatalogMixin): ...
-class LoaderMixin: ...
-class UserMixin(StandardMixin): ...
-class DictableMixin:
-    def to_dict(self, restricted=False): ...
-```
-
-- Support class for common problems
-
-```python
-class SQLASupport:
-    def __init__(self, model, session): ...
-
-    def get_or_create(self, defaults=None, **kwargs):
-        """
-        :param defaults: attribute used to create record
-        :param kwargs: filters used to fetch record or create
-        :return: obj, created (bool)
-        """
-
-    def update_or_create(self, defaults=None, **kwargs):
-        """
-        :param defaults: attribute used to create record
-        :param kwargs: filters used to fetch record or create
-        :return: obj, created (bool)
-        """
-    @staticmethod
-    def exec_from_file(db_uri, filename, echo=False):
-        """
-        :param db_uri: database url connection
-        :param filename: sql file name
-        :param echo: enable sqlalchemy echo
-        """
-```
-
 
 ## Data Structures
 
 ```python
 class ConfigProxy: ...
 class ExtProxy: ...
-class HashableDict(dict): ...
-class ObjectDict(dict): ...
-
-class IntEnum(enum.IntEnum):
-    @classmethod
-    def to_list(cls): ...
-    def to_dict(self): ...
-
-class Dumper:
-    def __init__(self, data, callback=None, *args, **kwargs): ...
-    def dump(self): ...
 ```
 
 
@@ -233,65 +182,12 @@ webargs.ReqField.list_of()
 ## JSON schema support
 
 ```python
-class JSONSchema:
-    @classmethod
-    def load_from_url(cls, url): ...
-
-    @classmethod
-    def load_from_file(cls, file): ...
-
-    @classmethod
-    def validate(cls, data, schema, raise_exc=False, pretty_error=True, checker=None): ...
-```
-
-```python
 class PayloadValidator:
     schemas = SCHEMAS
     validator = JSONSchema
 
     @classmethod
     def validate(cls, schema, strict=True): ...
-```
-
-```python
-Fields.schema
-Fields.null
-Fields.integer
-Fields.string
-Fields.number
-Fields.boolean
-Fields.datetime
-Fields.any_object
-Fields.any
-Fields.Opt.integer
-Fields.Opt.string
-Fields.Opt.number
-Fields.Opt.boolean
-
-class Fields:
-    @classmethod
-    def oneof(cls, *args, **kwargs): ...
-
-    @classmethod
-    def anyof(cls, *args, **kwargs): ...
-
-    @classmethod
-    def ref(cls, path, **kwargs): ...
-
-    @classmethod
-    def enum(cls, *args, **kwargs): ...
-
-    @classmethod
-    def type(cls, *args, **kwargs): ...
-
-    @classmethod
-    def object(cls, required=(), not_required=(), properties=None, all_required=True, additional=False, **kwargs): ...
-
-    @classmethod
-    def array(cls, items, min_items=0, **kwargs): ...
-
-    @classmethod
-    def array_object(cls, min_items=0, **kwargs): ...
 ```
 
 
@@ -437,102 +333,102 @@ Configuration specific for internal extensions:
 
 
 - flaskel.ext.crypto.argon.Argon2
-- ``ARGON2_ENCODING``: *(default = utf-8)*
-- ``ARGON2_TIME_COST``: *(default = 3)*
-- ``ARGON2_HASH_LEN``: *(default = 32)*
-- ``ARGON2_PARALLELISM``: *(default = 4)*
-- ``ARGON2_SALT_LEN``: *(default = 16)*
-- ``ARGON2_MEMORY_COST``: *(default = 65536)* 64 MiB
-- ``ARGON2_PROFILE``: *(default = low)* allowed low|high
+  - ``ARGON2_ENCODING``: *(default = utf-8)*
+  - ``ARGON2_TIME_COST``: *(default = 3)*
+  - ``ARGON2_HASH_LEN``: *(default = 32)*
+  - ``ARGON2_PARALLELISM``: *(default = 4)*
+  - ``ARGON2_SALT_LEN``: *(default = 16)*
+  - ``ARGON2_MEMORY_COST``: *(default = 65536)* 64 MiB
+  - ``ARGON2_PROFILE``: *(default = low)* allowed low|high
 
 
 - flaskel.ext.healthcheck.health.HealthCheck
- - ``HEALTHCHECK_ABOUT_LINK``: *(default = None)*
- - ``HEALTHCHECK_VIEW_NAME``: *(default = healthcheck)*
- - ``HEALTHCHECK_PATH``: *(default = /healthcheck)*
- - ``HEALTHCHECK_PARAM_KEY``: *(default = checks)*
- - ``HEALTHCHECK_PARAM_SEP``: *(default = +)*
- - ``HEALTHCHECK_CONTENT_TYPE``: *(default = application/health+json)*
+  - ``HEALTHCHECK_ABOUT_LINK``: *(default = None)*
+  - ``HEALTHCHECK_VIEW_NAME``: *(default = healthcheck)*
+  - ``HEALTHCHECK_PATH``: *(default = /healthcheck)*
+  - ``HEALTHCHECK_PARAM_KEY``: *(default = checks)*
+  - ``HEALTHCHECK_PARAM_SEP``: *(default = +)*
+  - ``HEALTHCHECK_CONTENT_TYPE``: *(default = application/health+json)*
 
 
 - flaskel.ext.datetime.FlaskDateHelper
- - ``DATE_HELPER_COUNTRY``: *(default = IT)*
- - ``DATE_HELPER_PROV``: *(default = None)*
- - ``DATE_HELPER_STATE``: *(default = None)*
- - ``DATE_ISO_FORMAT``: *(default = "%Y-%m-%dT%H:%M:%S")*
- - ``DATE_PRETTY``: *(default = "%d %B %Y %I:%M %p")*
+  - ``DATE_HELPER_COUNTRY``: *(default = IT)*
+  - ``DATE_HELPER_PROV``: *(default = None)*
+  - ``DATE_HELPER_STATE``: *(default = None)*
+  - ``DATE_ISO_FORMAT``: *(default = "%Y-%m-%dT%H:%M:%S")*
+  - ``DATE_PRETTY``: *(default = "%d %B %Y %I:%M %p")*
 
 
 - flaskel.ext.jobs.APJobs
- - ``SCHEDULER_AUTO_START``: *(default = False)*
- - ``SCHEDULER_PATCH_MULTITHREAD``: *(default = True)*
- - ``SCHEDULER_LOCK_FILE``: *(default = .scheduler.lock)*
+  - ``SCHEDULER_AUTO_START``: *(default = False)*
+  - ``SCHEDULER_PATCH_MULTITHREAD``: *(default = True)*
+  - ``SCHEDULER_LOCK_FILE``: *(default = .scheduler.lock)*
 
 
 - flaskel.ext.ipban.FlaskIPBan
- - ``IPBAN_ENABLED``: *(default = True)*
- - ``IPBAN_KEY_PREFIX``: *(default = APP_NAME)*
- - ``IPBAN_KEY_SEP``: *(default = /)*
- - ``IPBAN_BACKEND``: *(default = local)*
- - ``IPBAN_BACKEND_OPTS``: *(default = {})*
- - ``IPBAN_COUNT``: *(default = 5)*
- - ``IPBAN_SECONDS``: *(default = 3600)*
- - ``IPBAN_NET_WHITELIST``: *(default = 127.0.0.0/8)*
- - ``IPBAN_IP_WHITELIST``: *(default = 127.0.0.1)*
- - ``IPBAN_STATUS_CODE``: *(default = 403)*
- - ``IPBAN_CHECK_CODES``: *(default = 404,405,501)*
+  - ``IPBAN_ENABLED``: *(default = True)*
+  - ``IPBAN_KEY_PREFIX``: *(default = APP_NAME)*
+  - ``IPBAN_KEY_SEP``: *(default = /)*
+  - ``IPBAN_BACKEND``: *(default = local)*
+  - ``IPBAN_BACKEND_OPTS``: *(default = {})*
+  - ``IPBAN_COUNT``: *(default = 5)*
+  - ``IPBAN_SECONDS``: *(default = 3600)*
+  - ``IPBAN_NET_WHITELIST``: *(default = 127.0.0.0/8)*
+  - ``IPBAN_IP_WHITELIST``: *(default = 127.0.0.1)*
+  - ``IPBAN_STATUS_CODE``: *(default = 403)*
+  - ``IPBAN_CHECK_CODES``: *(default = 404,405,501)*
 
 - flaskel.ext.caching.Caching
- - ``CACHE_TYPE``: *(default = "flask_caching.backends.redis")*
- - ``CACHE_REDIS_URL``: *(default = REDIS_URL)*
- - ``CACHE_DEFAULT_TIMEOUT``: *(default = Seconds.hour)*
- - ``CACHE_KEY_PREFIX``: *(default = APP_NAME)*
- - ``CACHE_OPTIONS``: *(dict)* passed to redis client instance
+  - ``CACHE_TYPE``: *(default = "flask_caching.backends.redis")*
+  - ``CACHE_REDIS_URL``: *(default = REDIS_URL)*
+  - ``CACHE_DEFAULT_TIMEOUT``: *(default = Seconds.hour)*
+  - ``CACHE_KEY_PREFIX``: *(default = APP_NAME)*
+  - ``CACHE_OPTIONS``: *(dict)* passed to redis client instance
 
 
 - flaskel.ext.redis.FlaskRedis
- - ``REDIS_URL``: *(default = redis://localhost:6379/0)*
- - ``REDIS_OPTS``: *(dict)* passed to redis client instance
+  - ``REDIS_URL``: *(default = redis://localhost:6379/0)*
+  - ``REDIS_OPTS``: *(dict)* passed to redis client instance
 
 
 - flaskel.ext.mongo.FlaskMongoDB
- - ``MONGO_URI``: *(default = mongodb://localhost)*
- - ``MONGO_OPTS``: *(dict)* passed to mongodb client instance
+  - ``MONGO_URI``: *(default = mongodb://localhost)*
+  - ``MONGO_OPTS``: *(dict)* passed to mongodb client instance
 
 
 - flaskel.ext.useragent.UserAgent
- - ``USER_AGENT_AUTO_PARSE``: *(default = False)*
+  - ``USER_AGENT_AUTO_PARSE``: *(default = False)*
 
 
 - flaskel.extra.stripe.PaymentHandler (stripe)
- - ``STRIPE_SECRET_KEY``:
- - ``STRIPE_PUBLIC_KEY``:
- - ``STRIPE_WEBHOOK_SECRET``:
- - ``STRIPE_DEBUG``: *(default = False)*
- - ``STRIPE_DEFAULT_CURRENCY``: *(default = eur)*
- - ``STRIPE_API_VERSION``: *(default = 2020-08-27)*
+  - ``STRIPE_SECRET_KEY``:
+  - ``STRIPE_PUBLIC_KEY``:
+  - ``STRIPE_WEBHOOK_SECRET``:
+  - ``STRIPE_DEBUG``: *(default = False)*
+  - ``STRIPE_DEFAULT_CURRENCY``: *(default = eur)*
+  - ``STRIPE_API_VERSION``: *(default = 2020-08-27)*
 
 
 - flaskel.extra.mobile_support.MobileVersionCompatibility (mobile_version)
- - ``VERSION_STORE_MAX``: *(default = 6)*
- - ``VERSION_CACHE_EXPIRE``: *(default = 3600)*
- - ``VERSION_CHECK_ENABLED``: *(default = True)*
- - ``VERSION_AGENT_HEADER``: *(default = X-Agent)*
- - ``VERSION_API_HEADER``: *(default = X-Api-Version)*
- - ``VERSION_STORE_KEY``: *(default = x_upgrade_needed)*
- - ``VERSION_HEADER_KEY``: *(default = X-Mobile-Version)*
- - ``VERSION_UPGRADE_HEADER``: *(default = X-Upgrade-Needed)*
- - ``VERSION_AGENTS``: *(default = (android, ios))*
- - ``VERSION_SKIP_STATUSES``: *(default = (FORBIDDEN, NOT_FOUND, METHOD_NOT_ALLOWED, TOO_MANY_REQUESTS))*
+  - ``VERSION_STORE_MAX``: *(default = 6)*
+  - ``VERSION_CACHE_EXPIRE``: *(default = 3600)*
+  - ``VERSION_CHECK_ENABLED``: *(default = True)*
+  - ``VERSION_AGENT_HEADER``: *(default = X-Agent)*
+  - ``VERSION_API_HEADER``: *(default = X-Api-Version)*
+  - ``VERSION_STORE_KEY``: *(default = x_upgrade_needed)*
+  - ``VERSION_HEADER_KEY``: *(default = X-Mobile-Version)*
+  - ``VERSION_UPGRADE_HEADER``: *(default = X-Upgrade-Needed)*
+  - ``VERSION_AGENTS``: *(default = (android, ios))*
+  - ``VERSION_SKIP_STATUSES``: *(default = (FORBIDDEN, NOT_FOUND, METHOD_NOT_ALLOWED, TOO_MANY_REQUESTS))*
 
 
 - flaskel.extra.notification.NotificationHandler
- - ``FCM_API_KEY``: mandatory if used
+  - ``FCM_API_KEY``: mandatory if used
 
 
 - flaskel.extra.media.service.MediaService
-- ``MEDIA``: *(dict)*
-  - ``ALLOWED_EXTENSIONS``: *(default: [png,jpg])*
-  - ``UPLOAD_FOLDER``:
-  - ``EXTERNAL_URL``:
+  - ``MEDIA``: *(dict)*
+    - ``ALLOWED_EXTENSIONS``: *(default: [png,jpg])*
+    - ``UPLOAD_FOLDER``:
+    - ``EXTERNAL_URL``:
 
