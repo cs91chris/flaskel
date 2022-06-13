@@ -261,7 +261,8 @@ class PatchApiView(Restful):
         view: t.Optional[t.Type[BaseView]] = None,
         **kwargs,
     ) -> t.Callable:
-        return BaseView.register(app, name, urls, view)
+        _view = t.cast(t.Type[BaseView], view or cls)
+        return BaseView.register(app, name, urls, _view, **kwargs)
 
     @builder.no_content
     def patch(self, *args, **kwargs):
