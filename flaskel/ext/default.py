@@ -15,7 +15,6 @@ from .datetime import FlaskDateHelper
 from .errors import ErrorNormalizer
 from .healthcheck import HealthCheck
 from .jobs import APJobs
-from .sendmail import ClientMail
 from .sqlalchemy import SQLAModel
 from .useragent import UserAgent
 
@@ -29,7 +28,6 @@ error_handler: ErrorHandler = ErrorHandler(normalizer=ErrorNormalizer())
 argon2: Argon2 = Argon2()
 caching: Caching = Caching()
 useragent: UserAgent = UserAgent()
-client_mail: ClientMail = ClientMail()
 health_checks: HealthCheck = HealthCheck()
 date_helper: FlaskDateHelper = FlaskDateHelper()
 

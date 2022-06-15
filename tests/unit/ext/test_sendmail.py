@@ -2,11 +2,12 @@ from unittest.mock import MagicMock
 
 from vbcore.tester.mixins import Asserter
 
-from flaskel.ext.default import client_mail
+from flaskel.ext.sendmail import ClientMail
 
 
 def test_sendmail(flaskel_app, caplog):
     flaskel_app.config.MAIL_DEFAULT_SENDER = "sender@mail.com"
+    client_mail = ClientMail()
     client_mail.send = MagicMock()
     client_mail.init_app(flaskel_app)
 

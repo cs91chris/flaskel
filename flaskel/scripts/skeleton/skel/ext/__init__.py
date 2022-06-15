@@ -2,6 +2,7 @@ from flaskel.ext import default, limit
 from flaskel.ext.auth import token_auth
 from flaskel.ext.mongo import FlaskMongoDB
 from flaskel.ext.redis import FlaskRedis
+from flaskel.ext.sendmail import ClientMail
 from flaskel.extra.mobile_support import MobileVersionCompatibility, RedisStore
 from flaskel.extra.payments.stripe import PaymentHandler
 
@@ -9,6 +10,7 @@ from .auth import account_handler
 from .database import database
 
 ipban = limit.FlaskIPBan()
+client_mail = ClientMail()
 client_redis = FlaskRedis()
 client_mongo = FlaskMongoDB()
 scheduler = default.Scheduler()
@@ -47,7 +49,7 @@ EXTENSIONS = {
     "mongo": (client_mongo,),
     "redis": (client_redis,),
     "scheduler": (scheduler,),
-    "sendmail": (default.client_mail,),
+    "sendmail": (client_mail,),
     "stripe": (payment_handler,),
     "template": (default.template,),
     "useragent": (default.useragent,),
