@@ -105,7 +105,7 @@ class Caching(FlaskCache):
                 kwargs.setdefault("make_cache_key", self.make_cache_key)
                 kwargs.setdefault("response_filter", self.response_filter)
                 kwargs["timeout"] = self.optional_callable(kwargs["timeout"])
-                return self.superclass_cached(**kwargs)(f)(*args, **kw)
+                return self.superclass_cached(**kwargs)(f, *args, **kw)
 
             return decorator
 
