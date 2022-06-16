@@ -190,6 +190,7 @@ class Restful(CatalogResource):
     def _prepare_upsert_filters(cls, *_, **__) -> t.Dict[str, t.Any]:
         return {}
 
+    # pylint: disable=inconsistent-return-statements
     def _upsert(self, data) -> t.Tuple[t.Any, int]:
         try:
             res, created = self.support.update_or_create(
@@ -198,7 +199,7 @@ class Restful(CatalogResource):
             self._session.commit()
             return res, httpcode.CREATED if created else httpcode.SUCCESS
         except SQLAlchemyError as exc:
-            return t.cast(t.Tuple[t.Any, int], self._session_exception_handler(exc))
+            self._session_exception_handler(exc)
 
     def on_post(self, *_, **__) -> t.Tuple[t.Dict[str, t.Any], int]:
         payload = self.validate(self.post_schema)

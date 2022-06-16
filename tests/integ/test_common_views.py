@@ -144,4 +144,5 @@ def test_use_x_send_file(testapp):
 
 def test_spa_view(testapp):
     # TODO: added missing tests
+    _ = testapp
     assert True

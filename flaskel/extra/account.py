@@ -130,8 +130,7 @@ class AccountHandler:
             cap.logger.exception(exc)
             self.session.rollback()
             if isinstance(exc, DBDuplicateEntry):
-                # TODO: return the duplicated keys
-                abort(httpcode.CONFLICT)
+                abort(httpcode.CONFLICT, response={"cause": exc.as_dict()})
             abort(httpcode.INTERNAL_SERVER_ERROR)
 
         token = self.auth_code_handler.generate(

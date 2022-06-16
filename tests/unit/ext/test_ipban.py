@@ -55,7 +55,7 @@ def test_ban_service():
     Asserter.assert_true(service.is_banned(ip_banned))
     Asserter.assert_false(service.is_banned(not_banned))
 
-    service.ip.unban(ip_banned)
+    service.repo.unban(ip_banned)
     Asserter.assert_false(service.is_banned(ip_banned))
 
 

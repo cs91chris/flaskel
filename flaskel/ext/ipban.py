@@ -110,9 +110,9 @@ class IpBanService:
         self.max_attempts = max_attempts
         self.white_list: t.Set[IpType] = set()
         self.net_white_list: t.Set[NetType] = set()
-        self.ip: IBanRepo = repo_class(key_prefix=key_prefix, **kwargs)
+        self.repo: IBanRepo = repo_class(key_prefix=key_prefix, **kwargs)
         self.black_list: IBanRepo = repo_class(
-            key_prefix=self.ip.prepare_key("blacklist"), **kwargs
+            key_prefix=self.repo.prepare_key("blacklist"), **kwargs
         )
 
     def load_whitelist(self, ip: t.Iterable[str] = (), net: t.Iterable[str] = ()):
@@ -142,7 +142,7 @@ class IpBanService:
 
         if self.is_whitelisted(ip) or self.is_blacklisted(ip):
             return None
-        return self.ip.ban(ip, ttl or self.default_ttl)
+        return self.repo.ban(ip, ttl or self.default_ttl)
 
     def is_banned(self, ip: str) -> bool:
         if self.is_whitelisted(ip):
@@ -150,7 +150,7 @@ class IpBanService:
         if self.is_blacklisted(ip):
             return True
 
-        return self.ip.attempts(ip) >= self.max_attempts
+        return self.repo.attempts(ip) >= self.max_attempts
 
 
 class FlaskIPBan:
