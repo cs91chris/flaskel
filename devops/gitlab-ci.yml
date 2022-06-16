@@ -13,8 +13,10 @@ before_script:
   - pip install -r requirements/requirements-build.txt
 
 validate-test-py38:
-  stage: test
   image: python:3.8
+  stage: test
+  only:
+    - tags
   script:
     - tox -e py38
   artifacts:
@@ -26,8 +28,10 @@ validate-test-py38:
         path: coverage.xml
 
 validate-test-py39:
-  stage: test
   image: python:3.9
+  stage: test
+  only:
+    - tags
   script:
     - tox -e py39
   artifacts:
@@ -38,26 +42,14 @@ validate-test-py39:
         coverage_format: cobertura
         path: coverage.xml
 
-validate-test-py310:
-  stage: test
-  image: python:3.10
-  script:
-    - tox -e py310
-  artifacts:
-    when: always
-    reports:
-      junit: junit-report.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
-
 dist-build-publish:
-  stage: build
   image: python:3.9
+  stage: build
+  only:
+    - tags
   needs:
     - validate-test-py38
     - validate-test-py39
-    # - validate-test-py310 # ignores for temporary issue with redislite
   variables:
     TWINE_USERNAME: gitlab-ci-token
     TWINE_PASSWORD: ${CI_JOB_TOKEN}
