@@ -1,7 +1,8 @@
 #!/bin/bash
 
+export FMT_ONLY_CHECK=true
+
 SRC=$(git diff --cached --name-only --diff-filter=ACM --no-color | grep --color=never -e '\.py$')
 [[ -z "${SRC}" ]] && exit 0
 
-export FMT_ONLY_CHECK=true
-make format lint
+make format
