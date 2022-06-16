@@ -10,6 +10,7 @@ Flask-Logify
 Flask-ResponseBuilder
 Flask-SQLAlchemy
 Flask-TemplateSupport
-webargs
+jsonschema
 nest-asyncio
-vbcore[all]==1.2.1
+vbcore[crypto,db,http]
+webargs
