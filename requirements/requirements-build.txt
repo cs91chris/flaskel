@@ -8,7 +8,7 @@ bleach==5.0.0
     # via
     #   -c requirements/requirements-dev.txt
     #   readme-renderer
-certifi==2022.5.18.1
+certifi==2022.6.15
     # via
     #   -c requirements/requirements-dev.txt
     #   requests
@@ -55,7 +55,7 @@ jeepney==0.8.0
     #   -c requirements/requirements-dev.txt
     #   keyring
     #   secretstorage
-keyring==23.5.1
+keyring==23.6.0
     # via
     #   -c requirements/requirements-dev.txt
     #   twine
@@ -63,7 +63,7 @@ packaging==21.3
     # via
     #   -c requirements/requirements-dev.txt
     #   tox
-pkginfo==1.8.2
+pkginfo==1.8.3
     # via
     #   -c requirements/requirements-dev.txt
     #   twine

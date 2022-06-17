@@ -14,3 +14,5 @@ jsonschema
 nest-asyncio
 vbcore[crypto,db,http]
 webargs
+
+requests<2.28
