@@ -124,18 +124,19 @@ def test_make_cache_key(flaskel_app):
 def test_cached(flaskel_app):
     response = "hello"
 
-    def superclass_cached(**__):
-        def wrapped(f, *args, **kwargs):
+    def superclass_cached(f):
+        def wrapped(*args, **kwargs):
             return f(*args, **kwargs)
 
         return wrapped
 
+    @flaskel_app.get("/")
     @caching.cached(source_check=True)
     def func_view(name):
         return f"{response} {name}"
 
     with patch("flaskel.ext.default.caching.superclass_cached") as mock_super:
-        mock_super.side_effect = superclass_cached
+        mock_super.return_value = superclass_cached
         with flaskel_app.test_request_context():
             name_param = "world"
             Asserter.assert_equals(func_view(name_param), f"{response} {name_param}")
