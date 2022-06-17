@@ -76,7 +76,8 @@ class Server:
         return callable_options
 
     def run_from_cli(self, **kwargs):
-        self.runner(**kwargs)
+        runner = self.runner(**kwargs)
+        return runner()
 
     def runner(self, **kwargs) -> t.Callable:
         @self.register_options
