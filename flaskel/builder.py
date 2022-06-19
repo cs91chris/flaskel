@@ -57,7 +57,7 @@ class AppBuilder:
         self,
         app: t.Optional[Flaskel] = None,
         *,
-        conf_module: t.Optional[str] = None,
+        conf_module: t.Optional[t.Union[str, object]] = None,
         views: t.Tuple[ViewType, ...] = (),
         folders: t.Tuple[StrPathLikeType, ...] = (),
         blueprints: t.Tuple[BlueprintType, ...] = (),
@@ -99,7 +99,7 @@ class AppBuilder:
         self._after_request = after_request
         self._before_request = before_request
         self._after_create_callback = after_create_hook
-        self._conf_module = conf_module or self.conf_module
+        self._app_conf_module = conf_module
 
     @property
     def app(self):
@@ -150,7 +150,9 @@ class AppBuilder:
             self._app.config.JWT_SECRET_KEY = self._app.config.SECRET_KEY
 
     def set_config(self, conf: t.Optional[t.Union[str, t.Dict[str, t.Any]]] = None):
-        self._app.config.from_object(self._conf_module)
+        self._app.config.from_object(self.conf_module)
+        if self._app_conf_module:
+            self._app.config.from_object(self._app_conf_module)
         if isinstance(conf, str):
             self._app.config.from_object(conf)
         else:

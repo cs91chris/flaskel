@@ -229,9 +229,6 @@ SCHEMAS = yaml.load_optional_yaml_file(
 SCHEDULER_JOBS = yaml.load_optional_yaml_file(
     os.path.join(CONF_PATH, "scheduler.yaml"), debug=DEBUG
 )
-IPBAN_NUISANCES = yaml.load_optional_yaml_file(
-    os.path.join(CONF_PATH, "nuisances.yaml"), debug=DEBUG
-)
 LOGGING = yaml.load_optional_yaml_file(
     os.path.join(CONF_PATH, "log.yaml"), default=logger.LOGGING
 )

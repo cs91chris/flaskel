@@ -325,7 +325,6 @@ Extra configurations are optionally loaded via files in folder ``CONF_PATH``:
 - ``APISPEC``: *(swagger.yaml)*
 - ``SCHEMAS``: *(schemas.yaml)*
 - ``SCHEDULER_JOBS``: *(scheduler.yaml)*
-- ``IPBAN_NUISANCES``: *(nuisances.yaml)*
 - ``LOGGING``: *(log.yaml)* if missing, default ``flaskel.utils.logger:LOGGING`` is used
 
 
