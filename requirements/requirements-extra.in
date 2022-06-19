@@ -3,7 +3,6 @@
 pyfcm
 stripe
 redis
-rejson
 hiredis
 gunicorn
 gevent

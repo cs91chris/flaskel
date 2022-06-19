@@ -45,7 +45,6 @@ REQUIRES_EXT = REQUIRES + [
     "pyfcm",
     "stripe",
     "redis",
-    "rejson",
     "hiredis",
     "Flask-Mail",
     "Flask-APScheduler",

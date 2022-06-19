@@ -4,6 +4,11 @@
 #
 #    pip-compile --no-emit-index-url --no-emit-trusted-host --output-file=requirements/requirements-test.txt requirements/requirements-test.in
 #
+async-timeout==4.0.2
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   redis
 attrs==21.4.0
     # via
     #   -c requirements/requirements.txt
@@ -22,6 +27,11 @@ coverage[toml]==6.4.1
     # via
     #   -r requirements/requirements-test.in
     #   pytest-cov
+deprecated==1.2.13
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   redis
 idna==3.3
     # via
     #   -c requirements/requirements-extra.txt
@@ -31,8 +41,10 @@ iniconfig==1.1.1
     # via pytest
 packaging==21.3
     # via
+    #   -c requirements/requirements-extra.txt
     #   -c requirements/requirements.txt
     #   pytest
+    #   redis
 pluggy==1.0.0
     # via pytest
 psutil==5.9.1
@@ -43,6 +55,7 @@ py==1.11.0
     # via pytest
 pyparsing==3.0.9
     # via
+    #   -c requirements/requirements-extra.txt
     #   -c requirements/requirements.txt
     #   packaging
 pytest==7.1.2
@@ -51,7 +64,7 @@ pytest==7.1.2
     #   pytest-cov
 pytest-cov==3.0.0
     # via -r requirements/requirements-test.in
-redis==3.5.3
+redis==4.3.3
     # via
     #   -c requirements/requirements-extra.txt
     #   redislite
@@ -74,6 +87,11 @@ urllib3==1.26.9
     #   -c requirements/requirements.txt
     #   requests
     #   responses
+wrapt==1.14.1
+    # via
+    #   -c requirements/requirements-extra.txt
+    #   -c requirements/requirements.txt
+    #   deprecated
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
