@@ -9,6 +9,8 @@ from vbcore.json import JsonEncoder
 from werkzeug.routing import Rule
 from werkzeug.utils import safe_join
 
+from flaskel.utils.datastruct import Pagination
+
 cap: "Flaskel" = t.cast("Flaskel", flask.current_app)
 request: "Request" = t.cast("Request", flask.request)
 
@@ -30,8 +32,8 @@ class DumpUrls(Dumper):
     def dump(self) -> str:
         output = []
         for rule in self.rules:
-            methods = ",".join(rule.methods)
-            output.append(f"{rule.endpoint}:30s {methods}:40s {rule}")
+            methods = ",".join(sorted(rule.methods))
+            output.append(f"{rule.endpoint:35s} {methods:40s} {rule}")
         return "\n".join(sorted(output))
 
 
@@ -51,11 +53,6 @@ class Request(flask.Request):
         return flask.request.environ.get(flask_header_name)
 
     def get_json(self, *args, allow_empty=False, **kwargs) -> ObjectDict:
-        """
-
-        :param allow_empty:
-        :return:
-        """
         payload = super().get_json(*args, **kwargs)
         if payload is None:
             if not allow_empty:
@@ -68,12 +65,6 @@ class Request(flask.Request):
 class Response(flask.Response):
     @classmethod
     def no_content(cls, status=httpcode.NO_CONTENT, headers=None) -> "Response":
-        """
-
-        :param status:
-        :param headers:
-        :return:
-        """
         response = flask.make_response(bytes())
         response.headers.update(headers or {})
         response.headers.pop(HeaderEnum.CONTENT_TYPE)
@@ -114,6 +105,15 @@ class Response(flask.Response):
 
     def get_json(self, *args, **kwargs) -> ObjectDict:
         return ObjectDict.normalize(super().get_json(*args, **kwargs))
+
+    @classmethod
+    def pagination_headers(cls, total: int, pagination: Pagination) -> t.Dict[str, int]:
+        return {
+            HeaderEnum.X_PAGINATION_COUNT: total,
+            HeaderEnum.X_PAGINATION_PAGE: pagination.page or 1,
+            HeaderEnum.X_PAGINATION_NUM_PAGES: pagination.pages(total),
+            HeaderEnum.X_PAGINATION_PAGE_SIZE: pagination.per_page(),
+        }
 
 
 class Flaskel(flask.Flask):

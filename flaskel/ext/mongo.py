@@ -1,7 +1,5 @@
 import typing as t
-from dataclasses import dataclass
 from functools import partial
-from math import ceil
 
 from bson import ObjectId
 from flask_pymongo import PyMongo
@@ -11,9 +9,9 @@ from pymongo.results import DeleteResult
 from vbcore.datastruct import ObjectDict
 from vbcore.date_helper import Seconds
 from vbcore.http import httpcode
-from vbcore.http.headers import HeaderEnum
 
-from flaskel import client_mongo, ConfigProxy
+from flaskel import client_mongo, ConfigProxy, Response
+from flaskel.utils.datastruct import Pagination
 
 
 class FlaskMongoDB(PyMongo):
@@ -48,21 +46,6 @@ class FlaskMongoDB(PyMongo):
         app.config.MONGO_OPTS.setdefault("heartbeatFrequencyMS", Seconds.millis * 10)
 
         app.config.MONGO_OPTS.update(**kwargs)
-
-
-@dataclass(frozen=True)
-class Pagination:
-    page: int = 1
-    page_size: int = 50
-    max_page_size: t.Optional[int] = None
-
-
-@dataclass(frozen=True)
-class PaginationData:
-    skip: int
-    limit: int
-    status: int
-    headers: t.Dict[str, int]
 
 
 ResIdType = t.Union[ObjectId, str]
@@ -152,7 +135,21 @@ class BaseRepo:
 
         if pagination:
             total = cls.count(collection=collection, filters=filters)
-            return cls.response_paginated(cursor() if total else (), total, pagination)
+            query = cursor() if total else ()
+            _cursor = (
+                query.skip(pagination.offset()).limit(pagination.per_page())  # type: ignore
+                if query != ()
+                else tuple()
+            )
+            return (
+                [cls.prepare_record(d) for d in _cursor],
+                (
+                    httpcode.PARTIAL_CONTENT
+                    if pagination.is_paginated(total)
+                    else httpcode.SUCCESS
+                ),
+                Response.pagination_headers(total, pagination),
+            )
 
         return [cls.prepare_record(d) for d in cursor()]
 
@@ -169,47 +166,9 @@ class BaseRepo:
             raise_404=True,
             filters={
                 "_id": ObjectId(res_id) if isinstance(res_id, str) else res_id,
-                **filters,
+                **(filters or {}),
             },
             projection=projection or cls.projection_detail,
             sort=sort or cls.sort_by,
             **kwargs,
-        )
-
-    @classmethod
-    def response_paginated(
-        cls, query, total: int, pagination: Pagination
-    ) -> t.Tuple[list, int, dict]:
-        pagination_info = cls.compute_pagination(total, pagination)
-        cursor = (
-            query.skip(pagination_info.skip).limit(pagination_info.limit)
-            if query
-            else tuple()
-        )
-        return (
-            [cls.prepare_record(d) for d in cursor],
-            pagination_info.status,
-            pagination_info.headers,
-        )
-
-    @classmethod
-    def compute_pagination(cls, total: int, pagination: Pagination) -> PaginationData:
-        page = pagination.page
-        if pagination.max_page_size:
-            page_size = min(pagination.page_size, pagination.max_page_size)
-        else:
-            page_size = pagination.page_size
-
-        pages = int(ceil(total / float(page_size))) if page_size != 0 else 0
-
-        return PaginationData(
-            limit=page_size,
-            skip=(page - 1) * page_size,
-            status=httpcode.PARTIAL_CONTENT if page < pages else httpcode.SUCCESS,
-            headers={
-                HeaderEnum.X_PAGINATION_PAGE: page,
-                HeaderEnum.X_PAGINATION_NUM_PAGES: pages,
-                HeaderEnum.X_PAGINATION_PAGE_SIZE: page_size,
-                HeaderEnum.X_PAGINATION_COUNT: total,
-            },
         )

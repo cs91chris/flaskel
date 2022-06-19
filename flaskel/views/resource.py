@@ -4,11 +4,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from vbcore.db.exceptions import DBError
 from vbcore.db.support import SQLASupport
 from vbcore.http import httpcode, HttpMethod
-from vbcore.http.headers import HeaderEnum
 
-from flaskel import abort, cap, db_session, PayloadValidator, webargs
+from flaskel import abort, cap, db_session, PayloadValidator, Response, webargs
 from flaskel.ext.default import builder
 
+from ..utils.datastruct import Pagination
 from .base import BaseView, Resource, UrlsType
 
 
@@ -79,7 +79,8 @@ class CatalogResource(Resource):
             )
         return response
 
-    def response_paginated(self, res, **kwargs):
+    @classmethod
+    def response_paginated(cls, res, **kwargs):
         """
         Prepare the paginated response for resource collection
 
@@ -89,20 +90,15 @@ class CatalogResource(Resource):
         if isinstance(res, list):
             return [r.to_dict(**kwargs) for r in res]
 
+        headers = Response.pagination_headers(
+            res.total, Pagination(page=res.page, page_size=res.per_page)
+        )
+
         return (
             [r.to_dict(**kwargs) for r in res.items],
             (httpcode.PARTIAL_CONTENT if res.has_next else httpcode.SUCCESS),
-            self.pagination_headers(res),
+            headers,
         )
-
-    @staticmethod
-    def pagination_headers(data) -> t.Dict[str, int]:
-        return {
-            HeaderEnum.X_PAGINATION_COUNT: data.total,
-            HeaderEnum.X_PAGINATION_PAGE: data.page,
-            HeaderEnum.X_PAGINATION_NUM_PAGES: data.pages,
-            HeaderEnum.X_PAGINATION_PAGE_SIZE: data.per_page,
-        }
 
 
 class Restful(CatalogResource):

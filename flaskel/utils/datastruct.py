@@ -1,4 +1,6 @@
 import typing as t
+from dataclasses import dataclass
+from math import ceil
 
 from flask import current_app as cap
 
@@ -66,3 +68,29 @@ class ExtProxy:
 
     def __getitem__(self, item: str):
         return self.extension[item]
+
+
+@dataclass(frozen=True)
+class Pagination:
+    page: t.Optional[int] = None
+    page_size: t.Optional[int] = None
+    max_page_size: t.Optional[int] = None
+
+    def is_paginated(self, total: int) -> bool:
+        return (self.page or 1) < self.pages(total)
+
+    def pages(self, total: int) -> int:
+        page_size = self.per_page()
+        return int(ceil(total / page_size)) if page_size else 0
+
+    def offset(self) -> int:
+        if not self.page:
+            return 0
+        return (self.page - 1) * self.per_page()
+
+    def per_page(self) -> int:
+        if self.page_size:
+            if self.max_page_size:
+                return min(self.page_size, self.max_page_size)
+            return self.page_size
+        return self.max_page_size

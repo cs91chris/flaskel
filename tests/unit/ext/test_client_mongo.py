@@ -1,13 +1,12 @@
 from unittest.mock import MagicMock
 
 from bson import ObjectId
-from pymongo import DESCENDING
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import HeaderEnum
 from vbcore.tester.mixins import Asserter
 
-from flaskel.ext.mongo import BaseRepo, FlaskMongoDB, Pagination, PaginationData
+from flaskel.ext.mongo import FlaskMongoDB, Pagination
 
 
 def test_init_app(flaskel_app):
@@ -42,80 +41,60 @@ def test_init_app(flaskel_app):
     )
 
 
-class MongoRepo(BaseRepo):
-    mock_conn = MagicMock()
-    collection_key = "test_collection_key"
-    sort_by = [("test_key", DESCENDING)]
-    projection_detail = ["test_key"]
-
-    @classmethod
-    def connection(cls, collection=None):
-        return cls.mock_conn
+def test_repo_count(mongo_repo):
+    mongo_repo.count(filters={"key": "value"})
+    mongo_repo.mock_conn.count_documents.assert_called_once_with({"key": "value"})
 
 
-def test_repo_count():
-    MongoRepo.count(filters={"key": "value"})
-    MongoRepo.mock_conn.count_documents.assert_called_once_with({"key": "value"})
-
-
-def test_repo_aggregate():
+def test_repo_aggregate(mongo_repo):
     stages = [{"stage": "a"}, {"stage": "b"}]
-    MongoRepo.aggregate(stages=stages)
-    MongoRepo.mock_conn.aggregate.assert_called_once_with(stages)
+    mongo_repo.aggregate(stages=stages)
+    mongo_repo.mock_conn.aggregate.assert_called_once_with(stages)
 
 
-def test_repo_delete():
+def test_repo_delete(mongo_repo):
     res_id = "62acdef1efe39de177afaf24"
-    MongoRepo.delete(res_id, filter_key="filter_value")
-    MongoRepo.mock_conn.delete_one.assert_called_once_with(
+    mongo_repo.delete(res_id, filter_key="filter_value")
+    mongo_repo.mock_conn.delete_one.assert_called_once_with(
         {"_id": ObjectId(res_id), "filter_key": "filter_value"},
     )
 
 
-def test_repo_get_detail():
+def test_repo_get_detail(mongo_repo):
     res_id = "62acdef1efe39de177afaf24"
-    MongoRepo.get_detail(res_id, filters={"filter_key": "filter_value"})
-    MongoRepo.mock_conn.find_one_or_404.assert_called_once_with(
+    mongo_repo.get_detail(res_id, filters={"filter_key": "filter_value"})
+    mongo_repo.mock_conn.find_one_or_404.assert_called_once_with(
         {"_id": ObjectId(res_id), "filter_key": "filter_value"},
-        MongoRepo.projection_detail,
-        sort=MongoRepo.sort_by,
+        mongo_repo.projection_detail,
+        sort=mongo_repo.sort_by,
     )
 
 
-def test_repo_get_list():
-    MongoRepo.get_list(filters={"key": "value"})
-    MongoRepo.mock_conn.find.assert_called_once_with(
-        {"key": "value"}, None, sort=MongoRepo.sort_by
+def test_repo_get_list(mongo_repo):
+    mongo_repo.get_list(filters={"key": "value"})
+    mongo_repo.mock_conn.find.assert_called_once_with(
+        {"key": "value"}, None, sort=mongo_repo.sort_by
     )
 
 
-def test_repo_compute_pagination():
-    pagination = MongoRepo.compute_pagination(100, Pagination(page_size=10, page=2))
-    Asserter.assert_equals(
-        pagination,
-        PaginationData(
-            limit=10,
-            skip=10,
-            status=httpcode.PARTIAL_CONTENT,
-            headers={
-                HeaderEnum.X_PAGINATION_PAGE: 2,
-                HeaderEnum.X_PAGINATION_NUM_PAGES: 10,
-                HeaderEnum.X_PAGINATION_PAGE_SIZE: 10,
-                HeaderEnum.X_PAGINATION_COUNT: 100,
-            },
-        ),
+def test_repo_get_list_paginated(mongo_repo):
+    cursor = MagicMock()
+    cursor.skip.return_value = cursor
+    mongo_repo.mock_conn.find.return_value = cursor
+    mongo_repo.mock_conn.count_documents.return_value = 100
+
+    filters = {"key": "value"}
+
+    _, status, headers = mongo_repo.get_list(
+        filters=filters, pagination=Pagination(page_size=10, page=3)
     )
 
-
-def test_repo_response_paginated():
-    query = MagicMock()
-    query.skip.return_value = query
-
-    _, status, headers = MongoRepo.response_paginated(
-        query, 100, Pagination(page_size=10, page=3)
+    mongo_repo.mock_conn.count_documents.assert_called_once_with(filters)
+    mongo_repo.mock_conn.find.assert_called_once_with(
+        filters, None, sort=mongo_repo.sort_by
     )
-    query.skip.assert_called_once_with(20)
-    query.limit.assert_called_once_with(10)
+    cursor.skip.assert_called_once_with(20)
+    cursor.limit.assert_called_once_with(10)
 
     Asserter.assert_equals(status, httpcode.PARTIAL_CONTENT)
     Asserter.assert_equals(
