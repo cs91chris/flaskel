@@ -1,4 +1,5 @@
-from redislite import StrictRedis
+from unittest.mock import MagicMock
+
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum
@@ -22,7 +23,7 @@ from flaskel.utils.schemas.default import SCHEMAS
 def test_health_checks(testapp):
     database = Database()
     client_mongo = FlaskMongoDB()
-    client_redis = FlaskRedis(client=StrictRedis("/tmp/redis.db"))
+    client_redis = FlaskRedis(client=MagicMock())
 
     app = testapp(
         config=dict(

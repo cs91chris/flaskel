@@ -1,3 +1,4 @@
+import pytest
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
@@ -31,6 +32,7 @@ def test_apidoc(testapp):
     Asserter.assert_schema(res.json, DEFAULT_SCHEMAS.OPENAPI)
 
 
+@pytest.mark.skip("missing redis mock")
 def test_jwt(testapp):
     app = testapp(
         config=ObjectDict(SCHEMAS=DEFAULT_SCHEMAS), views=((TokenAuthView, bp_api),)

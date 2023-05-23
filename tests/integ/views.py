@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock
+
 from flask import Blueprint
-from redislite import StrictRedis
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, rpc
 
@@ -28,7 +29,7 @@ class ApiDocTemplate(apidoc.ApiDocTemplate):
 
 
 class TokenAuthView(BaseTokenAuth):
-    handler = auth.RedisTokenHandler(redis=StrictRedis("/tmp/redis.db"))
+    handler = auth.RedisTokenHandler(redis=MagicMock())
 
 
 class ApiItem(Restful):
