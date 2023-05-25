@@ -3,9 +3,10 @@ from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declared_attr
 from vbcore import json
-from vbcore.datastruct import IntEnum, ObjectDict
+from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import CatalogMixin, StandardMixin
 from vbcore.db.sqla import LoaderModel
+from vbcore.enums import IntEnum
 
 
 class PaymentStatusValue(IntEnum):
@@ -20,7 +21,7 @@ class PaymentStatus(CatalogMixin, LoaderModel):
     values = PaymentStatusValue.to_list()
 
     def to_dict(self, **__):
-        return ObjectDict(id=self.id, stato=self.label)
+        return ObjectDict(id=self.id, stato=self.code)
 
 
 class Payment(StandardMixin):

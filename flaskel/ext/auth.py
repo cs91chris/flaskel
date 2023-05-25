@@ -14,7 +14,8 @@ from flask_jwt_extended import (
     jwt_required,
     JWTManager,
 )
-from vbcore.datastruct import DataClassDictable, ObjectDict
+from vbcore.base import BaseDTO
+from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 
@@ -53,7 +54,7 @@ class RevokedTokenMixin(StandardMixin):
 
 
 @dataclasses.dataclass(frozen=True)
-class TokenInfo(DataClassDictable):
+class TokenInfo(BaseDTO):
     fresh: bool
     expires_in: int
     issued_at: int
@@ -65,7 +66,7 @@ class TokenInfo(DataClassDictable):
 
 
 @dataclasses.dataclass(frozen=True)
-class TokenData(DataClassDictable):
+class TokenData(BaseDTO):
     access_token: str
     expires_in: int
     issued_at: int

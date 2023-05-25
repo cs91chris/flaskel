@@ -206,7 +206,7 @@ class MobileReleaseView(BaseView):
     ext: MobileVersionCompatibility = t.cast(
         MobileVersionCompatibility, ExtProxy("mobile_version")
     )
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.POST,
         HttpMethod.GET,
         HttpMethod.DELETE,
@@ -231,9 +231,10 @@ class MobileReleaseView(BaseView):
             return abort(
                 httpcode.BAD_REQUEST,
                 response=Response(
-                    dict(
-                        reason="agent not compatible", agents=cap.config.VERSION_AGENTS
-                    )
+                    {
+                        "reason": "agent not compatible",
+                        "agents": cap.config.VERSION_AGENTS,
+                    }
                 ),
             )
 
@@ -266,7 +267,7 @@ class MobileLoggerView(BaseView):
     default_view_name = "mobile_logger"
     default_urls = ("/mobile/logger",)
 
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.POST,
     ]
     decorators = [

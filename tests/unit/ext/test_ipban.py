@@ -2,7 +2,7 @@ from ipaddress import IPv4Address
 from unittest.mock import MagicMock
 
 from vbcore.http import httpcode
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.ipban import BanRepoLocal, BanRepoRedis, ipban, IpBanService
 

@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import cast
 
 import pytest
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import webargs
 from flaskel.http.exceptions import BadRequest

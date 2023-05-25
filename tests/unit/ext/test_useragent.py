@@ -1,5 +1,5 @@
 import flask
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.default import useragent
 

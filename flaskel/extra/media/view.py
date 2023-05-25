@@ -1,3 +1,5 @@
+import typing as t
+
 from vbcore.http import httpcode, HttpMethod
 
 from flaskel import abort, cap, request
@@ -10,7 +12,7 @@ from .service import MediaService
 
 class ApiMedia(BaseView):
     service = MediaService
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.POST,
         HttpMethod.DELETE,
     ]

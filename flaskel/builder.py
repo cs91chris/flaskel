@@ -5,7 +5,7 @@ import typing as t
 from flask import Blueprint
 from flask.typing import AfterRequestCallable, BeforeRequestCallable
 from jinja2 import ChoiceLoader, FileSystemLoader
-from vbcore.db.events import register_engine_events
+from vbcore.db.support import SQLASupport
 from vbcore.misc import random_string
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
@@ -280,8 +280,8 @@ class AppBuilder:
         try:
             sqlalchemy = self._app.extensions.get("sqlalchemy")
             if sqlalchemy is not None:
-                register_engine_events(sqlalchemy.db.engine)
-                sqlalchemy.db.create_all(app=self._app)
+                SQLASupport.register_custom_handlers(sqlalchemy.db.engine)
+                sqlalchemy.db.create_all()
         except Exception as exc:  # pylint: disable=broad-except
             self._app.logger.exception(exc)
 

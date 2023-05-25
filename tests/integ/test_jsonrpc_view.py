@@ -1,5 +1,5 @@
 from vbcore.http import httpcode, rpc
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.tester.helpers import url_for
 from flaskel.utils.schemas.default import SCHEMAS as DEFAULT_SCHEMAS
@@ -39,28 +39,28 @@ def test_api_jsonrpc_error(testapp):
     res = client.jsonrpc(url, method="NotFoundMethod", call_id=call_id)
     Asserter.assert_status_code(res)
     Asserter.assert_equals(res.json.error.code, rpc.RPCMethodNotFound().code)
-    Asserter.assert_schema(res.json, response_schema)
+    Asserter.assert_json_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.id, call_id)
     Asserter.assert_true(res.json.error.message)
 
     res = client.jsonrpc(url, json={})
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, response_schema)
+    Asserter.assert_json_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCParseError().code)
 
     res = client.jsonrpc(url, json={"params": None})
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, response_schema)
+    Asserter.assert_json_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = client.jsonrpc(url, json={"jsonrpc": 1, "method": ACTION_SUCCESS})
     Asserter.assert_status_code(res, httpcode.BAD_REQUEST)
-    Asserter.assert_schema(res.json, response_schema)
+    Asserter.assert_json_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidRequest().code)
 
     res = client.jsonrpc(url, method="MyJsonRPC.action_error", call_id=call_id)
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, response_schema)
+    Asserter.assert_json_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInternalError().code)
 
 
@@ -74,12 +74,12 @@ def test_api_jsonrpc_params(testapp):
 
     res = client.jsonrpc(url, method=method, call_id=1, params={"param": "testparam"})
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, response_schema)
+    Asserter.assert_json_schema(res.json, response_schema)
     Asserter.assert_not_in("error", res.json)
 
     res = client.jsonrpc(url, method=method, call_id=1, params={"params": None})
     Asserter.assert_status_code(res)
-    Asserter.assert_schema(res.json, response_schema)
+    Asserter.assert_json_schema(res.json, response_schema)
     Asserter.assert_equals(res.json.error.code, rpc.RPCInvalidParams().code)
 
 
@@ -92,8 +92,8 @@ def test_api_jsonrpc_batch(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method=ACTION_SUCCESS, call_id=1, params={}),
-            dict(method=ACTION_NOT_FOUND, call_id=2),
+            {"method": ACTION_SUCCESS, "call_id": 1, "params": {}},
+            {"method": ACTION_NOT_FOUND, "call_id": 2},
         ),
     )
     Asserter.assert_status_code(res, httpcode.MULTI_STATUS)
@@ -103,9 +103,9 @@ def test_api_jsonrpc_batch(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method=ACTION_SUCCESS, call_id=1, params={}),
-            dict(method=ACTION_NOT_FOUND, call_id=2),
-            dict(method=ACTION_NOT_FOUND, call_id=3),
+            {"method": ACTION_SUCCESS, "call_id": 1, "params": {}},
+            {"method": ACTION_NOT_FOUND, "call_id": 2},
+            {"method": ACTION_NOT_FOUND, "call_id": 3},
         ),
     )
     Asserter.assert_status_code(res, httpcode.REQUEST_ENTITY_TOO_LARGE)
@@ -119,8 +119,8 @@ def test_api_jsonrpc_notification(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method=ACTION_SUCCESS, params={}),
-            dict(method=ACTION_NOT_FOUND),
+            {"method": ACTION_SUCCESS, "params": {}},
+            {"method": ACTION_NOT_FOUND},
         ),
     )
     Asserter.assert_status_code(res, httpcode.NO_CONTENT)
@@ -128,8 +128,8 @@ def test_api_jsonrpc_notification(testapp):
     res = client.jsonrpc_batch(
         url,
         requests=(
-            dict(method=ACTION_SUCCESS, call_id=1, params={}),
-            dict(method=ACTION_NOT_FOUND),
+            {"method": ACTION_SUCCESS, "call_id": 1, "params": {}},
+            {"method": ACTION_NOT_FOUND},
         ),
     )
     Asserter.assert_status_code(res)

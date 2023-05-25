@@ -6,7 +6,7 @@ from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin, UserMixin
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.default import builder, Database
 from flaskel.extra.media.repo import (
@@ -102,11 +102,11 @@ def test_media(testapp, session_save, tmpdir):
         session_save([user])
 
     response = client.post(
-        url=url_for("media_users", eid=user_id),
-        headers={HeaderEnum: ContentTypeEnum.FORM_DATA},
-        data=dict(file1=files[0], file2=files[1]),
         mimetype=ContentTypeEnum.JSON,
         schema=SCHEMA_MEDIA,
+        url=url_for("media_users", eid=user_id),
+        headers={HeaderEnum: ContentTypeEnum.FORM_DATA},
+        data={"file1": files[0], "file2": files[1]},
     )
     Asserter.assert_equals(len(response.json), 2)
 

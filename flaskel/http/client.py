@@ -1,10 +1,9 @@
 import typing as t
 
 from requests import exceptions as http_exc
-from vbcore.datastruct import Dumper
 from vbcore.http.batch import HTTPBatch
 from vbcore.http.client import HTTPClient, JsonRPCClient
-from vbcore.http.httpdumper import BaseHTTPDumper
+from vbcore.http.httpdumper import LazyHTTPDumper
 from vbcore.uuid import get_uuid
 
 from flaskel.flaskel import cap, request
@@ -12,16 +11,6 @@ from flaskel.flaskel import cap, request
 HTTPStatusError = (http_exc.HTTPError,)
 NetworkError = (http_exc.ConnectionError, http_exc.Timeout)
 all_errors = (*HTTPStatusError, *NetworkError)
-
-
-class LazyHTTPDumper(BaseHTTPDumper):
-    @classmethod
-    def dump_request(cls, req, *args, **kwargs):
-        return Dumper(req, *args, callback=super().dump_request, **kwargs)
-
-    @classmethod
-    def dump_response(cls, resp, *args, **kwargs):
-        return Dumper(resp, *args, callback=super().dump_response, **kwargs)
 
 
 class FlaskelHTTPDumper(LazyHTTPDumper):

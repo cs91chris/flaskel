@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from vbcore.http import httpcode, HttpMethod
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 from werkzeug.datastructures import Headers
 
 import flaskel

@@ -5,7 +5,7 @@ import pytest
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import client_mail
 from flaskel.ext.default import Database
@@ -91,8 +91,8 @@ def test_register(testapp):
 
     client.put(
         view=Views.register,
-        json=dict(token=grep_token_from_email(outbox)),
         status=httpcode.NO_CONTENT,
+        json={"token": grep_token_from_email(outbox)},
     )
 
 
@@ -116,8 +116,8 @@ def test_password(testapp):
     with client_mail.record_messages() as outbox:
         client.post(
             view=Views.password_forgot,
-            json=dict(email=TestData.RESET.email),
             status=httpcode.ACCEPTED,
+            json={"email": TestData.RESET.email},
         )
         Asserter.assert_equals(len(outbox), 1)
 
@@ -129,6 +129,6 @@ def test_password(testapp):
     token = grep_token_from_email(outbox)
     client.put(
         view=Views.password_forgot,
-        json=dict(token=token, password="new password"),
         status=httpcode.NO_CONTENT,
+        json={"token": token, "password": "new password"},
     )

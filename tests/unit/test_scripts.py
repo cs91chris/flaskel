@@ -2,7 +2,7 @@ import os
 from unittest.mock import patch
 
 from click.testing import CliRunner
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.scripts.cli import cli
 from flaskel.scripts.init_app import init_app

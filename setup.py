@@ -56,11 +56,11 @@ REQUIRES_TEST = REQUIRES_EXT + [
     "pytest-cov",
 ]
 
-ENTRY_POINTS = dict(
-    console_scripts=[
+ENTRY_POINTS = {
+    "console_scripts": [
         f"{PKG_NAME}={PKG_SCRIPTS}.cli:cli",
     ]
-)
+}
 
 try:
     # must be after setuptools
@@ -164,7 +164,7 @@ setup(
     ext_modules=cythonize(ext_paths(PKG_NAME, skeleton_files())),
     test_suite=PKG_TEST,
     entry_points=ENTRY_POINTS,
-    cmdclass=dict(test=PyTest),
+    cmdclass={"test": PyTest},
     install_requires=REQUIRES,
     extras_require={
         "test": REQUIRES_TEST,

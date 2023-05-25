@@ -1,5 +1,5 @@
 import pytest
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.utils.datastruct import Pagination
 

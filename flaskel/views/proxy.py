@@ -141,7 +141,7 @@ class ConfProxyView(BaseView):
 
 
 class TransparentProxyView(ProxyView):
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.POST,
         HttpMethod.PUT,
         HttpMethod.GET,
@@ -209,7 +209,7 @@ class JsonRPCProxy(ProxyView):
     response_content_type: str = ContentTypeEnum.JSON
     client_class: t.Type[FlaskelJsonRPC] = FlaskelJsonRPC
 
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.GET,
         HttpMethod.POST,
     ]

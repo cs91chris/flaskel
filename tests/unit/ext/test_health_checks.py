@@ -13,7 +13,7 @@ from vbcore.system import (
     NetStat,
     SwapStat,
 )
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.healthcheck import HealthCheck
 from flaskel.ext.healthcheck.checkers import (

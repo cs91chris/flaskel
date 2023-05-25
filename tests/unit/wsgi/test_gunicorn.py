@@ -1,4 +1,4 @@
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import Flaskel
 from flaskel.wsgi.wsgi_gunicorn import WSGIGunicorn

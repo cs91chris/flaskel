@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from apscheduler import events
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.default import Scheduler
 from flaskel.ext.jobs import undefined

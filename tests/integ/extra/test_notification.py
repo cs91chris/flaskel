@@ -4,7 +4,7 @@ from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 from vbcore.http.headers import HeaderEnum
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import db_session, ExtProxy
 from flaskel.ext.default import Database, Scheduler

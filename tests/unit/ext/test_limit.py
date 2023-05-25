@@ -1,6 +1,6 @@
 import pytest
 from vbcore.http import httpcode
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import Response
 from flaskel.ext.limit import header_whitelist, response_ko, response_ok

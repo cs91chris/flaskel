@@ -4,7 +4,7 @@ from vbcore.db.mixins import StandardMixin
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum
 from vbcore.jsonschema.support import Fields
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.default import Database
 from flaskel.tester.helpers import ApiTester, config, url_for

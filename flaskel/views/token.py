@@ -1,3 +1,5 @@
+import typing as t
+
 import flask_jwt_extended
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
@@ -14,7 +16,8 @@ class BaseTokenAuth(BaseView):
     handler: BaseTokenHandler = BaseTokenHandler()
 
     default_view_name = "token_auth"
-    methods = [
+
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.GET,
         HttpMethod.POST,
     ]

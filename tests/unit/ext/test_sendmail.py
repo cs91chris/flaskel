@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.sendmail import ClientMail
 

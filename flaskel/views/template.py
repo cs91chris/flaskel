@@ -9,7 +9,7 @@ from .base import BaseView
 
 
 class RenderTemplate(BaseView):
-    methods: t.List[str] = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.GET,
         HttpMethod.POST,
     ]

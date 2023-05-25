@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 import pytest
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 from werkzeug.routing import Map, ValidationError
 
 from flaskel.converters import DecimalConverter, ListConverter

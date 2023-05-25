@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from vbcore.datastruct import ObjectDict
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.auth import BaseTokenHandler, DBTokenHandler, RedisTokenHandler
 
@@ -51,7 +51,7 @@ def test_token_refresh(
     flaskel_app,
 ):
     mock_create_access_token.return_value = "fake-access-token"
-    mock_get_jwt_identity.return_value = dict(id=1, role="ADMIN")
+    mock_get_jwt_identity.return_value = {"id": 1, "role": "ADMIN"}
     mock_decode_token.return_value = ObjectDict(exp=11111, iat=22222)
 
     flaskel_app.config.JWT_DEFAULT_TOKEN_TYPE = "bearer"

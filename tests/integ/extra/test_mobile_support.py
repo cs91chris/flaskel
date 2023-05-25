@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.extra.mobile_support import (
     MobileLoggerView,
@@ -17,7 +17,7 @@ from tests.integ.views import bp_api
 MOBILE_EXT = {
     "mobile": (
         MobileVersionCompatibility(),
-        dict(store=RedisStore(MagicMock())),
+        {"store": RedisStore(MagicMock())},
     )
 }
 

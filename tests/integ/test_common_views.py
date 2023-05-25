@@ -2,7 +2,7 @@ import pytest
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.auth import TokenInfo
 from flaskel.extra.apidoc import ApiSpecTemplate
@@ -29,7 +29,7 @@ def test_apidoc(testapp):
         view=ApiSpecTemplate.default_view_name, mimetype=ContentTypeEnum.JSON
     )
     Asserter.assert_different(res.json, {})
-    Asserter.assert_schema(res.json, DEFAULT_SCHEMAS.OPENAPI)
+    Asserter.assert_json_schema(res.json, DEFAULT_SCHEMAS.OPENAPI)
 
 
 @pytest.mark.skip("missing redis mock")
@@ -42,8 +42,8 @@ def test_jwt(testapp):
 
     tokens = client.post(
         view=TokenViews.access_token,
-        json=dict(email=config.ADMIN_EMAIL, password=config.ADMIN_PASSWORD),
         schema=config.SCHEMAS.ACCESS_TOKEN,
+        json={"email": config.ADMIN_EMAIL, "password": config.ADMIN_PASSWORD},
     )
 
     token_info = client.get(
@@ -54,10 +54,10 @@ def test_jwt(testapp):
 
     client.post(
         view=TokenViews.access_token,
-        json=dict(email=config.ADMIN_EMAIL, password="bad password"),
         status=httpcode.UNAUTHORIZED,
         mimetype=ContentTypeEnum.JSON_PROBLEM,
         schema=config.SCHEMAS.API_PROBLEM,
+        json={"email": config.ADMIN_EMAIL, "password": "bad password"},
     )
 
     client.post(
@@ -68,11 +68,11 @@ def test_jwt(testapp):
 
     client.post(
         view=TokenViews.revoke_token,
-        json=dict(
-            access_token=tokens.json.access_token,
-            refresh_token=tokens.json.refresh_token,
-        ),
         status=httpcode.NO_CONTENT,
+        json={
+            "access_token": tokens.json.access_token,
+            "refresh_token": tokens.json.refresh_token,
+        },
     )
 
     client.post(

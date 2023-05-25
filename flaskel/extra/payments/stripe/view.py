@@ -1,3 +1,5 @@
+import typing as t
+
 from vbcore.http import HttpMethod
 
 from flaskel import db_session, ExtProxy, Response
@@ -9,7 +11,7 @@ from .repo import Payment, PaymentRepo
 class PaymentView(BaseView):
     model = Payment
     repo_class = PaymentRepo
-    methods = [HttpMethod.POST]
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [HttpMethod.POST]
     gateway = ExtProxy("stripe")
 
     def __init__(self, session=None):

@@ -245,7 +245,7 @@ class PatchApiView(Restful):
     methods_subresource = None
     methods_collection = None
     methods_resource = None
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.PATCH,
     ]
 

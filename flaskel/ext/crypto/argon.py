@@ -1,7 +1,7 @@
 import typing as t
 
 import argon2
-from vbcore.crypto.argon import Argon2 as HasherArgon2
+from vbcore.crypto.argon import Argon2 as HasherArgon2, Argon2Options
 
 
 class Argon2:
@@ -36,7 +36,9 @@ class Argon2:
 
     def init_app(self, app, argon_class: t.Type[HasherArgon2] = HasherArgon2):
         self.set_default_config(app)
-        self._argon = argon_class(**app.config.get_namespace(self.CONFIG_PREFIX))
+        self._argon = argon_class(
+            Argon2Options(**app.config.get_namespace(self.CONFIG_PREFIX))
+        )
         setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["argon2"] = self
 

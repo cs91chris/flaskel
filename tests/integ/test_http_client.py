@@ -1,5 +1,5 @@
 from vbcore.http import httpcode, HttpMethod
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 from werkzeug.exceptions import HTTPException
 
 from flaskel import FlaskelHttp, FlaskelHttpBatch
@@ -69,16 +69,16 @@ def test_http_client_batch(flaskel_app):
     with flaskel_app.test_request_context():
         responses = batch_client.request(
             [
-                dict(
-                    url=f"{HOSTS.apitester}/anything",
-                    method=HttpMethod.GET,
-                    headers={"HDR1": "HDR1"},
-                ),
-                dict(
-                    url=f"{HOSTS.apitester}/status/{httpcode.NOT_FOUND}",
-                    method=HttpMethod.GET,
-                ),
-                dict(url=HOSTS.fake, method=HttpMethod.GET, timeout=0.1),
+                {
+                    "url": f"{HOSTS.apitester}/anything",
+                    "method": HttpMethod.GET,
+                    "headers": {"HDR1": "HDR1"},
+                },
+                {
+                    "url": f"{HOSTS.apitester}/status/{httpcode.NOT_FOUND}",
+                    "method": HttpMethod.GET,
+                },
+                {"url": HOSTS.fake, "method": HttpMethod.GET, "timeout": 0.1},
             ]
         )
     Asserter.assert_equals(responses[0].body.headers.Hdr1, "HDR1")

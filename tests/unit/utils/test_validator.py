@@ -3,7 +3,7 @@ from collections import deque
 import pytest
 from vbcore.datastruct import ObjectDict
 from vbcore.jsonschema.support import Fields
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import PayloadValidator
 from flaskel.http.exceptions import InternalServerError, UnprocessableEntity

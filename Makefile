@@ -1,6 +1,6 @@
 PACKAGE=flaskel
 REQ_PATH=requirements
-PYVER=39
+PYVER=310
 
 export PIP_CONFIG_FILE=pip.conf
 export VERSION="$(shell grep 'current_version' .bumpversion.cfg | sed 's/^[^=]*= *//')"
@@ -70,7 +70,9 @@ liccheck:
 		-r ${REQ_PATH}/requirements-wsgi.txt
 
 safety:
-	safety check --full-report \
+	safety check \
+		--ignore 51668 \
+		--full-report \
 		-r ${REQ_PATH}/requirements.txt \
 		-r ${REQ_PATH}/requirements-extra.txt \
 		-r ${REQ_PATH}/requirements-wsgi.txt

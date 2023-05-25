@@ -19,11 +19,11 @@ class UrlRule:
 
 
 class ViewSupportMixin:
-    methods = [
-        HttpMethod.GET,
-    ]
     default_view_name: str = ""
     default_urls: UrlsType = ()
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
+        HttpMethod.GET,
+    ]
 
     @staticmethod
     def not_implemented() -> t.NoReturn:  # pragma: no cover

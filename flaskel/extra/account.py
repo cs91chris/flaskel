@@ -208,7 +208,7 @@ class AccountHandler:
 
 class BaseAccountView(BaseView):
     account_handler: AccountHandler = t.cast(AccountHandler, ExtProxy("account"))
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.POST,
         HttpMethod.PUT,
     ]

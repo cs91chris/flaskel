@@ -192,4 +192,4 @@ class RequestID(BaseMiddleware):
         if prefix and request_id.startswith(prefix):
             return True  # pragma: no cover
 
-        return uuid.check_uuid(request_id, exc=False)
+        return uuid.check_uuid(request_id, raise_exc=False)

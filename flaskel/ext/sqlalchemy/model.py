@@ -58,7 +58,12 @@ class SQLAModel(Model):
             q = q.order_by(*order_by)
 
         if page or page_size:
-            q = q.paginate(page, page_size, False, max_per_page)
+            q = q.paginate(
+                page=page,
+                per_page=page_size,
+                error_out=False,
+                max_per_page=max_per_page,
+            )
             res = q.items
             if to_dict is False:
                 return q

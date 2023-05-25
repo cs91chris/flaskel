@@ -4,8 +4,8 @@ from functools import partial
 import flask
 from vbcore.db.support import SQLASupport
 from vbcore.http import httpcode, HttpMethod
+from vbcore.tester.asserter import Asserter
 from vbcore.tester.helpers import build_url
-from vbcore.tester.mixins import Asserter
 
 from flaskel import TestClient
 from flaskel.utils.datastruct import ConfigProxy
@@ -60,7 +60,7 @@ class ApiTester:
             Asserter.assert_equals(response.mimetype, mimetype or self.mimetype)
 
         if schema:
-            Asserter.assert_schema(response.json, schema)
+            Asserter.assert_json_schema(response.json, schema)
 
         return response
 

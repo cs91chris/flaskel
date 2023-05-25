@@ -15,7 +15,7 @@ class PaymentHandler:
     payment_intent_ok: str = "payment_intent.succeeded"
     payment_intent_ko: str = "payment_intent.payment_failed"
 
-    def __init__(self, app=None, **kwargs):
+    def __init__(self, app=None, **kwargs) -> None:
         self._error: CallbackType = partial(self._not_registered, "on_error")
         self._success: CallbackType = partial(self._not_registered, "on_success")
 

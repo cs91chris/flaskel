@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel.ext.default import Database
 from flaskel.extra.payments.stripe import (

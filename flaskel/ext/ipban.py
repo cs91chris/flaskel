@@ -154,7 +154,7 @@ class IpBanService:
 
 
 class FlaskIPBan:
-    def __init__(self, app=None, **kwargs):
+    def __init__(self, app=None, **kwargs) -> None:
         self.service: t.Optional[IpBanService] = None
         self.backends: t.Dict[str, t.Type[IBanRepo]] = {}
 
@@ -229,7 +229,7 @@ class FlaskIPBan:
     def before_request_hook(self):
         ip = self.get_ip()
         if self.service.is_banned(ip):
-            cap.logger.warn("%s is banned", ip)
+            cap.logger.warning("%s is banned", ip)
             abort(cap.config.IPBAN_STATUS_CODE)
 
 

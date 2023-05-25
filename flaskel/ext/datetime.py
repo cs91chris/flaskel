@@ -1,4 +1,4 @@
-from vbcore.date_helper import DateHelper
+from vbcore.date_helper import DateHelper, DateTimeFmt
 
 
 class FlaskDateHelper:
@@ -13,8 +13,8 @@ class FlaskDateHelper:
         app.config.setdefault("DATE_HELPER_COUNTRY", "IT")
         app.config.setdefault("DATE_HELPER_PROV", None)
         app.config.setdefault("DATE_HELPER_STATE", None)
-        app.config.setdefault("DATE_PRETTY", helper.DATE_PRETTY_FORMAT)
-        app.config.setdefault("DATE_ISO_FORMAT", helper.DATE_ISO_FORMAT)
+        app.config.setdefault("DATE_PRETTY", DateTimeFmt.PRETTY)
+        app.config.setdefault("DATE_ISO_FORMAT", DateTimeFmt.ISO)
 
         self._helper = helper
         self.iso_format = app.config.DATE_ISO_FORMAT

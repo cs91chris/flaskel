@@ -1,7 +1,7 @@
 import pytest
 from vbcore import uuid
 from vbcore.datastruct import ObjectDict
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import middlewares
 

@@ -2,10 +2,12 @@ import os.path
 import typing as t
 
 import flask
-from vbcore.datastruct import Dumper, ObjectDict
+from vbcore.datastruct import ObjectDict
+from vbcore.datastruct.lazy import Dumper
 from vbcore.http import httpcode
 from vbcore.http.headers import HeaderEnum
-from vbcore.json import JsonEncoder
+from vbcore.json import JsonDecoder, JsonEncoder
+from vbcore.types import OptStr
 from werkzeug.routing import Rule
 from werkzeug.utils import safe_join
 
@@ -98,10 +100,10 @@ class Response(flask.Response):
             cap.logger.warning(str(exc))
             return flask.abort(httpcode.NOT_FOUND)
 
-        if cap.use_x_sendfile is True and cap.config.ENABLE_ACCEL is True:
+        if cap.config.USE_X_SENDFILE is True and cap.config.ENABLE_ACCEL is True:
             # following headers works with nginx compatible proxy
-            return cls.set_sendfile_headers(response, file_path)
-        return response
+            return cls.set_sendfile_headers(response, file_path)  # type: ignore
+        return response  # type: ignore
 
     def get_json(self, *args, **kwargs) -> ObjectDict:
         return ObjectDict.normalize(super().get_json(*args, **kwargs))
@@ -120,9 +122,10 @@ class Flaskel(flask.Flask):
     config_class = Config
     request_class = Request
     response_class = Response
-    json_encoder = JsonEncoder
+    _json_encoder = JsonEncoder
+    _json_decoder = JsonDecoder
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.version = None
+        self.version: OptStr = None
         self.config: Config

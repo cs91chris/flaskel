@@ -36,7 +36,7 @@ class JSONRPCView(BaseView):
     default_view_name = "jsonrpc"
     default_urls = ("/jsonrpc",)
 
-    methods = [
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [
         HttpMethod.POST,
     ]
     decorators = [

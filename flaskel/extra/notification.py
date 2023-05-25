@@ -123,7 +123,7 @@ class FCMNotification:
 
 
 class DeviceRegisterView(BaseView):
-    methods = [HttpMethod.POST]
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [HttpMethod.POST]
     default_view_name = "fcm_device_register"
     default_urls = ("/device/register",)
     handler = ExtProxy("fcm_notification")
@@ -145,7 +145,7 @@ class DeviceRegisterView(BaseView):
 
 
 class SendPushView(BaseView):
-    methods = [HttpMethod.POST]
+    methods: t.ClassVar[t.Optional[t.Collection[str]]] = [HttpMethod.POST]
     default_view_name = "fcm_send"
     default_urls = ("/send/push",)
     handler = ExtProxy("fcm_notification")

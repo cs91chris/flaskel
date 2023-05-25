@@ -1,4 +1,4 @@
-Flask
+Flask<2.3
 Flask-Caching
 Flask-CloudflareRemote
 Flask-Cors
@@ -12,7 +12,7 @@ Flask-SQLAlchemy
 Flask-TemplateSupport
 jsonschema
 nest-asyncio
-vbcore[crypto,db,http]
+vbcore[crypto,db,http]==2.0.0.rc3
 webargs
 
 requests<2.28

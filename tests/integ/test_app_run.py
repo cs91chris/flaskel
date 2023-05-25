@@ -2,7 +2,7 @@ import pytest
 from vbcore import uuid
 from vbcore.http import httpcode
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
-from vbcore.tester.mixins import Asserter
+from vbcore.tester.asserter import Asserter
 
 from flaskel import cap
 from flaskel.tester.helpers import ApiTester, config
