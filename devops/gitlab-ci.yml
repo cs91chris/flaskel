@@ -12,23 +12,8 @@ stages:
 before_script:
   - pip install -r requirements/requirements-build.txt
 
-validate-test-py38:
-  image: python:3.8
-  stage: test
-  only:
-    - tags
-  script:
-    - tox -e py38
-  artifacts:
-    when: always
-    reports:
-      junit: junit-report.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
-
-validate-test-py39:
-  image: python:3.9
+validate-test-py310:
+  image: python:3.10
   stage: test
   only:
     - tags
@@ -43,12 +28,11 @@ validate-test-py39:
         path: coverage.xml
 
 dist-build-publish:
-  image: python:3.9
+  image: python:3.10
   stage: build
   only:
     - tags
   needs:
-    - validate-test-py38
     - validate-test-py39
   variables:
     TWINE_USERNAME: gitlab-ci-token
