@@ -12,13 +12,13 @@ stages:
 before_script:
   - pip install -r requirements/requirements-build.txt
 
-validate-test-py310:
+validate-test:
   image: python:3.10
   stage: test
   only:
     - tags
   script:
-    - tox -e py39
+    - tox
   artifacts:
     when: always
     reports:
@@ -33,7 +33,7 @@ dist-build-publish:
   only:
     - tags
   needs:
-    - validate-test-py39
+    - validate-test
   variables:
     TWINE_USERNAME: gitlab-ci-token
     TWINE_PASSWORD: ${CI_JOB_TOKEN}
