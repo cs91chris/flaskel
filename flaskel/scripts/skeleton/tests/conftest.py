@@ -76,7 +76,7 @@ def views():
 
 @pytest.fixture()
 def auth_token(test_client, views):
-    def get_access_token(token=None, email=None, password=None, in_query=True):
+    def get_access_token(token=None, email=None, password=None, in_query=False):
         if token is not None:
             if in_query is True:
                 return f"token={token}"

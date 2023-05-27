@@ -90,7 +90,8 @@ class TokenData(BaseDTO):
 
 class BaseTokenHandler:
     def __init__(self, blocklist_loader: t.Optional[t.Callable] = None):
-        token_auth.token_in_blocklist_loader(blocklist_loader)
+        if blocklist_loader:
+            token_auth.token_in_blocklist_loader(blocklist_loader)
 
     def check_token_block_listed(self, jwt_headers, jwt_data) -> bool:
         _ = jwt_headers, jwt_data

@@ -26,7 +26,7 @@ def test_cors_headers(api_tester, config):
 
 
 def test_apidoc(config, api_tester, views):
-    headers = basic_auth_header(config.ADMIN_EMAIL, config.ADMIN_PASSWORD)
+    headers = basic_auth_header(config.BASIC_AUTH_USERNAME, config.BASIC_AUTH_PASSWORD)
 
     api_tester.get(
         url=url_for(views.api_docs), headers=headers, mimetype=ContentTypeEnum.HTML

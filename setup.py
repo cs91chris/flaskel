@@ -39,7 +39,7 @@ REQUIRES = [
     "webargs",
     "aiohttp",
     "nest-asyncio",
-    "vbcore[all]",
+    "vbcore[all]==2.0.0.rc3",
 ]
 REQUIRES_EXT = REQUIRES + [
     "pyfcm",
