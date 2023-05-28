@@ -39,13 +39,13 @@ def test_app_returns_correct_content_type(client):
 def test_no_content(client):
     res = client.get("/nocontent")
     assert res.status_code == 204
-    # assert res.headers.get('Content-Type') is None TODO client seems add it
-    # assert res.headers.get('Content-Length') == 0 TODO client seems remove it
+    assert res.headers.get("Content-Type") is None
+    assert res.headers.get("Content-Length") is None
 
     res = client.get("/nocontent/custom")
     assert res.status_code == 202
-    # assert res.headers.get('Content-Type') is None TODO client seems add it
-    # assert res.headers.get('Content-Length') == 0 TODO client seems remove it
+    assert res.headers.get("Content-Type") is None
+    assert res.headers.get("Content-Length") == "0"
 
 
 def test_no_content_error(client):
@@ -150,7 +150,7 @@ def test_transformer(client):
     res = client.post("/json2xml", json={"pippo": 2, "pluto": 3})
     assert res.status_code == 200
     assert (
-        res.data == b'<?xml version="1.0" encoding="UTF-8" ?>'
+        res.data == b'<?xml version="1.0" encoding="utf-8" ?>'
         b'<root><pippo type="int">2</pippo><pluto type="int">3</pluto></root>'
     )
 

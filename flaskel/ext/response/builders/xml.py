@@ -1,7 +1,7 @@
 import xmltodict
 
 from .builder import Builder
-from .dicttoxml import DictToXML
+from .dicttoxml import dicttoxml
 
 
 class XmlBuilder(Builder):
@@ -15,8 +15,8 @@ class XmlBuilder(Builder):
 
     @staticmethod
     def to_me(data, **kwargs):
-        kwargs.setdefault("item_func", lambda x: "ROW")
-        return DictToXML().dicttoxml(data, **kwargs)
+        kwargs.setdefault("default_item_name", "ROW")
+        return dicttoxml(data, **kwargs)
 
     @staticmethod
     def to_xml(data, **kwargs):
