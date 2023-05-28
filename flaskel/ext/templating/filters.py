@@ -42,7 +42,7 @@ def truncate(data, n, term=None):
     if term is None:
         term = "..."
 
-    return "{}{}".format(data[:n], term)
+    return f"{data[:n]}{term}"
 
 
 def human_file_size(size, max_index=None):

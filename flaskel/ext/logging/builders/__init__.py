@@ -8,3 +8,5 @@ def builder_factory(name):
         return LogTextBuilder()
     if name == "json":
         return LogJSONBuilder()
+
+    raise ValueError(f"no builder found with name: {name}")

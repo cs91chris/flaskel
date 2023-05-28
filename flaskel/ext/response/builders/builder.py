@@ -6,12 +6,12 @@ from flask import Response
 class Builder(ABC):
     def __init__(self, mimetype: str, response_class=None, **kwargs):
         if not isinstance(mimetype, str):
-            raise TypeError("Invalid mimetype: {}".format(mimetype))
+            raise TypeError(f"Invalid mimetype: {mimetype}")
 
         if response_class and not issubclass(response_class, Response):
             raise TypeError(
-                "Invalid response_class: {}. "
-                "You must extend flask Response class".format(response_class)
+                f"Invalid response_class: {response_class}. "
+                "You must extend flask Response class"
             )
 
         self.conf = kwargs

@@ -27,7 +27,7 @@ class SubdomainDispatcher(ErrorDispatcher):
             for bp_name, bp in cap.blueprints.items():
                 if subdomain == bp.subdomain:
                     handler = cap.error_handler_spec.get(bp_name, {}).get(exc.code)
-                    for k, v in (handler or {}).items():
+                    for v in (handler or {}).values():
                         return v(exc)
         else:  # pragma: no cover
             cap.logger.warning(
@@ -49,7 +49,7 @@ class URLPrefixDispatcher(ErrorDispatcher):
 
             if flask.request.path.startswith(bp.url_prefix):
                 handler = cap.error_handler_spec.get(bp_name, {}).get(exc.code)
-                for k, v in (handler or {}).items():
+                for v in (handler or {}).values():
                     return v(exc)
 
         return self.default(exc)  # pragma: no cover

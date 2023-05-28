@@ -47,8 +47,7 @@ class QueueHandler(BaseQueueHandler):
         Return the current request context which can then be used in queued handler
         """
         top = _request_ctx_stack.top
-        if top:
-            return top.request
+        return top.request if top else None
 
     def prepare(self, record):
         """

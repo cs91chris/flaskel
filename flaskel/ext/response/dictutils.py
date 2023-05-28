@@ -30,7 +30,7 @@ def to_flatten(data, to_dict=None, **kwargs):
         return dict(items)
 
     response = []
-    to_dict = to_dict or (lambda x: dict(x))
+    to_dict = to_dict or dict
 
     if not isinstance(data, (list, tuple)):
         data = (data,)
@@ -39,12 +39,11 @@ def to_flatten(data, to_dict=None, **kwargs):
         zipkeys = {}
         try:
             item = _flatten_dict(to_dict(item), **kwargs)
-        except TypeError:
+        except TypeError as exc:
             raise TypeError(
-                "Could not convert '%s' into dict object, "
-                "please provide a to_dict function",
-                item,
-            )
+                f"Could not convert '{item}' into dict object, "
+                f"please provide a to_dict function"
+            ) from exc
 
         for key in list(item.keys()):
             if isinstance(item.get(key), list):
@@ -54,11 +53,8 @@ def to_flatten(data, to_dict=None, **kwargs):
 
         sep = kwargs.get("sep")
         for zk, value in zipkeys.items():
-            pk = "{}{}".format(zk, sep)
             for i in value:
-                response.append(
-                    {**item, **{"{}{}".format(pk, k): v for k, v in i.items()}}
-                )
+                response.append({**item, **{f"{zk}{sep}{k}": v for k, v in i.items()}})
 
         if len(zipkeys.keys()) == 0:
             response.append(item)

@@ -32,12 +32,10 @@ class CloudflareRemote:
                 self._cf_ips = self._get_ip_list(app, app.config["CF_IP4_URI"])
                 if app.config["CF_IPv6_ENABLED"]:
                     self._cf_ips += self._get_ip_list(app, app.config["CF_IP6_URI"])
-
-                return self._cf_ips
         else:
             self._cf_ips = cf_ips
 
-        app.logger.debug("CLOUDFLARE registered ips:\n {}".format(self._cf_ips))
+        app.logger.debug(f"CLOUDFLARE registered ips:\n {self._cf_ips}")
 
     @staticmethod
     def _default_config(app):
@@ -78,9 +76,10 @@ class CloudflareRemote:
                 flask.abort(
                     403,
                     mess,
-                    response=dict(
-                        client_ip=self.get_client_ip(), allowed_networks=self._cf_ips
-                    ),
+                    response={
+                        "client_ip": self.get_client_ip(),
+                        "allowed_networks": self._cf_ips,
+                    },
                 )
             flask.abort(403)
 

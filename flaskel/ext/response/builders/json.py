@@ -33,7 +33,7 @@ class JsonBuilder(Builder):
                 # backup and override original mimetype
                 self._mimetype_backup = self._mimetype
                 self._mimetype = "application/javascript"
-                return "{}({});".format(jsonp_callback, resp)
+                return f"{jsonp_callback}({resp});"
 
         return resp
 

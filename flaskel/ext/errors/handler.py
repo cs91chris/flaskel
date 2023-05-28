@@ -77,23 +77,24 @@ class ErrorHandler:
             r, s, h = f(*args, **kwargs)
 
             if not h.get("Content-Type"):
-                h["Content-Type"] = "application/{}+json".format(ApiProblem.ct_id)
+                h["Content-Type"] = f"application/{ApiProblem.ct_id}+json"
             elif cap.config["ERROR_FORCE_CONTENT_TYPE"] is True:
                 h = self._force_content_type(h)
 
-            options = dict(status=s, headers=h, mimetype=h["Content-Type"])
-            return flask.Response(flask.json.dumps(r), **options)
+            return flask.Response(
+                flask.json.dumps(r), status=s, headers=h, mimetype=h["Content-Type"]
+            )
 
         return wrapper
 
     @staticmethod
     def _force_content_type(hdr):
         ct_id = ApiProblem.ct_id
-        ct = hdr.get("Content-Type") or "x-application/{}".format(ct_id)
+        ct = hdr.get("Content-Type") or f"x-application/{ct_id}"
 
         if ct_id not in ct:
-            if any([i in ct for i in cap.config["ERROR_CONTENT_TYPES"]]):
-                ct = "/{}+".format(ct_id).join(ct.split("/", maxsplit=1))
+            if any(i in ct for i in cap.config["ERROR_CONTENT_TYPES"]):
+                ct = f"/{ct_id}+".join(ct.split("/", maxsplit=1))
 
         hdr.update({"Content-Type": ct})
         return hdr
@@ -117,7 +118,7 @@ class ErrorHandler:
                     if code is not None:
                         b.errorhandler(code)(hderr)
                     else:
-                        for c in default_exceptions.keys():
+                        for c in default_exceptions:
                             b.errorhandler(c)(hderr)
 
                         ErrorHandler.failure(b)(hderr)
@@ -159,7 +160,7 @@ class ErrorHandler:
         if isinstance(ex.response, flask.Response):
             return ex.response, ex.code
 
-        resp = self._response(lambda: ex.prepare_response())()
+        resp = self._response(ex.prepare_response)()
 
         if cap.config["ERROR_FORCE_CONTENT_TYPE"] is True:
             resp.headers = self._force_content_type(resp.headers)

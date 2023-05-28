@@ -95,14 +95,14 @@ class ApiProblem(InternalServerError):
 
     def prepare_response(self):
         return (
-            dict(
-                type=self.get_type(),
-                instance=self.get_instance(),
-                detail=self.get_detail(),
-                title=self.name,
-                status=self.code,
-                response=self.response,
-            ),
+            {
+                "type": self.get_type(),
+                "instance": self.get_instance(),
+                "detail": self.get_detail(),
+                "title": self.name,
+                "status": self.code,
+                "response": self.response,
+            },
             self.code,
             self.headers,
         )

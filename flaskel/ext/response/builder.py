@@ -26,8 +26,8 @@ class ResponseBuilder:
     def register_builder(self, name, builder, **kwargs):
         if not issubclass(builder.__class__, Builder):
             raise NameError(
-                "Invalid Builder: '{}'. "
-                "You must extend class: '{}'".format(builder, Builder.__name__)
+                f"Invalid Builder: '{builder}'. "
+                f"You must extend class: '{Builder.__name__}'"
             )
 
         if not builder.conf:
@@ -82,16 +82,12 @@ class ResponseBuilder:
                     builder = value
                     break
             else:
-                raise NameError(
-                    "Builder not found: using one of: '{}'".format(
-                        ", ".join(self._builders.keys())
-                    )
-                )
+                allowed = ", ".join(self._builders.keys())
+                raise NameError(f"Builder not found: using one of: '{allowed}'")
         elif not issubclass(builder.__class__, Builder):
             raise NameError(
-                "Invalid Builder: '{}'. You must extend class: '{}'".format(
-                    builder, Builder.__name__
-                )
+                f"Invalid Builder: '{builder}'. "
+                f"You must extend class: '{Builder.__name__}'"
             )
 
         builder.build(data, **kwargs)
@@ -102,6 +98,7 @@ class ResponseBuilder:
             for b in self._builders.values():
                 if a == b.mimetype:
                     return b
+            return None
 
         mimetypes = flask.request.accept_mimetypes
         default = default or cap.config["RB_DEFAULT_RESPONSE_FORMAT"]
@@ -120,9 +117,7 @@ class ResponseBuilder:
                 return accept, builder
 
         if strict is True:
-            flask.abort(
-                406, "Not Acceptable: {}".format(flask.request.accept_mimetypes)
-            )
+            flask.abort(406, f"Not Acceptable: {flask.request.accept_mimetypes}")
 
         return default, find_builder(default)
 
@@ -162,7 +157,7 @@ class ResponseBuilder:
                 builder = (
                     flask.request.args.get(cap.config.get("RB_FORMAT_KEY")) or default
                 )
-                if builder not in (acceptable or self._builders.keys()):
+                if builder not in (acceptable or self._builders):
                     for k, v in self._builders.items():
                         if v.mimetype == cap.config.get("RB_DEFAULT_RESPONSE_FORMAT"):
                             builder = k
@@ -178,9 +173,7 @@ class ResponseBuilder:
         def response(fun):
             @wraps(fun)
             def wrapper(*args, **kwargs):
-                mimetype, builder = self.get_mimetype_accept(
-                    default, acceptable, strict
-                )
+                _, builder = self.get_mimetype_accept(default, acceptable, strict)
                 return self.build_response(builder, fun(*args, **kwargs))
 
             return wrapper
@@ -211,7 +204,7 @@ class ResponseBuilder:
                 ):
                     builder = self._builders.get("html")
                     varargs.update(
-                        dict(template=template, as_table=as_table, to_dict=to_dict)
+                        template=template, as_table=as_table, to_dict=to_dict
                     )
 
                 resp = fun(*args, **kwargs)

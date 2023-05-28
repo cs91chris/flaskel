@@ -14,26 +14,26 @@ class CsvBuilder(Builder):
             sep=self.conf.get("RB_FLATTEN_SEPARATOR", ""),
         )
 
+        filename = kwargs.pop("filename", self.conf.get("RB_CSV_DEFAULT_NAME"))
         self._headers.update(
             {
-                "Total-Rows": len(data),
-                "Total-Columns": len(data[0].keys()),
-                "Content-Disposition": "attachment; filename=%s.csv"
-                % (kwargs.pop("filename", self.conf.get("RB_CSV_DEFAULT_NAME")),),
+                "X-Total-Rows": len(data),
+                "X-Total-Columns": len(data[0].keys()),
+                "Content-Disposition": f"attachment; filename={filename}.csv",
             }
         )
 
         delimiter = self.conf.get("RB_CSV_DELIMITER")
         if delimiter:
-            kwargs.update(dict(delimiter=delimiter))
+            kwargs.update(delimiter=delimiter)
 
         quotechar = self.conf.get("RB_CSV_QUOTING_CHAR")
         if quotechar:
-            kwargs.update(dict(quotechar=quotechar))
+            kwargs.update(quotechar=quotechar)
 
         dialect = self.conf.get("RB_CSV_DIALECT")
         if dialect:
-            kwargs.update(dict(dialect=dialect))
+            kwargs.update(dialect=dialect)
 
         return self.to_csv(data or [], **kwargs)
 
@@ -62,4 +62,4 @@ class CsvBuilder(Builder):
         kwargs.setdefault("quotechar", '"')
         kwargs.setdefault("quoting", csv.QUOTE_ALL)
 
-        return [r for r in csv.DictReader(io.StringIO(data), **kwargs)]
+        return list(csv.DictReader(io.StringIO(data), **kwargs))

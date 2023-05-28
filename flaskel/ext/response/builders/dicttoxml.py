@@ -53,7 +53,6 @@ class DictToXML:
 
     def key_is_valid_xml(self, key):
         """Checks that a key is a valid XML name"""
-        # noinspection PyBroadException
         try:
             parseString("%s<%s>foo</%s>" % (self._declaration, key, key))
         except Exception:  # minidom does not implement exceptions well
@@ -215,7 +214,6 @@ class DictToXML:
             key,
         )
 
-    # noinspection PyUnusedLocal
     def convert_bool(self, key, val, attr_type, attr=None, cdata=False):
         """Converts a boolean into an XML element"""
         attr = attr or {}
@@ -226,7 +224,6 @@ class DictToXML:
         attr_string = self._make_attr_string(attr)
         return "<%s%s>%s</%s>" % (key, attr_string, str(val).lower(), key)
 
-    # noinspection PyUnusedLocal
     def convert_none(self, key, val, attr_type, attr=None, cdata=False):
         """Converts a null value into an XML element"""
         attr = attr or {}

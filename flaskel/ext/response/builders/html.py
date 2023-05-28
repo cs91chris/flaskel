@@ -12,11 +12,11 @@ class HtmlBuilder(Builder):
 
         parent_key = self.conf.get("RB_FLATTEN_PREFIX")
         if parent_key:
-            kwargs.update(dict(parent_key=parent_key))
+            kwargs.update(parent_key=parent_key)
 
         sep = self.conf.get("RB_FLATTEN_SEPARATOR")
         if sep:
-            kwargs.update(dict(sep=sep))
+            kwargs.update(sep=sep)
 
         if as_table is True:
             data = to_flatten(data or [], to_dict=kwargs.pop("to_dict", None))

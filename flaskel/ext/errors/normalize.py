@@ -13,7 +13,7 @@ from flaskel.http.exceptions import Unauthorized
 from .exception import ApiProblem
 
 
-class BaseNormalize(object):
+class BaseNormalize:
     def normalize(self, ex, **kwargs):
         """
         Child class must return super().normalize() in order to keep the chain of Mixins
@@ -21,9 +21,8 @@ class BaseNormalize(object):
         if isinstance(ex, ApiProblem):
             return ex
 
-        tb = traceback.format_exc()
         if cap.config["DEBUG"]:
-            mess = str(tb)  # pragma: no cover
+            mess = str(traceback.format_exc())  # pragma: no cover
         else:
             mess = cap.config["ERROR_DEFAULT_MSG"]
 
@@ -42,7 +41,7 @@ class BaseNormalize(object):
             except AttributeError:
                 pass
         else:
-            cap.logger.error("%s", tb)
+            cap.logger.error("%s", traceback.format_exc())
 
         return _ex
 
@@ -50,7 +49,7 @@ class BaseNormalize(object):
 class RequestRedirectMixin(BaseNormalize):
     def normalize(self, ex, **kwargs):
         if isinstance(ex, RequestRedirect):
-            location = dict(location=ex.new_url)
+            location = {"location": ex.new_url}
             ex.headers = location
             ex.response = location
 

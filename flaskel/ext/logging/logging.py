@@ -86,7 +86,6 @@ class FlaskLogging:
 
         if not loggers:
             loggers = [None]  # root logger has no name
-            # noinspection PyUnresolvedReferences
             loggers += list(logging.root.manager.loggerDict.keys())
 
         def response(fun):

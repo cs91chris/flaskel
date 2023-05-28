@@ -74,7 +74,7 @@ class TokenData(BaseDTO):
     scope: t.Optional[str] = None
     refresh_token: t.Optional[str] = None
 
-    def to_dict(self, **kwargs) -> ObjectDict:
+    def to_dict(self, *_, **kwargs) -> ObjectDict:
         data = ObjectDict(
             access_token=self.access_token,
             expires_in=self.expires_in,
