@@ -4,7 +4,6 @@ import typing as t
 from flask_cloudflare_remote import CloudflareRemote
 from flask_cors import CORS
 from flask_errors_handler import ErrorHandler
-from flask_logify import FlaskLogging
 from flask_response_builder import ResponseBuilder
 from flask_sqlalchemy import SQLAlchemy
 from flask_template_support import TemplateSupport
@@ -15,6 +14,7 @@ from .datetime import FlaskDateHelper
 from .errors import ErrorNormalizer
 from .healthcheck import HealthCheck
 from .jobs import APJobs
+from .logging.logging import FlaskLogging
 from .sqlalchemy import SQLAModel
 from .useragent import UserAgent
 

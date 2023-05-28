@@ -1,6 +1,8 @@
 from vbcore.datastruct import ObjectDict
 
-REQUEST_FORMATTER = "flask_logify.formatters.RequestFormatter"
+REQUEST_FORMATTER = "flaskel.ext.logging.formatters.RequestFormatter"
+CUSTOM_HANDLER = "flaskel.ext.logging.handlers.FlaskSysLogHandler"
+QUEUE_HANDLER = "flaskel.ext.logging.handlers.QueueHandler"
 
 
 def handler(formatter, **kwargs):
@@ -50,26 +52,26 @@ LOGGING = ObjectDict(
         "console": handler("console"),
         "consoleDebug": handler("consoleDebug"),
         "syslog": {
-            "class": "flask_logify.handlers.FlaskSysLogHandler",
+            "class": CUSTOM_HANDLER,
             "address": ["localhost", 514],
             "formatter": "syslog",
             "facility": "user",
         },
         "syslogNoRequest": {
-            "class": "flask_logify.handlers.FlaskSysLogHandler",
+            "class": CUSTOM_HANDLER,
             "address": ["localhost", 514],
             "formatter": "syslogNoRequest",
             "facility": "user",
         },
         "queueConsole": {
             "respect_handler_level": True,
-            "class": "flask_logify.handlers.QueueHandler",
+            "class": QUEUE_HANDLER,
             "queue": "cfg://objects.queue",
             "handlers": ["cfg://handlers.console"],
         },
         "queueSyslogNoRequest": {
             "respect_handler_level": True,
-            "class": "flask_logify.handlers.QueueHandler",
+            "class": QUEUE_HANDLER,
             "queue": "cfg://objects.queue",
             "handlers": ["cfg://handlers.syslogNoRequest"],
         },

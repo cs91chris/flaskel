@@ -32,7 +32,6 @@ REQUIRES = [
     "Flask-HTTPAuth",
     "Flask-JWT-Extended",
     "Flask-Limiter",
-    "Flask-Logify",
     "Flask-ResponseBuilder",
     "Flask-SQLAlchemy",
     "Flask-TemplateSupport",
