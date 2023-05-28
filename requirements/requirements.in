@@ -5,10 +5,11 @@ Flask-Cors
 Flask-HTTPAuth
 Flask-JWT-Extended
 Flask-Limiter
-Flask-ResponseBuilder
 Flask-SQLAlchemy
 Flask-TemplateSupport
+json2html
 jsonschema
 nest-asyncio
 vbcore[crypto,db,http]==2.0.0.rc3
 webargs
+xmltodict

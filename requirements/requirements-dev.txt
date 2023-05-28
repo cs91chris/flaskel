@@ -268,6 +268,8 @@ types-urllib3==1.26.25.13
     #   types-requests
 types-waitress==2.1.4.8
     # via -r requirements/requirements-dev.in
+types-xmltodict==0.13.0.2
+    # via -r requirements/requirements-dev.in
 typing-extensions==4.6.2
     # via
     #   -c requirements/requirements.txt

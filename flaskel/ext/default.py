@@ -3,7 +3,6 @@ import typing as t
 
 from flask_cloudflare_remote import CloudflareRemote
 from flask_cors import CORS
-from flask_response_builder import ResponseBuilder
 from flask_sqlalchemy import SQLAlchemy
 from flask_template_support import TemplateSupport
 
@@ -14,6 +13,7 @@ from .errors.handler import ErrorHandler
 from .healthcheck import HealthCheck
 from .jobs import APJobs
 from .logging.logging import FlaskLogging
+from .response.builder import ResponseBuilder
 from .sqlalchemy import SQLAModel
 from .useragent import UserAgent
 

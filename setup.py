@@ -31,13 +31,14 @@ REQUIRES = [
     "Flask-HTTPAuth",
     "Flask-JWT-Extended",
     "Flask-Limiter",
-    "Flask-ResponseBuilder",
     "Flask-SQLAlchemy",
     "Flask-TemplateSupport",
     "webargs",
     "aiohttp",
     "nest-asyncio",
     "vbcore[all]==2.0.0.rc3",
+    "xmltodict",
+    "json2html",
 ]
 REQUIRES_EXT = REQUIRES + [
     "pyfcm",
