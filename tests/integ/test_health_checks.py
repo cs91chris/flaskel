@@ -26,7 +26,7 @@ def test_health_checks(testapp):
     client_redis = FlaskRedis(client=MagicMock())
 
     app = testapp(
-        config=dict(
+        config=ObjectDict(
             MONGO_URI="mongodb://localhost/test",
             MONGO_OPTS={"timeout": 1},
             HEALTH_SERVICES={

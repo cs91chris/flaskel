@@ -13,7 +13,9 @@ from tests.integ.views import bp_api
 
 def test_proxy_view(testapp):
     app = testapp(
-        views=((TransparentProxyView, dict(host=HOSTS.apitester, url="/anything")),)
+        views=(
+            (TransparentProxyView, ObjectDict(host=HOSTS.apitester, url="/anything")),
+        )
     )
     client = ApiTester(app.test_client(), mimetype=ContentTypeEnum.JSON)
     response = client.get(
@@ -59,7 +61,7 @@ def test_jsonrpc_proxy_view(testapp):
         views=(
             (
                 JsonRPCProxy,
-                dict(
+                ObjectDict(
                     url=f"{HOSTS.apitester}/anything",
                     skip_args=("action",),
                     namespace=namespace,

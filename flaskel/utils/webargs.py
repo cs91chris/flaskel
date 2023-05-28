@@ -1,5 +1,6 @@
 from functools import partial
 
+from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode
 from webargs import fields, flaskparser
 
@@ -59,7 +60,7 @@ def handle_error(error, *_, **__):
 
 query_paginate = partial(
     query,
-    dict(
+    ObjectDict(
         page=OptField.positive(),
         page_size=OptField.positive(),
         related=OptField.boolean(load_default=False),

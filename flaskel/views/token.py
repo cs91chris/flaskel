@@ -44,7 +44,7 @@ class BaseTokenAuth(BaseView):
 
     @classmethod
     @webargs.query(
-        dict(
+        ObjectDict(
             expires_access=webargs.OptField.positive(),
             expires_refresh=webargs.OptField.positive(),
         )

@@ -1,9 +1,9 @@
 import typing as t
+from urllib.parse import parse_qs
 
 from vbcore import uuid
 from vbcore.datastruct import ObjectDict
 from werkzeug.middleware.proxy_fix import ProxyFix
-from werkzeug.urls import url_decode
 
 if t.TYPE_CHECKING:
     # pylint: disable=unused-import
@@ -106,8 +106,9 @@ class HTTPMethodOverride(BaseMiddleware):
         method = environ.get("HTTP_X_HTTP_METHOD_OVERRIDE")
 
         if "_method_override" in environ.get("QUERY_STRING", ""):
-            args = url_decode(environ["QUERY_STRING"])
-            method = args.get("_method_override")
+            args = parse_qs(environ["QUERY_STRING"])
+            _methods = args.get("_method_override")
+            method = _methods[0] if _methods else None
 
         if method and environ["REQUEST_METHOD"] in methods:
             environ["REQUEST_METHOD"] = method.upper()

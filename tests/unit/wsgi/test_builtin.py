@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from vbcore.datastruct import ObjectDict
 
 from flaskel import Flaskel
 from flaskel.wsgi import WSGIBuiltin
@@ -12,19 +13,19 @@ from flaskel.wsgi import WSGIBuiltin
     [
         (
             {"bind": "0.0.0.0:8000"},
-            dict(host="0.0.0.0", port=8000, debug=True),
+            ObjectDict(host="0.0.0.0", port=8000, debug=True),
         ),
         (
             {},
-            dict(host="127.0.0.1", port=5000, debug=True),
+            ObjectDict(host="127.0.0.1", port=5000, debug=True),
         ),
         (
             {"bind": "localhost"},
-            dict(host="localhost", port=5000, debug=True),
+            ObjectDict(host="localhost", port=5000, debug=True),
         ),
         (
             {"bind": ":8080"},
-            dict(host="127.0.0.1", port=8080, debug=True),
+            ObjectDict(host="127.0.0.1", port=8080, debug=True),
         ),
     ],
 )

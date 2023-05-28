@@ -103,7 +103,7 @@ class HealthCheck:
 
     def execute(self) -> t.Tuple[t.List[str], t.List[CheckerResponseType]]:
         checkers = self.get_checkers()
-        tasks = [(self._checkers.get(c), dict(app=self.app)) for c in checkers]
+        tasks = [(self._checkers.get(c), {"app": self.app}) for c in checkers]
         return checkers, self._executor(tasks=tasks).run()
 
     def perform(self) -> t.Tuple[dict, int, dict]:

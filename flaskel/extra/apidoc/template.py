@@ -37,7 +37,7 @@ class ApiDocTemplate(RenderTemplateString):
             return abort(httpcode.NOT_FOUND)
 
         proto = cap.config.PREFERRED_URL_SCHEME
-        return dict(
+        return ObjectDict(
             rapidoc_version=cap.config.RAPIDOC_VERSION or "9",
             rapidoc_theme=cap.config.RAPIDOC_THEME or "dark",
             page_title=f"{cap.config.APP_NAME} - API DOCS",

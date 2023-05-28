@@ -1,3 +1,5 @@
+from vbcore.datastruct import ObjectDict
+
 REQUEST_FORMATTER = "flask_logify.formatters.RequestFormatter"
 
 
@@ -10,7 +12,7 @@ def handler(formatter, **kwargs):
     }
 
 
-LOGGING = dict(
+LOGGING = ObjectDict(
     version=1,
     disable_existing_loggers=False,
     objects={"queue": {"class": "queue.Queue", "maxsize": 10000}},

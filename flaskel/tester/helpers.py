@@ -2,6 +2,7 @@ import typing as t
 from functools import partial
 
 import flask
+from vbcore.datastruct import ObjectDict
 from vbcore.db.support import SQLASupport
 from vbcore.http import httpcode, HttpMethod
 from vbcore.tester.asserter import Asserter
@@ -244,15 +245,15 @@ def get_access_token(
     conf = client.application.config
 
     if token is not None:
-        return dict(Authorization=f"{token_type} {token}")
+        return ObjectDict(Authorization=f"{token_type} {token}")
 
     if not credentials:
-        credentials = dict(email=conf.ADMIN_EMAIL, password=conf.ADMIN_PASSWORD)
+        credentials = ObjectDict(email=conf.ADMIN_EMAIL, password=conf.ADMIN_PASSWORD)
     elif isinstance(credentials, tuple):
-        credentials = dict(email=credentials[0], password=credentials[1])
+        credentials = ObjectDict(email=credentials[0], password=credentials[1])
 
     tokens = client.post(url_for(access_view), json=credentials)
     if is_query is True:
         return {conf.JWT_QUERY_STRING_NAME: tokens.json.access_token}
 
-    return dict(Authorization=f"{token_type} {tokens.json.access_token}")
+    return ObjectDict(Authorization=f"{token_type} {tokens.json.access_token}")

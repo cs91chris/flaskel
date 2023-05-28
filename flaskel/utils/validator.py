@@ -30,5 +30,13 @@ class PayloadValidator:
             return abort(httpcode.INTERNAL_SERVER_ERROR)
         except jsonschema.ValidationError as exc:
             cap.logger.error(cls.validator.error_report(exc, payload))
-            reason = dict(cause=exc.cause, message=exc.message, path=exc.path)
-            return abort(httpcode.UNPROCESSABLE_ENTITY, response=dict(reason=reason))
+            return abort(
+                httpcode.UNPROCESSABLE_ENTITY,
+                response={
+                    "reason": {
+                        "cause": exc.cause,
+                        "message": exc.message,
+                        "path": exc.path,
+                    },
+                },
+            )

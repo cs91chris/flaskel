@@ -21,29 +21,29 @@ def option_as_dict(ctx, param, value):
 
 
 class Server:
-    opt_config_attr = dict(default=None, help="app yaml/json configuration file")
-    opt_log_config_attr = dict(
+    opt_config_attr = ObjectDict(default=None, help="app yaml/json configuration file")
+    opt_log_config_attr = ObjectDict(
         default=None, help="alternative log yaml/json configuration file"
     )
-    opt_bing_attr = dict(
+    opt_bing_attr = ObjectDict(
         default="127.0.0.1:5000", help="address to bind", show_default=True
     )
-    opt_debug_attr = dict(
+    opt_debug_attr = ObjectDict(
         is_flag=True, flag_value=True, default=False, help="enable debug mode"
     )
-    opt_wsgi_server_attr = dict(
+    opt_wsgi_server_attr = ObjectDict(
         default=None,
         type=click.Choice(list(DEFAULT_WSGI_SERVERS.keys()), case_sensitive=False),
         help="name of wsgi server to use",
     )
-    option_wsgi_config_attr = dict(
+    option_wsgi_config_attr = ObjectDict(
         default={},
         multiple=True,
         callback=option_as_dict,
         metavar="KEY=VAL",
         help="wsgi configuration",
     )
-    option_app_config_attr = dict(
+    option_app_config_attr = ObjectDict(
         default={},
         multiple=True,
         callback=option_as_dict,

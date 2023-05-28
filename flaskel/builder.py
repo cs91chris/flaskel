@@ -166,22 +166,21 @@ class AppBuilder:
         return tokens[0], tokens[1] if len(tokens) > 1 else {}
 
     def register_extensions(self):
-        with self._app.app_context():
-            for name, e in self._extensions.items():
-                try:
-                    ext, opt = self.normalize_tuple(e)
-                    if not ext:
-                        raise TypeError("extension could not be None or empty")
-                except (TypeError, IndexError) as exc:
-                    self._app.logger.warning(
-                        "Invalid extension '%s' configuration '%s': %s", name, e, exc
-                    )
-                    continue
-
-                ext.init_app(self._app, **opt)
-                self._app.logger.debug(
-                    "Registered extension '%s' with options: %s", name, opt
+        for name, e in self._extensions.items():
+            try:
+                ext, opt = self.normalize_tuple(e)
+                if not ext:
+                    raise TypeError("extension could not be None or empty")
+            except (TypeError, IndexError) as exc:
+                self._app.logger.warning(
+                    "Invalid extension '%s' configuration '%s': %s", name, e, exc
                 )
+                continue
+
+            ext.init_app(self._app, **opt)
+            self._app.logger.debug(
+                "Registered extension '%s' with options: %s", name, opt
+            )
 
         self._app.logger.debug("Dump flask extensions:")
         for k, v in self._app.extensions.items():
@@ -280,8 +279,8 @@ class AppBuilder:
         try:
             sqlalchemy = self._app.extensions.get("sqlalchemy")
             if sqlalchemy is not None:
-                SQLASupport.register_custom_handlers(sqlalchemy.db.engine)
-                sqlalchemy.db.create_all()
+                SQLASupport.register_custom_handlers(sqlalchemy.engine)
+                sqlalchemy.create_all()
         except Exception as exc:  # pylint: disable=broad-except
             self._app.logger.exception(exc)
 
@@ -291,10 +290,9 @@ class AppBuilder:
         if self._app.debug:
             self.set_linter_and_profiler()
 
-        with self._app.app_context():
-            self.init_db()
-            if callable(self._after_create_callback):
-                self._after_create_callback()
+        self.init_db()
+        if callable(self._after_create_callback):
+            self._after_create_callback()
 
     def create(
         self, conf: t.Optional[t.Union[str, t.Dict[str, t.Any]]] = None
@@ -305,14 +303,15 @@ class AppBuilder:
         self.set_config(conf)
         self.set_secret_key()
 
-        self.register_extensions()
-        self.register_middlewares()
-        self.register_template_folders()
-        self.register_converters()
-        self.register_views()
-        self.register_blueprints()
-        self.register_after_request()
-        self.register_before_request()
+        with self._app.app_context():
+            self.register_extensions()
+            self.register_middlewares()
+            self.register_template_folders()
+            self.register_converters()
+            self.register_views()
+            self.register_blueprints()
+            self.register_after_request()
+            self.register_before_request()
+            self.after_create_hook()
 
-        self.after_create_hook()
         return self._app

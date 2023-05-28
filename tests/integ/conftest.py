@@ -30,12 +30,12 @@ EXTENSIONS = {
     "argon2": (default.argon2,),
     "auth": (auth.token_auth,),
     "builder": (default.builder,),
-    "cors": (default.cors, dict(resources={r"/*": {"origins": "*"}})),
+    "cors": (default.cors, ObjectDict(resources={r"/*": {"origins": "*"}})),
     "database": (default.Database(),),
     "date_helper": (default.date_helper,),
     "errors": (
         default.error_handler,
-        dict(
+        ObjectDict(
             dispatcher="subdomain",
             response=default.builder.on_accept(strict=False),
         ),

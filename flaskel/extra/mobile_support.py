@@ -4,6 +4,7 @@ from datetime import datetime
 
 import flask
 from packaging import version
+from vbcore.datastruct import ObjectDict
 from vbcore.http import httpcode, HttpMethod
 from vbcore.http.headers import ContentTypeEnum, HeaderEnum
 
@@ -219,7 +220,7 @@ class MobileReleaseView(BaseView):
     )
 
     @webargs.query(
-        dict(
+        ObjectDict(
             all=webargs.OptField.boolean(),
             critical=webargs.OptField.boolean(),
             agent=webargs.Field.string(required=True),

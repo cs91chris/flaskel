@@ -2,11 +2,12 @@ import os.path
 import typing as t
 
 import flask
+from flask.json.provider import JSONProvider
+from vbcore import json as vbcore_json
 from vbcore.datastruct import ObjectDict
 from vbcore.datastruct.lazy import Dumper
 from vbcore.http import httpcode
 from vbcore.http.headers import HeaderEnum
-from vbcore.json import JsonDecoder, JsonEncoder
 from vbcore.types import OptStr
 from werkzeug.routing import Rule
 from werkzeug.utils import safe_join
@@ -118,14 +119,21 @@ class Response(flask.Response):
         }
 
 
+class VBJSONProvider(JSONProvider):
+    def dumps(self, obj: t.Any, **kwargs: t.Any) -> str:
+        return vbcore_json.dumps(obj, **kwargs)
+
+    def loads(self, s: str | bytes, **kwargs: t.Any) -> t.Any:
+        return vbcore_json.loads(s, **kwargs)
+
+
 class Flaskel(flask.Flask):
     config_class = Config
     request_class = Request
     response_class = Response
-    _json_encoder = JsonEncoder
-    _json_decoder = JsonDecoder
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.version: OptStr = None
         self.config: Config
+        self.json = VBJSONProvider(self)

@@ -1,6 +1,6 @@
 import typing as t
 
-from flask_sqlalchemy import Model
+from flask_sqlalchemy.model import Model
 from vbcore.datastruct import ObjectDict
 
 
@@ -16,12 +16,12 @@ class SQLAModel(Model):
     def get_one(
         cls, *args, raise_not_found: bool = True, to_dict: bool = True, **kwargs
     ):
-        res = cls.query.filter(*args).filter_by(**kwargs)
+        query = cls.query.filter(*args).filter_by(**kwargs)
 
         if raise_not_found:
-            res = res.first_or_404()
+            res = query.first_or_404()
         else:
-            res = res.first()
+            res = query.first()
             if res is None:
                 return None
 

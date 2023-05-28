@@ -105,7 +105,7 @@ def test_media(testapp, session_save, tmpdir):
         mimetype=ContentTypeEnum.JSON,
         schema=SCHEMA_MEDIA,
         url=url_for("media_users", eid=user_id),
-        headers={HeaderEnum: ContentTypeEnum.FORM_DATA},
+        headers={HeaderEnum.CONTENT_TYPE: ContentTypeEnum.FORM_DATA},
         data={"file1": files[0], "file2": files[1]},
     )
     Asserter.assert_equals(len(response.json), 2)

@@ -32,13 +32,13 @@ def simple_basic_auth(username: str, password: str) -> t.Optional[dict]:
         username == cap.config.BASIC_AUTH_USERNAME
         and password == cap.config.BASIC_AUTH_PASSWORD
     ):
-        return dict(username=username, password=password)
+        return {"username": username, "password": password}
     return None
 
 
 @token_auth.invalid_token_loader
 def invalid_token_loader(mess) -> t.Tuple[dict, int]:
-    return dict(message=mess), httpcode.UNAUTHORIZED
+    return {"message": mess}, httpcode.UNAUTHORIZED
 
 
 class RevokedTokenMixin(StandardMixin):

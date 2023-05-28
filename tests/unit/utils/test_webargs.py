@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import cast
 
 import pytest
+from vbcore.datastruct import ObjectDict
 from vbcore.tester.asserter import Asserter
 
 from flaskel import webargs
@@ -43,7 +44,7 @@ from flaskel.http.exceptions import BadRequest
     ],
 )
 def test_optional_fields_ok(flaskel_app, field_type, value, expected):
-    @webargs.query(dict(field=field_type()))
+    @webargs.query(ObjectDict(field=field_type()))
     def fake_request(params):
         return params["field"]
 
@@ -80,7 +81,7 @@ def test_optional_fields_ok(flaskel_app, field_type, value, expected):
     ],
 )
 def test_optional_fields_error(flaskel_app, field_type, value, expected):
-    @webargs.query(dict(field=field_type()))
+    @webargs.query(ObjectDict(field=field_type()))
     def fake_request(params):
         return params["field"]
 
