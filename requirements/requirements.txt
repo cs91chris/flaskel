@@ -42,7 +42,6 @@ flask==2.2.5
     #   flask-caching
     #   flask-cloudflareremote
     #   flask-cors
-    #   flask-errorshandler
     #   flask-httpauth
     #   flask-jwt-extended
     #   flask-limiter
@@ -54,8 +53,6 @@ flask-caching==2.0.2
 flask-cloudflareremote==1.1.2
     # via -r requirements/requirements.in
 flask-cors==3.0.10
-    # via -r requirements/requirements.in
-flask-errorshandler==4.0.2
     # via -r requirements/requirements.in
 flask-httpauth==4.8.0
     # via -r requirements/requirements.in

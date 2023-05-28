@@ -28,7 +28,6 @@ REQUIRES = [
     "Flask-Caching",
     "Flask-CloudflareRemote",
     "Flask-Cors",
-    "Flask-ErrorsHandler",
     "Flask-HTTPAuth",
     "Flask-JWT-Extended",
     "Flask-Limiter",

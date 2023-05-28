@@ -3,7 +3,6 @@ import typing as t
 
 from flask_cloudflare_remote import CloudflareRemote
 from flask_cors import CORS
-from flask_errors_handler import ErrorHandler
 from flask_response_builder import ResponseBuilder
 from flask_sqlalchemy import SQLAlchemy
 from flask_template_support import TemplateSupport
@@ -11,7 +10,7 @@ from flask_template_support import TemplateSupport
 from .caching import Caching
 from .crypto.argon import Argon2
 from .datetime import FlaskDateHelper
-from .errors import ErrorNormalizer
+from .errors.handler import ErrorHandler
 from .healthcheck import HealthCheck
 from .jobs import APJobs
 from .logging.logging import FlaskLogging
@@ -23,7 +22,7 @@ logger: FlaskLogging = FlaskLogging()
 builder: ResponseBuilder = ResponseBuilder()
 template: TemplateSupport = TemplateSupport()
 cfremote: CloudflareRemote = CloudflareRemote()
-error_handler: ErrorHandler = ErrorHandler(normalizer=ErrorNormalizer())
+error_handler: ErrorHandler = ErrorHandler()
 
 argon2: Argon2 = Argon2()
 caching: Caching = Caching()
