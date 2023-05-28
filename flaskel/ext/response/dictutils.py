@@ -2,12 +2,6 @@ from collections.abc import MutableMapping
 
 
 def rename_keys(data, trans=None, **kwargs):
-    """
-
-    :param data:
-    :param trans:
-    :param kwargs:
-    """
     if trans is None:
         for k, v in kwargs.items():
             data[v] = data.pop(k)
@@ -19,23 +13,10 @@ def rename_keys(data, trans=None, **kwargs):
 
 
 def to_flatten(data, to_dict=None, **kwargs):
-    """
-
-    :param data:
-    :param to_dict:
-    :return:
-    """
     kwargs.setdefault("sep", "_")
     kwargs.setdefault("parent_key", "")
 
     def _flatten_dict(d, parent_key, sep):
-        """
-
-        :param d:
-        :param parent_key:
-        :param sep:
-        :return:
-        """
         items = []
 
         for k, v in d.items():

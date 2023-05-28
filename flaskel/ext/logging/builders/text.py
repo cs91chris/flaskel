@@ -26,12 +26,6 @@ class Wrapper(BaseWrapper, ABC):
 
     @staticmethod
     def dump_body(r):
-        """
-        dump http body as plain text
-
-        :param r: Response object
-        :return:
-        """
         try:
             body = r.get_data(as_text=True)
         except UnicodeError:

@@ -5,11 +5,6 @@ from flask import Response
 
 class Builder(ABC):
     def __init__(self, mimetype: str, response_class=None, **kwargs):
-        """
-
-        :param mimetype:
-        :param response_class:
-        """
         if not isinstance(mimetype, str):
             raise TypeError("Invalid mimetype: {}".format(mimetype))
 
@@ -28,62 +23,31 @@ class Builder(ABC):
 
     @property
     def mimetype(self):
-        """
-
-        :return:
-        """
         return self._mimetype
 
     @property
     def data(self):
-        """
-
-        :return:
-        """
         return self._data
 
     @staticmethod
     @abstractmethod
     def to_dict(data, **kwargs):
-        """
-
-        :param data:
-        :param kwargs:
-        """
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
     def to_me(data, **kwargs):
-        """
-
-        :param data:
-        :param kwargs:
-        """
+        raise NotImplementedError
 
     @abstractmethod
     def _build(self, data, **kwargs):
-        """
-
-        :param data:
-        """
+        raise NotImplementedError
 
     def build(self, data, **kwargs):
-        """
-
-        :param data:
-        :param kwargs:
-        :return:
-        """
         self._data = self._build(data, **kwargs)
         return self.data
 
     def response(self, status=None, headers=None):
-        """
-
-        :param status:
-        :param headers:
-        :return:
-        """
         headers = headers or {}
         ct = headers.get("Content-Type")
 
@@ -95,13 +59,5 @@ class Builder(ABC):
         )
 
     def transform(self, data, builder, inargs=None, outargs=None):
-        """
-
-        :param data:
-        :param builder:
-        :param inargs:
-        :param outargs:
-        :return:
-        """
         _dict = builder.to_dict(data, **(inargs or {}))
         return self.build(_dict, **(outargs or {}))

@@ -10,10 +10,6 @@ from .builders import builder_factory, LogBuilder
 
 class FlaskLogging:
     def __init__(self, app=None, **kwargs):
-        """
-
-        :param app:
-        """
         self._conf = {}
 
         if app is not None:
@@ -21,20 +17,10 @@ class FlaskLogging:
 
     @property
     def conf(self):
-        """
-
-        :return:
-        """
         return self._conf
 
     def init_app(self, app, builder=None):
-        """
-
-        :param app: Flask app instance
-        :param builder:
-        """
-        if not hasattr(app, "extensions"):
-            app.extensions = {}
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["logify"] = self
 
         self.set_default_config(app)
@@ -78,12 +64,6 @@ class FlaskLogging:
 
     @staticmethod
     def set_request_id(app):
-        """
-        Register request id in flask g
-
-        param app: Flask app instance
-        """
-
         @app.before_request
         def req_id():
             h = flask.current_app.config["REQUEST_ID_HEADER"]
@@ -124,10 +104,6 @@ class FlaskLogging:
 
     @staticmethod
     def set_default_config(app):
-        """
-
-        param app: Flask app instance
-        """
         app.config.setdefault("LOGGING", None)
         app.config.setdefault("LOG_FILE_CONF", None)
         app.config.setdefault("LOG_BUILDER", "text")

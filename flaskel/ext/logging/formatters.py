@@ -5,10 +5,6 @@ import flask
 
 class RequestFormatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
-        """
-
-        :param kwargs:
-        """
         self.app_name = flask.current_app.config["LOG_APP_NAME"]
         req_id_header = kwargs.pop("request_id_header", None) or "X-Request-ID"
         req_id_header = req_id_header.upper().replace("-", "_")
@@ -16,11 +12,6 @@ class RequestFormatter(logging.Formatter):
         super().__init__(*args, **kwargs)
 
     def format(self, record):
-        """
-
-        :param record:
-        :return:
-        """
         record.url = None
         record.method = None
         record.scheme = None

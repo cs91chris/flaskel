@@ -8,11 +8,6 @@ from .builder import Builder
 
 class HtmlBuilder(Builder):
     def _build(self, data, **kwargs):
-        """
-
-        :param data:
-        :return:
-        """
         as_table = kwargs.pop("as_table", self.conf.get("RB_HTML_AS_TABLE"))
 
         parent_key = self.conf.get("RB_FLATTEN_PREFIX")
@@ -37,20 +32,8 @@ class HtmlBuilder(Builder):
 
     @staticmethod
     def to_me(data, **kwargs):
-        """
-
-        :param data:
-        :param kwargs:
-        :return:
-        """
         return None
 
     @staticmethod
     def to_dict(data, **kwargs):
-        """
-
-        :param data:
-        :param kwargs:
-        :return:
-        """
         return None

@@ -9,37 +9,21 @@ from .config import DEFAULT_BUILDERS, set_default_config
 
 class ResponseBuilder:
     def __init__(self, app=None, builders=None):
-        """
-
-        :param app:
-        :param builders:
-        """
         self._builders = {}
 
         if app is not None:
             self.init_app(app, builders)
 
     def init_app(self, app, builders=None):
-        """
-
-        :param app:
-        :param builders:
-        """
         set_default_config(app)
 
-        if not hasattr(app, "extensions"):
-            app.extensions = dict()
+        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["response_builder"] = self
 
         for name, builder in {**DEFAULT_BUILDERS, **(builders or {})}.items():
             self.register_builder(name, builder, **app.config)
 
     def register_builder(self, name, builder, **kwargs):
-        """
-
-        :param name:
-        :param builder:
-        """
         if not issubclass(builder.__class__, Builder):
             raise NameError(
                 "Invalid Builder: '{}'. "
@@ -59,10 +43,6 @@ class ResponseBuilder:
                 func and data are mutual exclusive:
                     if func is present means a decorator builder used
                     if data is provided means decorator used as attribute
-
-                :param func:
-                :param data:
-                :return:
                 """
                 if func is not None:
 
@@ -80,23 +60,11 @@ class ResponseBuilder:
 
     @staticmethod
     def _empty_response(status, headers):
-        """
-
-        :param status:
-        :param headers:
-        :return:
-        """
         resp = flask.make_response(b"", status, headers)
         resp.headers.pop("Content-Type", None)
         return resp
 
     def build_response(self, builder=None, data=None, **kwargs):
-        """
-
-        :param builder:
-        :param data:
-        :return:
-        """
         if isinstance(builder, str):
             builder = self._builders.get(builder)
 
@@ -130,14 +98,6 @@ class ResponseBuilder:
         return builder.response(status=status, headers=headers)
 
     def get_mimetype_accept(self, default=None, acceptable=None, strict=True):
-        """
-
-        :param default:
-        :param acceptable:
-        :param strict:
-        :return:
-        """
-
         def find_builder(a):
             for b in self._builders.values():
                 if a == b.mimetype:
@@ -168,11 +128,6 @@ class ResponseBuilder:
 
     @staticmethod
     def normalize_response_data(data):
-        """
-
-        :param data:
-        :return:
-        """
         if isinstance(data, tuple):
             v = data + (None,) * (3 - len(data))
             if isinstance(v[1], int):
@@ -185,12 +140,6 @@ class ResponseBuilder:
         return data, None, {}
 
     def no_content(self, func):
-        """
-
-        :param func:
-        :return:
-        """
-
         @wraps(func)
         def wrapped(*args, **kwargs):
             resp = func(*args, **kwargs)
@@ -207,13 +156,6 @@ class ResponseBuilder:
         return wrapped
 
     def on_format(self, default=None, acceptable=None):
-        """
-
-        :param default:
-        :param acceptable:
-        :return:
-        """
-
         def response(fun):
             @wraps(fun)
             def wrapper(*args, **kwargs):
@@ -233,14 +175,6 @@ class ResponseBuilder:
         return response
 
     def on_accept(self, default=None, acceptable=None, strict=True):
-        """
-
-        :param default:
-        :param acceptable:
-        :param strict:
-        :return:
-        """
-
         def response(fun):
             @wraps(fun)
             def wrapper(*args, **kwargs):
@@ -254,12 +188,6 @@ class ResponseBuilder:
         return response
 
     def response(self, builder, **kwargs):
-        """
-
-        :param builder:
-        :return:
-        """
-
         def _response(f):
             @wraps(f)
             def wrapper(*args, **kw):
@@ -270,14 +198,6 @@ class ResponseBuilder:
         return _response
 
     def template_or_json(self, template: str, as_table=False, to_dict=None):
-        """
-
-        :param template:
-        :param as_table:
-        :param to_dict:
-        :return:
-        """
-
         def response(fun):
             @wraps(fun)
             def wrapper(*args, **kwargs):

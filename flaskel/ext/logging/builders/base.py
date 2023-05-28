@@ -16,7 +16,7 @@ class BaseWrapper(ABC):
 
     @abstractmethod
     def dump(self):
-        """"""
+        raise NotImplementedError
 
 
 class LogBuilder:
@@ -24,10 +24,6 @@ class LogBuilder:
     wrapper_dump_response = BaseWrapper
 
     def __init__(self, get_remote=lambda: None):
-        """
-
-        :param get_remote:
-        """
         self._get_remote = get_remote
 
     @abstractmethod
@@ -39,10 +35,6 @@ class LogBuilder:
         return {}
 
     def get_remote_address(self):
-        """
-
-        :return: client ip address
-        """
         return self._get_remote() or request.remote_addr
 
     @staticmethod

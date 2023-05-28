@@ -10,12 +10,6 @@ from .base import BaseWrapper, LogBuilder
 class Wrapper(BaseWrapper, ABC):
     @staticmethod
     def package_message(identifier, payload):
-        """
-
-        :param identifier:
-        :param payload:
-        :return:
-        """
         return flask.json.dumps(
             {
                 "appName": cap.config["LOG_APP_NAME"],
@@ -49,11 +43,6 @@ class Wrapper(BaseWrapper, ABC):
 
     @staticmethod
     def dump_body(r):
-        """
-
-        :param r:
-        :return:
-        """
         body = r.get_json()
         if body:
             return body

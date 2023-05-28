@@ -7,11 +7,6 @@ from .builder import Builder
 
 class CsvBuilder(Builder):
     def _build(self, data, **kwargs):
-        """
-
-        :param data:
-        :return:
-        """
         data = to_flatten(
             data or [],
             to_dict=kwargs.pop("to_dict", None),
@@ -44,11 +39,6 @@ class CsvBuilder(Builder):
 
     @staticmethod
     def to_me(data: list, **kwargs):
-        """
-
-        :param data:
-        :return:
-        """
         kwargs.setdefault("dialect", "excel-tab")
         kwargs.setdefault("delimiter", ";")
         kwargs.setdefault("quotechar", '"')
@@ -63,20 +53,10 @@ class CsvBuilder(Builder):
 
     @staticmethod
     def to_csv(data, **kwargs):
-        """
-
-        :param data:
-        :return:
-        """
         return CsvBuilder.to_me(data, **kwargs)
 
     @staticmethod
     def to_dict(data, **kwargs):
-        """
-
-        :param data:
-        :return:
-        """
         kwargs.setdefault("dialect", "excel-tab")
         kwargs.setdefault("delimiter", ";")
         kwargs.setdefault("quotechar", '"')

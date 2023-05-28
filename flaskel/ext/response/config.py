@@ -18,10 +18,6 @@ DEFAULT_BUILDERS = {
 
 
 def set_default_config(app):
-    """
-
-    :param app:
-    """
     app.config.setdefault(
         "RB_DEFAULT_ACCEPTABLE_MIMETYPES",
         {v.mimetype for _, v in DEFAULT_BUILDERS.items()},

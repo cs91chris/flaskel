@@ -1,3 +1,4 @@
+from textwrap import dedent
 from typing import Any
 
 from werkzeug.exceptions import InternalServerError
@@ -63,27 +64,23 @@ class ApiProblem(InternalServerError):
     instance = "about:blank"
     type = "https://httpstatuses.com/{code}"
 
-    default_html_template = """
-<html>
-    <head><title>{{ exc.code }}</title></head>
-    <body>
-        <h2>{{ exc.code }} - {{ exc.name }}</h2>
-        <p>Problem type: <a href="{{ exc.get_type() }}">{{ exc.get_type() }}</a></p>
-        <p>Problem specific: <a href="{{ exc.get_instance() }}">{{ exc.get_instance() }}</a></p>
-        <h3>Description</h3>
-        <p><pre>{{ exc.get_detail() }}</pre></p>
-    </body>
-</html>
-    """
+    default_html_template = dedent(
+        """
+        <html>
+            <head><title>{{ exc.code }}</title></head>
+            <body>
+                <h2>{{ exc.code }} - {{ exc.name }}</h2>
+                <p>Problem type: <a href="{{ exc.get_type() }}">{{ exc.get_type() }}</a></p>
+                <p>Problem specific: <a href="{{ exc.get_instance() }}">{{ exc.get_instance() }}</a>
+                </p>
+                <h3>Description</h3>
+                <p><pre>{{ exc.get_detail() }}</pre></p>
+            </body>
+        </html>
+        """
+    )
 
     def __init__(self, description=None, response=None, **kwargs):
-        """
-
-        :param description:
-        :param response:
-
-        :param data:
-        """
         super().__init__(description, response)
 
         self.type = kwargs.get("type", self.type)
@@ -97,7 +94,6 @@ class ApiProblem(InternalServerError):
             self.headers = h
 
     def prepare_response(self):
-        """ """
         return (
             dict(
                 type=self.get_type(),
@@ -112,22 +108,10 @@ class ApiProblem(InternalServerError):
         )
 
     def get_type(self):
-        """
-
-        :return:
-        """
         return self.type.format(code=self.code)
 
     def get_instance(self):
-        """
-
-        :return:
-        """
         return self.instance
 
     def get_detail(self):
-        """
-
-        :return:
-        """
         return self.description
