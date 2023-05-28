@@ -32,7 +32,6 @@ REQUIRES = [
     "Flask-JWT-Extended",
     "Flask-Limiter",
     "Flask-SQLAlchemy",
-    "Flask-TemplateSupport",
     "webargs",
     "aiohttp",
     "nest-asyncio",

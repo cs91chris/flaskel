@@ -6,7 +6,6 @@ Flask-HTTPAuth
 Flask-JWT-Extended
 Flask-Limiter
 Flask-SQLAlchemy
-Flask-TemplateSupport
 json2html
 jsonschema
 nest-asyncio
