@@ -29,5 +29,4 @@ class YamlBuilder(Builder):
     def to_dict(data, **kwargs):
         if isinstance(data, io.IOBase):
             return yaml.safe_load(data)
-        else:
-            return yaml.safe_load(io.StringIO(data))
+        return yaml.safe_load(io.StringIO(data))

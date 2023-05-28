@@ -75,18 +75,19 @@ class MethodNotAllowedMixin(BaseNormalize):
 
 class UnauthorizedMixin(BaseNormalize):
     def normalize(self, ex, **kwargs):
-        def to_dict(item):
-            item = dict(item)
-            item["auth_type"] = item.pop("__auth_type__", None)
-            return item
-
         if isinstance(ex, exceptions.Unauthorized):
             if ex.www_authenticate:
                 ex.headers = {
-                    "WWW-Authenticate": ", ".join([str(a) for a in ex.www_authenticate])
+                    "WWW-Authenticate": ", ".join(
+                        [auth.to_header() for auth in ex.www_authenticate]
+                    )
                 }
                 ex.response = ObjectDict(
-                    authenticate=[to_dict(a) for a in ex.www_authenticate if a]
+                    authenticate=[
+                        {"auth_type": auth.type, **auth.parameters}
+                        for auth in ex.www_authenticate
+                        if auth
+                    ]
                 )
 
         return super().normalize(ex)

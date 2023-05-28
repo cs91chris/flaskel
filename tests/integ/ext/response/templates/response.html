@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Title</title>
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
+</head>
+<body>
+<div class="container">
+  <div class="row mb-5">
+    <div class="col-sm-8">
+      <h1 class="text-center text-md-left">{{ name }}</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="table-responsive">
+      <table class="display table table-hover table-bordered table-striped table-list">
+        <thead class="thead-light nowrap">
+        <tr>
+          {% for k, v in data[0].items() %}
+          <th scope="col" class="text-center">{{ k }}</th>
+          {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in data %}
+        <tr>
+          {% for key, value in d.items() %}
+          <td>{{ value }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>
