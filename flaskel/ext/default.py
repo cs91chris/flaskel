@@ -1,11 +1,11 @@
 import functools
 import typing as t
 
-from flask_cloudflare_remote import CloudflareRemote
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 from .caching import Caching
+from .cloudflare.remote import CloudflareRemote
 from .crypto.argon import Argon2
 from .datetime import FlaskDateHelper
 from .errors.handler import ErrorHandler

@@ -26,7 +26,6 @@ VERSION_FILE = os.path.join(BASE_PATH, PKG_NAME, "version.py")
 REQUIRES = [
     "Flask",
     "Flask-Caching",
-    "Flask-CloudflareRemote",
     "Flask-Cors",
     "Flask-HTTPAuth",
     "Flask-JWT-Extended",

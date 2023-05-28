@@ -40,15 +40,12 @@ flask==2.2.5
     # via
     #   -r requirements/requirements.in
     #   flask-caching
-    #   flask-cloudflareremote
     #   flask-cors
     #   flask-httpauth
     #   flask-jwt-extended
     #   flask-limiter
     #   flask-sqlalchemy
 flask-caching==2.0.2
-    # via -r requirements/requirements.in
-flask-cloudflareremote==1.1.2
     # via -r requirements/requirements.in
 flask-cors==3.0.10
     # via -r requirements/requirements.in
@@ -99,7 +96,7 @@ multidict==6.0.4
 nest-asyncio==1.5.6
     # via -r requirements/requirements.in
 netaddr==0.8.0
-    # via flask-cloudflareremote
+    # via -r requirements/requirements.in
 ordered-set==4.1.0
     # via flask-limiter
 packaging==23.1

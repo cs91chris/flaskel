@@ -1,6 +1,5 @@
 Flask<2.3
 Flask-Caching
-Flask-CloudflareRemote
 Flask-Cors
 Flask-HTTPAuth
 Flask-JWT-Extended
@@ -9,6 +8,7 @@ Flask-SQLAlchemy
 json2html
 jsonschema
 nest-asyncio
+netaddr
 vbcore[crypto,db,http]==2.0.0.rc3
 webargs
 xmltodict
