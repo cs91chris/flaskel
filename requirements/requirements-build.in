@@ -3,6 +3,3 @@
 tox
 twine
 wheel
-
-charset-normalizer<3  # because: RequestsDependencyWarning: urllib3 (1.26.15) or chardet (5.1.0)/charset_normalizer (2.0.12) doesn't match a supported version!
-# packaging<22.0  # because: packaging<22.0,>=21.0 (from safety==2.3.5->-r requirements/requirements-dev.in
