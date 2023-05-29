@@ -15,8 +15,6 @@ class CloudflareRemote:
 
     def init_app(self, app, cf_ips=None):
         self._default_config(app)
-
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["cloudflareRemote"] = self
 
         if app.config["CF_STRICT_ACCESS"]:

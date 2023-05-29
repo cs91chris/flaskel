@@ -36,8 +36,6 @@ class APJobs(APScheduler):
             )  # pragma: no cover
 
         self.set_config(app)
-
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["scheduler"] = self
 
         if app.config.SCHEDULER_PATCH_MULTITHREAD is True:

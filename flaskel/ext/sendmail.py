@@ -10,7 +10,6 @@ class ClientMail(Mail):
     def init_app(self, app):
         self.app = app
         super().init_app(app)
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["client_mail"] = self
 
     def sendmail(

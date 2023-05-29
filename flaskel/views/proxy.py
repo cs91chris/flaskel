@@ -122,7 +122,8 @@ class ConfProxyView(BaseView):
 
     def __init__(self, config_key: t.Optional[str] = None):
         self._config_key = config_key or self.config_key
-        assert self._config_key is not None, "missing 'config_key'"
+        if not self._config_key:
+            raise ValueError("missing 'config_key'")
 
     def dispatch_request(self, *args, **kwargs):
         return self.perform(*args, **kwargs)

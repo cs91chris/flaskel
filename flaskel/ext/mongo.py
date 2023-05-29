@@ -18,7 +18,6 @@ class FlaskMongoDB(PyMongo):
     def init_app(self, app, *args, ext_name: str = "default", **kwargs):
         self.set_default_config(app, **kwargs)
         super().init_app(app, *args, **app.config.MONGO_OPTS)
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["mongo"] = ObjectDict()
         app.extensions["mongo"][ext_name] = self
 

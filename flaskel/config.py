@@ -31,7 +31,7 @@ CONF_PATH = config("CONF_PATH", default=os.path.join(config.search_path, "resour
 
 JWT_DEFAULT_SCOPE = None
 JWT_IDENTITY_CLAIM = "identity"
-JWT_DEFAULT_TOKEN_TYPE = "bearer"
+JWT_DEFAULT_TOKEN_TYPE = "bearer"  # nosec
 JWT_ERROR_MESSAGE_KEY = "message"
 JWT_QUERY_STRING_NAME = "token"
 JWT_TOKEN_LOCATION = ["headers", "query_string"]
@@ -164,7 +164,7 @@ RATELIMIT_IN_MEMORY_FALLBACK_ENABLED = config(
 
 DATABASE_URL = SQLALCHEMY_DATABASE_URI
 ERROR_PAGE = "core/error.html"
-SECRET_KEY_FILE_NAME = ".secret.key"
+SECRET_KEY_FILE_NAME = ".secret.key"  # nosec
 SECRET_KEY_MIN_LENGTH = 256
 RB_DEFAULT_ACCEPTABLE_MIMETYPES = [
     ContentTypeEnum.JSON,

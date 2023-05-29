@@ -55,7 +55,6 @@ class HealthCheck:
         self.register_checkers(checkers)
         self.register_route(blueprint or app, decorators)
 
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["healthcheck"] = self
 
     def set_default_config(self):

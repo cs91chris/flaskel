@@ -17,7 +17,6 @@ class UserAgent:
         self._parser = parser_class
         app.config.setdefault("USER_AGENT_AUTO_PARSE", False)
 
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["useragent"] = self
 
         app.before_request_funcs.setdefault(None, []).append(

@@ -19,7 +19,6 @@ class FlaskDateHelper:
         self._helper = helper
         self.iso_format = app.config.DATE_ISO_FORMAT
 
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["date_helper"] = self
 
     def __getattr__(self, name):

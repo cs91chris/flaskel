@@ -5,7 +5,7 @@ from functools import wraps
 import flask
 import yaml
 
-from .builders import builder_factory, LogBuilder
+from .builders import builder_factory
 
 
 class FlaskLogging:
@@ -20,7 +20,6 @@ class FlaskLogging:
         return self._conf
 
     def init_app(self, app, builder=None):
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["logify"] = self
 
         self.set_default_config(app)
@@ -33,7 +32,6 @@ class FlaskLogging:
             builder = builder_factory(builder)
 
         if builder:
-            assert isinstance(builder, LogBuilder)
             app.before_request_funcs.setdefault(None, []).append(builder.dump_request)
             app.after_request_funcs.setdefault(None, []).append(builder.dump_response)
 
@@ -41,7 +39,7 @@ class FlaskLogging:
             try:
                 with open(app.config["LOG_FILE_CONF"], encoding="utf-8") as f:
                     self._conf = yaml.safe_load(f)
-            except (OSError, IOError, yaml.YAMLError) as exc:
+            except (OSError, yaml.YAMLError) as exc:
                 app.logger.exception(exc, stack_info=False)
 
         if not self._conf and app.config["LOGGING"]:

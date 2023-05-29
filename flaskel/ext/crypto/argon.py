@@ -39,7 +39,6 @@ class Argon2:
         self._argon = argon_class(
             Argon2Options(**app.config.get_namespace(self.CONFIG_PREFIX))
         )
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["argon2"] = self
 
     def __getattr__(self, item):

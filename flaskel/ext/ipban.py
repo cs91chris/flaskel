@@ -195,7 +195,6 @@ class FlaskIPBan:
                 ip=app.config.IPBAN_IP_WHITELIST, net=app.config.IPBAN_NET_WHITELIST
             )
 
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["ipban"] = self
 
     def service_factory(self, service_class: t.Type[IpBanService], config):

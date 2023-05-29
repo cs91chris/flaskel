@@ -1,23 +1,24 @@
 -c requirements.txt
 -c requirements-test.txt
 
-twine
-wheel
+autoflake
+bandit
 black
+bump2version
+coloredlogs
 flake8
+flake8-bugbear
+isort
+liccheck
+mypy
 pip-tools
+pipdeptree
 pylint
 pylint-flask
 pylint-flask-sqlalchemy
-tox
-bump2version
-pipdeptree
-mypy
+radon
 sqlalchemy-stubs
-liccheck
-safety
-isort
-autoflake
+tox
 
 types-cryptography
 types-pyOpenSSL

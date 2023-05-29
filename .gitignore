@@ -115,3 +115,5 @@ profiler.txt
 pip.conf
 junit-report.xml
 liccheck-report.txt
+bandit-report.html
+radon-cc-report.md

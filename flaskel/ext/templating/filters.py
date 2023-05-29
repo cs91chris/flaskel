@@ -55,7 +55,8 @@ def human_file_size(size, max_index=None):
     if size < divider:
         return f"{size} B"
 
-    for idx in range(0, max_index):
+    for _idx in range(0, max_index):
+        idx = _idx
         size /= divider
         if size < divider:
             break

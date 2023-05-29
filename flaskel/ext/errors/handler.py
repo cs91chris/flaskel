@@ -9,7 +9,7 @@ from werkzeug.exceptions import default_exceptions
 
 from .dispatchers import DEFAULT_DISPATCHERS, ErrorDispatcher
 from .exception import ApiProblem
-from .normalize import BaseNormalize, ErrorNormalizer
+from .normalize import ErrorNormalizer
 
 
 class ErrorHandler:
@@ -38,11 +38,8 @@ class ErrorHandler:
         """
         self._normalizer = normalizer or self._normalizer or ErrorNormalizer()
         self._response = response or self._response or self._default_response_builder
-        assert isinstance(self._normalizer, BaseNormalize)
 
         self.set_default_config(app)
-
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["errors_handler"] = self
 
         dispatcher = dispatcher or app.config["ERROR_DISPATCHER"]

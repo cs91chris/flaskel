@@ -238,7 +238,7 @@ def get_access_token(
     client,
     is_query: bool = False,
     token: t.Optional[str] = None,
-    token_type: str = "Bearer",
+    token_type: str = "Bearer",  # nosec
     access_view: str = "auth.token_access",
     credentials: t.Optional[t.Union[t.Dict[str, str], t.Tuple[str, str]]] = None,
 ) -> t.Dict[str, str]:

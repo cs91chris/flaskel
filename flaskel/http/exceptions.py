@@ -301,4 +301,4 @@ errors = inspect.getmembers(
     lambda c: inspect.isclass(c) and issubclass(c, exceptions.HTTPException),
 )
 abort = exceptions.Aborter(extra={e.code: e for _, e in errors})
-setattr(flask, "abort", abort)
+flask.abort = abort

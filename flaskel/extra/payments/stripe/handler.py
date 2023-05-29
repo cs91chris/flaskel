@@ -28,8 +28,10 @@ class PaymentHandler:
 
     @staticmethod
     def check_prerequisites(app):
-        assert app.config.STRIPE_SECRET_KEY is not None, "missing STRIPE_SECRET_KEY"
-        assert app.config.STRIPE_PUBLIC_KEY is not None, "missing STRIPE_PUBLIC_KEY"
+        if not app.config.STRIPE_SECRET_KEY:
+            raise ValueError("missing STRIPE_SECRET_KEY")
+        if not app.config.STRIPE_PUBLIC_KEY:
+            raise ValueError("missing STRIPE_PUBLIC_KEY")
 
     def init_app(self, app, name: t.Optional[str] = None, **kwargs):
         self.check_prerequisites(app)
@@ -43,7 +45,6 @@ class PaymentHandler:
         self.handler.log = "debug" if app.config.STRIPE_DEBUG else "info"
         self.handler.set_app_info(name or app.config.APP_NAME, **kwargs)
 
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["stripe"] = self
 
     @staticmethod

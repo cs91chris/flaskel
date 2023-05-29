@@ -19,8 +19,6 @@ class ResponseBuilder:
 
     def init_app(self, app, builders=None):
         set_default_config(app)
-
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["response_builder"] = self
 
         for name, builder in {**DEFAULT_BUILDERS, **(builders or {})}.items():

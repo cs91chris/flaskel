@@ -140,7 +140,7 @@ class AppBuilder:
                 )
         elif not self._app.config.SECRET_KEY:
             self._app.logger.debug("set secret key in development mode")
-            secret_key = "fake_very_complex_string"
+            secret_key = "fake_very_complex_string"  # nosec
 
         self._app.config.SECRET_KEY = secret_key or self._app.config.SECRET_KEY
         if len(secret_key) < key_length:

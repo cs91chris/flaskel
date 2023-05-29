@@ -25,7 +25,6 @@ class FlaskRedis:
                 app.config["REDIS_URL"], **app.config["REDIS_OPTS"]
             )
 
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["redis"] = self
 
     def __getattr__(self, name):

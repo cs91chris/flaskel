@@ -10,7 +10,6 @@ class TemplateSupport:
     def init_app(self, app, filters=None, functions=None):
         self._app = app
 
-        setattr(app, "extensions", getattr(app, "extensions", {}))
         app.extensions["template_support"] = self
 
         self.set_default_config(app)

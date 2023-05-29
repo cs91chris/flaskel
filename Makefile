@@ -25,7 +25,7 @@ endef
 
 all: clean run-tox
 lint: flake pylint mypy
-security: safety liccheck # bandit
+security: safety liccheck bandit
 radon: radon-cc radon-hal radon-mi radon-raw
 cqa: radon-cc-report bandit-report radon bandit
 format: autoflake black isort
@@ -82,7 +82,7 @@ safety:
 		-r ${REQ_PATH}/requirements-wsgi.txt
 
 bandit:
-	bandit -r ${PACKAGE}
+	bandit -r --exclude ${PACKAGE}/scripts/skeleton ${PACKAGE}
 
 bandit-report:
 	bandit -f html \
