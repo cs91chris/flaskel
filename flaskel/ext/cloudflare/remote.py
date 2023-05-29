@@ -2,6 +2,7 @@ import http.client
 
 import flask
 import netaddr as net
+from vbcore.http import httpcode
 
 
 class CloudflareRemote:
@@ -26,7 +27,7 @@ class CloudflareRemote:
             app.before_request_funcs.setdefault(None, []).append(self._hook_client_ip)
 
         if not cf_ips:
-            if app.config["CF_IPs"] is list:
+            if app.config["CF_IPs"]:
                 self._cf_ips = app.config["CF_IPs"]
             else:
                 self._cf_ips = self._get_ip_list(app, app.config["CF_IP4_URI"])
@@ -35,7 +36,7 @@ class CloudflareRemote:
         else:
             self._cf_ips = cf_ips
 
-        app.logger.debug(f"CLOUDFLARE registered ips:\n {self._cf_ips}")
+        app.logger.debug("CLOUDFLARE registered ips:\n%s}", self._cf_ips)
 
     @staticmethod
     def _default_config(app):
@@ -59,7 +60,7 @@ class CloudflareRemote:
         try:
             return net.IPAddress(ipaddr) in net.IPNetwork(netaddr)
         except net_errors as exc:
-            flask.current_app.logger.warning(str(exc))
+            flask.current_app.logger.exception(exc)
             return False
 
     @staticmethod
@@ -71,17 +72,17 @@ class CloudflareRemote:
 
     def _hook_cloudflare_only(self):
         if not self.is_cloudflare():
+            mess = "Access Denied: your ip is not in configured networks"
             if flask.current_app.debug:
-                mess = "Access Denied: your ip is not in configured networks"
                 flask.abort(
-                    403,
+                    httpcode.FORBIDDEN,
                     mess,
                     response={
                         "client_ip": self.get_client_ip(),
                         "allowed_networks": self._cf_ips,
                     },
                 )
-            flask.abort(403)
+            flask.abort(httpcode.FORBIDDEN, mess)
 
     def _get_ip_list(self, app, uri):
         if not self._cf_ips:
@@ -95,7 +96,7 @@ class CloudflareRemote:
             body = res.read()
             conn.close()
 
-            if res.status == 200:
+            if res.status == httpcode.SUCCESS:
                 self._cf_ips = body.decode().strip("\n").split("\n")
             else:
                 raise http.client.HTTPException(res.status, res.getheaders(), body)

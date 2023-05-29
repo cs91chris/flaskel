@@ -5,6 +5,7 @@ from flask import current_app as cap
 from flask_jwt_extended.exceptions import JWTExtendedException
 from jwt import PyJWTError
 from vbcore.datastruct import ObjectDict
+from vbcore.http.headers import HeaderEnum
 from werkzeug import exceptions, http
 from werkzeug.routing import RequestRedirect
 
@@ -77,7 +78,7 @@ class UnauthorizedMixin(BaseNormalize):
         if isinstance(ex, exceptions.Unauthorized):
             if ex.www_authenticate:
                 ex.headers = {
-                    "WWW-Authenticate": ", ".join(
+                    HeaderEnum.WWW_AUTHENTICATE: ", ".join(
                         [auth.to_header() for auth in ex.www_authenticate]
                     )
                 }
@@ -97,7 +98,7 @@ class RequestedRangeNotSatisfiableMixin(BaseNormalize):
         if isinstance(ex, exceptions.RequestedRangeNotSatisfiable):
             if ex.length:
                 unit = ex.units or "bytes"
-                ex.headers = {"Content-Range": f"{unit} */{ex.length}"}
+                ex.headers = {HeaderEnum.CONTENT_RANGE: f"{unit} */{ex.length}"}
                 ex.response = ObjectDict(units=unit, length=ex.length)
 
         return super().normalize(ex)
@@ -111,7 +112,7 @@ class RetryAfterMixin(BaseNormalize):
                 if isinstance(retry, datetime):
                     retry = http.http_date(retry)
 
-                ex.headers = {"Retry-After": str(retry)}
+                ex.headers = {HeaderEnum.RETRY_AFTER: str(retry)}
                 ex.response = ObjectDict(retry_after=ex.retry_after)
 
         return super().normalize(ex)

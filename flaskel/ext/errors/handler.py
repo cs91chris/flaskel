@@ -3,6 +3,8 @@ from functools import wraps
 import flask
 from flask import current_app as cap
 from jinja2 import TemplateError
+from vbcore.http import httpcode
+from vbcore.http.headers import HeaderEnum
 from werkzeug.exceptions import default_exceptions
 
 from .dispatchers import DEFAULT_DISPATCHERS, ErrorDispatcher
@@ -76,13 +78,16 @@ class ErrorHandler:
         def wrapper(*args, **kwargs):
             r, s, h = f(*args, **kwargs)
 
-            if not h.get("Content-Type"):
-                h["Content-Type"] = f"application/{ApiProblem.ct_id}+json"
+            if not h.get(HeaderEnum.CONTENT_TYPE):
+                h[HeaderEnum.CONTENT_TYPE] = f"application/{ApiProblem.ct_id}+json"
             elif cap.config["ERROR_FORCE_CONTENT_TYPE"] is True:
                 h = self._force_content_type(h)
 
             return flask.Response(
-                flask.json.dumps(r), status=s, headers=h, mimetype=h["Content-Type"]
+                flask.json.dumps(r),
+                status=s,
+                headers=h,
+                mimetype=h[HeaderEnum.CONTENT_TYPE],
             )
 
         return wrapper
@@ -90,13 +95,13 @@ class ErrorHandler:
     @staticmethod
     def _force_content_type(hdr):
         ct_id = ApiProblem.ct_id
-        ct = hdr.get("Content-Type") or f"x-application/{ct_id}"
+        ct = hdr.get(HeaderEnum.CONTENT_TYPE) or f"x-application/{ct_id}"
 
         if ct_id not in ct:
             if any(i in ct for i in cap.config["ERROR_CONTENT_TYPES"]):
                 ct = f"/{ct_id}+".join(ct.split("/", maxsplit=1))
 
-        hdr.update({"Content-Type": ct})
+        hdr.update({HeaderEnum.CONTENT_TYPE: ct})
         return hdr
 
     @staticmethod
@@ -206,7 +211,9 @@ class ErrorHandler:
         for b in bps:
             ErrorHandler.register(b, **kwargs)(callback or self._web_handler)
 
-    def register_dispatcher(self, app, dispatcher, codes=(404, 405)):
+    def register_dispatcher(
+        self, app, dispatcher, codes=(httpcode.NOT_FOUND, httpcode.METHOD_NOT_ALLOWED)
+    ):
         try:
             if issubclass(dispatcher, ErrorDispatcher):
                 dispatcher_class = dispatcher
@@ -227,9 +234,9 @@ class ErrorHandler:
                 )
                 return
 
-        for c in codes:
+        def error_handler(exc):
+            d = dispatcher_class()
+            return d.dispatch(self._normalizer.normalize(exc))
 
-            @app.errorhandler(c)
-            def error_handler(exc):
-                d = dispatcher_class()
-                return d.dispatch(self._normalizer.normalize(exc))
+        for code in codes:
+            app.errorhandler(code)(error_handler)

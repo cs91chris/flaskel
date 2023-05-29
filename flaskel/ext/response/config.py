@@ -1,3 +1,5 @@
+from vbcore.http.headers import ContentTypeEnum
+
 from .builders import (
     Base64Builder,
     CsvBuilder,
@@ -8,10 +10,10 @@ from .builders import (
 )
 
 DEFAULT_BUILDERS = {
-    "csv": CsvBuilder("text/csv"),
-    "html": HtmlBuilder("text/html"),
-    "xml": XmlBuilder("application/xml"),
-    "json": JsonBuilder("application/json"),
+    "csv": CsvBuilder(ContentTypeEnum.CSV.value),
+    "html": HtmlBuilder(ContentTypeEnum.HTML.value),
+    "xml": XmlBuilder(ContentTypeEnum.XML.value),
+    "json": JsonBuilder(ContentTypeEnum.JSON.value),
     "yaml": YamlBuilder("application/yaml"),
     "base64": Base64Builder("application/base64"),
 }

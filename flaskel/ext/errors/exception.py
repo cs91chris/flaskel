@@ -86,12 +86,12 @@ class ApiProblem(InternalServerError):
         self.type = kwargs.get("type", self.type)
         self.instance = kwargs.get("instance", self.instance)
 
-        h = kwargs.get("headers", {})
+        headers = kwargs.get("headers", {})
 
         try:
-            self.headers.update(**h)
+            self.headers.update(**headers)
         except AttributeError:  # pragma: no cover
-            self.headers = h
+            self.headers = headers
 
     def prepare_response(self):
         return (

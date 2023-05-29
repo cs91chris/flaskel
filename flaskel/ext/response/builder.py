@@ -2,6 +2,9 @@ from functools import wraps
 
 import flask
 from flask import current_app as cap
+from vbcore.http import httpcode
+from vbcore.http.headers import HeaderEnum
+from werkzeug.datastructures import Headers
 
 from .builders.builder import Builder
 from .config import DEFAULT_BUILDERS, set_default_config
@@ -61,7 +64,7 @@ class ResponseBuilder:
     @staticmethod
     def _empty_response(status, headers):
         resp = flask.make_response(b"", status, headers)
-        resp.headers.pop("Content-Type", None)
+        resp.headers.pop(HeaderEnum.CONTENT_TYPE, None)
         return resp
 
     def build_response(self, builder=None, data=None, **kwargs):
@@ -74,9 +77,8 @@ class ResponseBuilder:
             return self._empty_response(status, headers)
 
         if not builder:
-            m = headers.get("Content-Type") or cap.config.get(
-                "RB_DEFAULT_RESPONSE_FORMAT"
-            )
+            default_format = cap.config.get("RB_DEFAULT_RESPONSE_FORMAT")
+            m = headers.get(HeaderEnum.CONTENT_TYPE) or default_format
             for value in self._builders.values():
                 if value.mimetype == m:
                     builder = value
@@ -117,7 +119,10 @@ class ResponseBuilder:
                 return accept, builder
 
         if strict is True:
-            flask.abort(406, f"Not Acceptable: {flask.request.accept_mimetypes}")
+            flask.abort(
+                httpcode.NOT_ACCEPTABLE,
+                f"Not Acceptable: {flask.request.accept_mimetypes}",
+            )
 
         return default, find_builder(default)
 
@@ -126,13 +131,13 @@ class ResponseBuilder:
         if isinstance(data, tuple):
             v = data + (None,) * (3 - len(data))
             if isinstance(v[1], int):
-                return v[0], v[1], v[2] or {}
-            return v[0], v[2], v[1] or {}
+                return v[0], v[1], Headers(v[2] or {})
+            return v[0], v[2], Headers(v[1] or {})
         if isinstance(data, int):
-            return None, data, {}
+            return None, data, Headers()
         if isinstance(data, flask.Response):
-            return data.response, data.status_code, data.headers
-        return data, None, {}
+            return data.response, data.status_code, Headers(data.headers)
+        return data, None, Headers()
 
     def no_content(self, func):
         @wraps(func)
@@ -143,7 +148,7 @@ class ResponseBuilder:
             if data:
                 resp = self.build_response(data=resp)
             else:
-                status = 204 if status in (None, 204) else status
+                status = httpcode.NO_CONTENT if status is None else status
                 resp = self._empty_response(status, headers)
 
             return resp

@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 
 from flask import Response
+from vbcore.http import httpcode
+from vbcore.http.headers import HeaderEnum
 
 
 class Builder(ABC):
@@ -19,7 +21,7 @@ class Builder(ABC):
         self._response_class = response_class or Response
 
         self._data = None
-        self._headers = {"Content-Type": self.mimetype}
+        self._headers = {HeaderEnum.CONTENT_TYPE: self.mimetype}
 
     @property
     def mimetype(self):
@@ -49,12 +51,12 @@ class Builder(ABC):
 
     def response(self, status=None, headers=None):
         headers = headers or {}
-        ct = headers.get("Content-Type")
+        ct = headers.get(HeaderEnum.CONTENT_TYPE)
 
         return self._response_class(
             self.data,
             mimetype=ct or self.mimetype,
-            status=status or 200,
+            status=status or httpcode.SUCCESS,
             headers={**self._headers, **headers},
         )
 
