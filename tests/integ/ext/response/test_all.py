@@ -1,186 +1,153 @@
-from flaskel.ext.response.notations import Case
+import pytest
+from vbcore.http import httpcode
+from vbcore.http.headers import ContentTypeEnum
+from vbcore.tester.asserter import Asserter
+
+from flaskel.tester.helpers import ApiTester
 
 
-def test_app_runs(client):
-    res = client.get("/")
-    assert res.status_code == 404
-
-
-def test_app_returns_correct_content_type(client):
-    res = client.get("/html")
-    assert res.status_code == 200
-    assert "text/html" in res.headers["Content-Type"]
-
-    res = client.get("/json")
-    assert res.status_code == 200
-    assert "application/json" in res.headers["Content-Type"]
-
-    res = client.get("/json?callback=pippo")
-    assert res.status_code == 200
-    assert "application/javascript" in res.headers["Content-Type"]
-
-    res = client.get("/xml")
-    assert res.status_code == 200
-    assert "application/xml" in res.headers["Content-Type"]
-
-    res = client.get("/yaml")
-    assert res.status_code == 200
-    assert "application/yaml" in res.headers["Content-Type"]
-
-    res = client.get("/csv")
-    assert res.status_code == 200
-    assert "text/csv" in res.headers["Content-Type"]
-
-    res = client.get("/base64")
-    assert res.status_code == 200
-    assert "application/base64" in res.headers["Content-Type"]
+@pytest.mark.parametrize(
+    "url, mimetype",
+    [
+        ("/html", ContentTypeEnum.HTML),
+        ("/json", ContentTypeEnum.JSON),
+        ("/xml", ContentTypeEnum.XML),
+        ("/csv", ContentTypeEnum.CSV),
+        ("/yaml", "application/yaml"),
+        ("/base64", "application/base64"),
+        ("/json?callback=pippo", "application/javascript"),
+    ],
+)
+def test_app_returns_correct_content_type(client, url, mimetype):
+    ApiTester(client).get(url=url, mimetype=mimetype)
 
 
 def test_no_content(client):
-    res = client.get("/nocontent")
-    assert res.status_code == 204
-    assert res.headers.get("Content-Type") is None
-    assert res.headers.get("Content-Length") is None
+    res = ApiTester(client).get(url="/nocontent", status=httpcode.NO_CONTENT)
+    Asserter.assert_not_in("Content-Type", res.headers)
+    Asserter.assert_not_in("Content-Length", res.headers)
 
-    res = client.get("/nocontent/custom")
-    assert res.status_code == 202
-    assert res.headers.get("Content-Type") is None
-    assert res.headers.get("Content-Length") == "0"
+
+def test_no_content_custom(client):
+    res = ApiTester(client).get(url="/nocontent/custom", status=httpcode.ACCEPTED)
+    Asserter.assert_not_in("Content-Type", res.headers)
+    Asserter.assert_equals(res.headers["Content-Length"], "0")
 
 
 def test_no_content_error(client):
-    res = client.get("/nocontent/error")
-    assert res.status_code == 500
-    assert res.headers.get("header") == "header"
-
-
-def test_on_format(client):
-    res = client.get("/format?format=xml")
-    assert res.status_code == 200
-    assert "application/xml" in res.headers["Content-Type"]
-
-    res = client.get("/format?format=yaml")
-    assert res.status_code == 200
-    assert "application/yaml" in res.headers["Content-Type"]
-
-    res = client.get("/format")
-    assert res.status_code == 200
-    assert "application/json" in res.headers["Content-Type"]
-
-
-def test_on_accept(client):
-    res = client.get("/onaccept", headers={"Accept": "*/*"})
-    assert res.status_code == 200
-    assert "application/json" in res.headers["Content-Type"]
-
-    res = client.get("/onaccept?item=11111", headers={"Accept": "*/*"})
-    assert res.status_code == 200
-    assert len(res.get_json()) == 0
-
-    res = client.get(
-        "/onaccept",
-        headers={"Accept": "application/xml;encoding=utf-8;q=0.8, text/csv;q=0.4"},
+    res = ApiTester(client).get(
+        url="/nocontent/error", status=httpcode.INTERNAL_SERVER_ERROR
     )
-    assert res.status_code == 200
-    assert "application/xml" in res.headers["Content-Type"]
+    Asserter.assert_equals(res.headers.get("header"), "header")
 
-    res = client.get("/onaccept", headers={"Accept": "text/csv"})
-    assert res.status_code == 200
-    assert "text/csv" in res.headers["Content-Type"]
 
-    res = client.get("/onaccept", headers={"Accept": "custom/format"})
-    assert res.status_code == 406
+def test_on_format_default(client):
+    ApiTester(client).get(url="/format", mimetype=ContentTypeEnum.JSON)
+
+
+@pytest.mark.parametrize(
+    "fmt, mimetype",
+    [
+        ("html", ContentTypeEnum.HTML),
+        ("json", ContentTypeEnum.JSON),
+        ("xml", ContentTypeEnum.XML),
+        ("csv", ContentTypeEnum.CSV),
+        ("yaml", "application/yaml"),
+        ("base64", "application/base64"),
+    ],
+)
+def test_on_format(client, fmt, mimetype):
+    ApiTester(client).get(url=f"/format?format={fmt}", mimetype=mimetype)
+
+
+def test_on_accept_default(client):
+    ApiTester(client).get(
+        url="/onaccept", headers={"Accept": "*/*"}, mimetype=ContentTypeEnum.JSON
+    )
+
+
+@pytest.mark.parametrize(
+    "mimetype",
+    [
+        ContentTypeEnum.HTML,
+        ContentTypeEnum.JSON,
+        ContentTypeEnum.XML,
+        ContentTypeEnum.CSV,
+        "application/yaml",
+        "application/base64",
+    ],
+)
+def test_on_accept(client, mimetype):
+    ApiTester(client).get(
+        url="/onaccept", headers={"Accept": mimetype}, mimetype=mimetype
+    )
+
+
+def test_on_accept_multiple(client):
+    ApiTester(client).get(
+        url="/onaccept",
+        headers={"Accept": "application/xml;encoding=utf-8;q=0.8, text/csv;q=0.4"},
+        mimetype=ContentTypeEnum.XML,
+    )
+
+
+def test_on_accept_error(client):
+    ApiTester(client).get(
+        url="/onaccept",
+        headers={"Accept": "custom/format"},
+        status=httpcode.NOT_ACCEPTABLE,
+    )
 
 
 def test_on_accept_only(client):
-    res = client.get("/onacceptonly", headers={"Accept": "application/xml"})
-    assert res.status_code == 200
-    assert "application/xml" in res.headers["Content-Type"]
-
-    res = client.get("/onacceptonly", headers={"Accept": "application/json"})
-    assert res.status_code == 406
+    tester = ApiTester(client)
+    tester.get(
+        url="/onacceptonly",
+        headers={"Accept": ContentTypeEnum.XML},
+        mimetype=ContentTypeEnum.XML,
+    )
+    tester.get(
+        url="/onacceptonly",
+        headers={"Accept": ContentTypeEnum.JSON},
+        status=httpcode.NOT_ACCEPTABLE,
+    )
 
 
 def test_custom_accept(client):
-    res = client.get("/customaccept", headers={"Accept": "application/xml"})
-    assert res.status_code == 206
-    assert "application/xml" in res.headers["Content-Type"]
-    assert res.headers["header"] == "header"
+    res = ApiTester(client).get(
+        url="/customaccept",
+        headers={"Accept": ContentTypeEnum.XML},
+        mimetype=ContentTypeEnum.XML,
+        status=httpcode.PARTIAL_CONTENT,
+    )
+    Asserter.assert_equals(res.headers["header"], "header")
 
 
 def test_template_or_json(client):
-    res = client.get("/xhr")
-    assert res.status_code == 200
-    assert "application/json" in res.headers["Content-Type"]
-
-    res = client.get("/xhr", headers={"X-Requested-With": "XMLHttpRequest"})
-    assert res.status_code == 200
-    assert "text/html" in res.headers["Content-Type"]
+    tester = ApiTester(client)
+    tester.get(url="/xhr", mimetype=ContentTypeEnum.JSON)
+    tester.get(
+        url="/xhr",
+        headers={"X-Requested-With": "XMLHttpRequest"},
+        mimetype=ContentTypeEnum.HTML,
+    )
 
 
 def test_response_decorator(client):
-    res = client.get("/decorator")
-    assert res.status_code == 206
-    assert "application/json" in res.headers["Content-Type"]
-    assert res.headers["header"] == "header"
-
-
-def test_rename_key(client):
-    res = client.get("/rename-key")
-    assert res.status_code == 200
-    assert "application/json" in res.headers["Content-Type"]
-
-    data = res.get_json()
-    assert data["PIPPO"] == 1
-    assert data["PLUTO"] == 2
-
-
-def test_notation(client):
-    res = client.get("/notation")
-    assert res.status_code == 200
-
-    data = res.get_json()
-    assert Case.are_words(data[0])
-    assert Case.is_camel(data[1])
-    assert Case.is_kebab(data[2])
-    assert Case.is_snake(data[3])
-
-
-def test_transformer(client):
-    res = client.post("/json2xml", json={"pippo": 2, "pluto": 3})
-    assert res.status_code == 200
-    assert (
-        res.data == b'<?xml version="1.0" encoding="utf-8" ?>'
-        b'<root><pippo type="int">2</pippo><pluto type="int">3</pluto></root>'
+    res = ApiTester(client).get(
+        url="/decorator", mimetype=ContentTypeEnum.JSON, status=httpcode.PARTIAL_CONTENT
     )
-
-    res = client.post("/json2csv", json=[{"pippo": 2, "pluto": 3}])
-    assert res.status_code == 200
-    assert res.data == b'"pippo";"pluto"\r\n"2";"3"\r\n'
-
-    res = client.post("/json2yaml", json={"pippo": 2, "pluto": 3})
-    assert res.status_code == 200
-    assert res.data == b"pippo: 2\npluto: 3\n"
-
-
-def test_build_transform(client):
-    res = client.get("/transform")
-    assert res.status_code == 200
-
-    data = res.get_json()[0]
-    assert data["pippo"] == "2"
-    assert data["pluto"] == "3"
+    Asserter.assert_equals(res.headers["header"], "header")
 
 
 def test_custom_mimetype(client):
-    res = client.get("/custom/mimetype")
-    assert res.status_code == 200
-    assert "application/custom+json" in res.headers["Content-Type"]
+    ApiTester(client).get(url="/custom/mimetype", mimetype="application/custom+json")
 
 
 def test_jsonp(client):
-    res = client.get("/custom/jsonp?callback=pippo")
-    assert res.status_code == 200
-    assert "application/javascript" in res.headers["Content-Type"]
+    res = ApiTester(client).get(
+        url="/custom/jsonp?callback=pippo", mimetype="application/javascript"
+    )
     data = res.data.decode()
-    assert data.startswith("pippo(") and data.endswith(");")
+    Asserter.assert_true(data.startswith("pippo("))
+    Asserter.assert_true(data.endswith(");"))

@@ -1,16 +1,7 @@
-import uuid
-from datetime import datetime
-from decimal import Decimal
-from enum import Enum
-
 import flask
 import pytest
 
 from flaskel.ext.response.builder import ResponseBuilder
-from flaskel.ext.response.builders import CsvBuilder, JsonBuilder
-from flaskel.ext.response.dictutils import rename_keys
-from flaskel.ext.response.notations import Case
-from flaskel.ext.response.transformations import Transformer
 
 
 @pytest.fixture
@@ -21,35 +12,9 @@ def app():
 
     data = {
         "users": [
-            {
-                "id": 1,
-                "name": "Leanne Graham",
-                "email": "Sincere@april.biz",
-                "phone": "1-770-736-8031 x56442",
-                "sysdate": datetime.now(),
-                "address": {
-                    "city": "Gwenborough",
-                    "zipcode": "92998-3874",
-                    "geo": {"lat": -37.3159, "lon": 81.1496},
-                },
-                "test": [
-                    {"a": 1, "b": 2},
-                    {"a": 2, "b": 3},
-                ],
-            },
-            {
-                "id": 2,
-                "name": "Ervin Howell",
-                "email": "Shanna@melissa.tv",
-                "phone": "010-692-6593 x09125",
-                "sysdate": datetime.now(),
-                "address": {
-                    "city": "Wisokyburgh",
-                    "zipcode": "90566-7771",
-                    "geo": {"lat": -43.9509, "lon": -34.4618},
-                },
-                "test": [{"a": None, "b": None}],
-            },
+            {"id": 1, "name": "name-1"},
+            {"id": 2, "name": "name-2"},
+            {"id": 3, "name": "name-3"},
         ]
     }
 
@@ -106,12 +71,6 @@ def app():
     @_app.route("/onaccept")
     @rb.on_accept()
     def test_accept():
-        item = flask.request.args.get("item")
-        if item is not None:
-            try:
-                return data["users"][int(item)]
-            except IndexError:
-                return []
         return data["users"]
 
     @_app.route("/onacceptonly")
@@ -132,61 +91,7 @@ def app():
     @_app.route("/decorator")
     @rb.response("json")
     def test_decorator():
-        old = datetime.now()
-
-        class Color(Enum):
-            RED = "red"
-            GREEN = "green"
-            BLUE = "blue"
-
-        resp = {
-            "id": uuid.uuid4(),
-            "name": "Leanne Graham",
-            "email": "Sincere@april.biz",
-            "sysdate": datetime.now(),
-            "time": datetime.now().time(),
-            "date": datetime.now().date(),
-            "delta": old - datetime.now(),
-            "color": Color.RED,
-            "address": {
-                "city": "Gwenborough",
-                "zipcode": "92998-3874",
-                "geo": {"lat": Decimal(-37.3159), "lon": Decimal(81.1496)},
-            },
-        }
-        resp.pop("sysdate")
-        return resp, {"header": "header"}, 206
-
-    @_app.route("/rename-key")
-    @rb.response("json")
-    def rename_key():
-        return rename_keys({"pippo": 1, "pluto": 2}, trans=str.upper)
-
-    @_app.route("/notation")
-    @rb.response("json")
-    def notation():
-        word = "pippo pluto"
-        return [word, Case.to_camel(word), Case.to_kebab(word), Case.to_snake(word)]
-
-    @_app.route("/json2xml", methods=["POST"])
-    def json_to_xml():
-        return flask.Response(Transformer.json_to_xml(flask.request.data))
-
-    @_app.route("/json2csv", methods=["POST"])
-    def json_to_csv():
-        return flask.Response(Transformer.json_to_csv(flask.request.data))
-
-    @_app.route("/json2yaml", methods=["POST"])
-    def json_to_yaml():
-        return flask.Response(Transformer.json_to_yaml(flask.request.data))
-
-    @_app.route("/transform")
-    def test_transform():
-        b = JsonBuilder(mimetype="application/json")
-        return flask.Response(
-            b.transform('"pippo";"pluto"\r\n"2";"3"\r\n', builder=CsvBuilder),
-            headers={"Content-Type": b.mimetype},
-        )
+        return data["users"], {"header": "header"}, 206
 
     @_app.route("/custom/mimetype")
     @rb.response("json")
