@@ -44,9 +44,7 @@ def app(error_handler):
 
     @api.route("/api/unauthorized")
     def unauthorized():
-        auth = WWWAuthenticate(
-            auth_type="Basic", values={"realm": "authentication required"}
-        )
+        auth = WWWAuthenticate(auth_type="Basic", values={"realm": "realm-name"})
         abort(401, www_authenticate=auth)
 
     @api.route("/api/retry")
