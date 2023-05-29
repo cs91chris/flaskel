@@ -25,9 +25,11 @@ endef
 
 all: clean run-tox
 lint: flake pylint mypy
-security: safety liccheck
+security: safety liccheck # bandit
+radon: radon-cc radon-hal radon-mi radon-raw
+cqa: radon-cc-report bandit-report radon bandit
 format: autoflake black isort
-dev: format lint test
+dev: format lint security test
 
 
 compile-deps:
@@ -54,6 +56,7 @@ install-deps:
 	pip install -r ${REQ_PATH}/requirements-test.txt
 
 clean-install-deps:
+	pip install pip-tools
 	pip-sync ${REQ_PATH}/requirements*.txt
 
 clean:
@@ -77,6 +80,47 @@ safety:
 		-r ${REQ_PATH}/requirements.txt \
 		-r ${REQ_PATH}/requirements-extra.txt \
 		-r ${REQ_PATH}/requirements-wsgi.txt
+
+bandit:
+	bandit -r ${PACKAGE}
+
+bandit-report:
+	bandit -f html \
+		--ignore-nosec \
+		--exit-zero \
+		--silent \
+		-r ${PACKAGE} > bandit-report.html
+
+radon-cc:
+	# cyclomatic complexity
+	radon cc \
+		--total-average \
+		--show-complexity \
+		--min C \
+		--order SCORE \
+		${PACKAGE}
+
+radon-cc-report:
+	# cyclomatic complexity
+	radon cc \
+		--md \
+		--total-average \
+		--show-complexity \
+		--min C \
+		--order SCORE \
+		${PACKAGE} > radon-cc-report.md
+
+radon-mi:
+	# maintainability index
+	radon mi --min B --show ${PACKAGE}
+
+radon-hal:
+	# halstead metrics
+	radon hal ${PACKAGE}
+
+radon-raw:
+	# raw metrics
+	radon raw -s ${PACKAGE}
 
 autoflake:
 	autoflake $(call check_format) \
@@ -110,10 +154,10 @@ flake:
 	flake8 --config=.flake8 --statistics ${PACKAGE} tests setup.py
 
 pylint:
-	pylint --rcfile=.pylintrc ${PACKAGE} tests setup.py
+	pylint -j0 --rcfile=.pylintrc --reports=y ${PACKAGE} tests setup.py
 
 mypy:
-	mypy --warn-unused-configs --no-strict-optional ${PACKAGE}
+	mypy --warn-unused-configs --no-strict-optional ${PACKAGE}  # tests
 
 run-tox:
 	tox --verbose --parallel all
@@ -121,12 +165,14 @@ run-tox:
 test:
 	pytest -v -rf --strict-markers \
 		--cov=${PACKAGE} --cov-report=html --cov-config .coveragerc \
+		--cov-report=term-missing \
 		tests
 
 test-coverage:
 	pytest -v -rf --strict-markers \
 		--cov=${PACKAGE} --cov-report=xml --cov-config .coveragerc \
 		--junitxml=junit-report.xml \
+		--cov-report=term-missing \
 		tests
 
 build-dist:
