@@ -25,7 +25,7 @@ db = Database()
 client_redis = FlaskRedis(client=MagicMock())
 
 
-class AccountModel(db.Model, BaseAccountModel):
+class AccountModel(db.Model, BaseAccountModel):  # type: ignore[name-defined]
     __tablename__ = "account"
 
 

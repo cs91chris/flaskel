@@ -28,8 +28,8 @@ class MediaMixin(StandardMixin):
 
 
 class MediaRepo:
-    entity_model = None
-    media_model = None
+    entity_model: t.Any
+    media_model: t.Any
     session = db_session
 
     @classmethod

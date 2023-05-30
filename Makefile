@@ -157,7 +157,7 @@ pylint:
 	pylint -j0 --rcfile=.pylintrc --reports=y ${PACKAGE} tests setup.py
 
 mypy:
-	mypy --warn-unused-configs --no-strict-optional ${PACKAGE}  # tests
+	mypy --warn-unused-configs --no-strict-optional ${PACKAGE} tests
 
 run-tox:
 	tox --verbose --parallel all

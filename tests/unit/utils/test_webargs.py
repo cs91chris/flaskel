@@ -1,6 +1,5 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import cast
 
 import pytest
 from vbcore.datastruct import ObjectDict
@@ -90,7 +89,7 @@ def test_optional_fields_error(flaskel_app, field_type, value, expected):
             # pylint: disable=no-value-for-parameter
             fake_request()
 
-    response: dict = cast(dict, error.value.response)
+    response = error.value.response
     Asserter.assert_equals(len(response["query"]["field"]), 1)
     Asserter.assert_equals(response["query"]["field"][0], expected)
 

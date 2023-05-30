@@ -1,7 +1,7 @@
 import io
 
 import sqlalchemy as sa
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship  # type: ignore[attr-defined]
 from vbcore.datastruct import ObjectDict
 from vbcore.db.mixins import StandardMixin, UserMixin
 from vbcore.http import httpcode
@@ -21,10 +21,10 @@ from flaskel.tester.helpers import ApiTester, url_for
 db = Database()
 
 
-class User(db.Model, UserMixin):
+class User(db.Model, UserMixin):  # type: ignore[name-defined]
     __tablename__ = "users"
 
-    images = relationship(
+    images: Mapped["Media"] = relationship(
         "Media",
         secondary="media_users",
         back_populates="users",
@@ -33,17 +33,19 @@ class User(db.Model, UserMixin):
     )
 
 
-class MediaUser(db.Model, StandardMixin):
+class MediaUser(db.Model, StandardMixin):  # type: ignore[name-defined]
     __tablename__ = "media_users"
 
     user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"))
     media_id = sa.Column(sa.Integer, sa.ForeignKey("media.id"))
 
 
-class Media(db.Model, MediaMixin):
+class Media(db.Model, MediaMixin):  # type: ignore[name-defined]
     __tablename__ = "media"
 
-    users = relationship("User", secondary="media_users", back_populates="images")
+    users: Mapped["User"] = relationship(
+        "User", secondary="media_users", back_populates="images"
+    )
 
     def to_dict(self, *_, **__):
         return MediaMixin.to_dict(self)
@@ -65,7 +67,9 @@ class ApiMediaUser(ApiMedia):
         "/users/<int:eid>/media",
         "/users/<int:eid>/media/<int:res_id>",
     )
-    decorators = (builder.on_format("json"),)
+    decorators = [
+        builder.on_format("json"),
+    ]
 
 
 def test_media(testapp, session_save, tmpdir):

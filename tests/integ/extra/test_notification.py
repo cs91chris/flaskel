@@ -29,7 +29,7 @@ VIEW_CONFIG = ObjectDict(
 )
 
 
-class Device(db.Model, StandardMixin, DeviceModelMixin):
+class Device(db.Model, StandardMixin, DeviceModelMixin):  # type: ignore[name-defined]
     __tablename__ = "user_devices"
 
 

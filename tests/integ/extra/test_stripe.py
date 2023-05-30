@@ -184,11 +184,11 @@ stripe_mock.PaymentIntent.create.return_value = SAMPLE_INTENT
 stripe_mock.Webhook.construct_event.return_value = SAMPLE_WEBHOOK
 
 
-class PaymentStatus(db.Model, BasePaymentStatus):
+class PaymentStatus(db.Model, BasePaymentStatus):  # type: ignore[name-defined]
     __tablename__ = "payments_status"
 
 
-class PaymentModel(db.Model, Payment):
+class PaymentModel(db.Model, Payment):  # type: ignore[name-defined]
     __tablename__ = "payments"
     _status_model = PaymentStatus
 

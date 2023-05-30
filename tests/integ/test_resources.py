@@ -15,7 +15,7 @@ from tests.integ.views import ApiItem, APIResource, bp_api
 db = Database()
 
 
-class Item(db.Model, StandardMixin):
+class Item(db.Model, StandardMixin):  # type: ignore[name-defined]
     __tablename__ = "items"
 
     item = sa.Column(sa.String(100), nullable=False)
