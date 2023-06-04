@@ -7,7 +7,7 @@ DEFAULT_FILTERS = {
     "pretty_date": filters.pretty_date,
     "order_by": filters.order_by,
     "truncate": filters.truncate,
-    "human_file_size": filters.human_file_size,
+    "human_byte_size": filters.human_byte_size,
 }
 
 DEFAULT_FUNCTIONS = {

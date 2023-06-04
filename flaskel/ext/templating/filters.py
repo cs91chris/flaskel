@@ -1,35 +1,41 @@
-from datetime import datetime
 from operator import itemgetter
+from typing import Any, List, Sequence
 
-from dateutil import parser
 from flask import current_app as cap
+from vbcore.date_helper import DateHelper
+from vbcore.types import AnyDateType, OptInt, OptStr
 
 
-def or_na(item):
+def or_na(item: Any) -> Any:
     if not item:
         return cap.config["NOT_AVAILABLE_DESC"]
     return item
 
 
-def yes_or_no(item):
+def yes_or_no(item: Any) -> str:
     return "yes" if bool(item) else "no"
 
 
-def reverse(s):
+def reverse(s: Sequence) -> Sequence:
     return s[::-1]
 
 
-def pretty_date(date, fmt=None):
+def pretty_date(date: AnyDateType, fmt: OptStr = None) -> OptStr:
     fmt = fmt or cap.config["PRETTY_DATE"]
-    if date:
-        if isinstance(date, datetime):
-            return date.strftime(fmt)
+    if not date:
+        return None
 
-        return parser.parse(date).strftime(fmt)
-    return ""
+    if isinstance(date, str):
+        return DateHelper.change_format(date, out_fmt=fmt) or None
+    return DateHelper.date_to_str(date, fmt=fmt) or None
 
 
-def order_by(data, item, descending=False, silent=True):
+def order_by(
+    data: List[dict],
+    item: Any,
+    descending: bool = False,
+    silent: bool = True,
+) -> List[dict]:
     try:
         return sorted(data, key=itemgetter(item), reverse=descending)
     except KeyError:
@@ -38,16 +44,14 @@ def order_by(data, item, descending=False, silent=True):
         raise
 
 
-def truncate(data, n, term=None):
-    if term is None:
-        term = "..."
+def truncate(data: str, n: int, at_least: int = 0, term: str = " ...") -> str:
+    if len(data) - n > at_least:
+        return f"{data[:n]}{term}"
+    return data
 
-    return f"{data[:n]}{term}"
 
-
-def human_file_size(size, max_index=None):
+def human_byte_size(size: int, max_index: OptInt = None) -> str:
     idx = 0
-    size = int(size or 0)
     scale = cap.config["HUMAN_FILE_SIZE_SCALE"]
     divider = cap.config["HUMAN_FILE_SIZE_DIVIDER"]
     max_index = max_index or len(scale)
