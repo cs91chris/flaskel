@@ -1,17 +1,6 @@
 from collections.abc import MutableMapping
 
 
-def rename_keys(data, trans=None, **kwargs):
-    if trans is None:
-        for k, v in kwargs.items():
-            data[v] = data.pop(k)
-    else:
-        for k in list(data.keys()):
-            data[trans(k)] = data.pop(k)
-
-    return data
-
-
 def to_flatten(data, to_dict=None, **kwargs):
     kwargs.setdefault("sep", "_")
     kwargs.setdefault("parent_key", "")
@@ -51,10 +40,10 @@ def to_flatten(data, to_dict=None, **kwargs):
                     zipkeys.update({key: item.get(key)})
                     del item[key]
 
-        sep = kwargs.get("sep")
+        _sep = kwargs.get("sep")
         for zk, value in zipkeys.items():
             for i in value:
-                response.append({**item, **{f"{zk}{sep}{k}": v for k, v in i.items()}})
+                response.append({**item, **{f"{zk}{_sep}{k}": v for k, v in i.items()}})
 
         if len(zipkeys.keys()) == 0:
             response.append(item)

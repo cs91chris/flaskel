@@ -6,7 +6,7 @@ import os
 import re
 import sys
 
-from pkg_resources import parse_requirements
+from pkg_resources import Requirement, yield_lines
 from setuptools import find_packages as base_find_packages, setup
 from setuptools.command.test import test
 
@@ -19,39 +19,11 @@ DESCRIPTION = "Skeleton for flask applications"
 PKG_NAME = "flaskel"
 PKG_TEST = "tests"
 PKG_SCRIPTS = f"{PKG_NAME}.scripts"
+REQ_PATH = "requirements"
 
 BASE_PATH = os.path.dirname(__file__)
 SKEL_DIR = os.path.join(*PKG_SCRIPTS.split("."), "skeleton")
 VERSION_FILE = os.path.join(BASE_PATH, PKG_NAME, "version.py")
-REQUIRES = [
-    "Flask",
-    "Flask-Caching",
-    "Flask-Cors",
-    "Flask-HTTPAuth",
-    "Flask-JWT-Extended",
-    "Flask-Limiter",
-    "Flask-SQLAlchemy",
-    "webargs",
-    "aiohttp",
-    "nest-asyncio",
-    "vbcore[all]==2.0.0.rc3",
-    "xmltodict",
-    "json2html",
-]
-REQUIRES_EXT = REQUIRES + [
-    "pyfcm",
-    "stripe",
-    "redis",
-    "hiredis",
-    "Flask-Mail",
-    "Flask-APScheduler",
-    "flask_pymongo",
-]
-REQUIRES_TEST = REQUIRES_EXT + [
-    "coverage",
-    "pytest",
-    "pytest-cov",
-]
 
 ENTRY_POINTS = {
     "console_scripts": [
@@ -108,16 +80,30 @@ def readme(file):
     return None
 
 
-def read_requirements(filename):
-    return [str(req) for req in parse_requirements(read(filename))]
-
-
 def skeleton_files():
     paths = []
     for path, _, filenames in os.walk(SKEL_DIR):
         for f in filenames:
             paths.append(os.path.join(path, f))
     return paths
+
+
+def read_requirements(filename):
+    reqs = []
+    lines = iter(yield_lines(read(filename)))
+    for line in lines:
+        if line.startswith("-c"):
+            continue
+        if " #" in line:
+            line = line[: line.find(" #")]
+        if line.endswith("\\"):
+            line = line[:-2].strip()
+            try:
+                line += next(lines)
+            except StopIteration:
+                break
+        reqs.append(str(Requirement(line)))
+    return reqs
 
 
 class PyTest(test):
@@ -143,6 +129,10 @@ def find_packages():
     return base_find_packages(exclude=(PKG_TEST, f"{PKG_TEST}.*"))
 
 
+install_requires = read_requirements(os.path.join(REQ_PATH, "requirements.in"))
+tests_requires = read_requirements(os.path.join(REQ_PATH, "requirements-test.in"))
+extra_requires = read_requirements(os.path.join(REQ_PATH, "requirements-extra.in"))
+
 setup(
     name="Flaskel",
     url=URL,
@@ -162,10 +152,10 @@ setup(
     test_suite=PKG_TEST,
     entry_points=ENTRY_POINTS,
     cmdclass={"test": PyTest},
-    install_requires=REQUIRES,
+    install_requires=install_requires,
     extras_require={
-        "test": REQUIRES_TEST,
-        "all": REQUIRES_EXT,
+        "test": tests_requires,
+        "all": extra_requires,
     },
     classifiers=[
         "Environment :: Web Environment",

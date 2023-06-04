@@ -33,27 +33,25 @@ dev: format lint security test
 
 
 compile-deps:
+	$(call req_compile,requirements-build)
 	$(call req_compile,requirements)
 	$(call req_compile,requirements-extra)
 	$(call req_compile,requirements-wsgi)
+	$(call req_compile,requirements-all)
 	$(call req_compile,requirements-test)
 	$(call req_compile,requirements-dev)
-	$(call req_compile,requirements-build)
 
 upgrade-deps:
+	$(call req_compile,requirements-build, --upgrade)
 	$(call req_compile,requirements, --upgrade)
 	$(call req_compile,requirements-extra, --upgrade)
 	$(call req_compile,requirements-wsgi, --upgrade)
+	$(call req_compile,requirements-all, --upgrade)
 	$(call req_compile,requirements-test, --upgrade)
 	$(call req_compile,requirements-dev, --upgrade)
-	$(call req_compile,requirements-build, --upgrade)
 
 install-deps:
-	pip install -r ${REQ_PATH}/requirements.txt
-	pip install -r ${REQ_PATH}/requirements-extra.txt
-	pip install -r ${REQ_PATH}/requirements-wsgi.txt
-	pip install -r ${REQ_PATH}/requirements-dev.txt
-	pip install -r ${REQ_PATH}/requirements-test.txt
+	pip install -r ${REQ_PATH}/requirements-all.txt
 
 clean-install-deps:
 	pip install pip-tools

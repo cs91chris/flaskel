@@ -9,6 +9,6 @@ json2html
 jsonschema
 nest-asyncio
 netaddr
-vbcore[crypto,db,http]==2.0.0.rc3
+vbcore[all]==2.0.0rc4
 webargs
 xmltodict

@@ -30,7 +30,7 @@ colorama==0.4.6
     # via
     #   -c requirements/requirements-dev.txt
     #   tox
-cryptography==40.0.2
+cryptography==41.0.1
     # via
     #   -c requirements/requirements-dev.txt
     #   secretstorage

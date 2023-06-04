@@ -4,6 +4,7 @@ import pytest
 from flaskel.ext.response.builder import ResponseBuilder
 
 
+# pylint: disable=too-many-locals
 @pytest.fixture
 def app():
     _app = flask.Flask(__name__)

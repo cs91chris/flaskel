@@ -6,7 +6,7 @@ from flask import Blueprint
 from flask.typing import AfterRequestCallable, BeforeRequestCallable
 from jinja2 import ChoiceLoader, FileSystemLoader
 from vbcore.db.support import SQLASupport
-from vbcore.misc import random_string
+from vbcore.stringutils.misc import random_string
 from werkzeug.middleware.lint import LintMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 from werkzeug.routing import BaseConverter

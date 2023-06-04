@@ -9,7 +9,7 @@ from vbcore.db.exceptions import DBDuplicateEntry
 from vbcore.db.mixins import StandardMixin, UserMixin
 from vbcore.http import httpcode, HttpMethod
 from vbcore.jsonschema.support import Fields
-from vbcore.misc import random_string
+from vbcore.stringutils.misc import random_string
 
 from flaskel import (
     abort,

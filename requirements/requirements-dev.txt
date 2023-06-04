@@ -33,7 +33,9 @@ cffi==1.15.1
     #   -c requirements/requirements.txt
     #   cryptography
 chardet==5.1.0
-    # via tox
+    # via
+    #   -c requirements/requirements.txt
+    #   tox
 charset-normalizer==3.1.0
     # via
     #   -c requirements/requirements-test.txt
@@ -53,8 +55,9 @@ coloredlogs==15.0.1
     # via -r requirements/requirements-dev.in
 configparser==5.3.0
     # via liccheck
-cryptography==40.0.2
+cryptography==41.0.1
     # via
+    #   -c requirements/requirements.txt
     #   types-pyopenssl
     #   types-redis
 dill==0.3.6
