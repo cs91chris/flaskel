@@ -149,13 +149,22 @@ isort:
 		${PACKAGE} tests setup.py
 
 flake:
-	flake8 --config=.flake8 --statistics ${PACKAGE} tests setup.py
+	flake8 \
+		--config=.flake8 --statistics \
+		${PACKAGE} tests setup.py
 
 pylint:
-	pylint -j0 --rcfile=.pylintrc --reports=y ${PACKAGE} tests setup.py
+	pylint \
+		-j0 --rcfile=.pylintrc --reports=y \
+		${PACKAGE} tests setup.py
 
 mypy:
-	mypy --warn-unused-configs --no-strict-optional ${PACKAGE} tests
+	mypy \
+		--ignore-missing-imports \
+		--warn-unused-configs \
+		--no-strict-optional \
+		--show-error-codes \
+		${PACKAGE} tests
 
 run-tox:
 	tox --verbose --parallel all
