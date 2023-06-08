@@ -12,7 +12,7 @@ charset-normalizer==3.1.0
     # via
     #   -c requirements/requirements-extra.txt
     #   requests
-coverage[toml]==7.2.6
+coverage[toml]==7.2.7
     # via
     #   -r requirements/requirements-test.in
     #   pytest-cov
@@ -52,7 +52,7 @@ tomli==2.0.1
     #   pytest
 types-pyyaml==6.0.12.10
     # via responses
-urllib3==2.0.2
+urllib3==2.0.3
     # via
     #   -c requirements/requirements-extra.txt
     #   requests

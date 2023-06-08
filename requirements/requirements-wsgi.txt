@@ -29,7 +29,7 @@ tornado==6.3.2
     # via -r requirements/requirements-wsgi.in
 twisted==22.10.0
     # via -r requirements/requirements-wsgi.in
-typing-extensions==4.6.2
+typing-extensions==4.6.3
     # via
     #   -c requirements/requirements.txt
     #   twisted
