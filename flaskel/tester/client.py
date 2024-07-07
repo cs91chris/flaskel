@@ -34,7 +34,7 @@ class JSONRPCMixin:
 
 class TestClient(FlaskClient, JSONRPCMixin):
     def fetch(self, url, *args, **kwargs):  # pragma: no cover
-        return self.open(url, method="FETCH", *args, **kwargs)
+        return self.open(url, *args, method="FETCH", **kwargs)
 
     @classmethod
     def get_app(cls, conf, **kwargs):

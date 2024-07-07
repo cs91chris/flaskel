@@ -2,6 +2,7 @@ import socket
 import typing as t
 
 from flask_mail import Attachment, Mail, Message
+from vbcore.datastruct import ObjectDict
 
 AddressType = t.Union[str, t.Tuple[str, str]]
 
@@ -11,6 +12,10 @@ class ClientMail(Mail):
         self.app = app
         super().init_app(app)
         app.extensions["client_mail"] = self
+
+    @property
+    def config(self) -> ObjectDict:
+        return t.cast(ObjectDict, self.app.config)
 
     def sendmail(
         self,
@@ -25,8 +30,8 @@ class ClientMail(Mail):
         attachments: t.Optional[t.List[Attachment]] = None,
         **kwargs,
     ) -> str:
-        sender = sender or self.app.config.MAIL_DEFAULT_SENDER
-        destination = recipients or [self.app.config.MAIL_RECIPIENT]
+        sender = sender or self.config.MAIL_DEFAULT_SENDER
+        destination = recipients or [self.config.MAIL_RECIPIENT]
         message = Message(
             subject=subject,
             html=html,
@@ -41,7 +46,7 @@ class ClientMail(Mail):
         )
 
         timeout = socket.getdefaulttimeout()
-        socket.setdefaulttimeout(self.app.config.MAIL_TIMEOUT or 60)
+        socket.setdefaulttimeout(self.config.MAIL_TIMEOUT or 60)
         self.send(message)
         socket.setdefaulttimeout(timeout)
 

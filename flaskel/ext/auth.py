@@ -182,9 +182,11 @@ class BaseTokenHandler:
             issued_at=decoded.iat,
             token_type=cap.config.JWT_DEFAULT_TOKEN_TYPE,
             scope=scope or cap.config.JWT_DEFAULT_SCOPE,
-            refresh_token=self.get_refresh(identity=identity, expires=expires_refresh)
-            if refresh
-            else None,
+            refresh_token=(
+                self.get_refresh(identity=identity, expires=expires_refresh)
+                if refresh
+                else None
+            ),
         )
 
     def dump(self) -> TokenInfo:

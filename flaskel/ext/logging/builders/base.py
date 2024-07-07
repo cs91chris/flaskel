@@ -53,7 +53,7 @@ class LogBuilder:
         cap.logger.info(
             "%s",
             self.wrapper_dump_request(
-                request._get_current_object(),
+                request._get_current_object(),  # pylint: disable=protected-access
                 **self.request_params(),
             ),
         )

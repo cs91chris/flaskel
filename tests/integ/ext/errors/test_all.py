@@ -130,7 +130,7 @@ def test_permanent_redirect(client):
         status=httpcode.PERMANENT_REDIRECT,
         mimetype=ContentTypeEnum.HTML,
     )
-    Asserter.assert_equals(res.headers["Location"], "http://flask.dev:5000/permanent/")
+    Asserter.assert_equals(res.headers["Location"], "https://flask.dev:5000/permanent/")
 
 
 def test_response(client):
@@ -161,10 +161,9 @@ def test_retry_after(client):
         mimetype=ContentTypeEnum.JSON_PROBLEM,
     )
 
-    date = "Wed, 01 Mar 2000 00:00:00 GMT"
     response = res.get_json()["response"]
-    Asserter.assert_equals(res.headers["Retry-After"], date)
-    Asserter.assert_equals(response["retry_after"], date)
+    Asserter.assert_equals(res.headers["Retry-After"], "Wed, 01 Mar 2000 00:00:00 GMT")
+    Asserter.assert_equals(response["retry_after"], "2000-03-01T00:00:00")
 
 
 def test_range(client):

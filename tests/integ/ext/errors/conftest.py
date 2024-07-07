@@ -1,10 +1,11 @@
 from datetime import datetime
 
 import pytest
-from flask import abort, Blueprint, Flask, Response
+from flask import abort, Blueprint, Response
 from werkzeug.datastructures import WWWAuthenticate
 from werkzeug.routing import RequestRedirect
 
+from flaskel import config, Flaskel
 from flaskel.ext.errors.dispatchers import SubdomainDispatcher
 from flaskel.ext.errors.handler import ErrorHandler
 
@@ -15,8 +16,9 @@ def error_handler():
 
 
 @pytest.fixture
-def app(error_handler):
-    _app = Flask(__name__)
+def app(error_handler):  # pytest: ignore=too-many-locals
+    _app = Flaskel(__name__)
+    _app.config.from_object(config)
     _app.config["ERROR_PAGE"] = "error.html"
     _app.config["SERVER_NAME"] = "flask.dev:5000"
 
@@ -102,5 +104,6 @@ def app(error_handler):
 
 @pytest.fixture
 def client(app):
-    _client = app.test_client()
-    return _client
+    with app.app_context():
+        _client = app.test_client()
+        yield _client

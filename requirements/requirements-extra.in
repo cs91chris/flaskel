@@ -1,6 +1,6 @@
 -c requirements.txt
 
-pyfcm
+pyfcm<2
 stripe
 redis
 hiredis

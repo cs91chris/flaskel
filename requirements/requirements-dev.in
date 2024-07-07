@@ -13,7 +13,7 @@ liccheck
 mypy
 pip-tools
 pipdeptree
-pylint
+pylint<3
 pylint-flask
 pylint-flask-sqlalchemy
 radon
@@ -29,6 +29,7 @@ types-waitress
 types-setuptools<57.4.17
 types-xmltodict
 types-python-dateutil
+types-PyYAML
 
 # constraints
 #

@@ -6,7 +6,7 @@ from logging.handlers import (
 )
 from queue import Queue
 
-from flask import _request_ctx_stack, current_app as cap
+from flask import current_app as cap
 
 
 class FlaskSysLogHandler(SysLogHandler):
@@ -41,21 +41,13 @@ class QueueHandler(BaseQueueHandler):
             if stop_wait is True:
                 atexit.register(self.stop)
 
-    @staticmethod
-    def _get_request_context():
-        """
-        Return the current request context which can then be used in queued handler
-        """
-        top = _request_ctx_stack.top
-        return top.request if top else None
-
     def prepare(self, record):
         """
         Return a prepared log record.
         Attach a request context for use inside threaded handlers
         """
         record = super().prepare(record)
-        record.request = self._get_request_context()
+        # TODO find a way to attach request data
         return record
 
     def start(self):

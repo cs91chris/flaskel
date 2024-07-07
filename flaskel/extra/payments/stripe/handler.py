@@ -2,7 +2,7 @@ import typing as t
 from functools import partial
 
 import stripe
-from stripe.error import StripeError
+from stripe import StripeError
 from vbcore.datastruct import ObjectDict
 
 from flaskel import cap, request

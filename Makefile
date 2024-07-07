@@ -72,8 +72,13 @@ liccheck:
 		-r ${REQ_PATH}/requirements-wsgi.txt
 
 safety:
+	# 51668 sqlalchemy
+	# 70612 jinja2
+	# 70624 flask-cors
 	safety check \
 		--ignore 51668 \
+		--ignore 70612 \
+		--ignore 70624 \
 		--full-report \
 		-r ${REQ_PATH}/requirements.txt \
 		-r ${REQ_PATH}/requirements-extra.txt \

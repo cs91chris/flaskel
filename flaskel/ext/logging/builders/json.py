@@ -67,9 +67,9 @@ class RequestWrap(Wrapper):
                 "method": request.method,
                 "scheme": request.scheme,
                 "path": request.full_path,
-                "headers": self.dump_headers(request.headers, hdr)
-                if hdr or not skip
-                else "",
+                "headers": (
+                    self.dump_headers(request.headers, hdr) if hdr or not skip else ""
+                ),
                 "body": self.dump_body(request) if not skip else "",
             },
         )
@@ -86,9 +86,9 @@ class ResponseWrap(Wrapper):
             {
                 "path": flask.request.path,
                 "status": response.status_code,
-                "headers": self.dump_headers(response.headers, hdr)
-                if hdr or not skip
-                else "",
+                "headers": (
+                    self.dump_headers(response.headers, hdr) if hdr or not skip else ""
+                ),
                 "body": self.dump_body(response) if not skip else "",
             },
         )
